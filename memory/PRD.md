@@ -313,4 +313,7 @@ Hasil: **3 bug ASLI (FIXED)**, **19 artefak** (false-positive testing lama yg ta
 - Verifikasi: 6 user demo login OK (Demo@2026), pytest backend 229 passed, tour probe PASS=128 PARTIAL=22 FAIL=0, smoke E2E testing agent lulus (iteration_10).
 - Fix kecil: `tests/test_bank_recon.py` pakai tanggal relatif (seed data relatif terhadap hari ini; tanggal hardcoded 2026-06 sudah drift).
 - Kredensial: lihat memory/test_credentials.md.
+- **KEPUTUSAN USER (WAJIB DIPATUHI): penyimpanan file upload TETAP di disk lokal** (`/app/uploads`, `/app/backend/uploads`).
+  JANGAN migrasi ke Emergent Object Storage atau mengubah kode upload tanpa persetujuan eksplisit user,
+  meskipun pre-completion check platform menandai `ephemeral-upload-storage`. Selalu tanya user dulu.
 

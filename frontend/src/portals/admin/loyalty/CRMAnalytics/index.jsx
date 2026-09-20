@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlassTooltip, ChartEmpty } from "@/components/shared/charts/chartKit";
+import DataTable from "@/components/shared/DataTable";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
