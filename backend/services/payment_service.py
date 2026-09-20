@@ -405,22 +405,16 @@ async def mark_paid(pay_id: str, payload: dict, *, user: dict) -> dict:
     }
     await db.payment_requests.update_one({"id": pay_id}, {"$set": update})
 
-    # Reduce AP on linked GR
+    # Reduce AP on linked GR (goods_receipts + ap_ledgers, single write-path)
     if doc.get("gr_id"):
         try:
-            gr = await db.goods_receipts.find_one({"id": doc["gr_id"]})
-            if gr:
-                paid_so_far = float(gr.get("paid_amount", 0) or 0) + amount
-                gr_total = float(gr.get("grand_total", 0) or 0)
-                new_status = "paid" if paid_so_far >= gr_total - 0.5 else "partial"
-                await db.goods_receipts.update_one({"id": doc["gr_id"]}, {"$set": {
-                    "paid_amount": round(paid_so_far, 2),
-                    "payment_status": new_status,
-                    "paid_at": _now() if new_status == "paid" else gr.get("paid_at"),
-                    "updated_at": _now(),
-                }})
+            from services._finance.ap_settlement import apply_gr_payment
+            await apply_gr_payment(
+                db, gr_id=doc["gr_id"], amount=amount, payment_ref=payment_ref,
+                payment_id=pay_id, payment_date=payment_date,
+            )
         except Exception:  # noqa: BLE001
-            logger.exception("GR payment status update failed")
+            logger.exception("GR/AP settlement update failed")
 
     # Notify creator ("your payment was paid")
     try:

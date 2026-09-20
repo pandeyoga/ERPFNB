@@ -234,7 +234,8 @@ async def get_daily_sales(id_: str) -> dict:
 def _calc_grand_total(payload: dict) -> float:
     revenue = sum(float(b.get("amount", 0) or 0) for b in payload.get("revenue_buckets", []))
     return round(revenue + float(payload.get("service_charge", 0) or 0)
-                 + float(payload.get("tax_amount", 0) or 0), 2)
+                 + float(payload.get("tax_amount", 0) or 0)
+                 - float(payload.get("voucher_discount_amount", 0) or 0), 2)
 
 
 # =================== PETTY CASH ===================

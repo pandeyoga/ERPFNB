@@ -136,8 +136,9 @@ export default function DailySalesForm() {
   const netTotal = useMemo(() => form.channels.reduce((s, c) => s + Number(c.net || 0), 0), [form.channels]);
   const revenueTotal = useMemo(() => form.revenue_buckets.reduce((s, b) => s + Number(b.amount || 0), 0), [form.revenue_buckets]);
   const grandTotal = useMemo(
-    () => Number(revenueTotal) + Number(form.service_charge || 0) + Number(form.tax_amount || 0),
-    [revenueTotal, form.service_charge, form.tax_amount],
+    () => Number(revenueTotal) + Number(form.service_charge || 0) + Number(form.tax_amount || 0)
+      - Number(form.voucher_discount_amount || 0),
+    [revenueTotal, form.service_charge, form.tax_amount, form.voucher_discount_amount],
   );
   const paymentTotal = useMemo(() => form.payment_breakdown.reduce((s, p) => s + Number(p.amount || 0), 0), [form.payment_breakdown]);
   const balanced = Math.abs(grandTotal - paymentTotal) < 1;

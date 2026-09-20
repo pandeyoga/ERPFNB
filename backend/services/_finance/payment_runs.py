@@ -431,20 +431,14 @@ async def post_payment_run(run_id: str, payload: dict, *, user: dict) -> dict:
             "journal_entry_id": pay_je_id or primary_je_id,
             "updated_at": now,
         }})
-        # Reduce AP on linked GR
+        # Reduce AP on linked GR (goods_receipts + ap_ledgers, single write-path)
         if p.get("gr_id"):
             try:
-                gr = await db.goods_receipts.find_one({"id": p["gr_id"]})
-                if gr:
-                    paid_so_far = float(gr.get("paid_amount", 0) or 0) + float(p.get("amount", 0) or 0)
-                    gr_total = float(gr.get("grand_total", 0) or 0)
-                    new_status = "paid" if paid_so_far >= gr_total - 0.5 else "partial"
-                    await db.goods_receipts.update_one({"id": p["gr_id"]}, {"$set": {
-                        "paid_amount": round(paid_so_far, 2),
-                        "payment_status": new_status,
-                        "paid_at": now if new_status == "paid" else gr.get("paid_at"),
-                        "updated_at": now,
-                    }})
+                from services._finance.ap_settlement import apply_gr_payment
+                await apply_gr_payment(
+                    db, gr_id=p["gr_id"], amount=float(p.get("amount", 0) or 0),
+                    payment_ref=doc["doc_no"], payment_id=pid, payment_date=payment_date,
+                )
             except Exception:  # noqa: BLE001
                 logger.exception("GR AP reduction failed for pay %s in run %s", pid, run_id)
 

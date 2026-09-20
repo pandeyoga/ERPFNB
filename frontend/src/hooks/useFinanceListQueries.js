@@ -14,7 +14,7 @@ export function useARInvoices(filterPeriod, filterStatus) {
       const params = {};
       if (filterPeriod) params.period = filterPeriod;
       if (filterStatus) params.status = filterStatus;
-      const res = await api.get("/finance/ar-invoices", { params });
+      const res = await api.get("/ar/invoices", { params });
       return unwrap(res) || [];
     },
     staleTime: 30 * 1000,
@@ -25,7 +25,7 @@ export function useARCustomers() {
   return useQuery({
     queryKey: ["finance", "ar-customers"],
     queryFn: async () => {
-      const res = await api.get("/finance/ar-customers");
+      const res = await api.get("/ar/customers");
       return unwrap(res) || [];
     },
     staleTime: 60 * 1000, // 1 minute - customers don't change frequently
@@ -36,7 +36,7 @@ export function useARAging() {
   return useQuery({
     queryKey: ["finance", "ar-aging"],
     queryFn: async () => {
-      const res = await api.get("/finance/ar-aging");
+      const res = await api.get("/ar/aging");
       return unwrap(res);
     },
     staleTime: 60 * 1000,
@@ -47,22 +47,11 @@ export function useARRecon(reconPeriod) {
   return useQuery({
     queryKey: ["finance", "ar-recon", { reconPeriod }],
     queryFn: async () => {
-      const res = await api.get("/finance/ar-recon", {
+      const res = await api.get("/ar/reconciliation", {
         params: { period: reconPeriod },
       });
       return unwrap(res);
     },
     staleTime: 60 * 1000,
-  });
-}
-
-export function useARSummary() {
-  return useQuery({
-    queryKey: ["finance", "ar-summary"],
-    queryFn: async () => {
-      const res = await api.get("/finance/ar-summary");
-      return unwrap(res);
-    },
-    staleTime: 30 * 1000,
   });
 }

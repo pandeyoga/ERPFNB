@@ -27,7 +27,7 @@ export default function JournalLedgerReport() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    api.get("/finance/coa", { params: { per_page: 500 } })
+    api.get("/master/coa", { params: { per_page: 500 } })
       .then(r => setCoaList(r.data?.data || []))
       .catch(() => {});
   }, []);

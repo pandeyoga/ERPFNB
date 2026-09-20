@@ -440,6 +440,14 @@ async def list_opname(*, outlet_ids: Optional[list[str]] = None,
     return [serialize(d) for d in items], {"page": page, "per_page": per_page, "total": total}
 
 
+async def get_opname(id_: str) -> dict:
+    db = get_db()
+    sess = await db.opname_sessions.find_one({"id": id_, "deleted_at": None})
+    if not sess:
+        raise NotFoundError("Opname session")
+    return serialize(sess)
+
+
 async def start_opname(payload: dict, *, user: dict) -> dict:
     db = get_db()
     outlet_id = payload["outlet_id"]

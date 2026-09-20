@@ -53,7 +53,7 @@ export default function BudgetManagement() {
       try {
         const [outletRes, brandRes] = await Promise.all([
           api.get("/public/outlets"),
-          api.get("/admin/brands").catch(() => ({ data: { data: [] } }))
+          api.get("/master/brands").catch(() => ({ data: { data: [] } }))
         ]);
         if (outletRes.data) setOutlets(outletRes.data.data || []);
         if (brandRes.data) setBrands(brandRes.data.data || []);

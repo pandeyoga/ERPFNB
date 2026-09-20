@@ -53,6 +53,13 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
             "memo": f"Sales {sales['sales_date']} via {pm['name']}",
         })
 
+    # Debit: voucher discount (contra-revenue) so Dr payments + Dr discount = Cr revenue + svc + tax
+    disc = float(sales.get("voucher_discount_amount", 0) or 0)
+    if disc:
+        coa_id = await gl_mapping.resolve("discount_expense")
+        lines.append({"coa_id": coa_id, "dr": disc, "cr": 0,
+                      "memo": f"Voucher discount {sales.get('voucher_code') or ''}".strip()})
+
     # Credit: revenue buckets
     bucket_to_logical = {
         "food": "revenue_food",

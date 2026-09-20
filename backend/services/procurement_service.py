@@ -450,12 +450,16 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
         }},
     )
 
-    # Update PO status if all lines received
+    # Update PO status from CUMULATIVE received qty across all posted GRs for this PO
     if payload.get("po_id"):
         po = await db.purchase_orders.find_one({"id": payload["po_id"]})
         if po:
             ordered_qty = sum(float(ln.get("qty", 0) or 0) for ln in po.get("lines", []))
-            received_qty = sum(float(ln.get("qty_received", 0) or 0) for ln in lines)
+            received_qty = 0.0
+            async for g in db.goods_receipts.find(
+                {"po_id": payload["po_id"], "status": "posted", "deleted_at": None}, {"lines": 1},
+            ):
+                received_qty += sum(float(ln.get("qty_received", 0) or 0) for ln in g.get("lines", []))
             new_status = "received" if received_qty >= ordered_qty - 0.01 else "partial"
             await db.purchase_orders.update_one(
                 {"id": payload["po_id"]},

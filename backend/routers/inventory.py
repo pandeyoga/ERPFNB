@@ -2,7 +2,7 @@
 from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
-from core.exceptions import ok_envelope
+from core.exceptions import ForbiddenError, ok_envelope
 from core.security import current_user, require_perm, get_user_permissions
 from services import inventory_service, inventory_matrix_service
 
@@ -159,6 +159,15 @@ async def list_o(
         outlet_ids=outlet_ids, status=status, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
+
+
+@router.get("/opname/{id_}")
+async def get_o(id_: str, user: dict = Depends(require_perm("inventory.balance.read"))):
+    sess = await inventory_service.get_opname(id_)
+    user_perms = await get_user_permissions(user)
+    if "*" not in user_perms and sess.get("outlet_id") not in (user.get("outlet_ids") or []):
+        raise ForbiddenError("Opname bukan milik outlet Anda")
+    return ok_envelope(sess)
 
 
 @router.post("/opname/start")

@@ -138,7 +138,7 @@ export default function GlobalSearch({ open, onClose }) {
     const handle = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await api.get("/api/search", { params: { q: q.trim() } });
+        const res = await api.get("/search", { params: { q: q.trim() } });
         setResults(unwrap(res));
       } catch (e) {
         logger.error("Global search failed", { error: e.message });
