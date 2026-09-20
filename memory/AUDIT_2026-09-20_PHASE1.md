@@ -121,7 +121,18 @@ Legenda severity: **P0** = salah angka/keuangan atau fitur mati · **P1** = inko
 
 ---
 
-## F. USULAN URUTAN PERBAIKAN (menunggu persetujuan Anda — belum dikerjakan)
+## F. STATUS PERBAIKAN
+- **Fase 2a — SELESAI 2026-09-20** (diverifikasi testing agent, `test_reports/iteration_11.json`, 10/10 PASS):
+  - A1: `services/_finance/ap_settlement.apply_gr_payment` — satu write-path untuk goods_receipts + ap_ledgers; dipakai `payment_service.mark_paid` & `_finance/payment_runs.post_payment_run`.
+  - A2: `procurement_service.post_gr` — status PO dihitung dari akumulasi semua GR posted.
+  - A3: `outlet_service._calc_grand_total` & `DailySalesFormPkg` mengurangi `voucher_discount_amount`; `_journal/outlet.post_for_daily_sales` menambah baris Dr `discount_expense`.
+  - C1: `GlobalSearch.jsx` → `/search`.
+  - C2: `JournalLedgerReport` → `/master/coa`; `BudgetVsActual` & `BudgetMgmtPkg` → `/master/brands`; hook `useFinanceListQueries` → `/ar/*` (hook `useARSummary` tanpa backend dihapus); route baru `GET /api/inventory/opname/{id}` untuk detail opname.
+  - Regression test: `backend/tests/test_phase2a_fixes.py`; pytest total 244 passed.
+- **Fase 2b (P1 SSOT)**: B1 (unify skema JE), B2 (PPN dari system setting), B3 (series `PAY`/`PR` dipisah), B4 (grant permission ke role + sinkron perms_catalog), A4–A8 — **menunggu persetujuan**.
+- **Fase 2c (P2 duplikasi)**: konsolidasi formatter/StatusPill/`_ser`/`_now`/aggregasi stok — **menunggu persetujuan**.
+
+## F-lama. USULAN URUTAN PERBAIKAN (arsip)
 1. **Fase 2a (P0, angka salah / fitur mati)**: A1 (AP balance sync), A2 (PO received kumulatif), A3 (diskon voucher), C1 (Global Search path), C2 (3 path 404 nyata).
 2. **Fase 2b (P1 SSOT)**: B1 (unify skema JE: `doc_no`+`dim_outlet`, satu tolerance, satu period guard), B2 (PPN dari system setting), B3 (series `PAYR`, `UP`), B4 (grant permission ke role + sinkron perms_catalog), A4-A7.
 3. **Fase 2c (P2 duplikasi)**: konsolidasi formatter/StatusPill/`_ser`/`_now`/aggregasi stok.

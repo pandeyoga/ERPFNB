@@ -317,3 +317,8 @@ Hasil: **3 bug ASLI (FIXED)**, **19 artefak** (false-positive testing lama yg ta
   JANGAN migrasi ke Emergent Object Storage atau mengubah kode upload tanpa persetujuan eksplisit user,
   meskipun pre-completion check platform menandai `ephemeral-upload-storage`. Selalu tanya user dulu.
 
+## Sesi 2026-09-20 (lanjutan) — Audit & Fase 2a
+- Audit Fase 1 (laporan saja): `memory/AUDIT_2026-09-20_PHASE1.md` — bug P0/P1/P2, SSOT ganda, duplikasi. Alat: `scripts/audit_routes_dup.py`, `scripts/audit_fe_be_contract.py`.
+- Fase 2a selesai & diverifikasi (iteration_11): AP settlement SSOT (`_finance/ap_settlement.py`), PO cumulative received, voucher discount di grand total + JE, Global Search path, 5 path FE↔BE 404, route `GET /inventory/opname/{id}`.
+- Backlog berikutnya (menunggu persetujuan user): Fase 2b (P1 SSOT: B1–B4, A4–A8), Fase 2c (P2 duplikasi).
+
