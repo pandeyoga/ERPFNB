@@ -305,3 +305,12 @@ Hasil: **3 bug ASLI (FIXED)**, **19 artefak** (false-positive testing lama yg ta
 - Payment Run Template (konfigurasi run reusable untuk vendor reguler)
 - Anomaly Feed: scheduled auto-scan (cron trigger)
 - Dashboard analytics payment runs per bulan
+
+## Sesi 2026-09-20 — Re-setup environment dari GitHub (pandeyoga/ERPFNB)
+- Clone ulang repo ke /app (env files dipertahankan: MONGO_URL/DB_NAME/REACT_APP_BACKEND_URL; ditambah JWT_SECRET, TIMEZONE).
+- Install deps: pip requirements + yarn (yarn.lock frontend dibuat ulang), playwright chromium untuk tour probe.
+- Seed: `scripts/seed_reset.sh` 20/20 OK, integrity gate PASS, intent audit PASS.
+- Verifikasi: 6 user demo login OK (Demo@2026), pytest backend 229 passed, tour probe PASS=128 PARTIAL=22 FAIL=0, smoke E2E testing agent lulus (iteration_10).
+- Fix kecil: `tests/test_bank_recon.py` pakai tanggal relatif (seed data relatif terhadap hari ini; tanggal hardcoded 2026-06 sudah drift).
+- Kredensial: lihat memory/test_credentials.md.
+

@@ -4,8 +4,8 @@
   "static_testable": 150,
   "dynamic_skipped": 22,
   "verdict_counts": {
-    "PASS": 128,
-    "PARTIAL": 22,
+    "PASS": 127,
+    "PARTIAL": 23,
     "FAIL": 0,
     "NO_ACCESS": 0,
     "NO_TARGETS": 0
@@ -1069,15 +1069,16 @@
         "[data-testid='bs-filter-card']",
         "[data-testid='bs-sections']"
       ],
-      "verdict": "PASS",
+      "verdict": "PARTIAL",
       "final_url": "http://localhost:3000/finance/reports?tab=balance-sheet",
       "found": [
         "[data-testid='balance-sheet-page']",
-        "[data-testid='bs-balance-status']",
-        "[data-testid='bs-filter-card']",
-        "[data-testid='bs-sections']"
+        "[data-testid='bs-filter-card']"
       ],
-      "missing": []
+      "missing": [
+        "[data-testid='bs-balance-status']",
+        "[data-testid='bs-sections']"
+      ]
     },
     {
       "route": "/finance/bank-recon",
