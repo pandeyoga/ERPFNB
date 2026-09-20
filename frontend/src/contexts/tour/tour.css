@@ -1,0 +1,977 @@
+/* ============================================
+   TOUR TOOLTIP — Premium glassmorphism
+   ============================================ */
+
+.tour-tooltip {
+  position: relative;
+  background: rgb(255 255 255 / 0.94);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  border-radius: 18px;
+  padding: 18px 20px 16px;
+  box-shadow:
+    0 28px 60px -16px rgb(15 23 42 / 0.28),
+    0 8px 24px -4px rgb(15 23 42 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.85);
+  overflow: hidden;
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition:
+    opacity 240ms cubic-bezier(0.32, 0.72, 0.4, 1),
+    transform 320ms cubic-bezier(0.32, 0.72, 0.4, 1);
+  z-index: 10001;
+}
+.tour-tooltip--mounted {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dark .tour-tooltip {
+  background: rgb(17 24 39 / 0.92);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  box-shadow:
+    0 28px 60px -16px rgb(0 0 0 / 0.55),
+    0 8px 24px -4px rgb(0 0 0 / 0.32),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+  color: hsl(210 40% 96%);
+}
+
+/* Decorative blob */
+.tour-tooltip__blob {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, hsl(240 70% 63% / 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.dark .tour-tooltip__blob {
+  background: radial-gradient(circle, hsl(240 70% 70% / 0.22) 0%, transparent 70%);
+}
+
+/* Header */
+.tour-tooltip__header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.tour-tooltip__header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.tour-tooltip__icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  color: white;
+  box-shadow: 0 4px 12px -2px hsl(240 70% 63% / 0.4);
+}
+.tour-tooltip__step {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(215 16% 44%);
+  margin: 0 0 2px;
+}
+.dark .tour-tooltip__step { color: hsl(215 20% 72%); }
+.tour-tooltip__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: hsl(222 47% 9%);
+  margin: 0;
+  line-height: 1.35;
+}
+.dark .tour-tooltip__title { color: hsl(210 40% 96%); }
+.tour-tooltip__close {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: hsl(215 16% 44%);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-tooltip__close:hover {
+  background: hsl(220 14% 92%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-tooltip__close { color: hsl(215 20% 72%); }
+.dark .tour-tooltip__close:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+
+/* Progress bar */
+.tour-tooltip__progress {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 4px;
+  background: hsl(220 14% 92%);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.dark .tour-tooltip__progress { background: rgb(255 255 255 / 0.08); }
+.tour-tooltip__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  border-radius: 999px;
+  transition: width 360ms cubic-bezier(0.32, 0.72, 0.4, 1);
+  box-shadow: 0 0 8px hsl(240 70% 63% / 0.5);
+}
+
+/* Content */
+.tour-tooltip__content {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+}
+.tour-tooltip__text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: hsl(222 47% 18%);
+}
+.dark .tour-tooltip__text { color: hsl(210 40% 90%); }
+.tour-tooltip__para {
+  margin: 0 0 10px;
+}
+.tour-tooltip__para:last-child { margin-bottom: 0; }
+.tour-tooltip__bold {
+  font-weight: 700;
+  color: hsl(222 47% 9%);
+}
+.dark .tour-tooltip__bold { color: hsl(210 40% 98%); }
+.tour-tooltip__list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tour-tooltip__list-item {
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 6px 10px;
+  background: hsl(220 23% 96% / 0.6);
+  border: 1px solid hsl(220 13% 89%);
+  border-radius: 8px;
+}
+.dark .tour-tooltip__list-item {
+  background: rgb(255 255 255 / 0.03);
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+/* Footer */
+.tour-tooltip__footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tour-tooltip__dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.tour-tooltip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(220 13% 85%);
+  transition: all 200ms ease;
+}
+.dark .tour-tooltip__dot { background: rgb(255 255 255 / 0.16); }
+.tour-tooltip__dot--done {
+  background: hsl(240 70% 63%);
+  opacity: 0.7;
+}
+.tour-tooltip__dot--active {
+  width: 20px;
+  background: linear-gradient(90deg, hsl(240 70% 63%), hsl(270 80% 67%));
+  border-radius: 999px;
+}
+
+.tour-tooltip__buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-tooltip__btn-back,
+.tour-tooltip__btn-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(215 16% 44%);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-tooltip__btn-back:hover,
+.tour-tooltip__btn-skip:hover {
+  background: hsl(220 14% 92%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-tooltip__btn-back,
+.dark .tour-tooltip__btn-skip { color: hsl(215 20% 72%); }
+.dark .tour-tooltip__btn-back:hover,
+.dark .tour-tooltip__btn-skip:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+.tour-tooltip__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, hsl(222 47% 9%) 0%, hsl(222 47% 18%) 100%);
+  border: 1px solid hsl(222 47% 9%);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px -2px hsl(222 47% 9% / 0.3);
+}
+.tour-tooltip__btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -2px hsl(222 47% 9% / 0.4);
+}
+.tour-tooltip__btn-primary:active {
+  transform: translateY(0);
+}
+.dark .tour-tooltip__btn-primary {
+  background: linear-gradient(135deg, hsl(210 40% 96%) 0%, hsl(210 40% 86%) 100%);
+  color: hsl(222 47% 9%);
+  border-color: hsl(210 40% 96%);
+}
+
+/* react-joyride overrides — beacons, spotlight */
+.react-joyride__beacon {
+  display: none !important;
+}
+
+.react-joyride__overlay {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  /* REMOVED backdrop-filter blur - ini bikin spotlight area ikut blur! */
+  /* backdrop-filter: blur(4px); */
+  /* -webkit-backdrop-filter: blur(4px); */
+  animation: tour-overlay-in 240ms ease-out;
+  mix-blend-mode: normal;
+}
+@keyframes tour-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Spotlight should create a "hole" in the overlay */
+.react-joyride__spotlight {
+  border-radius: 12px !important;
+  /* Create visible border around spotlight */
+  box-shadow: 
+    0 0 0 5000px rgba(0, 0, 0, 0.75),
+    0 0 0 4px rgb(91 95 227 / 0.6),
+    0 0 20px 8px rgb(91 95 227 / 0.3) !important;
+  animation: tour-spotlight-pulse 2.4s ease-in-out infinite;
+  /* Critical: No backdrop filter on spotlight itself */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: transparent !important;
+}
+@keyframes tour-spotlight-pulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 5000px rgba(0, 0, 0, 0.75),
+      0 0 0 4px rgb(91 95 227 / 0.6),
+      0 0 20px 8px rgb(91 95 227 / 0.3);
+  }
+  50% { 
+    box-shadow: 
+      0 0 0 5000px rgba(0, 0, 0, 0.75),
+      0 0 0 5px rgb(91 95 227 / 0.8),
+      0 0 30px 12px rgb(91 95 227 / 0.4);
+  }
+}
+@media (max-width: 640px) {
+  .tour-tooltip {
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    margin: 0 16px;
+  }
+  .tour-tooltip__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .tour-tooltip__buttons {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .tour-tooltip__btn-primary {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   TOUR WELCOME MODAL (intro screen before tour)
+   ============================================ */
+.tour-welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  background: rgb(15 23 42 / 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: tour-overlay-in 200ms ease-out;
+}
+
+.tour-welcome-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow:
+    0 32px 80px -16px rgb(15 23 42 / 0.45),
+    0 12px 32px -8px rgb(15 23 42 / 0.15);
+  overflow: hidden;
+  animation: tour-welcome-in 320ms cubic-bezier(0.32, 0.72, 0.4, 1);
+}
+.dark .tour-welcome-card {
+  background: rgb(17 24 39 / 0.96);
+  border-color: rgb(255 255 255 / 0.1);
+  color: hsl(210 40% 96%);
+}
+@keyframes tour-welcome-in {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.tour-welcome-hero {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, hsl(240 70% 63% / 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+.dark .tour-welcome-hero {
+  background: radial-gradient(circle, hsl(240 70% 70% / 0.25) 0%, transparent 70%);
+}
+
+.tour-welcome-icon {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 24px -4px hsl(240 70% 63% / 0.4);
+}
+
+.tour-welcome-title {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  font-weight: 700;
+  color: hsl(222 47% 9%);
+  margin: 0 0 6px;
+}
+.dark .tour-welcome-title { color: hsl(210 40% 98%); }
+
+.tour-welcome-subtitle {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 1.55;
+  color: hsl(215 16% 44%);
+  margin: 0 0 18px;
+}
+.dark .tour-welcome-subtitle { color: hsl(215 20% 78%); }
+
+.tour-welcome-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.tour-welcome-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: hsl(220 23% 96%);
+  color: hsl(222 47% 18%);
+  border: 1px solid hsl(220 13% 89%);
+  border-radius: 999px;
+}
+.dark .tour-welcome-meta-chip {
+  background: rgb(255 255 255 / 0.05);
+  color: hsl(210 40% 90%);
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+.tour-welcome-buttons {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.tour-welcome-btn-secondary {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: hsl(215 16% 44%);
+  background: transparent;
+  border: 1px solid hsl(220 13% 89%);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-welcome-btn-secondary:hover {
+  background: hsl(220 23% 96%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-welcome-btn-secondary {
+  border-color: rgb(255 255 255 / 0.12);
+  color: hsl(215 20% 78%);
+}
+.dark .tour-welcome-btn-secondary:hover {
+  background: rgb(255 255 255 / 0.05);
+  color: hsl(210 40% 96%);
+}
+.tour-welcome-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, hsl(222 47% 9%) 0%, hsl(222 47% 18%) 100%);
+  border: 1px solid hsl(222 47% 9%);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 6px 16px -2px hsl(222 47% 9% / 0.3);
+}
+.tour-welcome-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -2px hsl(222 47% 9% / 0.4);
+}
+.dark .tour-welcome-btn-primary {
+  background: linear-gradient(135deg, hsl(210 40% 96%) 0%, hsl(210 40% 86%) 100%);
+  color: hsl(222 47% 9%);
+  border-color: hsl(210 40% 96%);
+}
+
+/* Close hint */
+.tour-welcome-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: hsl(215 16% 44%);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-welcome-close:hover {
+  background: hsl(220 14% 92%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-welcome-close { color: hsl(215 20% 72%); }
+.dark .tour-welcome-close:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+
+/* ============================================
+   HELP TOUR BUTTON — Enhanced
+   ============================================ */
+.help-tour-btn-trigger {
+  position: relative;
+  height: 40px;
+  width: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--glass-bg-2));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(var(--glass-border));
+  color: hsl(215 16% 44%);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.help-tour-btn-trigger:hover {
+  background: hsl(220 14% 90%);
+  color: hsl(222 47% 9%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -2px hsl(15 23 42 / 0.12);
+}
+.dark .help-tour-btn-trigger { color: hsl(215 20% 72%); }
+.dark .help-tour-btn-trigger:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+
+.help-tour-btn-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px -1px hsl(240 70% 63% / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.3);
+  border: 2px solid hsl(var(--background));
+}
+
+/* Pulse animation for first-visit hint */
+.help-tour-btn-trigger--hint::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid hsl(240 70% 63%);
+  animation: help-btn-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes help-btn-pulse {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Tour popover content */
+.help-tour-popover-header {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.help-tour-popover-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.help-tour-popover-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  color: white;
+  box-shadow: 0 4px 10px -2px hsl(240 70% 63% / 0.4);
+}
+.help-tour-popover-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+.help-tour-popover-subtitle {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+.help-tour-section-label {
+  padding: 10px 18px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+.help-tour-option {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 160ms ease;
+  text-align: left;
+}
+.help-tour-option:hover {
+  background: hsl(var(--muted) / 0.5);
+  border-left-color: hsl(240 70% 63%);
+}
+.help-tour-option-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: hsl(var(--muted));
+  margin-top: 2px;
+}
+.help-tour-option-text {
+  flex: 1;
+  min-width: 0;
+}
+.help-tour-option-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin: 0 0 2px;
+  line-height: 1.35;
+}
+.help-tour-option-desc {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+  margin: 0;
+}
+.help-tour-option-play {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  margin-top: 7px;
+  transition: all 160ms ease;
+}
+.help-tour-option:hover .help-tour-option-play {
+  color: hsl(240 70% 63%);
+  transform: translateX(2px);
+}
+
+.help-tour-popover-footer {
+  padding: 12px 18px;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.3);
+  font-size: 11.5px;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.55;
+}
+
+/* ============================================
+   TOUR SUGGESTION TOAST — Idle suggestion
+   ============================================ */
+.tour-suggestion-toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px 16px 16px;
+  background: rgb(255 255 255 / 0.96);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  border-radius: 16px;
+  box-shadow:
+    0 24px 48px -12px rgb(15 23 42 / 0.32),
+    0 8px 24px -6px rgb(15 23 42 / 0.12);
+  width: min(380px, calc(100vw - 32px));
+  animation: tour-suggest-in 320ms cubic-bezier(0.32, 0.72, 0.4, 1);
+}
+.dark .tour-suggestion-toast {
+  background: rgb(17 24 39 / 0.96);
+  border-color: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+@keyframes tour-suggest-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tour-suggestion-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(240 70% 63%) 0%, hsl(270 80% 67%) 100%);
+  color: white;
+  box-shadow: 0 6px 16px -3px hsl(240 70% 63% / 0.45);
+}
+
+.tour-suggestion-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tour-suggestion-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: hsl(222 47% 9%);
+  margin: 0 0 4px;
+}
+.dark .tour-suggestion-title { color: hsl(210 40% 98%); }
+
+.tour-suggestion-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: hsl(215 16% 44%);
+  margin: 0 0 10px;
+}
+.dark .tour-suggestion-desc { color: hsl(215 20% 78%); }
+.tour-suggestion-desc strong {
+  color: hsl(222 47% 9%);
+  font-weight: 600;
+}
+.dark .tour-suggestion-desc strong { color: hsl(210 40% 96%); }
+
+.tour-suggestion-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tour-suggestion-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, hsl(222 47% 9%) 0%, hsl(222 47% 18%) 100%);
+  border: 1px solid hsl(222 47% 9%);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-suggestion-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px -2px hsl(222 47% 9% / 0.3);
+}
+.dark .tour-suggestion-btn-primary {
+  background: linear-gradient(135deg, hsl(210 40% 96%) 0%, hsl(210 40% 86%) 100%);
+  color: hsl(222 47% 9%);
+  border-color: hsl(210 40% 96%);
+}
+
+.tour-suggestion-btn-secondary {
+  padding: 7px 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: hsl(215 16% 44%);
+  background: transparent;
+  border: 1px solid hsl(220 13% 89%);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.tour-suggestion-btn-secondary:hover {
+  background: hsl(220 23% 96%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-suggestion-btn-secondary {
+  border-color: rgb(255 255 255 / 0.12);
+  color: hsl(215 20% 78%);
+}
+.dark .tour-suggestion-btn-secondary:hover {
+  background: rgb(255 255 255 / 0.05);
+  color: hsl(210 40% 96%);
+}
+
+.tour-suggestion-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: hsl(215 16% 44%);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 160ms ease;
+}
+.tour-suggestion-close:hover {
+  background: hsl(220 14% 92%);
+  color: hsl(222 47% 9%);
+}
+.dark .tour-suggestion-close { color: hsl(215 20% 72%); }
+.dark .tour-suggestion-close:hover {
+  background: rgb(255 255 255 / 0.08);
+  color: hsl(210 40% 96%);
+}
+
+/* ============================================
+   TOUR SEARCH — Inside HelpTourButton popover
+   ============================================ */
+.help-tour-search-wrap {
+  position: relative;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.help-tour-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px 0 32px;
+  font-size: 13px;
+  background: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border));
+  border-radius: 9px;
+  color: hsl(var(--foreground));
+  outline: none;
+  transition: all 160ms ease;
+}
+.help-tour-search-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+.help-tour-search-input:focus {
+  background: hsl(var(--background));
+  border-color: hsl(240 70% 63% / 0.5);
+  box-shadow: 0 0 0 3px hsl(240 70% 63% / 0.12);
+}
+
+.help-tour-search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+}
+
+.help-tour-search-clear {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.help-tour-search-clear:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.help-tour-empty-state {
+  padding: 24px 18px;
+  text-align: center;
+  font-size: 12.5px;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.55;
+}
+.help-tour-empty-state-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--muted) / 0.6);
+  color: hsl(var(--muted-foreground));
+}
+
+/* "Updated" badge on tour option */
+.help-tour-option-updated-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, hsl(38 92% 90%), hsl(38 92% 85%));
+  color: hsl(28 80% 30%);
+  border-radius: 999px;
+}
+.dark .help-tour-option-updated-badge {
+  background: linear-gradient(135deg, hsl(38 60% 22%), hsl(38 60% 18%));
+  color: hsl(38 100% 78%);
+}
+
+/* Keyboard nav highlight */
+.help-tour-option--focused {
+  background: hsl(240 70% 96%);
+  border-left-color: hsl(240 70% 63%);
+}
+.dark .help-tour-option--focused {
+  background: hsl(240 30% 22%);
+}
+

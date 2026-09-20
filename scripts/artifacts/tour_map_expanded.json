@@ -1,0 +1,1971 @@
+[
+  {
+    "route": "/outlet",
+    "tour_id": "outlet-home",
+    "tour_var": "outletHomeTour",
+    "targets": [
+      "[data-testid='outlet-home-page']",
+      "[data-testid='kpi-strip']",
+      "[data-testid='today-tasks']",
+      "[data-testid='quick-actions']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/loyalty/input-poin",
+    "tour_id": "outlet-loyalty-points",
+    "tour_var": "outletLoyaltyPointsTour",
+    "targets": [
+      "[data-testid='cashier-phone-input']",
+      "[data-testid='cashier-amount-input']",
+      "[data-testid='cashier-add-points-button']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/voucher-redeem",
+    "tour_id": "outlet-loyalty-redeem",
+    "tour_var": "outletLoyaltyScanTour",
+    "targets": [
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-sales/new",
+    "tour_id": "outlet-daily-sales",
+    "tour_var": "outletDailySalesTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-sales/:id",
+    "tour_id": "outlet-daily-sales",
+    "tour_var": "outletDailySalesTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-sales/:id/edit",
+    "tour_id": "outlet-daily-sales",
+    "tour_var": "outletDailySalesTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/home",
+    "tour_id": "outlet-home",
+    "tour_var": "outletHomeTour",
+    "targets": [
+      "[data-testid='outlet-home-page']",
+      "[data-testid='kpi-strip']",
+      "[data-testid='today-tasks']",
+      "[data-testid='quick-actions']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-orders",
+    "tour_id": "outlet-daily-orders",
+    "tour_var": "outletDailyOrdersHubTour",
+    "targets": [
+      "[data-testid='daily-orders-hub']",
+      "[data-testid='daily-orders-tabs']",
+      "[data-testid='daily-orders-content-kdo']",
+      "[data-testid='daily-orders-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/end-of-day",
+    "tour_id": "outlet-end-of-day",
+    "tour_var": "outletEndOfDayWorkflowTour",
+    "targets": [
+      "[data-testid='end-of-day-workflow']",
+      "[data-testid='eod-title']",
+      "[data-testid='eod-step-daily-sales']",
+      "[data-testid='eod-step-petty-cash']",
+      "[data-testid='eod-finish']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/crm",
+    "tour_id": "outlet-crm-hub",
+    "tour_var": "outletCRMHubTour",
+    "targets": [
+      "[data-testid='crm-hub-page']",
+      "[data-testid='crm-kpi-strip']",
+      "[data-testid='crm-quick-actions']",
+      "[data-testid='crm-timeline']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/reservations",
+    "tour_id": "outlet-reservation-list",
+    "tour_var": "outletReservationListTour",
+    "targets": [
+      "[data-testid='reservation-list-page']",
+      "[data-testid='reservation-filters']",
+      "[data-testid='reservation-kpi-strip']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/reservations/new",
+    "tour_id": "outlet-reservation-form",
+    "tour_var": "outletReservationFormTour",
+    "targets": [
+      "[data-testid='reservation-form-page']",
+      "[data-testid='reservation-form-outlet-card']",
+      "[data-testid='reservation-form-datetime-card']",
+      "[data-testid='reservation-form-deposit-card']",
+      "[data-testid='reservation-form-actions']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/reservations/:id/edit",
+    "tour_id": "outlet-reservation-form",
+    "tour_var": "outletReservationFormTour",
+    "targets": [
+      "[data-testid='reservation-form-page']",
+      "[data-testid='reservation-form-outlet-card']",
+      "[data-testid='reservation-form-datetime-card']",
+      "[data-testid='reservation-form-deposit-card']",
+      "[data-testid='reservation-form-actions']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-sales",
+    "tour_id": "outlet-daily-sales",
+    "tour_var": "outletDailySalesTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/sales-wizard",
+    "tour_id": "outlet-sales-wizard",
+    "tour_var": "outletSalesWizardTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/daily-close",
+    "tour_id": "outlet-daily-close",
+    "tour_var": "outletDailyCloseTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/petty-cash",
+    "tour_id": "outlet-petty-cash",
+    "tour_var": "outletPettyCashTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/loyalty/scan",
+    "tour_id": "outlet-loyalty-scan",
+    "tour_var": "outletLoyaltyScanTour",
+    "targets": [
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/loyalty/redeem",
+    "tour_id": "outlet-loyalty-redeem",
+    "tour_var": "outletLoyaltyScanTour",
+    "targets": [
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/urgent-purchase",
+    "tour_id": "outlet-urgent-purchase",
+    "tour_var": "outletUrgentPurchaseTour",
+    "targets": [
+      "[data-testid='urgent-purchase-page']",
+      "[data-testid='up-new']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/budget",
+    "tour_id": "outlet-budget-tracker",
+    "tour_var": "outletBudgetTrackerTour",
+    "targets": [
+      "[data-testid='outlet-budget-tracker']",
+      "[data-testid='hero-total-budget']",
+      "[data-testid='tab-weekly']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/inventory/stock-check",
+    "tour_id": "outlet-stock-check",
+    "tour_var": "outletStockCheckTour",
+    "targets": [
+      "[data-testid='outlet-stock-check']",
+      "[data-testid='stock-kpi-low']",
+      "[data-testid='stock-check-opname']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/inventory/transfers",
+    "tour_id": "outlet-stock-transfers",
+    "tour_var": "outletStockTransfersTour",
+    "targets": [
+      "[data-testid='outlet-stock-transfers']",
+      "[data-testid='transfers-kpi-transit']",
+      "[data-testid='transfers-new']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/outlet/inventory/usage",
+    "tour_id": "outlet-usage-log",
+    "tour_var": "outletUsageLogTour",
+    "targets": [
+      "[data-testid='outlet-usage-log']",
+      "[data-testid='usage-kpi-waste']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin",
+    "tour_id": "admin-home",
+    "tour_var": "adminHomeTour",
+    "targets": [
+      "[data-testid='admin-page']",
+      "[data-testid='admin-welcome']",
+      "[data-testid='admin-kpi-strip']",
+      "[data-testid='admin-master-tiles']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/master-data",
+    "tour_id": "admin-master-data",
+    "tour_var": "adminMasterDataHubTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/master/:entity",
+    "tour_id": "admin-master-data",
+    "tour_var": "adminMasterDataHubTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/cms-studio",
+    "tour_id": "admin-cms-studio",
+    "tour_var": "adminCMSStudioTour",
+    "targets": [
+      "[data-testid='cms-studio']",
+      "[data-testid='cms-tabs']",
+      "[data-testid='cms-content-brands']",
+      "[data-testid='cms-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/cms/:entity",
+    "tour_id": "admin-cms-studio",
+    "tour_var": "adminCMSStudioTour",
+    "targets": [
+      "[data-testid='cms-studio']",
+      "[data-testid='cms-tabs']",
+      "[data-testid='cms-content-brands']",
+      "[data-testid='cms-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/cms/menu",
+    "tour_id": "admin-menu-cms",
+    "tour_var": "adminMenuCMSTour",
+    "targets": [
+      "[data-testid='admin-menu-brand-group']",
+      "[data-testid='admin-menu-tabs']",
+      "[data-testid='admin-menu-toolbar']",
+      "[data-testid='admin-menu-search-group']",
+      "[data-testid='admin-menu-search']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/cms/brands",
+    "tour_id": "admin-cms-studio",
+    "tour_var": "adminCMSStudioTour",
+    "targets": [
+      "[data-testid='cms-studio']",
+      "[data-testid='cms-tabs']",
+      "[data-testid='cms-content-brands']",
+      "[data-testid='cms-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/cms/news",
+    "tour_id": "admin-cms-studio",
+    "tour_var": "adminCMSStudioTour",
+    "targets": [
+      "[data-testid='cms-studio']",
+      "[data-testid='cms-tabs']",
+      "[data-testid='cms-content-brands']",
+      "[data-testid='cms-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/users",
+    "tour_id": "admin-users",
+    "tour_var": "adminUsersTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/roles",
+    "tour_id": "admin-roles",
+    "tour_var": "adminRolesTour",
+    "targets": [
+      "[data-testid='roles-page']",
+      "[data-testid='roles-grid']",
+      "[data-testid='roles-new']",
+      "[data-testid='roles-grid']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/workflows",
+    "tour_id": "admin-workflows",
+    "tour_var": "adminWorkflowsTour",
+    "targets": [
+      "body",
+      "[data-testid='wf-new']",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/bulk-import",
+    "tour_id": "admin-bulk-import",
+    "tour_var": "adminBulkImportTour",
+    "targets": [
+      "[data-testid='bulk-import-page']",
+      "[data-testid='bulk-import-steps']",
+      "[data-testid='step-select-entity']",
+      "[data-testid='step-download-template']",
+      "[data-testid='step-upload-preview']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/number-series",
+    "tour_id": "admin-number-series",
+    "tour_var": "adminNumberSeriesTour",
+    "targets": [
+      "[data-testid='number-series-page']",
+      "[data-testid='number-series-grid']",
+      "[data-testid='number-series-grid']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/tax",
+    "tour_id": "admin-tax-config",
+    "tour_var": "adminTaxConfigTour",
+    "targets": [
+      "[data-testid='tax-config-page']",
+      "[data-testid='tax-cards-grid']",
+      "[data-testid='tax-config-info-banner']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/operations",
+    "tour_id": "admin-operations",
+    "tour_var": "adminOperationsTour",
+    "targets": [
+      "[data-testid='operations-page']",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/settings",
+    "tour_id": "admin-settings",
+    "tour_var": "adminSettingsTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/loyalty",
+    "tour_id": "admin-loyalty-overview",
+    "tour_var": "adminLoyaltyOverviewTour",
+    "targets": [
+      "[data-testid='admin-loyalty-home']",
+      "[data-testid='link-admin-loyalty-customers']",
+      "[data-testid='link-admin-loyalty-rewards']",
+      "[data-testid='link-admin-loyalty-redemptions']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/loyalty/customers",
+    "tour_id": "admin-loyalty-customers",
+    "tour_var": "adminLoyaltyCustomersTour",
+    "targets": [
+      "[data-testid='admin-loyalty-customers']",
+      "[data-testid='loyalty-customers-search']",
+      "[data-testid='customers-table']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/loyalty/rewards",
+    "tour_id": "admin-loyalty-rewards",
+    "tour_var": "adminLoyaltyRewardsTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/configuration",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/report-schedules",
+    "tour_id": "admin-report-schedules",
+    "tour_var": "adminReportSchedulesTour",
+    "targets": [
+      "[data-testid='report-schedules-page']",
+      "[data-testid='create-schedule-btn']",
+      "[data-testid='schedules-grid']",
+      "[data-testid='report-schedules-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/data-management",
+    "tour_id": "admin-data-management",
+    "tour_var": "adminDataManagementTour",
+    "targets": [
+      "[data-testid='data-management-page']",
+      "[data-testid='dm-tabs']",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/smart-seo",
+    "tour_id": "admin-smart-seo",
+    "tour_var": "adminSmartSEOTour",
+    "targets": [
+      "[data-testid='smart-seo-page']",
+      "body",
+      "[data-testid='seo-analyze-btn']",
+      "[data-testid='seo-generate-btn']",
+      "[data-testid='seo-save-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/integrations",
+    "tour_id": "admin-integrations",
+    "tour_var": "adminIntegrationsTour",
+    "targets": [
+      "[data-testid='admin-integrations-page']",
+      "[data-testid='admin-integrations-header']",
+      "[data-testid='admin-integrations-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/audit-log",
+    "tour_id": "admin-audit-log",
+    "tour_var": "adminAuditLogTour",
+    "targets": [
+      "[data-testid='audit-log-page']",
+      "[data-testid='audit-filter-entity']",
+      "[data-testid='audit-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/tour-analytics",
+    "tour_id": "admin-tour-analytics",
+    "tour_var": "adminTourAnalyticsTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/approvals",
+    "tour_id": "admin-approval-builder",
+    "tour_var": "adminApprovalBuilderTour",
+    "targets": [
+      "[data-testid='approval-matrix-builder']",
+      "[data-testid='entity-rail']",
+      "[data-testid='tab-builder']",
+      "[data-testid='tab-preview']",
+      "[data-testid='btn-save-workflow']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/user-management",
+    "tour_id": "admin-user-management",
+    "tour_var": "adminUserManagementHubTour",
+    "targets": [
+      "[data-testid='admin-user-management-hub']",
+      "[data-testid='user-mgmt-tab-users']",
+      "[data-testid='user-mgmt-tab-roles']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/setup",
+    "tour_id": "admin-setup",
+    "tour_var": "adminSetupHubTour",
+    "targets": [
+      "[data-testid='admin-setup-hub']",
+      "[data-testid='setup-tab-number-series']",
+      "[data-testid='setup-tab-tax-config']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/configuration/effective-dating",
+    "tour_id": "admin-effective-dating",
+    "tour_var": "adminEffectiveDatingTour",
+    "targets": [
+      "[data-testid='config-effective-dating-page']",
+      "[data-testid='timeline-filter-all']",
+      "[data-testid='config-timeline-today-marker']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/loyalty/redemptions",
+    "tour_id": "admin-loyalty-redemptions",
+    "tour_var": "adminLoyaltyRedemptionsTour",
+    "targets": [
+      "[data-testid='admin-loyalty-redemptions']",
+      "[data-testid='status-filter']",
+      "[data-testid='export-csv']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/loyalty/customers/:customerId",
+    "tour_id": "admin-loyalty-customers",
+    "tour_var": "adminLoyaltyCustomersTour",
+    "targets": [
+      "[data-testid='admin-loyalty-customers']",
+      "[data-testid='loyalty-customers-search']",
+      "[data-testid='customers-table']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/integrations/:tab",
+    "tour_id": "admin-integrations",
+    "tour_var": "adminIntegrationsTour",
+    "targets": [
+      "[data-testid='admin-integrations-page']",
+      "[data-testid='admin-integrations-header']",
+      "[data-testid='admin-integrations-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/operations/:section",
+    "tour_id": "admin-operations",
+    "tour_var": "adminOperationsTour",
+    "targets": [
+      "[data-testid='operations-page']",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/sales-schemas",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/petty-cash-policies",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/service-charge-policies",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/incentive-schemes",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/admin/anomaly-thresholds",
+    "tour_id": "admin-configuration",
+    "tour_var": "adminConfigurationTour",
+    "targets": [
+      "body",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement",
+    "tour_id": "procurement-home",
+    "tour_var": "procurementHomeTour",
+    "targets": [
+      "[data-testid='procurement-welcome']",
+      "[data-testid='qa-kanban']",
+      "[data-testid='qa-vc']",
+      "[data-testid='procurement-kpi-strip']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/kanban",
+    "tour_id": "procurement-kanban",
+    "tour_var": "procurementKanbanTour",
+    "targets": [
+      "[data-testid='wb-board']",
+      "[data-testid='wb-filter-outlet']",
+      "[data-testid='wb-filter-days']",
+      "[data-testid='wb-board']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/pr",
+    "tour_id": "procurement-pr-list",
+    "tour_var": "procurementPRListTour",
+    "targets": [
+      "[data-testid='pr-list-page']",
+      "[data-testid='pr-filters-card']",
+      "[data-testid='pr-status-tabs']",
+      "[data-testid='pr-new']",
+      "[data-testid='pr-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/po",
+    "tour_id": "procurement-po-list",
+    "tour_var": "procurementPOListTour",
+    "targets": [
+      "[data-testid='po-list-page']",
+      "[data-testid='po-filters-card']",
+      "[data-testid='po-status-tabs']",
+      "[data-testid='po-new']",
+      "[data-testid='po-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/vendor-comparison",
+    "tour_id": "procurement-vendor-compare",
+    "tour_var": "procurementVendorCompareTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/gr",
+    "tour_id": "procurement-gr",
+    "tour_var": "procurementGRTour",
+    "targets": [
+      "[data-testid='gr-list-page']",
+      "[data-testid='gr-list-header']",
+      "[data-testid='gr-table-card']",
+      "[data-testid='gr-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/vendors",
+    "tour_id": "procurement-vendors",
+    "tour_var": "procurementVendorsTour",
+    "targets": [
+      "[data-testid='procurement-vendors-page']",
+      "[data-testid='vendor-search-bar']",
+      "[data-testid='vendor-quicklinks']",
+      "[data-testid='vendor-add-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/vendor-scorecard",
+    "tour_id": "procurement-vendor-scorecard",
+    "tour_var": "procurementVendorScorecardTour",
+    "targets": [
+      "[data-testid='vendor-scorecard-page']",
+      "[data-testid='scorecard-period']",
+      "[data-testid='scorecard-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/vendor-recommend",
+    "tour_id": "procurement-vendor-recommend",
+    "tour_var": "procurementVendorRecommendTour",
+    "targets": [
+      "[data-testid='vrec-page']",
+      "[data-testid='vrec-search-card']",
+      "[data-testid='vrec-page-candidates']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/rfq",
+    "tour_id": "procurement-rfq",
+    "tour_var": "procurementRFQTour",
+    "targets": [
+      "[data-testid='rfq-list-page']",
+      "[data-testid='rfq-filters']",
+      "[data-testid='create-rfq-btn']",
+      "[data-testid='rfq-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/consolidation",
+    "tour_id": "procurement-consolidation",
+    "tour_var": "procurementConsolidationTour",
+    "targets": [
+      "[data-testid='pr-consolidation-page']",
+      "[data-testid='cons-pr-list-card']",
+      "[data-testid='cons-preview-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/po-comparison",
+    "tour_id": "procurement-po-comparison",
+    "tour_var": "procurementPOComparisonTour",
+    "targets": [
+      "[data-testid='po-comparison-page']",
+      "[data-testid='po-cmp-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/price-intelligence",
+    "tour_id": "procurement-price-intelligence",
+    "tour_var": "procurementPriceIntelligenceTour",
+    "targets": [
+      "[data-testid='price-intel-page']",
+      "[data-testid='price-intel-summary']",
+      "[data-testid='price-intel-quarter']",
+      "[data-testid='price-intel-deviations-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/vendor-catalog",
+    "tour_id": "procurement-vendor-catalog",
+    "tour_var": "procurementVendorCatalogTour",
+    "targets": [
+      "[data-testid='vendor-catalog-page']",
+      "[data-testid='vendor-catalog-vendor-search']",
+      "[data-testid='vendor-catalog-item-search']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/pr/:id",
+    "tour_id": "procurement-pr-list",
+    "tour_var": "procurementPRListTour",
+    "targets": [
+      "[data-testid='pr-list-page']",
+      "[data-testid='pr-filters-card']",
+      "[data-testid='pr-status-tabs']",
+      "[data-testid='pr-new']",
+      "[data-testid='pr-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/po/:id",
+    "tour_id": "procurement-po-list",
+    "tour_var": "procurementPOListTour",
+    "targets": [
+      "[data-testid='po-list-page']",
+      "[data-testid='po-filters-card']",
+      "[data-testid='po-status-tabs']",
+      "[data-testid='po-new']",
+      "[data-testid='po-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/procurement/rfq/:id",
+    "tour_id": "procurement-rfq",
+    "tour_var": "procurementRFQTour",
+    "targets": [
+      "[data-testid='rfq-list-page']",
+      "[data-testid='rfq-filters']",
+      "[data-testid='create-rfq-btn']",
+      "[data-testid='rfq-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance",
+    "tour_id": "finance-home",
+    "tour_var": "financeHomeTour",
+    "targets": [
+      "[data-testid='finance-welcome']",
+      "[data-testid='finance-kpi-strip']",
+      "[data-testid='fin-qa-validate']",
+      "[data-testid='fin-qa-manual']",
+      "[data-testid='fin-qa-pl']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/validation",
+    "tour_id": "finance-validation",
+    "tour_var": "financeValidationTour",
+    "targets": [
+      "[data-testid='validation-queue-page']",
+      "[data-testid='vq-header-card']",
+      "[data-testid='vq-table-card']",
+      "[data-testid='vq-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/manual-journal",
+    "tour_id": "finance-manual-journal",
+    "tour_var": "financeManualJournalTour",
+    "targets": [
+      "[data-testid='mje-page']",
+      "[data-testid='mje-date']",
+      "[data-testid='mje-lines-table']",
+      "[data-testid='mje-save']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/ap-aging",
+    "tour_id": "finance-ap",
+    "tour_var": "financeAPTour",
+    "targets": [
+      "[data-testid='ap-aging-page']",
+      "[data-testid='ap-toolbar']",
+      "[data-testid='ap-buckets']",
+      "[data-testid='ap-aging-table']",
+      "[data-testid='ap-grand-total']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/journals",
+    "tour_id": "finance-journals",
+    "tour_var": "financeJournalsTour",
+    "targets": [
+      "[data-testid='journal-list-page']",
+      "[data-testid='je-filter-card']",
+      "[data-testid='je-source']",
+      "[data-testid='je-new']",
+      "[data-testid='je-list-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-requests",
+    "tour_id": "finance-payment-requests",
+    "tour_var": "financePaymentRequestsTour",
+    "targets": [
+      "[data-testid='payment-request-list-page']",
+      "[data-testid='pr-stats-cards']",
+      "[data-testid='pr-filter-card']",
+      "[data-testid='pr-create']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payments",
+    "tour_id": "finance-payments",
+    "tour_var": "financePaymentsTour",
+    "targets": [
+      "[data-testid='payment-list-page']",
+      "[data-testid='pay-kpi-strip']",
+      "[data-testid='pay-status-tabs']",
+      "[data-testid='pay-new-btn']",
+      "[data-testid='pay-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/bank-recon",
+    "tour_id": "finance-bank-recon",
+    "tour_var": "financeBankReconTour",
+    "targets": [
+      "body",
+      "[data-testid='br-new-upload']",
+      "body",
+      "[data-testid='br-commit']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/trial-balance",
+    "tour_id": "finance-trial-balance",
+    "tour_var": "financeTrialBalanceTour",
+    "targets": [
+      "[data-testid='trial-balance-page']",
+      "[data-testid='tb-filter-card']",
+      "[data-testid='tb-balance-status']",
+      "[data-testid='tb-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/balance-sheet",
+    "tour_id": "finance-balance-sheet",
+    "tour_var": "financeBalanceSheetTour",
+    "targets": [
+      "[data-testid='balance-sheet-page']",
+      "[data-testid='bs-filter-card']",
+      "[data-testid='bs-balance-status']",
+      "[data-testid='bs-sections']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/cashflow",
+    "tour_id": "finance-cashflow",
+    "tour_var": "financeCashflowTour",
+    "targets": [
+      "[data-testid='cashflow-report-page']",
+      "[data-testid='cf-filter-card']",
+      "[data-testid='cf-kpi-cards']",
+      "[data-testid='cf-daily-chart-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/coa",
+    "tour_id": "finance-coa",
+    "tour_var": "financeCOATour",
+    "targets": [
+      "[data-testid='coa-browser-page']",
+      "[data-testid='coa-filter-card']",
+      "[data-testid='coa-table-card']",
+      "[data-testid='coa-edit-link']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/profit-loss",
+    "tour_id": "finance-profit-loss",
+    "tour_var": "financeProfitLossTour",
+    "targets": [
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/anomalies",
+    "tour_id": "finance-anomalies",
+    "tour_var": "financeAnomaliesTour",
+    "targets": [
+      "[data-testid='anomaly-feed-page']",
+      "[data-testid='anomaly-scan-btn']",
+      "body",
+      "body"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/comparatives",
+    "tour_id": "finance-comparatives",
+    "tour_var": "financeComparativesTour",
+    "targets": [
+      "[data-testid='comparatives-page']",
+      "[data-testid='comp-period']",
+      "[data-testid='comp-delta']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/periods",
+    "tour_id": "finance-periods",
+    "tour_var": "financePeriodsLockingTour",
+    "targets": [
+      "[data-testid='periods-page']",
+      "[data-testid='periods-table']",
+      "[data-testid='period-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/period-closing",
+    "tour_id": "finance-period-closing",
+    "tour_var": "financePeriodClosingHubTour",
+    "targets": [
+      "[data-testid='period-closing-hub']",
+      "[data-testid='pc-phase-validation']",
+      "[data-testid='pc-phase-anomaly']",
+      "[data-testid='pc-phase-closing']",
+      "[data-testid='pc-phase-lock']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payments-hub",
+    "tour_id": "finance-payments-hub",
+    "tour_var": "financePaymentsHubTour",
+    "targets": [
+      "[data-testid='finance-payments-hub']",
+      "[data-testid='payments-tab-payment-requests']",
+      "[data-testid='payments-tab-ap-aging']",
+      "[data-testid='payments-tab-bank-recon']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/reports",
+    "tour_id": "finance-reports-hub",
+    "tour_var": "financeReportsHubTour",
+    "targets": [
+      "[data-testid='finance-reports-hub']",
+      "[data-testid='reports-tab-trial-balance']",
+      "[data-testid='reports-tab-profit-loss']",
+      "[data-testid='reports-tab-cashflow']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/tax",
+    "tour_id": "finance-tax-hub",
+    "tour_var": "financeTaxHubTour",
+    "targets": [
+      "[data-testid='finance-tax-hub']",
+      "[data-testid='tax-tab-tax']",
+      "[data-testid='tax-tab-efaktur']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/budget-hub",
+    "tour_id": "finance-budget-hub",
+    "tour_var": "financeBudgetHubTour",
+    "targets": [
+      "[data-testid='finance-budget-hub']",
+      "[data-testid='budget-tab-vs-actual']",
+      "[data-testid='budget-tab-forecasting']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/assets",
+    "tour_id": "finance-assets",
+    "tour_var": "financeAssetsTour",
+    "targets": [
+      "[data-testid='fixed-asset-list']",
+      "[data-testid='asset-summary-cards']",
+      "[data-testid='category-filter']",
+      "[data-testid='add-asset-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/assets/:id",
+    "tour_id": "finance-assets",
+    "tour_var": "financeAssetsTour",
+    "targets": [
+      "[data-testid='fixed-asset-list']",
+      "[data-testid='asset-summary-cards']",
+      "[data-testid='category-filter']",
+      "[data-testid='add-asset-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/cash-position",
+    "tour_id": "finance-cash-position",
+    "tour_var": "financeCashPositionTour",
+    "targets": [
+      "[data-testid='cash-position-page']",
+      "[data-testid='cash-kpi-strip']",
+      "[data-testid='cash-health-banner']",
+      "[data-testid='cash-create-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/vendor-scorecard",
+    "tour_id": "finance-vendor-scorecard",
+    "tour_var": "financeVendorScorecardTour",
+    "targets": [
+      "[data-testid='vendor-scorecard-page']",
+      "[data-testid='scorecard-from']",
+      "[data-testid='scorecard-export']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/reservation-deposits",
+    "tour_id": "finance-reservation-deposits",
+    "tour_var": "financeReservationDepositsTour",
+    "targets": [
+      "[data-testid='reservation-deposits-page']",
+      "[data-testid='deposits-summary-cards']",
+      "[data-testid='deposits-period-selector']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-runs",
+    "tour_id": "finance-payment-runs",
+    "tour_var": "financePaymentRunsTour",
+    "targets": [
+      "[data-testid='payment-run-list-page']",
+      "[data-testid='prn-kpi-strip']",
+      "[data-testid='prn-create-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-runs/:id",
+    "tour_id": "finance-payment-runs",
+    "tour_var": "financePaymentRunsTour",
+    "targets": [
+      "[data-testid='payment-run-list-page']",
+      "[data-testid='prn-kpi-strip']",
+      "[data-testid='prn-create-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-run-templates",
+    "tour_id": "finance-payment-run-templates",
+    "tour_var": "financePaymentRunTemplatesTour",
+    "targets": [
+      "[data-testid='prn-template-list-page']",
+      "[data-testid='prn-tmpl-create-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-run-templates/:id",
+    "tour_id": "finance-payment-run-templates",
+    "tour_var": "financePaymentRunTemplatesTour",
+    "targets": [
+      "[data-testid='prn-template-list-page']",
+      "[data-testid='prn-tmpl-create-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/forecasting",
+    "tour_id": "finance-forecasting",
+    "tour_var": "financeForecastingTour",
+    "targets": [
+      "[data-testid='forecasting-page']",
+      "[data-testid='forecast-history-days']",
+      "[data-testid='forecast-chart']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/budget",
+    "tour_id": "finance-budget-vs-actual",
+    "tour_var": "financeBudgetVsActualTour",
+    "targets": [
+      "[data-testid='budget-vs-actual']",
+      "[data-testid='scope-select']",
+      "[data-testid='category-summary']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/efaktur",
+    "tour_id": "finance-efaktur",
+    "tour_var": "financeEFakturTour",
+    "targets": [
+      "[data-testid='efaktur-export']",
+      "[data-testid='period-input']",
+      "[data-testid='generate-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/ebupot",
+    "tour_id": "finance-ebupot",
+    "tour_var": "financeEBupotTour",
+    "targets": [
+      "[data-testid='ebupot-export-page']",
+      "[data-testid='ebupot-export-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/ar-invoices",
+    "tour_id": "finance-ar",
+    "tour_var": "financeARInvoicesTour",
+    "targets": [
+      "[data-testid='ar-invoice-list']",
+      "[data-testid='ar-kpi-strip']",
+      "[data-testid='ar-tabs']",
+      "[data-testid='create-invoice-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payments/:id",
+    "tour_id": "finance-payments",
+    "tour_var": "financePaymentsTour",
+    "targets": [
+      "[data-testid='payment-list-page']",
+      "[data-testid='pay-kpi-strip']",
+      "[data-testid='pay-status-tabs']",
+      "[data-testid='pay-new-btn']",
+      "[data-testid='pay-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/payment-requests/:id",
+    "tour_id": "finance-payment-requests",
+    "tour_var": "financePaymentRequestsTour",
+    "targets": [
+      "[data-testid='payment-request-list-page']",
+      "[data-testid='pr-stats-cards']",
+      "[data-testid='pr-filter-card']",
+      "[data-testid='pr-create']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/journals/:id",
+    "tour_id": "finance-journals",
+    "tour_var": "financeJournalsTour",
+    "targets": [
+      "[data-testid='journal-list-page']",
+      "[data-testid='je-filter-card']",
+      "[data-testid='je-source']",
+      "[data-testid='je-new']",
+      "[data-testid='je-list-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/finance/period-closing/:period",
+    "tour_id": "finance-period-closing",
+    "tour_var": "financePeriodClosingHubTour",
+    "targets": [
+      "[data-testid='period-closing-hub']",
+      "[data-testid='pc-phase-validation']",
+      "[data-testid='pc-phase-anomaly']",
+      "[data-testid='pc-phase-closing']",
+      "[data-testid='pc-phase-lock']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory",
+    "tour_id": "inventory-home",
+    "tour_var": "inventoryHomeTour",
+    "targets": [
+      "[data-testid='inventory-welcome']",
+      "[data-testid='inventory-outlet-picker']",
+      "[data-testid='inventory-kpi-strip']",
+      "[data-testid='inventory-quick-actions']",
+      "[data-testid='low-stock-widget']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/balance",
+    "tour_id": "inventory-balance",
+    "tour_var": "inventoryBalanceTour",
+    "targets": [
+      "[data-testid='stock-balance-page']",
+      "[data-testid='bal-view-toggle']",
+      "[data-testid='bal-filters']",
+      "[data-testid='bal-table-card']",
+      "[data-testid='bal-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/movements",
+    "tour_id": "inventory-movements",
+    "tour_var": "inventoryMovementsTour",
+    "targets": [
+      "[data-testid='inventory-movements-page']",
+      "[data-testid='movements-filters']",
+      "[data-testid='movements-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/movements-hub",
+    "tour_id": "inventory-movements-hub",
+    "tour_var": "inventoryMovementsHubTour",
+    "targets": [
+      "[data-testid='stock-movements-hub']",
+      "[data-testid='movements-tabs']",
+      "[data-testid='movements-tabs']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/opname",
+    "tour_id": "inventory-opname",
+    "tour_var": "inventoryOpnameTour",
+    "targets": [
+      "[data-testid='opname-list-page']",
+      "[data-testid='opn-header-card']",
+      "[data-testid='opn-table-card']",
+      "[data-testid='opn-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/opname/:id",
+    "tour_id": "inventory-opname",
+    "tour_var": "inventoryOpnameTour",
+    "targets": [
+      "[data-testid='opname-list-page']",
+      "[data-testid='opn-header-card']",
+      "[data-testid='opn-table-card']",
+      "[data-testid='opn-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/transfers",
+    "tour_id": "inventory-transfers",
+    "tour_var": "inventoryTransfersTour",
+    "targets": [
+      "[data-testid='transfer-list-page']",
+      "[data-testid='trf-header-card']",
+      "[data-testid='trf-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/transfers/:id",
+    "tour_id": "inventory-transfers",
+    "tour_var": "inventoryTransfersTour",
+    "targets": [
+      "[data-testid='transfer-list-page']",
+      "[data-testid='trf-header-card']",
+      "[data-testid='trf-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/adjustments",
+    "tour_id": "inventory-adjustment",
+    "tour_var": "inventoryAdjustmentTour",
+    "targets": [
+      "[data-testid='inventory-adjustment-page']",
+      "[data-testid='adj-outlet-filter']",
+      "[data-testid='adj-new']",
+      "[data-testid='adj-table']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/low-stock",
+    "tour_id": "inventory-low-stock",
+    "tour_var": "inventoryLowStockTour",
+    "targets": [
+      "[data-testid='low-table-card']",
+      "[data-testid='low-toolbar']",
+      "[data-testid='low-create-pr']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/market-list",
+    "tour_id": "inventory-market-list",
+    "tour_var": "inventoryMarketListTour",
+    "targets": [
+      "[data-testid='market-list-page']",
+      "[data-testid='market-list-stats']",
+      "[data-testid='market-list-create-quarter-btn']",
+      "[data-testid='market-list-export']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/inventory/valuation",
+    "tour_id": "inventory-valuation",
+    "tour_var": "inventoryValuationTour",
+    "targets": [
+      "[data-testid='inventory-valuation-page']",
+      "[data-testid='val-kpi-strip']",
+      "[data-testid='val-asof']",
+      "[data-testid='val-by-outlet-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive",
+    "tour_id": "executive-owner-home",
+    "tour_var": "executiveOwnerHomeTour",
+    "targets": [
+      "[data-testid='owner-home']",
+      "[data-testid='owner-kpi-row']",
+      "[data-testid='owner-home-full-analytics']",
+      "[data-testid='owner-shortcuts']",
+      "[data-testid='owner-home-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/brand",
+    "tour_id": "executive-brand-mix",
+    "tour_var": "executiveBrandMixTour",
+    "targets": [
+      "[data-testid='brand-mix-overview']",
+      "[data-testid='brand-mix-period']",
+      "[data-testid='brand-mix-overview']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/brand/:brandId",
+    "tour_id": "executive-brand-drilldown",
+    "tour_var": "executiveBrandDrilldownTour",
+    "targets": [
+      "[data-testid='brand-drilldown-page']",
+      "[data-testid='brand-drilldown-kpi']",
+      "[data-testid='tab-outlets']",
+      "[data-testid='brand-back']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/outlet/:outletId",
+    "tour_id": "executive-outlet-drilldown",
+    "tour_var": "executiveOutletDrilldownTour",
+    "targets": [
+      "[data-testid='outlet-drilldown-page']",
+      "[data-testid='outlet-kpi-strip']",
+      "[data-testid='tab-daily']",
+      "[data-testid='outlet-back']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/analytics",
+    "tour_id": "executive-home",
+    "tour_var": "executiveHomeTour",
+    "targets": [
+      "[data-testid='executive-header']",
+      "[data-testid='exec-filterbar']",
+      "[data-testid='exec-link-profit-walk']",
+      "[data-testid='exec-live-toggle']",
+      "[data-testid='exec-export-pdf']",
+      "[data-testid='exec-kpi-strip-primary']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/ai-qa",
+    "tour_id": "executive-ai-qa",
+    "tour_var": "executiveAIQATour",
+    "targets": [
+      "[data-testid='executive-qa-page']",
+      "[data-testid='qa-suggestion']",
+      "[data-testid='qa-input']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/anomaly",
+    "tour_id": "executive-anomaly",
+    "tour_var": "executiveAnomalyTour",
+    "targets": [
+      "[data-testid='executive-anomaly-page']",
+      "[data-testid='anomaly-scan-btn']",
+      "[data-testid='executive-anomaly-page']",
+      "[data-testid='executive-anomaly-page']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/analytics-hub",
+    "tour_id": "executive-analytics-hub",
+    "tour_var": "executiveAnalyticsHubTour",
+    "targets": [
+      "[data-testid='executive-analytics-hub']",
+      "[data-testid='exec-analytics-tab-brand']",
+      "[data-testid='exec-analytics-tab-profit-walk']",
+      "[data-testid='exec-analytics-tab-period-compare']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/profit-walk",
+    "tour_id": "executive-profit-walk",
+    "tour_var": "executiveProfitWalkTour",
+    "targets": [
+      "[data-testid='profit-walk-page']",
+      "[data-testid='profit-walk-controls']",
+      "[data-testid='profit-kpi-cards']",
+      "[data-testid='profit-walk-page']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/period-compare",
+    "tour_id": "executive-period-compare",
+    "tour_var": "executivePeriodCompareTour",
+    "targets": [
+      "[data-testid='period-compare-page']",
+      "[data-testid='period-compare-controls']",
+      "[data-testid='period-compare-metrics']",
+      "[data-testid='period-compare-page']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/reservations",
+    "tour_id": "executive-reservations",
+    "tour_var": "executiveReservationsTour",
+    "targets": [
+      "[data-testid='reservation-summary-page']",
+      "[data-testid='reservation-kpi-cards']",
+      "[data-testid='reservation-filters']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/budget-approvals",
+    "tour_id": "executive-budget-approvals",
+    "tour_var": "executiveBudgetApprovalsTour",
+    "targets": [
+      "[data-testid='budget-approvals']",
+      "[data-testid='budget-approval-list']",
+      "[data-testid='approved-budgets-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/outlet-budgets",
+    "tour_id": "executive-outlet-budgets",
+    "tour_var": "executiveOutletBudgetsTour",
+    "targets": [
+      "[data-testid='outlet-budget-allocation']",
+      "[data-testid='tab-weekly']",
+      "[data-testid='budget-matrix']",
+      "[data-testid='btn-save']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/budget-monitor",
+    "tour_id": "executive-budget-monitor",
+    "tour_var": "executiveBudgetMonitorTour",
+    "targets": [
+      "[data-testid='outlet-budget-monitor']",
+      "[data-testid='tab-heatmap']",
+      "[data-testid='tab-pace']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/executive/budget-increase-requests",
+    "tour_id": "executive-budget-increase",
+    "tour_var": "executiveBudgetIncreaseTour",
+    "targets": [
+      "[data-testid='budget-increase-requests']",
+      "[data-testid='tab-pending']",
+      "[data-testid='tab-approved']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner",
+    "tour_id": "owner-home",
+    "tour_var": "ownerHomeTour",
+    "targets": [
+      "[data-testid='owner-cockpit-page']",
+      "[data-testid='owner-kpi-row']",
+      "[data-testid='owner-mid-row']",
+      "[data-testid='owner-bottom-row']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/cockpit",
+    "tour_id": "owner-home",
+    "tour_var": "ownerHomeTour",
+    "targets": [
+      "[data-testid='owner-cockpit-page']",
+      "[data-testid='owner-kpi-row']",
+      "[data-testid='owner-mid-row']",
+      "[data-testid='owner-bottom-row']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/cash",
+    "tour_id": "owner-cash",
+    "tour_var": "ownerCashPositionTour",
+    "targets": [
+      "[data-testid='cash-position-page']",
+      "[data-testid='cash-kpi-strip']",
+      "[data-testid='cash-kpi-runway']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/briefing",
+    "tour_id": "owner-briefing",
+    "tour_var": "ownerBriefingTour",
+    "targets": [
+      "[data-testid='daily-briefing-page']",
+      "[data-testid='briefing-hero']",
+      "[data-testid='briefing-text']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/ai-assistant",
+    "tour_id": "owner-ai-assistant",
+    "tour_var": "ownerAIAssistantTour",
+    "targets": [
+      "[data-testid='exec-qa']",
+      "[data-testid='exec-qa-suggest-0']",
+      "[data-testid='exec-qa-input']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/owner/digest-settings",
+    "tour_id": "owner-digest-settings",
+    "tour_var": "ownerDigestSettingsTour",
+    "targets": [
+      "[data-testid='digest-settings-page']",
+      "[data-testid='telegram-setup-card']",
+      "[data-testid='digest-subscriptions-card']",
+      "[data-testid='owner-send-now']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr",
+    "tour_id": "hr-home",
+    "tour_var": "hrHomeTour",
+    "targets": [
+      "[data-testid='hr-home-page']",
+      "[data-testid='hr-home-kpi-strip']",
+      "[data-testid='hr-home-header']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/voucher",
+    "tour_id": "hr-voucher",
+    "tour_var": "hrVoucherTour",
+    "targets": [
+      "[data-testid='hr-voucher-page']",
+      "[data-testid='hr-voucher-filter-status']",
+      "[data-testid='hr-voucher-issue-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/foc",
+    "tour_id": "hr-foc",
+    "tour_var": "hrFOCTour",
+    "targets": [
+      "[data-testid='hr-foc-page']",
+      "[data-testid='hr-foc-filters']",
+      "[data-testid='hr-foc-create']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/lb-fund",
+    "tour_id": "hr-lb-fund",
+    "tour_var": "hrLBFundTour",
+    "targets": [
+      "[data-testid='hr-lb-fund-page']",
+      "[data-testid='lb-fund-kpi-strip']",
+      "[data-testid='lb-fund-table-card']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/payroll",
+    "tour_id": "hr-payroll",
+    "tour_var": "hrPayrollTour",
+    "targets": [
+      "[data-testid='hr-payroll-page']",
+      "[data-testid='payroll-period-select']",
+      "[data-testid='payroll-employee-table']",
+      "[data-testid='payroll-process-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/advances",
+    "tour_id": "hr-advances",
+    "tour_var": "hrAdvancesTour",
+    "targets": [
+      "[data-testid='hr-advances-page']",
+      "[data-testid='advance-new-btn']",
+      "[data-testid='advances-table']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/leaves",
+    "tour_id": "hr-leaves",
+    "tour_var": "hrLeavesTour",
+    "targets": [
+      "[data-testid='leave-requests']",
+      "[data-testid='leave-summary']",
+      "[data-testid='tab-approval-queue']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/job-applications",
+    "tour_id": "hr-job-applications",
+    "tour_var": "hrJobApplicationsTour",
+    "targets": [
+      "[data-testid='job-applications-page']",
+      "[data-testid='status-filter']",
+      "[data-testid='dept-filter']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/job-listings",
+    "tour_id": "hr-job-listings",
+    "tour_var": "hrJobListingsTour",
+    "targets": [
+      "[data-testid='job-listings-page']",
+      "[data-testid='create-job-btn']",
+      "[data-testid='view-applications-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/service-charge",
+    "tour_id": "hr-service-charge",
+    "tour_var": "hrServiceChargeTour",
+    "targets": [
+      "[data-testid='hr-service-charge-page']",
+      "[data-testid='hr-sc-calc-btn']",
+      "[data-testid='hr-sc-period-filter']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/incentive",
+    "tour_id": "hr-incentive",
+    "tour_var": "hrIncentiveTour",
+    "targets": [
+      "[data-testid='hr-incentive-page']",
+      "[data-testid='hr-inc-tab-schemes']",
+      "[data-testid='hr-inc-calc-btn']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/hr/compensation",
+    "tour_id": "hr-compensation",
+    "tour_var": "hrCompensationHubTour",
+    "targets": [
+      "[data-testid='compensation-hub']",
+      "[data-testid='comp-tabs']",
+      "[data-testid='comp-content-payroll']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  },
+  {
+    "route": "/my-approvals",
+    "tour_id": "my-approvals",
+    "tour_var": "myApprovalsTour",
+    "targets": [
+      "[data-testid='my-approvals-page']",
+      "[data-testid='stat-total']",
+      "[data-testid='my-approvals-refresh']"
+    ],
+    "status": "OK"
+  }
+]

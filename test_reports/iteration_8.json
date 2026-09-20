@@ -1,0 +1,42 @@
+{
+  "summary": "IDOR Security Fix Validation Complete - Leave Endpoints (P0 Security Audit). Tested JUST-APPLIED IDOR fix where ANY authenticated user could previously read ANOTHER employee's leave data/PII. All 15 security tests passed (100% success rate). IDOR guards working correctly with proper 403 + LEAVE_OWNERSHIP_REQUIRED responses. No regressions detected in core leave lifecycle.",
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "✅ IDOR Fix - Summary Endpoint: Owner access (200)",
+    "✅ IDOR Fix - Summary Endpoint: Cross-user blocked (403 + LEAVE_OWNERSHIP_REQUIRED)",
+    "✅ IDOR Fix - Summary Endpoint: SUPER_ADMIN access (200)",
+    "✅ IDOR Fix - Summary Endpoint: No auth blocked (401)",
+    "✅ IDOR Fix - Leave Detail: Create leave (200)",
+    "✅ IDOR Fix - Leave Detail: Owner access (200)",
+    "✅ IDOR Fix - Leave Detail: Cross-user blocked (403 + LEAVE_OWNERSHIP_REQUIRED)",
+    "✅ IDOR Fix - Leave Detail: SUPER_ADMIN access (200)",
+    "✅ IDOR Fix - Leave Detail: Non-existent leave (404)",
+    "✅ Regression - GET /api/hr/leaves/types (200)",
+    "✅ Regression - GET /api/hr/leaves list own (200)",
+    "✅ Regression - POST /api/hr/leaves/{id}/submit (200)",
+    "✅ Regression - POST /api/hr/leaves/{id}/cancel (200)",
+    "✅ Regression - List endpoint scoping (non-HR sees only own leaves)",
+    "✅ Negative - Quota enforcement (over-quota rejected with 400)"
+  ],
+  "test_report_links": [
+    "/app/backend/idor_leave_security_test.py"
+  ],
+  "action_item_for_main_agent": "",
+  "updated_files": [
+    "/app/backend/idor_leave_security_test.py"
+  ],
+  "success_percentage": {
+    "backend": "100%",
+    "frontend": "N/A (backend-only testing)"
+  },
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_test_itself": false
+}

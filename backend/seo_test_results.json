@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-05-27T16:11:16.264819",
+  "total_tests": 5,
+  "passed": 1,
+  "failed": 4,
+  "success_rate": "20.0%",
+  "tests": [
+    {
+      "test": "POST /api/seo/ai/analyze",
+      "passed": true,
+      "message": "AI analysis successful. Intent: commercial, Clusters: 3",
+      "response_data": {
+        "ai_powered": true,
+        "clusters_count": 3
+      }
+    },
+    {
+      "test": "POST /api/seo/ai/generate",
+      "passed": false,
+      "message": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=30)",
+      "response_data": null
+    },
+    {
+      "test": "POST /api/seo/pages (upsert)",
+      "passed": false,
+      "message": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "response_data": null
+    },
+    {
+      "test": "GET /api/seo/public?path=/",
+      "passed": false,
+      "message": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "response_data": null
+    },
+    {
+      "test": "GET /api/seo/pages",
+      "passed": false,
+      "message": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "response_data": null
+    }
+  ],
+  "errors": [
+    {
+      "test": "POST /api/seo/ai/generate",
+      "error": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=30)"
+    },
+    {
+      "test": "POST /api/seo/pages (upsert)",
+      "error": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)"
+    },
+    {
+      "test": "GET /api/seo/public?path=/",
+      "error": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)"
+    },
+    {
+      "test": "GET /api/seo/pages",
+      "error": "Exception: HTTPSConnectionPool(host='fnbgroup-review-1.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)"
+    }
+  ]
+}

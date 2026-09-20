@@ -1,0 +1,59 @@
+{
+  "summary": "Completed follow-up tour guide verification for 8 routes (5 outlet pages + 3 other portals). All expected tour options are now properly wired and rendering correctly.",
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "component": "React-joyride tooltip",
+        "issue": "React warning: borderRadius prop should be lowercase borderradius",
+        "severity": "minor",
+        "impact": "Console warning only, no functional impact",
+        "fix_priority": "LOW"
+      }
+    ]
+  },
+  "passed_tests": [
+    "Login with SUPER_ADMIN (admin@torado.id)",
+    "Tour option verification for /outlet/urgent-purchase → tour-option-outlet-urgent-purchase",
+    "Tour option verification for /outlet/budget → tour-option-outlet-budget-tracker",
+    "Tour option verification for /outlet/inventory/stock-check → tour-option-outlet-stock-check",
+    "Tour option verification for /outlet/inventory/transfers → tour-option-outlet-stock-transfers",
+    "Tour option verification for /outlet/inventory/usage → tour-option-outlet-usage-log",
+    "Tour option verification for /finance/assets → tour-option-finance-assets",
+    "Tour option verification for /admin/approvals → tour-option-admin-approval-builder",
+    "Tour option verification for /procurement/price-intelligence → tour-option-procurement-price-intelligence",
+    "All tour welcome modals render correctly",
+    "All tour start buttons functional",
+    "React-joyride tooltips render and anchor to page elements",
+    "Tour navigation buttons (Lanjut/Selesai/Kembali/Lewati) present and functional"
+  ],
+  "test_report_links": [],
+  "success_percentage": {
+    "frontend": "100% (8/8 routes passed)",
+    "tour_functionality": "100% (all tour flows working)",
+    "overall": "100%"
+  },
+  "updated_files": [],
+  "action_item_for_main_agent": "",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_test_itself": false,
+  "detailed_results": {
+    "test_type": "Tour Guide Verification - Follow-up",
+    "routes_tested": 8,
+    "routes_passed": 8,
+    "routes_failed": 0,
+    "test_date": "2026-06-21",
+    "notes": [
+      "All 5 outlet inventory/budget tours now properly registered in tourRegistry",
+      "Each route shows its page-specific tour option (not just general-navigation fallback)",
+      "SUPER_ADMIN can access all tested portals (outlet, finance, admin, procurement)",
+      "Tour flow verified: help button → popover → tour option → welcome modal → joyride tooltip",
+      "Minor timing issue on /admin/approvals where joyride tooltip visibility check was delayed, but tour still functional"
+    ]
+  }
+}

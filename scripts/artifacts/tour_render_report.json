@@ -1,0 +1,2909 @@
+{
+  "preview_url": "http://localhost:3000",
+  "total_routes": 172,
+  "static_testable": 150,
+  "dynamic_skipped": 22,
+  "verdict_counts": {
+    "PASS": 128,
+    "PARTIAL": 22,
+    "FAIL": 0,
+    "NO_ACCESS": 0,
+    "NO_TARGETS": 0
+  },
+  "results": [
+    {
+      "route": "/admin",
+      "tours": [
+        "admin-home"
+      ],
+      "targets": [
+        "[data-testid='admin-kpi-strip']",
+        "[data-testid='admin-master-tiles']",
+        "[data-testid='admin-page']",
+        "[data-testid='admin-welcome']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "[data-testid='admin-kpi-strip']",
+        "[data-testid='admin-master-tiles']",
+        "[data-testid='admin-welcome']"
+      ],
+      "missing": [
+        "[data-testid='admin-page']"
+      ]
+    },
+    {
+      "route": "/admin/anomaly-thresholds",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/approvals",
+      "tours": [
+        "admin-approval-builder"
+      ],
+      "targets": [
+        "[data-testid='approval-matrix-builder']",
+        "[data-testid='btn-save-workflow']",
+        "[data-testid='entity-rail']",
+        "[data-testid='tab-builder']",
+        "[data-testid='tab-preview']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/approvals",
+      "found": [
+        "[data-testid='approval-matrix-builder']",
+        "[data-testid='btn-save-workflow']",
+        "[data-testid='entity-rail']",
+        "[data-testid='tab-builder']",
+        "[data-testid='tab-preview']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/audit-log",
+      "tours": [
+        "admin-audit-log"
+      ],
+      "targets": [
+        "[data-testid='audit-filter-entity']",
+        "[data-testid='audit-log-page']",
+        "[data-testid='audit-refresh']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/audit-log",
+      "found": [
+        "[data-testid='audit-filter-entity']",
+        "[data-testid='audit-log-page']",
+        "[data-testid='audit-refresh']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/bulk-import",
+      "tours": [
+        "admin-bulk-import"
+      ],
+      "targets": [
+        "[data-testid='bulk-import-page']",
+        "[data-testid='bulk-import-steps']",
+        "[data-testid='step-download-template']",
+        "[data-testid='step-select-entity']",
+        "[data-testid='step-upload-preview']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin/bulk-import",
+      "found": [
+        "[data-testid='bulk-import-page']",
+        "[data-testid='bulk-import-steps']",
+        "[data-testid='step-select-entity']"
+      ],
+      "missing": [
+        "[data-testid='step-download-template']",
+        "[data-testid='step-upload-preview']"
+      ]
+    },
+    {
+      "route": "/admin/cms-studio",
+      "tours": [
+        "admin-cms-studio"
+      ],
+      "targets": [
+        "[data-testid='cms-content-brands']",
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/cms/brands",
+      "found": [
+        "[data-testid='cms-content-brands']",
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/cms/brands",
+      "tours": [
+        "admin-cms-studio"
+      ],
+      "targets": [
+        "[data-testid='cms-content-brands']",
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/cms/brands",
+      "found": [
+        "[data-testid='cms-content-brands']",
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/cms/menu",
+      "tours": [
+        "admin-menu-cms"
+      ],
+      "targets": [
+        "[data-testid='admin-menu-brand-group']",
+        "[data-testid='admin-menu-search']",
+        "[data-testid='admin-menu-search-group']",
+        "[data-testid='admin-menu-tabs']",
+        "[data-testid='admin-menu-toolbar']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/cms/menu",
+      "found": [
+        "[data-testid='admin-menu-brand-group']",
+        "[data-testid='admin-menu-search']",
+        "[data-testid='admin-menu-search-group']",
+        "[data-testid='admin-menu-tabs']",
+        "[data-testid='admin-menu-toolbar']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/cms/news",
+      "tours": [
+        "admin-cms-studio"
+      ],
+      "targets": [
+        "[data-testid='cms-content-brands']",
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin/cms/news",
+      "found": [
+        "[data-testid='cms-studio']",
+        "[data-testid='cms-tabs']"
+      ],
+      "missing": [
+        "[data-testid='cms-content-brands']"
+      ]
+    },
+    {
+      "route": "/admin/configuration",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/configuration/sales-schemas",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/configuration/effective-dating",
+      "tours": [
+        "admin-effective-dating"
+      ],
+      "targets": [
+        "[data-testid='config-effective-dating-page']",
+        "[data-testid='config-timeline-today-marker']",
+        "[data-testid='timeline-filter-all']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin/configuration/effective-dating",
+      "found": [
+        "[data-testid='config-effective-dating-page']",
+        "[data-testid='timeline-filter-all']"
+      ],
+      "missing": [
+        "[data-testid='config-timeline-today-marker']"
+      ]
+    },
+    {
+      "route": "/admin/data-management",
+      "tours": [
+        "admin-data-management"
+      ],
+      "targets": [
+        "[data-testid='data-management-page']",
+        "[data-testid='dm-tabs']",
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/data-management",
+      "found": [
+        "[data-testid='data-management-page']",
+        "[data-testid='dm-tabs']",
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/incentive-schemes",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/integrations",
+      "tours": [
+        "admin-integrations"
+      ],
+      "targets": [
+        "[data-testid='admin-integrations-header']",
+        "[data-testid='admin-integrations-page']",
+        "[data-testid='admin-integrations-tabs']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/integrations",
+      "found": [
+        "[data-testid='admin-integrations-header']",
+        "[data-testid='admin-integrations-page']",
+        "[data-testid='admin-integrations-tabs']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/loyalty",
+      "tours": [
+        "admin-loyalty-overview"
+      ],
+      "targets": [
+        "[data-testid='admin-loyalty-home']",
+        "[data-testid='link-admin-loyalty-customers']",
+        "[data-testid='link-admin-loyalty-redemptions']",
+        "[data-testid='link-admin-loyalty-rewards']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/loyalty",
+      "found": [
+        "[data-testid='admin-loyalty-home']",
+        "[data-testid='link-admin-loyalty-customers']",
+        "[data-testid='link-admin-loyalty-redemptions']",
+        "[data-testid='link-admin-loyalty-rewards']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/loyalty/customers",
+      "tours": [
+        "admin-loyalty-customers"
+      ],
+      "targets": [
+        "[data-testid='admin-loyalty-customers']",
+        "[data-testid='customers-table']",
+        "[data-testid='loyalty-customers-search']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin/loyalty/customers",
+      "found": [
+        "[data-testid='admin-loyalty-customers']",
+        "[data-testid='loyalty-customers-search']"
+      ],
+      "missing": [
+        "[data-testid='customers-table']"
+      ]
+    },
+    {
+      "route": "/admin/loyalty/redemptions",
+      "tours": [
+        "admin-loyalty-redemptions"
+      ],
+      "targets": [
+        "[data-testid='admin-loyalty-redemptions']",
+        "[data-testid='export-csv']",
+        "[data-testid='status-filter']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/loyalty/redemptions",
+      "found": [
+        "[data-testid='admin-loyalty-redemptions']",
+        "[data-testid='export-csv']",
+        "[data-testid='status-filter']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/loyalty/rewards",
+      "tours": [
+        "admin-loyalty-rewards"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/loyalty/rewards",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/master-data",
+      "tours": [
+        "admin-master-data"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/master/items",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/number-series",
+      "tours": [
+        "admin-number-series"
+      ],
+      "targets": [
+        "[data-testid='number-series-grid']",
+        "[data-testid='number-series-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/number-series",
+      "found": [
+        "[data-testid='number-series-grid']",
+        "[data-testid='number-series-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/operations",
+      "tours": [
+        "admin-operations"
+      ],
+      "targets": [
+        "[data-testid='operations-page']",
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/operations",
+      "found": [
+        "[data-testid='operations-page']",
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/petty-cash-policies",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/report-schedules",
+      "tours": [
+        "admin-report-schedules"
+      ],
+      "targets": [
+        "[data-testid='create-schedule-btn']",
+        "[data-testid='report-schedules-page']",
+        "[data-testid='report-schedules-tabs']",
+        "[data-testid='schedules-grid']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/admin/report-schedules",
+      "found": [
+        "[data-testid='create-schedule-btn']",
+        "[data-testid='report-schedules-page']",
+        "[data-testid='report-schedules-tabs']"
+      ],
+      "missing": [
+        "[data-testid='schedules-grid']"
+      ]
+    },
+    {
+      "route": "/admin/roles",
+      "tours": [
+        "admin-roles"
+      ],
+      "targets": [
+        "[data-testid='roles-grid']",
+        "[data-testid='roles-new']",
+        "[data-testid='roles-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/roles",
+      "found": [
+        "[data-testid='roles-grid']",
+        "[data-testid='roles-new']",
+        "[data-testid='roles-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/sales-schemas",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/service-charge-policies",
+      "tours": [
+        "admin-configuration"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/settings",
+      "tours": [
+        "admin-settings"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/settings",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/setup",
+      "tours": [
+        "admin-setup"
+      ],
+      "targets": [
+        "[data-testid='admin-setup-hub']",
+        "[data-testid='setup-tab-number-series']",
+        "[data-testid='setup-tab-tax-config']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/setup",
+      "found": [
+        "[data-testid='admin-setup-hub']",
+        "[data-testid='setup-tab-number-series']",
+        "[data-testid='setup-tab-tax-config']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/smart-seo",
+      "tours": [
+        "admin-smart-seo"
+      ],
+      "targets": [
+        "[data-testid='seo-analyze-btn']",
+        "[data-testid='seo-generate-btn']",
+        "[data-testid='seo-save-btn']",
+        "[data-testid='smart-seo-page']",
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/smart-seo",
+      "found": [
+        "[data-testid='seo-analyze-btn']",
+        "[data-testid='seo-generate-btn']",
+        "[data-testid='seo-save-btn']",
+        "[data-testid='smart-seo-page']",
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/tax",
+      "tours": [
+        "admin-tax-config"
+      ],
+      "targets": [
+        "[data-testid='tax-cards-grid']",
+        "[data-testid='tax-config-info-banner']",
+        "[data-testid='tax-config-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/tax",
+      "found": [
+        "[data-testid='tax-cards-grid']",
+        "[data-testid='tax-config-info-banner']",
+        "[data-testid='tax-config-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/tour-analytics",
+      "tours": [
+        "admin-tour-analytics"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/tour-analytics",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/user-management",
+      "tours": [
+        "admin-user-management"
+      ],
+      "targets": [
+        "[data-testid='admin-user-management-hub']",
+        "[data-testid='user-mgmt-tab-roles']",
+        "[data-testid='user-mgmt-tab-users']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/user-management",
+      "found": [
+        "[data-testid='admin-user-management-hub']",
+        "[data-testid='user-mgmt-tab-roles']",
+        "[data-testid='user-mgmt-tab-users']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/users",
+      "tours": [
+        "admin-users"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/users",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/admin/workflows",
+      "tours": [
+        "admin-workflows"
+      ],
+      "targets": [
+        "[data-testid='wf-new']",
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/admin/workflows",
+      "found": [
+        "[data-testid='wf-new']",
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive",
+      "tours": [
+        "executive-owner-home"
+      ],
+      "targets": [
+        "[data-testid='owner-home']",
+        "[data-testid='owner-home-full-analytics']",
+        "[data-testid='owner-home-refresh']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-shortcuts']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive",
+      "found": [
+        "[data-testid='owner-home']",
+        "[data-testid='owner-home-full-analytics']",
+        "[data-testid='owner-home-refresh']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-shortcuts']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/ai-qa",
+      "tours": [
+        "executive-ai-qa"
+      ],
+      "targets": [
+        "[data-testid='executive-qa-page']",
+        "[data-testid='qa-input']",
+        "[data-testid='qa-suggestion']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/ai-qa",
+      "found": [
+        "[data-testid='executive-qa-page']",
+        "[data-testid='qa-input']",
+        "[data-testid='qa-suggestion']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/analytics",
+      "tours": [
+        "executive-home"
+      ],
+      "targets": [
+        "[data-testid='exec-export-pdf']",
+        "[data-testid='exec-filterbar']",
+        "[data-testid='exec-kpi-strip-primary']",
+        "[data-testid='exec-link-profit-walk']",
+        "[data-testid='exec-live-toggle']",
+        "[data-testid='executive-header']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/analytics",
+      "found": [
+        "[data-testid='exec-export-pdf']",
+        "[data-testid='exec-filterbar']",
+        "[data-testid='exec-kpi-strip-primary']",
+        "[data-testid='exec-link-profit-walk']",
+        "[data-testid='exec-live-toggle']",
+        "[data-testid='executive-header']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/analytics-hub",
+      "tours": [
+        "executive-analytics-hub"
+      ],
+      "targets": [
+        "[data-testid='exec-analytics-tab-brand']",
+        "[data-testid='exec-analytics-tab-period-compare']",
+        "[data-testid='exec-analytics-tab-profit-walk']",
+        "[data-testid='executive-analytics-hub']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/analytics-hub",
+      "found": [
+        "[data-testid='exec-analytics-tab-brand']",
+        "[data-testid='exec-analytics-tab-period-compare']",
+        "[data-testid='exec-analytics-tab-profit-walk']",
+        "[data-testid='executive-analytics-hub']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/anomaly",
+      "tours": [
+        "executive-anomaly"
+      ],
+      "targets": [
+        "[data-testid='anomaly-scan-btn']",
+        "[data-testid='executive-anomaly-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/anomaly",
+      "found": [
+        "[data-testid='anomaly-scan-btn']",
+        "[data-testid='executive-anomaly-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/brand",
+      "tours": [
+        "executive-brand-mix"
+      ],
+      "targets": [
+        "[data-testid='brand-mix-overview']",
+        "[data-testid='brand-mix-period']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/brand",
+      "found": [
+        "[data-testid='brand-mix-overview']",
+        "[data-testid='brand-mix-period']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/budget-approvals",
+      "tours": [
+        "executive-budget-approvals"
+      ],
+      "targets": [
+        "[data-testid='approved-budgets-card']",
+        "[data-testid='budget-approval-list']",
+        "[data-testid='budget-approvals']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/executive/budget-approvals",
+      "found": [
+        "[data-testid='budget-approval-list']",
+        "[data-testid='budget-approvals']"
+      ],
+      "missing": [
+        "[data-testid='approved-budgets-card']"
+      ]
+    },
+    {
+      "route": "/executive/budget-increase-requests",
+      "tours": [
+        "executive-budget-increase"
+      ],
+      "targets": [
+        "[data-testid='budget-increase-requests']",
+        "[data-testid='tab-approved']",
+        "[data-testid='tab-pending']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/budget-increase-requests",
+      "found": [
+        "[data-testid='budget-increase-requests']",
+        "[data-testid='tab-approved']",
+        "[data-testid='tab-pending']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/budget-monitor",
+      "tours": [
+        "executive-budget-monitor"
+      ],
+      "targets": [
+        "[data-testid='outlet-budget-monitor']",
+        "[data-testid='tab-heatmap']",
+        "[data-testid='tab-pace']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/budget-monitor",
+      "found": [
+        "[data-testid='outlet-budget-monitor']",
+        "[data-testid='tab-heatmap']",
+        "[data-testid='tab-pace']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/outlet-budgets",
+      "tours": [
+        "executive-outlet-budgets"
+      ],
+      "targets": [
+        "[data-testid='btn-save']",
+        "[data-testid='budget-matrix']",
+        "[data-testid='outlet-budget-allocation']",
+        "[data-testid='tab-weekly']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/outlet-budgets",
+      "found": [
+        "[data-testid='btn-save']",
+        "[data-testid='budget-matrix']",
+        "[data-testid='outlet-budget-allocation']",
+        "[data-testid='tab-weekly']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/period-compare",
+      "tours": [
+        "executive-period-compare"
+      ],
+      "targets": [
+        "[data-testid='period-compare-controls']",
+        "[data-testid='period-compare-metrics']",
+        "[data-testid='period-compare-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/period-compare",
+      "found": [
+        "[data-testid='period-compare-controls']",
+        "[data-testid='period-compare-metrics']",
+        "[data-testid='period-compare-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/profit-walk",
+      "tours": [
+        "executive-profit-walk"
+      ],
+      "targets": [
+        "[data-testid='profit-kpi-cards']",
+        "[data-testid='profit-walk-controls']",
+        "[data-testid='profit-walk-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/profit-walk",
+      "found": [
+        "[data-testid='profit-kpi-cards']",
+        "[data-testid='profit-walk-controls']",
+        "[data-testid='profit-walk-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/executive/reservations",
+      "tours": [
+        "executive-reservations"
+      ],
+      "targets": [
+        "[data-testid='reservation-filters']",
+        "[data-testid='reservation-kpi-cards']",
+        "[data-testid='reservation-summary-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/executive/reservations",
+      "found": [
+        "[data-testid='reservation-filters']",
+        "[data-testid='reservation-kpi-cards']",
+        "[data-testid='reservation-summary-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance",
+      "tours": [
+        "finance-home"
+      ],
+      "targets": [
+        "[data-testid='fin-qa-manual']",
+        "[data-testid='fin-qa-pl']",
+        "[data-testid='fin-qa-validate']",
+        "[data-testid='finance-kpi-strip']",
+        "[data-testid='finance-welcome']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance",
+      "found": [
+        "[data-testid='fin-qa-manual']",
+        "[data-testid='fin-qa-pl']",
+        "[data-testid='fin-qa-validate']",
+        "[data-testid='finance-kpi-strip']",
+        "[data-testid='finance-welcome']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/anomalies",
+      "tours": [
+        "finance-anomalies"
+      ],
+      "targets": [
+        "[data-testid='anomaly-feed-page']",
+        "[data-testid='anomaly-scan-btn']",
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/anomalies",
+      "found": [
+        "[data-testid='anomaly-feed-page']",
+        "[data-testid='anomaly-scan-btn']",
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/ap-aging",
+      "tours": [
+        "finance-ap"
+      ],
+      "targets": [
+        "[data-testid='ap-aging-page']",
+        "[data-testid='ap-aging-table']",
+        "[data-testid='ap-buckets']",
+        "[data-testid='ap-grand-total']",
+        "[data-testid='ap-toolbar']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/finance/ap-aging",
+      "found": [
+        "[data-testid='ap-aging-page']",
+        "[data-testid='ap-buckets']",
+        "[data-testid='ap-grand-total']",
+        "[data-testid='ap-toolbar']"
+      ],
+      "missing": [
+        "[data-testid='ap-aging-table']"
+      ]
+    },
+    {
+      "route": "/finance/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/ar-invoices",
+      "tours": [
+        "finance-ar"
+      ],
+      "targets": [
+        "[data-testid='ar-invoice-list']",
+        "[data-testid='ar-kpi-strip']",
+        "[data-testid='ar-tabs']",
+        "[data-testid='create-invoice-btn']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/ar-invoices",
+      "found": [
+        "[data-testid='ar-invoice-list']",
+        "[data-testid='ar-kpi-strip']",
+        "[data-testid='ar-tabs']",
+        "[data-testid='create-invoice-btn']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/assets",
+      "tours": [
+        "finance-assets"
+      ],
+      "targets": [
+        "[data-testid='add-asset-btn']",
+        "[data-testid='asset-summary-cards']",
+        "[data-testid='category-filter']",
+        "[data-testid='fixed-asset-list']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/assets",
+      "found": [
+        "[data-testid='add-asset-btn']",
+        "[data-testid='asset-summary-cards']",
+        "[data-testid='category-filter']",
+        "[data-testid='fixed-asset-list']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/balance-sheet",
+      "tours": [
+        "finance-balance-sheet"
+      ],
+      "targets": [
+        "[data-testid='balance-sheet-page']",
+        "[data-testid='bs-balance-status']",
+        "[data-testid='bs-filter-card']",
+        "[data-testid='bs-sections']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports?tab=balance-sheet",
+      "found": [
+        "[data-testid='balance-sheet-page']",
+        "[data-testid='bs-balance-status']",
+        "[data-testid='bs-filter-card']",
+        "[data-testid='bs-sections']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/bank-recon",
+      "tours": [
+        "finance-bank-recon"
+      ],
+      "targets": [
+        "[data-testid='br-commit']",
+        "[data-testid='br-new-upload']",
+        "body"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/finance/bank-recon",
+      "found": [
+        "[data-testid='br-new-upload']",
+        "body"
+      ],
+      "missing": [
+        "[data-testid='br-commit']"
+      ]
+    },
+    {
+      "route": "/finance/budget",
+      "tours": [
+        "finance-budget-vs-actual"
+      ],
+      "targets": [
+        "[data-testid='budget-vs-actual']",
+        "[data-testid='category-summary']",
+        "[data-testid='scope-select']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/budget",
+      "found": [
+        "[data-testid='budget-vs-actual']",
+        "[data-testid='category-summary']",
+        "[data-testid='scope-select']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/budget-hub",
+      "tours": [
+        "finance-budget-hub"
+      ],
+      "targets": [
+        "[data-testid='budget-tab-forecasting']",
+        "[data-testid='budget-tab-vs-actual']",
+        "[data-testid='finance-budget-hub']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/budget-hub",
+      "found": [
+        "[data-testid='budget-tab-forecasting']",
+        "[data-testid='budget-tab-vs-actual']",
+        "[data-testid='finance-budget-hub']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/cash-position",
+      "tours": [
+        "finance-cash-position"
+      ],
+      "targets": [
+        "[data-testid='cash-create-btn']",
+        "[data-testid='cash-health-banner']",
+        "[data-testid='cash-kpi-strip']",
+        "[data-testid='cash-position-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/cash-position",
+      "found": [
+        "[data-testid='cash-create-btn']",
+        "[data-testid='cash-health-banner']",
+        "[data-testid='cash-kpi-strip']",
+        "[data-testid='cash-position-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/cashflow",
+      "tours": [
+        "finance-cashflow"
+      ],
+      "targets": [
+        "[data-testid='cashflow-report-page']",
+        "[data-testid='cf-daily-chart-card']",
+        "[data-testid='cf-filter-card']",
+        "[data-testid='cf-kpi-cards']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports?tab=cashflow",
+      "found": [
+        "[data-testid='cashflow-report-page']",
+        "[data-testid='cf-daily-chart-card']",
+        "[data-testid='cf-filter-card']",
+        "[data-testid='cf-kpi-cards']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/coa",
+      "tours": [
+        "finance-coa"
+      ],
+      "targets": [
+        "[data-testid='coa-browser-page']",
+        "[data-testid='coa-edit-link']",
+        "[data-testid='coa-filter-card']",
+        "[data-testid='coa-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/coa",
+      "found": [
+        "[data-testid='coa-browser-page']",
+        "[data-testid='coa-edit-link']",
+        "[data-testid='coa-filter-card']",
+        "[data-testid='coa-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/comparatives",
+      "tours": [
+        "finance-comparatives"
+      ],
+      "targets": [
+        "[data-testid='comp-delta']",
+        "[data-testid='comp-period']",
+        "[data-testid='comparatives-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports?tab=comparatives",
+      "found": [
+        "[data-testid='comp-delta']",
+        "[data-testid='comp-period']",
+        "[data-testid='comparatives-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/ebupot",
+      "tours": [
+        "finance-ebupot"
+      ],
+      "targets": [
+        "[data-testid='ebupot-export-btn']",
+        "[data-testid='ebupot-export-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/ebupot",
+      "found": [
+        "[data-testid='ebupot-export-btn']",
+        "[data-testid='ebupot-export-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/efaktur",
+      "tours": [
+        "finance-efaktur"
+      ],
+      "targets": [
+        "[data-testid='efaktur-export']",
+        "[data-testid='generate-btn']",
+        "[data-testid='period-input']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/efaktur",
+      "found": [
+        "[data-testid='efaktur-export']",
+        "[data-testid='generate-btn']",
+        "[data-testid='period-input']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/forecasting",
+      "tours": [
+        "finance-forecasting"
+      ],
+      "targets": [
+        "[data-testid='forecast-chart']",
+        "[data-testid='forecast-history-days']",
+        "[data-testid='forecasting-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/forecasting",
+      "found": [
+        "[data-testid='forecast-chart']",
+        "[data-testid='forecast-history-days']",
+        "[data-testid='forecasting-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/journals",
+      "tours": [
+        "finance-journals"
+      ],
+      "targets": [
+        "[data-testid='je-filter-card']",
+        "[data-testid='je-list-card']",
+        "[data-testid='je-new']",
+        "[data-testid='je-source']",
+        "[data-testid='journal-list-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/journals",
+      "found": [
+        "[data-testid='je-filter-card']",
+        "[data-testid='je-list-card']",
+        "[data-testid='je-new']",
+        "[data-testid='je-source']",
+        "[data-testid='journal-list-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/manual-journal",
+      "tours": [
+        "finance-manual-journal"
+      ],
+      "targets": [
+        "[data-testid='mje-date']",
+        "[data-testid='mje-lines-table']",
+        "[data-testid='mje-page']",
+        "[data-testid='mje-save']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/finance/manual-journal",
+      "found": [
+        "[data-testid='mje-date']",
+        "[data-testid='mje-page']",
+        "[data-testid='mje-save']"
+      ],
+      "missing": [
+        "[data-testid='mje-lines-table']"
+      ]
+    },
+    {
+      "route": "/finance/payment-requests",
+      "tours": [
+        "finance-payment-requests"
+      ],
+      "targets": [
+        "[data-testid='payment-request-list-page']",
+        "[data-testid='pr-create']",
+        "[data-testid='pr-filter-card']",
+        "[data-testid='pr-stats-cards']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/payment-requests",
+      "found": [
+        "[data-testid='payment-request-list-page']",
+        "[data-testid='pr-create']",
+        "[data-testid='pr-filter-card']",
+        "[data-testid='pr-stats-cards']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/payment-run-templates",
+      "tours": [
+        "finance-payment-run-templates"
+      ],
+      "targets": [
+        "[data-testid='prn-template-list-page']",
+        "[data-testid='prn-tmpl-create-btn']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/payment-run-templates",
+      "found": [
+        "[data-testid='prn-template-list-page']",
+        "[data-testid='prn-tmpl-create-btn']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/payment-runs",
+      "tours": [
+        "finance-payment-runs"
+      ],
+      "targets": [
+        "[data-testid='payment-run-list-page']",
+        "[data-testid='prn-create-btn']",
+        "[data-testid='prn-kpi-strip']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/payment-runs",
+      "found": [
+        "[data-testid='payment-run-list-page']",
+        "[data-testid='prn-create-btn']",
+        "[data-testid='prn-kpi-strip']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/payments",
+      "tours": [
+        "finance-payments"
+      ],
+      "targets": [
+        "[data-testid='pay-kpi-strip']",
+        "[data-testid='pay-new-btn']",
+        "[data-testid='pay-status-tabs']",
+        "[data-testid='pay-table-card']",
+        "[data-testid='payment-list-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/payments",
+      "found": [
+        "[data-testid='pay-kpi-strip']",
+        "[data-testid='pay-new-btn']",
+        "[data-testid='pay-status-tabs']",
+        "[data-testid='pay-table-card']",
+        "[data-testid='payment-list-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/payments-hub",
+      "tours": [
+        "finance-payments-hub"
+      ],
+      "targets": [
+        "[data-testid='finance-payments-hub']",
+        "[data-testid='payments-tab-ap-aging']",
+        "[data-testid='payments-tab-bank-recon']",
+        "[data-testid='payments-tab-payment-requests']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/payments-hub",
+      "found": [
+        "[data-testid='finance-payments-hub']",
+        "[data-testid='payments-tab-ap-aging']",
+        "[data-testid='payments-tab-bank-recon']",
+        "[data-testid='payments-tab-payment-requests']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/period-closing",
+      "tours": [
+        "finance-period-closing"
+      ],
+      "targets": [
+        "[data-testid='pc-phase-anomaly']",
+        "[data-testid='pc-phase-closing']",
+        "[data-testid='pc-phase-lock']",
+        "[data-testid='pc-phase-validation']",
+        "[data-testid='period-closing-hub']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/finance/period-closing?phase=0",
+      "found": [
+        "[data-testid='pc-phase-anomaly']",
+        "[data-testid='period-closing-hub']"
+      ],
+      "missing": [
+        "[data-testid='pc-phase-closing']",
+        "[data-testid='pc-phase-lock']",
+        "[data-testid='pc-phase-validation']"
+      ]
+    },
+    {
+      "route": "/finance/periods",
+      "tours": [
+        "finance-periods"
+      ],
+      "targets": [
+        "[data-testid='period-refresh']",
+        "[data-testid='periods-page']",
+        "[data-testid='periods-table']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/periods",
+      "found": [
+        "[data-testid='period-refresh']",
+        "[data-testid='periods-page']",
+        "[data-testid='periods-table']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/profit-loss",
+      "tours": [
+        "finance-profit-loss"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports?tab=profit-loss",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/reports",
+      "tours": [
+        "finance-reports-hub"
+      ],
+      "targets": [
+        "[data-testid='finance-reports-hub']",
+        "[data-testid='reports-tab-cashflow']",
+        "[data-testid='reports-tab-profit-loss']",
+        "[data-testid='reports-tab-trial-balance']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports",
+      "found": [
+        "[data-testid='finance-reports-hub']",
+        "[data-testid='reports-tab-cashflow']",
+        "[data-testid='reports-tab-profit-loss']",
+        "[data-testid='reports-tab-trial-balance']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/reservation-deposits",
+      "tours": [
+        "finance-reservation-deposits"
+      ],
+      "targets": [
+        "[data-testid='deposits-period-selector']",
+        "[data-testid='deposits-summary-cards']",
+        "[data-testid='reservation-deposits-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reservation-deposits",
+      "found": [
+        "[data-testid='deposits-period-selector']",
+        "[data-testid='deposits-summary-cards']",
+        "[data-testid='reservation-deposits-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/tax",
+      "tours": [
+        "finance-tax-hub"
+      ],
+      "targets": [
+        "[data-testid='finance-tax-hub']",
+        "[data-testid='tax-tab-efaktur']",
+        "[data-testid='tax-tab-tax']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/tax",
+      "found": [
+        "[data-testid='finance-tax-hub']",
+        "[data-testid='tax-tab-efaktur']",
+        "[data-testid='tax-tab-tax']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/trial-balance",
+      "tours": [
+        "finance-trial-balance"
+      ],
+      "targets": [
+        "[data-testid='tb-balance-status']",
+        "[data-testid='tb-filter-card']",
+        "[data-testid='tb-table-card']",
+        "[data-testid='trial-balance-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/reports?tab=trial-balance",
+      "found": [
+        "[data-testid='tb-balance-status']",
+        "[data-testid='tb-filter-card']",
+        "[data-testid='tb-table-card']",
+        "[data-testid='trial-balance-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/validation",
+      "tours": [
+        "finance-validation"
+      ],
+      "targets": [
+        "[data-testid='validation-queue-page']",
+        "[data-testid='vq-header-card']",
+        "[data-testid='vq-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/validation",
+      "found": [
+        "[data-testid='validation-queue-page']",
+        "[data-testid='vq-header-card']",
+        "[data-testid='vq-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/finance/vendor-scorecard",
+      "tours": [
+        "finance-vendor-scorecard"
+      ],
+      "targets": [
+        "[data-testid='scorecard-export']",
+        "[data-testid='scorecard-from']",
+        "[data-testid='vendor-scorecard-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/finance/vendor-scorecard",
+      "found": [
+        "[data-testid='scorecard-export']",
+        "[data-testid='scorecard-from']",
+        "[data-testid='vendor-scorecard-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr",
+      "tours": [
+        "hr-home"
+      ],
+      "targets": [
+        "[data-testid='hr-home-header']",
+        "[data-testid='hr-home-kpi-strip']",
+        "[data-testid='hr-home-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr",
+      "found": [
+        "[data-testid='hr-home-header']",
+        "[data-testid='hr-home-kpi-strip']",
+        "[data-testid='hr-home-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/advances",
+      "tours": [
+        "hr-advances"
+      ],
+      "targets": [
+        "[data-testid='advance-new-btn']",
+        "[data-testid='advances-table']",
+        "[data-testid='hr-advances-page']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/hr/advances",
+      "found": [
+        "[data-testid='hr-advances-page']"
+      ],
+      "missing": [
+        "[data-testid='advance-new-btn']",
+        "[data-testid='advances-table']"
+      ]
+    },
+    {
+      "route": "/hr/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/compensation",
+      "tours": [
+        "hr-compensation"
+      ],
+      "targets": [
+        "[data-testid='comp-content-payroll']",
+        "[data-testid='comp-tabs']",
+        "[data-testid='compensation-hub']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/compensation",
+      "found": [
+        "[data-testid='comp-content-payroll']",
+        "[data-testid='comp-tabs']",
+        "[data-testid='compensation-hub']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/foc",
+      "tours": [
+        "hr-foc"
+      ],
+      "targets": [
+        "[data-testid='hr-foc-create']",
+        "[data-testid='hr-foc-filters']",
+        "[data-testid='hr-foc-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/foc",
+      "found": [
+        "[data-testid='hr-foc-create']",
+        "[data-testid='hr-foc-filters']",
+        "[data-testid='hr-foc-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/incentive",
+      "tours": [
+        "hr-incentive"
+      ],
+      "targets": [
+        "[data-testid='hr-inc-calc-btn']",
+        "[data-testid='hr-inc-tab-schemes']",
+        "[data-testid='hr-incentive-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/incentive",
+      "found": [
+        "[data-testid='hr-inc-calc-btn']",
+        "[data-testid='hr-inc-tab-schemes']",
+        "[data-testid='hr-incentive-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/job-applications",
+      "tours": [
+        "hr-job-applications"
+      ],
+      "targets": [
+        "[data-testid='dept-filter']",
+        "[data-testid='job-applications-page']",
+        "[data-testid='status-filter']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/job-applications",
+      "found": [
+        "[data-testid='dept-filter']",
+        "[data-testid='job-applications-page']",
+        "[data-testid='status-filter']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/job-listings",
+      "tours": [
+        "hr-job-listings"
+      ],
+      "targets": [
+        "[data-testid='create-job-btn']",
+        "[data-testid='job-listings-page']",
+        "[data-testid='view-applications-btn']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/job-listings",
+      "found": [
+        "[data-testid='create-job-btn']",
+        "[data-testid='job-listings-page']",
+        "[data-testid='view-applications-btn']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/lb-fund",
+      "tours": [
+        "hr-lb-fund"
+      ],
+      "targets": [
+        "[data-testid='hr-lb-fund-page']",
+        "[data-testid='lb-fund-kpi-strip']",
+        "[data-testid='lb-fund-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/lb-fund",
+      "found": [
+        "[data-testid='hr-lb-fund-page']",
+        "[data-testid='lb-fund-kpi-strip']",
+        "[data-testid='lb-fund-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/leaves",
+      "tours": [
+        "hr-leaves"
+      ],
+      "targets": [
+        "[data-testid='leave-requests']",
+        "[data-testid='leave-summary']",
+        "[data-testid='tab-approval-queue']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/leaves",
+      "found": [
+        "[data-testid='leave-requests']",
+        "[data-testid='leave-summary']",
+        "[data-testid='tab-approval-queue']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/payroll",
+      "tours": [
+        "hr-payroll"
+      ],
+      "targets": [
+        "[data-testid='hr-payroll-page']",
+        "[data-testid='payroll-employee-table']",
+        "[data-testid='payroll-period-select']",
+        "[data-testid='payroll-process-btn']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/hr/payroll",
+      "found": [
+        "[data-testid='hr-payroll-page']"
+      ],
+      "missing": [
+        "[data-testid='payroll-employee-table']",
+        "[data-testid='payroll-period-select']",
+        "[data-testid='payroll-process-btn']"
+      ]
+    },
+    {
+      "route": "/hr/service-charge",
+      "tours": [
+        "hr-service-charge"
+      ],
+      "targets": [
+        "[data-testid='hr-sc-calc-btn']",
+        "[data-testid='hr-sc-period-filter']",
+        "[data-testid='hr-service-charge-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/service-charge",
+      "found": [
+        "[data-testid='hr-sc-calc-btn']",
+        "[data-testid='hr-sc-period-filter']",
+        "[data-testid='hr-service-charge-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/hr/voucher",
+      "tours": [
+        "hr-voucher"
+      ],
+      "targets": [
+        "[data-testid='hr-voucher-filter-status']",
+        "[data-testid='hr-voucher-issue-btn']",
+        "[data-testid='hr-voucher-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/hr/voucher",
+      "found": [
+        "[data-testid='hr-voucher-filter-status']",
+        "[data-testid='hr-voucher-issue-btn']",
+        "[data-testid='hr-voucher-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory",
+      "tours": [
+        "inventory-home"
+      ],
+      "targets": [
+        "[data-testid='inventory-kpi-strip']",
+        "[data-testid='inventory-outlet-picker']",
+        "[data-testid='inventory-quick-actions']",
+        "[data-testid='inventory-welcome']",
+        "[data-testid='low-stock-widget']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory",
+      "found": [
+        "[data-testid='inventory-kpi-strip']",
+        "[data-testid='inventory-outlet-picker']",
+        "[data-testid='inventory-quick-actions']",
+        "[data-testid='inventory-welcome']",
+        "[data-testid='low-stock-widget']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/adjustments",
+      "tours": [
+        "inventory-adjustment"
+      ],
+      "targets": [
+        "[data-testid='adj-new']",
+        "[data-testid='adj-outlet-filter']",
+        "[data-testid='adj-table']",
+        "[data-testid='inventory-adjustment-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/adjustments",
+      "found": [
+        "[data-testid='adj-new']",
+        "[data-testid='adj-outlet-filter']",
+        "[data-testid='adj-table']",
+        "[data-testid='inventory-adjustment-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/balance",
+      "tours": [
+        "inventory-balance"
+      ],
+      "targets": [
+        "[data-testid='bal-filters']",
+        "[data-testid='bal-table-card']",
+        "[data-testid='bal-view-toggle']",
+        "[data-testid='stock-balance-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/balance",
+      "found": [
+        "[data-testid='bal-filters']",
+        "[data-testid='bal-table-card']",
+        "[data-testid='bal-view-toggle']",
+        "[data-testid='stock-balance-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/low-stock",
+      "tours": [
+        "inventory-low-stock"
+      ],
+      "targets": [
+        "[data-testid='low-create-pr']",
+        "[data-testid='low-table-card']",
+        "[data-testid='low-toolbar']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/low-stock",
+      "found": [
+        "[data-testid='low-create-pr']",
+        "[data-testid='low-table-card']",
+        "[data-testid='low-toolbar']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/market-list",
+      "tours": [
+        "inventory-market-list"
+      ],
+      "targets": [
+        "[data-testid='market-list-create-quarter-btn']",
+        "[data-testid='market-list-export']",
+        "[data-testid='market-list-page']",
+        "[data-testid='market-list-stats']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/market-list",
+      "found": [
+        "[data-testid='market-list-create-quarter-btn']",
+        "[data-testid='market-list-export']",
+        "[data-testid='market-list-page']",
+        "[data-testid='market-list-stats']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/movements",
+      "tours": [
+        "inventory-movements"
+      ],
+      "targets": [
+        "[data-testid='inventory-movements-page']",
+        "[data-testid='movements-filters']",
+        "[data-testid='movements-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/movements-hub?type=history",
+      "found": [
+        "[data-testid='inventory-movements-page']",
+        "[data-testid='movements-filters']",
+        "[data-testid='movements-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/movements-hub",
+      "tours": [
+        "inventory-movements-hub"
+      ],
+      "targets": [
+        "[data-testid='movements-tabs']",
+        "[data-testid='stock-movements-hub']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/movements-hub",
+      "found": [
+        "[data-testid='movements-tabs']",
+        "[data-testid='stock-movements-hub']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/opname",
+      "tours": [
+        "inventory-opname"
+      ],
+      "targets": [
+        "[data-testid='opn-header-card']",
+        "[data-testid='opn-table-card']",
+        "[data-testid='opname-list-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/opname",
+      "found": [
+        "[data-testid='opn-header-card']",
+        "[data-testid='opn-table-card']",
+        "[data-testid='opname-list-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/transfers",
+      "tours": [
+        "inventory-transfers"
+      ],
+      "targets": [
+        "[data-testid='transfer-list-page']",
+        "[data-testid='trf-header-card']",
+        "[data-testid='trf-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/transfers",
+      "found": [
+        "[data-testid='transfer-list-page']",
+        "[data-testid='trf-header-card']",
+        "[data-testid='trf-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/inventory/valuation",
+      "tours": [
+        "inventory-valuation"
+      ],
+      "targets": [
+        "[data-testid='inventory-valuation-page']",
+        "[data-testid='val-asof']",
+        "[data-testid='val-by-outlet-card']",
+        "[data-testid='val-kpi-strip']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/inventory/valuation",
+      "found": [
+        "[data-testid='inventory-valuation-page']",
+        "[data-testid='val-asof']",
+        "[data-testid='val-by-outlet-card']",
+        "[data-testid='val-kpi-strip']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/my-approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/my-approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet",
+      "tours": [
+        "outlet-home"
+      ],
+      "targets": [
+        "[data-testid='kpi-strip']",
+        "[data-testid='outlet-home-page']",
+        "[data-testid='quick-actions']",
+        "[data-testid='today-tasks']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/outlet",
+      "found": [
+        "[data-testid='outlet-home-page']"
+      ],
+      "missing": [
+        "[data-testid='kpi-strip']",
+        "[data-testid='quick-actions']",
+        "[data-testid='today-tasks']"
+      ]
+    },
+    {
+      "route": "/outlet/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/budget",
+      "tours": [
+        "outlet-budget-tracker"
+      ],
+      "targets": [
+        "[data-testid='hero-total-budget']",
+        "[data-testid='outlet-budget-tracker']",
+        "[data-testid='tab-weekly']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/budget",
+      "found": [
+        "[data-testid='hero-total-budget']",
+        "[data-testid='outlet-budget-tracker']",
+        "[data-testid='tab-weekly']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/crm",
+      "tours": [
+        "outlet-crm-hub"
+      ],
+      "targets": [
+        "[data-testid='crm-hub-page']",
+        "[data-testid='crm-kpi-strip']",
+        "[data-testid='crm-quick-actions']",
+        "[data-testid='crm-timeline']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/outlet/crm",
+      "found": [
+        "[data-testid='crm-hub-page']",
+        "[data-testid='crm-kpi-strip']"
+      ],
+      "missing": [
+        "[data-testid='crm-quick-actions']",
+        "[data-testid='crm-timeline']"
+      ]
+    },
+    {
+      "route": "/outlet/daily-close",
+      "tours": [
+        "outlet-daily-close"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/daily-close",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/daily-orders",
+      "tours": [
+        "outlet-daily-orders"
+      ],
+      "targets": [
+        "[data-testid='daily-orders-content-kdo']",
+        "[data-testid='daily-orders-hub']",
+        "[data-testid='daily-orders-tabs']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/daily-orders",
+      "found": [
+        "[data-testid='daily-orders-content-kdo']",
+        "[data-testid='daily-orders-hub']",
+        "[data-testid='daily-orders-tabs']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/daily-sales",
+      "tours": [
+        "outlet-daily-sales"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/daily-sales",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/daily-sales/new",
+      "tours": [
+        "outlet-daily-sales"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/daily-sales/new",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/end-of-day",
+      "tours": [
+        "outlet-end-of-day"
+      ],
+      "targets": [
+        "[data-testid='end-of-day-workflow']",
+        "[data-testid='eod-finish']",
+        "[data-testid='eod-step-daily-sales']",
+        "[data-testid='eod-step-petty-cash']",
+        "[data-testid='eod-title']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/outlet/end-of-day?step=0",
+      "found": [
+        "[data-testid='end-of-day-workflow']",
+        "[data-testid='eod-title']"
+      ],
+      "missing": [
+        "[data-testid='eod-finish']",
+        "[data-testid='eod-step-daily-sales']",
+        "[data-testid='eod-step-petty-cash']"
+      ]
+    },
+    {
+      "route": "/outlet/home",
+      "tours": [
+        "outlet-home"
+      ],
+      "targets": [
+        "[data-testid='kpi-strip']",
+        "[data-testid='outlet-home-page']",
+        "[data-testid='quick-actions']",
+        "[data-testid='today-tasks']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/outlet",
+      "found": [
+        "[data-testid='outlet-home-page']"
+      ],
+      "missing": [
+        "[data-testid='kpi-strip']",
+        "[data-testid='quick-actions']",
+        "[data-testid='today-tasks']"
+      ]
+    },
+    {
+      "route": "/outlet/inventory/stock-check",
+      "tours": [
+        "outlet-stock-check"
+      ],
+      "targets": [
+        "[data-testid='outlet-stock-check']",
+        "[data-testid='stock-check-opname']",
+        "[data-testid='stock-kpi-low']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/inventory/stock-check",
+      "found": [
+        "[data-testid='outlet-stock-check']",
+        "[data-testid='stock-check-opname']",
+        "[data-testid='stock-kpi-low']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/inventory/transfers",
+      "tours": [
+        "outlet-stock-transfers"
+      ],
+      "targets": [
+        "[data-testid='outlet-stock-transfers']",
+        "[data-testid='transfers-kpi-transit']",
+        "[data-testid='transfers-new']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/inventory/transfers",
+      "found": [
+        "[data-testid='outlet-stock-transfers']",
+        "[data-testid='transfers-kpi-transit']",
+        "[data-testid='transfers-new']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/inventory/usage",
+      "tours": [
+        "outlet-usage-log"
+      ],
+      "targets": [
+        "[data-testid='outlet-usage-log']",
+        "[data-testid='usage-kpi-waste']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/inventory/usage",
+      "found": [
+        "[data-testid='outlet-usage-log']",
+        "[data-testid='usage-kpi-waste']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/loyalty/input-poin",
+      "tours": [
+        "outlet-loyalty-points"
+      ],
+      "targets": [
+        "[data-testid='cashier-add-points-button']",
+        "[data-testid='cashier-amount-input']",
+        "[data-testid='cashier-phone-input']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/outlet/loyalty/input-poin",
+      "found": [
+        "[data-testid='cashier-phone-input']"
+      ],
+      "missing": [
+        "[data-testid='cashier-add-points-button']",
+        "[data-testid='cashier-amount-input']"
+      ]
+    },
+    {
+      "route": "/outlet/loyalty/redeem",
+      "tours": [
+        "outlet-loyalty-redeem"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/loyalty/scan",
+      "tours": [
+        "outlet-loyalty-scan"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/petty-cash",
+      "tours": [
+        "outlet-petty-cash"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/petty-cash",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/reservations",
+      "tours": [
+        "outlet-reservation-list"
+      ],
+      "targets": [
+        "[data-testid='reservation-filters']",
+        "[data-testid='reservation-kpi-strip']",
+        "[data-testid='reservation-list-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/reservations",
+      "found": [
+        "[data-testid='reservation-filters']",
+        "[data-testid='reservation-kpi-strip']",
+        "[data-testid='reservation-list-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/reservations/new",
+      "tours": [
+        "outlet-reservation-form"
+      ],
+      "targets": [
+        "[data-testid='reservation-form-actions']",
+        "[data-testid='reservation-form-datetime-card']",
+        "[data-testid='reservation-form-deposit-card']",
+        "[data-testid='reservation-form-outlet-card']",
+        "[data-testid='reservation-form-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/reservations/new",
+      "found": [
+        "[data-testid='reservation-form-actions']",
+        "[data-testid='reservation-form-datetime-card']",
+        "[data-testid='reservation-form-deposit-card']",
+        "[data-testid='reservation-form-outlet-card']",
+        "[data-testid='reservation-form-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/sales-wizard",
+      "tours": [
+        "outlet-sales-wizard"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/daily-sales/new",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/urgent-purchase",
+      "tours": [
+        "outlet-urgent-purchase"
+      ],
+      "targets": [
+        "[data-testid='up-new']",
+        "[data-testid='urgent-purchase-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/urgent-purchase",
+      "found": [
+        "[data-testid='up-new']",
+        "[data-testid='urgent-purchase-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/outlet/voucher-redeem",
+      "tours": [
+        "outlet-loyalty-redeem"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/outlet/voucher-redeem",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner",
+      "tours": [
+        "owner-home"
+      ],
+      "targets": [
+        "[data-testid='owner-bottom-row']",
+        "[data-testid='owner-cockpit-page']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-mid-row']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner",
+      "found": [
+        "[data-testid='owner-bottom-row']",
+        "[data-testid='owner-cockpit-page']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-mid-row']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/ai-assistant",
+      "tours": [
+        "owner-ai-assistant"
+      ],
+      "targets": [
+        "[data-testid='exec-qa']",
+        "[data-testid='exec-qa-input']",
+        "[data-testid='exec-qa-suggest-0']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/ai-assistant",
+      "found": [
+        "[data-testid='exec-qa']",
+        "[data-testid='exec-qa-input']",
+        "[data-testid='exec-qa-suggest-0']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/briefing",
+      "tours": [
+        "owner-briefing"
+      ],
+      "targets": [
+        "[data-testid='briefing-hero']",
+        "[data-testid='briefing-text']",
+        "[data-testid='daily-briefing-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/briefing",
+      "found": [
+        "[data-testid='briefing-hero']",
+        "[data-testid='briefing-text']",
+        "[data-testid='daily-briefing-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/cash",
+      "tours": [
+        "owner-cash"
+      ],
+      "targets": [
+        "[data-testid='cash-kpi-runway']",
+        "[data-testid='cash-kpi-strip']",
+        "[data-testid='cash-position-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/cash",
+      "found": [
+        "[data-testid='cash-kpi-runway']",
+        "[data-testid='cash-kpi-strip']",
+        "[data-testid='cash-position-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/cockpit",
+      "tours": [
+        "owner-home"
+      ],
+      "targets": [
+        "[data-testid='owner-bottom-row']",
+        "[data-testid='owner-cockpit-page']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-mid-row']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/cockpit",
+      "found": [
+        "[data-testid='owner-bottom-row']",
+        "[data-testid='owner-cockpit-page']",
+        "[data-testid='owner-kpi-row']",
+        "[data-testid='owner-mid-row']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/owner/digest-settings",
+      "tours": [
+        "owner-digest-settings"
+      ],
+      "targets": [
+        "[data-testid='digest-settings-page']",
+        "[data-testid='digest-subscriptions-card']",
+        "[data-testid='owner-send-now']",
+        "[data-testid='telegram-setup-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/owner/digest-settings",
+      "found": [
+        "[data-testid='digest-settings-page']",
+        "[data-testid='digest-subscriptions-card']",
+        "[data-testid='owner-send-now']",
+        "[data-testid='telegram-setup-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement",
+      "tours": [
+        "procurement-home"
+      ],
+      "targets": [
+        "[data-testid='procurement-kpi-strip']",
+        "[data-testid='procurement-welcome']",
+        "[data-testid='qa-kanban']",
+        "[data-testid='qa-vc']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement",
+      "found": [
+        "[data-testid='procurement-kpi-strip']",
+        "[data-testid='procurement-welcome']",
+        "[data-testid='qa-kanban']",
+        "[data-testid='qa-vc']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/approvals",
+      "tours": [
+        "my-approvals"
+      ],
+      "targets": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/approvals",
+      "found": [
+        "[data-testid='my-approvals-page']",
+        "[data-testid='my-approvals-refresh']",
+        "[data-testid='stat-total']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/consolidation",
+      "tours": [
+        "procurement-consolidation"
+      ],
+      "targets": [
+        "[data-testid='cons-pr-list-card']",
+        "[data-testid='cons-preview-card']",
+        "[data-testid='pr-consolidation-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/consolidation",
+      "found": [
+        "[data-testid='cons-pr-list-card']",
+        "[data-testid='cons-preview-card']",
+        "[data-testid='pr-consolidation-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/gr",
+      "tours": [
+        "procurement-gr"
+      ],
+      "targets": [
+        "[data-testid='gr-list-header']",
+        "[data-testid='gr-list-page']",
+        "[data-testid='gr-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/gr",
+      "found": [
+        "[data-testid='gr-list-header']",
+        "[data-testid='gr-list-page']",
+        "[data-testid='gr-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/kanban",
+      "tours": [
+        "procurement-kanban"
+      ],
+      "targets": [
+        "[data-testid='wb-board']",
+        "[data-testid='wb-filter-days']",
+        "[data-testid='wb-filter-outlet']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/kanban",
+      "found": [
+        "[data-testid='wb-board']",
+        "[data-testid='wb-filter-days']",
+        "[data-testid='wb-filter-outlet']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/po",
+      "tours": [
+        "procurement-po-list"
+      ],
+      "targets": [
+        "[data-testid='po-filters-card']",
+        "[data-testid='po-list-page']",
+        "[data-testid='po-new']",
+        "[data-testid='po-status-tabs']",
+        "[data-testid='po-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/po",
+      "found": [
+        "[data-testid='po-filters-card']",
+        "[data-testid='po-list-page']",
+        "[data-testid='po-new']",
+        "[data-testid='po-status-tabs']",
+        "[data-testid='po-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/po-comparison",
+      "tours": [
+        "procurement-po-comparison"
+      ],
+      "targets": [
+        "[data-testid='po-cmp-table-card']",
+        "[data-testid='po-comparison-page']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/procurement/po-comparison",
+      "found": [
+        "[data-testid='po-comparison-page']"
+      ],
+      "missing": [
+        "[data-testid='po-cmp-table-card']"
+      ]
+    },
+    {
+      "route": "/procurement/pr",
+      "tours": [
+        "procurement-pr-list"
+      ],
+      "targets": [
+        "[data-testid='pr-filters-card']",
+        "[data-testid='pr-list-page']",
+        "[data-testid='pr-new']",
+        "[data-testid='pr-status-tabs']",
+        "[data-testid='pr-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/pr",
+      "found": [
+        "[data-testid='pr-filters-card']",
+        "[data-testid='pr-list-page']",
+        "[data-testid='pr-new']",
+        "[data-testid='pr-status-tabs']",
+        "[data-testid='pr-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/price-intelligence",
+      "tours": [
+        "procurement-price-intelligence"
+      ],
+      "targets": [
+        "[data-testid='price-intel-deviations-card']",
+        "[data-testid='price-intel-page']",
+        "[data-testid='price-intel-quarter']",
+        "[data-testid='price-intel-summary']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/procurement/price-intelligence",
+      "found": [
+        "[data-testid='price-intel-deviations-card']",
+        "[data-testid='price-intel-page']",
+        "[data-testid='price-intel-summary']"
+      ],
+      "missing": [
+        "[data-testid='price-intel-quarter']"
+      ]
+    },
+    {
+      "route": "/procurement/rfq",
+      "tours": [
+        "procurement-rfq"
+      ],
+      "targets": [
+        "[data-testid='create-rfq-btn']",
+        "[data-testid='rfq-filters']",
+        "[data-testid='rfq-list-page']",
+        "[data-testid='rfq-table-card']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/rfq",
+      "found": [
+        "[data-testid='create-rfq-btn']",
+        "[data-testid='rfq-filters']",
+        "[data-testid='rfq-list-page']",
+        "[data-testid='rfq-table-card']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/vendor-catalog",
+      "tours": [
+        "procurement-vendor-catalog"
+      ],
+      "targets": [
+        "[data-testid='vendor-catalog-item-search']",
+        "[data-testid='vendor-catalog-page']",
+        "[data-testid='vendor-catalog-vendor-search']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/procurement/vendor-catalog",
+      "found": [
+        "[data-testid='vendor-catalog-page']",
+        "[data-testid='vendor-catalog-vendor-search']"
+      ],
+      "missing": [
+        "[data-testid='vendor-catalog-item-search']"
+      ]
+    },
+    {
+      "route": "/procurement/vendor-comparison",
+      "tours": [
+        "procurement-vendor-compare"
+      ],
+      "targets": [
+        "body"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/vendor-comparison",
+      "found": [
+        "body"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/vendor-recommend",
+      "tours": [
+        "procurement-vendor-recommend"
+      ],
+      "targets": [
+        "[data-testid='vrec-page']",
+        "[data-testid='vrec-page-candidates']",
+        "[data-testid='vrec-search-card']"
+      ],
+      "verdict": "PARTIAL",
+      "final_url": "http://localhost:3000/procurement/vendor-recommend",
+      "found": [
+        "[data-testid='vrec-page']",
+        "[data-testid='vrec-search-card']"
+      ],
+      "missing": [
+        "[data-testid='vrec-page-candidates']"
+      ]
+    },
+    {
+      "route": "/procurement/vendor-scorecard",
+      "tours": [
+        "procurement-vendor-scorecard"
+      ],
+      "targets": [
+        "[data-testid='scorecard-period']",
+        "[data-testid='scorecard-table-card']",
+        "[data-testid='vendor-scorecard-page']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/vendor-scorecard",
+      "found": [
+        "[data-testid='scorecard-period']",
+        "[data-testid='scorecard-table-card']",
+        "[data-testid='vendor-scorecard-page']"
+      ],
+      "missing": []
+    },
+    {
+      "route": "/procurement/vendors",
+      "tours": [
+        "procurement-vendors"
+      ],
+      "targets": [
+        "[data-testid='procurement-vendors-page']",
+        "[data-testid='vendor-add-btn']",
+        "[data-testid='vendor-quicklinks']",
+        "[data-testid='vendor-search-bar']"
+      ],
+      "verdict": "PASS",
+      "final_url": "http://localhost:3000/procurement/vendors",
+      "found": [
+        "[data-testid='procurement-vendors-page']",
+        "[data-testid='vendor-add-btn']",
+        "[data-testid='vendor-quicklinks']",
+        "[data-testid='vendor-search-bar']"
+      ],
+      "missing": []
+    }
+  ]
+}
