@@ -268,6 +268,8 @@ async def seed_payroll_cycles(db, outlets, employees, admin_id: str) -> int:
                 employees_lines.append({
                     "employee_id": emp["id"],
                     "employee_name": emp.get("full_name") or emp.get("name", "Karyawan"),
+                    "name": emp.get("full_name") or emp.get("name", "Karyawan"),
+                    "basic": round(gross, 2), "allowances_total": 0, "gross": round(gross, 2),
                     "position": emp.get("position", "Staff"),
                     "gross_salary": round(gross, 2),
                     "bpjs_employee": bpjs_emp,

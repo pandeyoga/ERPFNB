@@ -1,0 +1,38 @@
+{
+  "summary": "Tested CTL-10 (Salary Master single source) + Cuti Tetap Digaji features. Backend: 24/24 mongomock regression pass + 13/13 NEW live integration tests pass (covering salary_summary payload, employee legacy-field rejection, invalid status/missing outlet rejection, salary master negative/PTKP validation, payroll workflow with leave employees, SoD, cancel with reason, missing-salary-master block). Frontend smoke: admin login → /admin/master/employees shows Gaji Pokok (Salary Master) column with Rp values, 40 master-edit buttons; edit dialog opens with data-testid=employee-salary-readonly panel + employee-salary-master-link pointing to /hr/payroll?tab=salary; NO basic_salary/gross_salary inputs; saving edit succeeds. /hr/payroll list shows 15 rows, 10 hr-payroll-post buttons for approved cycles; detail dialog shows hr-payroll-detail-post + hr-payroll-detail-cancel for approved cycles (approve/warnings absent because status=approved and no leave employees seeded — correct behavior).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "PayrollDetailDialog per-employee table", "issue": "Karyawan (name), Pokok, Tunj., Gross columns render '-' for LEGACY seeded payroll cycles because the dialog reads fields e.name/e.basic/e.allowances_total/e.gross while seed docs use employee_name/gross_salary/allowances (list of dicts). Newly generated cycles work correctly. Suggest UI fallback: e.name || e.employee_name, e.basic ?? e.gross_salary, or migrate seeded cycles to the new schema.", "selector": "[data-testid^='payroll-emp-'] rows", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verification_details": {
+    "mongomock_regression": "24/24 PASS — cd /app/tests/audit_regression && ERP_BACKEND=/app/backend python -m pytest -q test_audit_fixes.py",
+    "ctl10_live_new": "13/13 PASS — REACT_APP_BACKEND_URL=<url> python -m pytest /app/backend/tests/test_ctl10_salary_master_live.py -v",
+    "frontend_smoke": "admin login → employees master salary column + read-only panel + no legacy inputs; save works. Salary Master tab loads (no leave/missing badges because seed employees are all active with masters). Payroll detail dialog shows correct post+cancel buttons for approved cycles."
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ctl10_salary_master_live.py",
+    "/app/tests/audit_regression/test_audit_fixes.py"
+  ],
+  "action_items": [
+    "OPTIONAL/LOW: Add UI fallback in PayrollDetailDialog for legacy field names (e.name || e.employee_name; e.basic ?? e.gross_salary; e.allowances_total ?? sum(e.allowances)) so seeded 2026-07/08/09 payroll cycles display employee names + amounts; OR migrate seed docs in seed_demo.py to new schema."
+  ],
+  "critical_code_review_comments": [
+    "cycle.py:114-118 raises ValidationError with concatenated employee names — good UX but consider chunking to avoid huge 4xx bodies in orgs with thousands of employees.",
+    "cycle.py:293-298 open_payroll_covering is a nice guard for SC posting; ensure service_charge.assert_payroll_open uses it consistently (it does per files_of_reference).",
+    "PayrollDetailDialog legacy-field mismatch (see frontend_issues.ui_bugs) is the only visible regression; new cycles created via API include name/basic/allowances_total so it self-heals for future data."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_ctl10_salary_master_live.py (NEW — 13 live integration tests)"
+  ],
+  "success_rate": {"backend": "100% (24/24 mongomock + 13/13 ctl10 live = 37/37)", "frontend": "pass (1 minor legacy-schema display gap)"},
+  "test_credentials": "admin@fnbgroup.id / Demo@2026, hr.manager@fnbgroup.id / Demo@2026 (per /app/memory/test_credentials.md).",
+  "seed_data_creation": "Test suite creates payroll cycles for 2027-02, 2027-03 (cancelled+regenerated), 2027-04-blocked-by-missing-SM. Cleanup fixture cancels leftover draft/approved cycles. One TEST_ employee (no Salary Master) is created and set to terminated by test_payroll_blocked_when_active_employee_missing_salary_master; NOT auto-deleted (leaves ~1 terminated TEST_ employee — negligible; can be pruned by future agent).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Four regression suites now exist, all pass 100%: (1) /app/tests/audit_regression/test_audit_fixes.py (24 mongomock), (2) /app/backend/tests/test_audit_phase2_live.py (29 live), (3) /app/backend/tests/test_audit_phase2c_live.py (19 live), (4) NEW /app/backend/tests/test_ctl10_salary_master_live.py (13 live). Seed payroll cycles PAY-SEED-0001..0015 use legacy schema (employee_name, gross_salary, allowances-list) so the PayrollDetailDialog per-employee table currently shows '-' for name/pokok/gross/tunj columns; newly generated cycles work correctly. Advise main agent to add UI fallback OR reseed via scripts/seed_reset.sh after applying the current cycle.py generator so seed docs get the new keys.",
+  "rca of the issue": "Legacy seed payroll cycle documents were persisted with the previous schema keys (employee_name/gross_salary/allowances=[{code,name,amount}] list). The refactored PayrollDetailDialog and cycle.py generator emit new keys (name/basic/allowances_total + allowances list). Dialog does not have fallback, so old rows render '-'. Two fixes possible: (a) UI fallback in PayrollDetailDialog render callbacks, or (b) reseed. No backend logic bug — new-cycle generation is correct (verified in test_payroll_leave_employee_included_and_workflow which asserts take_home>0 and employment_status='leave' for the leave employee)."
+}

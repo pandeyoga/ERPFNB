@@ -162,7 +162,13 @@ function PayrollDetailDialog({ pid, open, onOpenChange, outlets, canApprove, onP
             {/* Per-employee table */}
             <div className="glass-card overflow-hidden">
               <DataTable
-                rows={(data.employees || []).map((e, idx) => ({ ...e, _idx: idx, _key: idx }))}
+                rows={(data.employees || []).map((e, idx) => ({
+                  ...e, _idx: idx, _key: idx,
+                  // legacy seeded cycles used employee_name/gross_salary
+                  name: e.name ?? e.employee_name, basic: e.basic ?? e.gross_salary,
+                  gross: e.gross ?? e.gross_salary,
+                  allowances_total: e.allowances_total ?? (typeof e.allowances === "number" ? e.allowances : 0),
+                }))}
                 keyField="_key"
                 rowTestIdPrefix="payroll-emp"
                 className="text-xs"

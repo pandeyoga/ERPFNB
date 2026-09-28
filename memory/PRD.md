@@ -344,3 +344,10 @@ Hasil: **3 bug ASLI (FIXED)**, **19 artefak** (false-positive testing lama yg ta
 - Skrip koreksi data historis: `backend/scripts/audit_data_correction.py` (dry-run/--apply).
 - Tes: 18 mongomock + 29 live phase2 + 19 live phase2c = 66/66 PASS (iteration_13).
 - Sisa (P2): CTL-02/03/10/11/15, SEC-08/18..21, SSOT lain, RPT-06..10, FE-03..06, DUP-*, INV-01 (butuh transaksi Mongo). Pajak menunggu konsultan.
+
+
+## 2026-09-28 — Iterasi 3 (CTL-10 selesai + analisis gap HR/payroll)
+- Karyawan berstatus Cuti tetap masuk payroll; karyawan terminated & yang join setelah periode dikeluarkan.
+- Salary Master = satu-satunya sumber gaji. Migrasi otomatis & idempoten saat startup (`services/_hr_payroll/salary_migration.py`); field gaji di employees dihapus dan ditolak API; form karyawan menampilkan gaji read-only.
+- Gap diperbaiki: tombol Approve di UI Payroll/SC/Insentif, posting atomik, pembatalan payroll, snapshot SC/insentif, kasbon per baris, blokir karyawan tanpa Salary Master, user demo HR. Detail: PLAN.md §13.
+- Backlog: pro-rata join/keluar di tengah bulan, SoD approve SC/insentif, tombol UI unlock budget & cancel RFQ, item Fase 2c.
