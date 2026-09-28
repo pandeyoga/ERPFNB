@@ -1,0 +1,89 @@
+{
+  "theme_archetype": {
+    "domain": "Enterprise ERP Dashboard / Finance",
+    "theme": "Light + Dark (Hybrid Support)",
+    "archetype": "Archetype 4 (Swiss & High-Contrast) + Crystal Glassmorphism",
+    "vibe": "Cinematic, Executive, Precision, Professional",
+    "design_dna": "Retaining Torado Group's existing glassmorphism and aurora (purple to indigo) gradient, but elevating it with Apple-level optical clarity, crisp 1px inner borders, and high-density functional typography."
+  },
+  "colors": {
+    "light": {
+      "background": "#F8FAFC",
+      "surface_base": "rgba(255, 255, 255, 0.7)",
+      "surface_border": "rgba(0, 0, 0, 0.05)",
+      "aurora_gradient": "linear-gradient(135deg, #9333ea 0%, #4f46e5 100%)",
+      "text_primary": "#0F172A",
+      "text_secondary": "#64748B",
+      "positive": "#16a34a",
+      "positive_bg": "rgba(22, 163, 74, 0.1)",
+      "negative": "#dc2626",
+      "negative_bg": "rgba(220, 38, 38, 0.1)"
+    },
+    "dark": {
+      "background": "#020617",
+      "surface_base": "rgba(15, 23, 42, 0.6)",
+      "surface_border": "rgba(255, 255, 255, 0.1)",
+      "aurora_gradient": "linear-gradient(135deg, #a855f7 0%, #6366f1 100%)",
+      "text_primary": "#F8FAFC",
+      "text_secondary": "#94A3B8",
+      "positive": "#22c55e",
+      "positive_bg": "rgba(34, 197, 94, 0.15)",
+      "negative": "#ef4444",
+      "negative_bg": "rgba(239, 68, 68, 0.15)"
+    }
+  },
+  "typography": {
+    "primary_font": "Inter",
+    "tabular_font": "JetBrains Mono or IBM Plex Mono (Fallback: Inter with 'tabular-nums')",
+    "rules": {
+      "headings": "Tracking tight (tracking-tighter), leading-none, semi-bold to bold. Keep sizes moderate (max text-3xl for dashboards) to maintain ERP density.",
+      "financial_figures": "MUST use 'tabular-nums' utility class to ensure character widths match, preventing jumping numbers in tables and waterfalls. Align RIGHT.",
+      "labels": "text-xs, uppercase, tracking-[0.05em], text-secondary."
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Dense but calm. Eliminate unnecessary padding in data tables to show more rows, but maintain generous padding around the main page layout and KPI cards.",
+    "dashboard_grid": "Grid layout (grid-cols-1 md:grid-cols-2 xl:grid-cols-4) with gap-4 or gap-6 for KPI cards.",
+    "surfaces": "Glassmorphism components MUST use 'backdrop-blur-xl', 'backdrop-saturate-150', and a 1px border. Shadow should be soft 'shadow-[0_8px_32px_rgba(0,0,0,0.04)]'."
+  },
+  "components": {
+    "kpi_executive_cards": {
+      "purpose": "4 KPI metric cards (Revenue, Gross Profit, Net Profit, Δ Net).",
+      "structure": "Glass-card with top-left metric title, top-right Lucide icon (opacity 50). Center large tabular number. Bottom section for Compare delta (chip with positive/negative color).",
+      "interactions": "MUST be clickable. Use 'cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200'. Add 'group' class to card and 'group-hover:text-indigo-500' to icons for subtle feedback."
+    },
+    "waterfall_chart": {
+      "purpose": "Profit Walk visualization from Revenue down to Net Profit.",
+      "implementation_recharts": "1. Map data to compute 'running' totals. 2. Pass '[low, high]' array to Recharts <Bar dataKey=\"range\"> to make bars float. 3. Use custom 'shape' or 'cell' to color Gains (Green/Aurora), Losses (Red/Orange), and Totals (Solid Aurora).",
+      "connector_lines": "Recharts doesn't natively draw connector lines. Create a custom SVG overlay or use <ReferenceLine> / <Customized> component to draw thin lines (stroke-width 1, dashed, border color) connecting the top of the previous bar to the top of the next.",
+      "labels": "Include direct value labels on top of bars. Do not rely solely on tooltips for executive ERPs."
+    },
+    "expandable_financial_table": {
+      "purpose": "Detail per Stage table (Stage | Period | Compare | Δ | Δ% | Running) with high usability.",
+      "structure": "Use Shadcn Table. Financial columns MUST be text-right and tabular-nums. Use sticky header.",
+      "interactions": "Rows must have 'hover:bg-muted/50 cursor-pointer'. Add a ChevronRight icon to the first cell that rotates 90deg when expanded.",
+      "expanded_state": "When clicked, insert a conditional <TableRow> containing a full-width <TableCell colSpan={6}>. Inside, render a sub-table or bento-style breakdown (e.g., Drivers, By-Outlet) with a slightly darker/indented background to indicate hierarchy."
+    },
+    "daily_sales_wizard": {
+      "purpose": "Consolidated entry wizard replacing disjointed menus.",
+      "structure": "Horizontal Stepper (Channel -> Revenue -> Tax -> Payment -> Review).",
+      "ui_pattern": "Use active/inactive step indicators (pills). The active step uses the 'pill-active' aurora gradient. Forms inside should use Shadcn form components, laid out cleanly in a max-w-2xl container. Add clear 'Next' and 'Back' button placement at the bottom."
+    },
+    "top_drivers_list": {
+      "purpose": "Quick snapshot of what is impacting the numbers the most.",
+      "structure": "Dense list layout. Left: Driver name + subtle category badge. Right: Monetary impact (green/red) + sparkline if possible."
+    }
+  },
+  "motion_and_interactions": {
+    "page_transitions": "Framer motion on page load: initial opacity-0 translate-y-4, animate to opacity-100 translate-y-0. Stagger children by 0.05s.",
+    "hover_states": "Tables: 'hover:bg-white/5' (dark) or 'hover:bg-black/5' (light). Buttons: Subtle scale-up 'active:scale-95'.",
+    "skeleton_loading": "Use Shadcn <Skeleton>. Instead of plain gray pulses, give skeletons a subtle shimmer matching the aurora vibe (e.g., purple/indigo hue at 10% opacity)."
+  },
+  "instructions_to_main_agent": {
+    "1": "DO NOT use standard Shadcn flat cards for the dashboard. Apply the glassmorphism utility classes defined here to match the 'Torado Group' visual DNA.",
+    "2": "When building the Recharts waterfall, strictly follow the [low, high] array logic for floating bars. Render connector lines manually using the Recharts <Customized> component if possible.",
+    "3": "For the expandable table, ensure 'tabular-nums' is applied to all number columns. Build the expanded row as a seamless extension of the parent row.",
+    "4": "Consolidate the Daily Sales and Sales Wizard into a single Stepper component. Use Framer Motion (AnimatePresence) to slide between steps.",
+    "5": "Testing: Add `data-testid` attributes to all interactive elements (e.g., `data-testid=\"kpi-card-revenue\"`, `data-testid=\"expand-row-btn\"`)."
+  }
+}

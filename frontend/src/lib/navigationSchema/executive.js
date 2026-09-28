@@ -1,0 +1,111 @@
+/** navigationSchema/executive.js — Executive portal navigation. */
+
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  Package,
+  Settings,
+  FileText,
+  ScrollText,
+  CreditCard,
+  Calculator,
+  FileCheck,
+  Calendar,
+  Banknote,
+  Receipt,
+  TrendingUp,
+  Wallet,
+  UserCog,
+  DollarSign,
+  Gift,
+  ClipboardList,
+  ShoppingCart,
+  Truck,
+  Store,
+  BarChart3,
+  Boxes,
+  ArrowLeftRight,
+  ClipboardCheck,
+  WrenchIcon,
+  Crown,
+  Sparkles,
+  Brain,
+  MessageSquare,
+  Shield,
+  Activity,
+  Star,
+  AlertTriangle,
+  Layers,
+  BookOpen,
+  Archive,
+  Target,
+  Workflow,
+  Coffee,
+  ListChecks,
+  History,
+  BellRing,
+  ChevronRight,
+  Landmark,
+  LineChart,
+  PiggyBank,
+  QrCode,
+  FileSpreadsheet,
+  CalendarCheck,
+} from "lucide-react";
+
+// eslint-disable-next-line no-unused-vars
+export const executiveNav = {
+  id: "executive",
+  name: "Executive Portal",
+  sections: [
+    {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      items: [
+        { id: "owner-home", name: "Owner Home", path: "/executive" },
+        { id: "analytics-dashboard", name: "Analytics Dashboard", path: "/executive/analytics" },
+        { id: "approval-center-exec", name: "Approval Center", path: "/executive/approvals" },
+        { id: "budget-approvals", name: "Budget Approvals", path: "/executive/budget-approvals" },
+      ],
+    },
+    {
+      id: "outlet-budget",
+      name: "Outlet Budget (KDO/FDO/BDO)",
+      icon: PiggyBank,
+      items: [
+        { id: "outlet-budget-set", name: "Set Budget Outlet", path: "/executive/outlet-budgets" },
+        { id: "outlet-budget-monitor", name: "Budget Monitor", path: "/executive/budget-monitor" },
+        { id: "outlet-budget-increase", name: "Request Penambahan", path: "/executive/budget-increase-requests", badge: "Approve" },
+      ],
+    },
+    {
+      id: "performance",
+      name: "Performance Analytics",
+      icon: TrendingUp,
+      items: [
+        { id: "analytics-hub", name: "Performance Analytics", path: "/executive/analytics-hub" },
+        // Brand Mix · Profit Walk · Period Compare are in-page TABS of
+        // /executive/analytics-hub (consolidated to keep Executive sidebar <=12 items).
+      ],
+    },
+    {
+      id: "ai-insights",
+      name: "AI Insights",
+      icon: Brain,
+      items: [
+        { id: "exec-qa", name: "Executive Q&A", path: "/executive/ai-qa" },
+        { id: "anomaly", name: "Anomaly Detection", path: "/executive/anomaly" },
+      ],
+    },
+    {
+      id: "reservations-exec",
+      name: "Reservasi",
+      icon: CalendarCheck,
+      items: [
+        { id: "reservation-summary", name: "Ringkasan Reservasi", path: "/executive/reservations" },
+      ],
+    },
+  ],
+};

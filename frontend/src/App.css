@@ -1,0 +1,112 @@
+/* Reset App.css — use index.css for design system */
+.App { min-height: 100vh; position: relative; z-index: 1; }
+
+/* ============================================================
+   PUBLIC COMPRO — Design System
+   CSS Design Award Level Interactions
+============================================================ */
+
+/* Hide default cursor on public site */
+.public-site * { cursor: none !important; }
+.public-site input, .public-site textarea, .public-site select { cursor: text !important; }
+
+/* Custom Cursor */
+.public-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background: #1C1510;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+  transition: background 0.2s;
+}
+
+/* Marquee */
+.compro-marquee {
+  animation: compro-marquee-scroll 28s linear infinite;
+  will-change: transform;
+}
+@keyframes compro-marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.compro-marquee:hover { animation-play-state: paused; }
+
+/* Smooth scrollbar */
+.public-site {
+  scroll-behavior: smooth;
+}
+
+/* Clip-path text reveal */
+.compro-text-reveal {
+  overflow: hidden;
+}
+.compro-text-reveal > * {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: compro-reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes compro-reveal-up {
+  to { transform: translateY(0); }
+}
+
+/* Image hover overlay */
+.compro-img-hover {
+  overflow: hidden;
+  position: relative;
+}
+.compro-img-hover img,
+.compro-img-hover .compro-img-inner {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.compro-img-hover:hover img,
+.compro-img-hover:hover .compro-img-inner {
+  transform: scale(1.06);
+}
+
+/* Drag gallery - hide scrollbar */
+.compro-drag-gallery {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.compro-drag-gallery::-webkit-scrollbar { display: none; }
+
+/* Section divider line */
+.compro-divider {
+  width: 40px;
+  height: 1px;
+  background: #C8A96E;
+  display: block;
+  margin: 24px 0;
+}
+
+/* Underline hover link */
+.compro-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.compro-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.compro-link:hover::after { width: 100%; }
+
+/* Page transition */
+.compro-page-enter { opacity: 0; transform: translateY(12px); }
+.compro-page-enter-active { opacity: 1; transform: none; transition: opacity 0.4s ease, transform 0.4s ease; }
+.compro-page-exit { opacity: 1; }
+.compro-page-exit-active { opacity: 0; transition: opacity 0.25s ease; }
+

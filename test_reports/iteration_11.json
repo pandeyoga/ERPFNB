@@ -1,0 +1,32 @@
+{
+  "summary": "Phase 2a fix verification: all 5 fixes (C1 global search, C2 endpoint paths, A1 AP settlement, A2 PO cumulative received, A3 voucher grand_total) verified end-to-end via API + frontend UI smoke.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "verification_details": {
+    "C1_global_search": "PASS - /api/search?q=kopi returned Kopi Arabica Bali (item) + PT Sinar Kopi Indonesia (vendor). Frontend called /api/search (not /api/api/search). Modal displayed both categories. No 'Tidak ada hasil'.",
+    "C2_endpoint_paths": "PASS - /api/master/coa, /api/master/brands, /api/inventory/opname/{id} all reachable. Frontend pages (journal-ledger, budget-vs-actual, inventory/opname) loaded with zero 4xx API calls. Opname detail route returns proper NOT_FOUND envelope (route registered).",
+    "A1_ap_settlement": "PASS - Full workflow: PO->GR->payment(submit/approve/mark-paid). ap_ledgers doc for gr_id has balance=0, status='paid'. goods_receipts.payment_status='paid', paid_amount=60000.",
+    "A2_po_cumulative": "PASS - PO(100) + GR1(60) => status='partial'; + GR2(40) => status='received'.",
+    "A3_voucher_grandtotal": "PASS - services.outlet_service._calc_grand_total(rev=100000, sc=5000, tax=11000, voucher=20000) = 96000. Daily-sales draft with voucher_discount=20000, payments=80000 saved with grand_total=80000; submit did not fail with 'Total pembayaran tidak cocok'."
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2a_fixes.py",
+    "/app/test_reports/pytest/phase2a_fixes.xml",
+    "/app/scripts/phase2a_live_check.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "test_phase2a_fixes.py opname detail test skips when no seed data exists; consider seeding at least one opname session in demo data for future regression coverage.",
+    "phase2a_live_check.py contains DB cleanup logic mixed with API assertions - fine for a one-off script but ideally moved into a pytest fixture with teardown."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2a_fixes.py (new)"
+  ],
+  "success_rate": {"backend": "100% (10/10 executed, 1 skipped due to missing seed data)", "frontend": "100% smoke (login, global search, 3 target pages loaded clean)"},
+  "test_credentials": "admin@fnbgroup.id / Demo@2026, cfs.manager@fnbgroup.id / Demo@2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Test PO/GR/payment created & cleaned up by phase2a_live_check.py. Daily-sales draft created by TestA3 and cleaned via db.daily_sales.delete_one.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All Phase 2a P0 fixes verified. Reusable pytest file at /app/backend/tests/test_phase2a_fixes.py covers C1/C2/A3 via HTTP. A1/A2 covered by /app/scripts/phase2a_live_check.py (has DB cleanup). Opname detail route works but no seed data exists - seed at least one session for full coverage.",
+  "rca_of_the_issue": "N/A - verification pass, no bugs found."
+}

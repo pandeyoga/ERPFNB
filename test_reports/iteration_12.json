@@ -1,0 +1,38 @@
+{
+  "summary": "Post audit-fix batch validation for AUDIT_2026-09-27_PHASE2. Ran the 13-test mongomock regression suite (13/13 PASS) and authored a live-API pytest suite covering 15 items from the review request (29/29 PASS after minor fixes). Frontend smoke on Finance portal passed: login, Payments Hub (no PR tab), /finance/payment-requests redirects to hub, Trial Balance and P&L pages render with data.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/reports/inventory/stock-balance.xlsx", "issue": "Was 500ing with KeyError: 'unit' in reports_excel_inventory_service.py:120 for aggregation groups where inventory_movements had no 'unit' field. Fixed defensively (bal['_id'].get('unit') or '') so export works for existing data.", "priority": "MEDIUM"}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "verification_details": {
+    "audit_regression": "13/13 PASS — cd /app/tests/audit_regression && ERP_BACKEND=/app/backend python -m pytest -q test_audit_fixes.py",
+    "live_api_29_tests": "29/29 PASS — /app/backend/tests/test_audit_phase2_live.py against public REACT_APP_BACKEND_URL. Covers: seed logins (6 users), P0-04 legacy PR endpoints → 410 (POST/submit/approve/reject/mark-paid/helpers), list still 200, SEC-05 quick-action outlet-manager (budget/leave/advance → 403, stock_transfer → 400/422), SEC-01 loyalty add-points (order_ref required, >50M rejected), SEC-06 procurement scoping (list PR/PO/GR of other outlet → 403), Trial Balance (rows include type/opening/closing, balanced), P&L returns 'sections', Excel exports (P&L group, Trial Balance, PO summary, Stock balance) all return non-empty PK/xlsx, SEC-09 refresh rotation + REFRESH_REVOKED on reuse.",
+    "frontend_smoke": "finance@fnbgroup.id login OK; /finance/payments-hub loads (no 'Payment Request' text visible); /finance/payment-requests → /finance/payments-hub?tab=payments; TB and P&L pages route to /finance/reports and render with real data (Rp 1.547.390.000 revenue etc); no console/pageerror; no error banners in DOM."
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_audit_phase2_live.py",
+    "/app/tests/audit_regression/test_audit_fixes.py",
+    "/app/test_reports/pytest/audit_phase2_live.xml"
+  ],
+  "action_items": [
+    "Main agent: review the minor defensive fix I made in /app/backend/services/reports_excel_inventory_service.py (KeyError 'unit' on stock-balance.xlsx). The root cause is likely inventory_movements without a 'unit' field in seed/legacy data — consider back-filling unit from items on ingestion instead of only relying on movement.unit."
+  ],
+  "critical_code_review_comments": [
+    "reports_excel_inventory_service.py: aggregation uses movement.unit but many movements likely lack that field (default None); the group key then loses distinction between units — consider computing unit from items lookup instead of grouping by movement.unit.",
+    "test_audit_phase2_live.py assumes response envelope {success,data:...}; a shared helper in the repo (or a lightweight test client) would remove per-test unwrapping.",
+    "Excel report endpoints are namespaced inconsistently (/api/reports/finance/*.xlsx and /api/finance/*/export/xlsx). Consolidating under /api/reports/* is safer for permission scoping (already using require_any_perm(_REPORT_READ_PERMS))."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_audit_phase2_live.py (new — 29 live integration tests)",
+    "/app/backend/services/reports_excel_inventory_service.py (defensive .get for _id.unit / item_id / outlet_id)"
+  ],
+  "success_rate": {"backend": "100% (29/29 live + 13/13 regression)", "frontend": "100% smoke (login + 4 target routes render)"},
+  "test_credentials": "All seed users use Demo@2026 (see /app/memory/test_credentials.md). Tokens cached in tests to respect 30/min login rate limit.",
+  "seed_data_creation": "None. Existing seed data used. No writes to production data during live tests (all 410/403/400 negative-path calls or read-only report GETs).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Two regression suites now exist: (1) /app/tests/audit_regression/test_audit_fixes.py (mongomock, 13 tests, covers all P0 audit fixes) — run with `cd /app/tests/audit_regression && ERP_BACKEND=/app/backend python -m pytest -q test_audit_fixes.py`; (2) /app/backend/tests/test_audit_phase2_live.py (live API against REACT_APP_BACKEND_URL, 29 tests) — run with `REACT_APP_BACKEND_URL=<url> python -m pytest /app/backend/tests/test_audit_phase2_live.py -v`. Login helper handles wrapped {success,data:...} envelope and caches tokens. Excel endpoints live under /api/reports/finance/*.xlsx and /api/reports/inventory/*.xlsx (NOT /api/finance/*/export). Items 5,8,9,11,14 from the review request (advance approval SoD, GR remaining/over-receipt validation, payment SoD flow, payroll dual-approver + duplicate-period 409, refresh rotation) are covered by test_audit_fixes.py against mongomock; live integration tests focus on RBAC gates and reports. Frontend GRForm prefill-from-PO was not exercised via Playwright because it requires seeded approved PO with remaining qty; recommend main agent seed one for future UI regression."
+}

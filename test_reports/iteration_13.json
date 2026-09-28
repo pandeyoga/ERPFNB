@@ -1,0 +1,38 @@
+{
+  "summary": "Continuation testing for AUDIT Phase 2b-2c. Existing regression suites (18-test mongomock + 29-test live) still pass 100%. Added new live-integration suite /app/backend/tests/test_audit_phase2c_live.py (19 tests) covering RBAC sync (finance.efaktur/asset), CTL-09 master masking + bank-accounts guard + regex-safe q + number-series delete, FIN-05 petty cash (gl_account required, amount>0, SoD blocks self-approve, other user posts JE), FIN-09 payment validation shape, SEC-02 loyalty perms (procurement=403, outlet manager ok, verify guard), CTL-08 period list, and uploads (POST /api/uploads + GET, POST /api/admin/cms/upload-image). All 19 pass. Frontend smoke: finance@fnbgroup.id login → /outlet/petty-cash renders with data-testid='petty-cash-page', balance widget, 5 outlets, empty-state message. New transaction dialog button is disabled in aggregate mode by design (needs outlet selection); testids pc-direction-in, pc-direction-out, and pc-approve-<id> confirmed present in source. Payments Hub and Procurement PR pages route without console pageerrors (a few 403s on background fetches for scopes not held by finance user — not blocking).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Outlet Petty Cash — aggregate mode", "issue": "'Transaksi Baru' button disabled when 'Semua Outlet' is selected. Empty-state text 'Pilih outlet spesifik...' is correct guidance, but consider making the button auto-focus outlet selector on click for discoverability.", "affected_selectors": ["[data-testid='pc-new']"]}
+    ],
+    "design_issues": []
+  },
+  "verification_details": {
+    "mongomock_regression": "18/18 PASS — cd /app/tests/audit_regression && ERP_BACKEND=/app/backend python -m pytest -q test_audit_fixes.py",
+    "phase2_live_regression": "29/29 PASS — REACT_APP_BACKEND_URL=<url> python -m pytest /app/backend/tests/test_audit_phase2_live.py -q",
+    "phase2c_live_new": "19/19 PASS — REACT_APP_BACKEND_URL=<url> python -m pytest /app/backend/tests/test_audit_phase2c_live.py -v",
+    "frontend_smoke": "finance login → /outlet/petty-cash renders; direction/approve testids confirmed in source (line 200, 366-370 of PettyCashList.jsx). Payments Hub + Procurement PR load without JS errors."
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_audit_phase2c_live.py",
+    "/app/backend/tests/test_audit_phase2_live.py",
+    "/app/tests/audit_regression/test_audit_fixes.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "FINANCE_MANAGER role currently lacks outlet.daily_sales.read, so finance users cannot CREATE petty cash even though they can APPROVE. Not a bug per se (create is an outlet-manager action) but the review request implied finance user would test the FIN-05 flow end-to-end; consider adding outlet.daily_sales.read to FINANCE_MANAGER GRANTS if finance UX is meant to include petty cash entry.",
+    "PettyCashList.jsx: 'Transaksi Baru' button is silently disabled in aggregate mode without a tooltip. Add a title or aria-disabled reason for a11y.",
+    "test_audit_phase2c_live.py::test_purchase_without_gl_account_400 verifies FIN-05 gl_account requirement; the 400 error uses `field='gl_account_id'` (good), but the router-level require_perm still passes through without checking outlet_scope of `outlet_id` in payload for admin — acceptable since admin has '*' but worth adding an outlet scope check for defense in depth."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_audit_phase2c_live.py (NEW — 19 live integration tests for Phase 2b-2c)"
+  ],
+  "success_rate": {"backend": "100% (18/18 mongomock + 29/29 phase2 + 19/19 phase2c = 66/66)", "frontend": "smoke pass"},
+  "test_credentials": "All seed users Demo@2026 per /app/memory/test_credentials.md. Tokens are cached in-suite (30/min login rate limit).",
+  "seed_data_creation": "Test suites create TEST_-prefixed petty cash replenish rows (Rp 1 each) via /api/outlet/petty-cash and 2 small PNG uploads (/api/uploads, /api/admin/cms/upload-image). Not cleaned up — negligible footprint but callable via TEST_ prefix if needed.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Three regression suites now exist and all pass 100%: (1) mongomock /app/tests/audit_regression/test_audit_fixes.py (18 tests, P0/P1 unit-level), (2) live /app/backend/tests/test_audit_phase2_live.py (29 tests, RBAC/reports/legacy PR retirement), (3) NEW live /app/backend/tests/test_audit_phase2c_live.py (19 tests, RBAC sync + CTL-09 master + FIN-05 petty cash SoD + SEC-02 loyalty perms + uploads). Deep FIN-03 voucher, FIN-06 urgent purchase petty method, FIN-09 payment gr/wh cross-checks, CTL-07 budget delete/unlock, CTL-08 period close block with submitted daily sales, A8 inventory transfer double-send, and loyalty redeem-insufficient-points paths were NOT exercised via live suite because they require heavier seed setup (approved GR + open period + inventory items + loyalty customer with points). All are already covered by mongomock test_audit_fixes.py — recommend those remain the source of truth. FINANCE_MANAGER does not have outlet.daily_sales.read so cannot create petty cash from Finance portal UI; only outlet manager can — main agent should confirm this is intentional.",
+  "rca of the issue": "N/A — no new bugs discovered in this iteration."
+}

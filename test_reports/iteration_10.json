@@ -1,0 +1,40 @@
+{
+  "summary": "Environment health / smoke test after fresh clone + seed. Backend: 11/11 pytest passed (health, login for all 6 required demo users, master outlets/brands/bank-accounts, journal-entries). Frontend: All 8 public pages render (/, /brands, /menu, /locations, /about, /careers, /contact, /loyalty/login) with FnB Group content and no error boundaries. Login works for admin, owner, executive, finance, procurement, cfs.manager -- each lands on correct portal (/owner, /executive, /finance, /procurement, /outlet). Sidebar/direct navigation to /admin/master/outlets and /admin/master/brands shows all 5 outlets/brands with codes CFS, RST, BST, LNG, BKY. Reports/module pages render OK: /reports/pl-group (pl-group-report-page test-id present), /finance/journals, /outlet, /procurement, /inventory, /hr -- none blank/404/error-boundary. Logout via [data-testid='sidebar-logout-button'] works between users. No 5xx or JS pageerrors observed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Owner cockpit (/owner)", "issues": ["Requirement mentioned KPI label 'Revenue MTD' but that exact string is not found in owner page text; the token 'MTD' and 'Cash Position' are present. KPI card likely labeled differently (e.g. 'Sales MTD' / 'Omzet MTD'). Not blocking - all 5 outlets (The Lounge/Bistro/Bakery/Restaurant/Coffeeshop) do appear in the digest and Cash Position card renders."]}
+    ]
+  },
+  "passed_tests": [
+    "GET /api/health -> 200",
+    "POST /api/auth/login -> 200 success:true with access_token for all 6 demo users (admin, owner, executive, finance, procurement, cfs.manager)",
+    "GET /api/master/outlets returns 5+ outlets containing codes CFS/RST/BST/LNG/BKY",
+    "GET /api/master/brands -> 200",
+    "GET /api/master/bank-accounts -> 200",
+    "GET /api/finance/journal-entries -> 200",
+    "Public pages (8) render with FnB Group branding, no error boundary",
+    "Login redirects each role to correct portal path",
+    "Sidebar logout button works between role switches",
+    "Admin master data pages show all 5 outlets/brands with correct codes",
+    "/reports/pl-group renders with data-testid='pl-group-report-page'",
+    "Module portals (/finance/journals, /outlet, /procurement, /inventory, /hr) render without 404/blank/error"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_smoke_iteration10.py",
+    "/app/test_reports/pytest/iter10.xml"
+  ],
+  "action_items": [
+    "(Optional/minor) Confirm intended label for Owner cockpit revenue KPI - task doc said 'Revenue MTD' but UI does not contain that literal string. If label differs (Sales/Omzet MTD), update requirements doc; otherwise add 'Revenue MTD' label to Owner KPI card."
+  ],
+  "critical_code_review_comments": [],
+  "updated_files": ["/app/backend/tests/test_smoke_iteration10.py"],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "100% smoke (all required pages/roles verified)"},
+  "test_credentials": "All demo users password Demo@2026; verified for admin/owner/executive/finance/procurement/cfs.manager @fnbgroup.id",
+  "seed_data_creation": "Not needed - seed already run by main agent (20/20 seeds OK, integrity PASS)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Env is healthy. Backend pytest smoke file at /app/backend/tests/test_smoke_iteration10.py can be reused for regression. Only nit: Owner cockpit does not display literal 'Revenue MTD' string; MTD KPI card likely uses different wording."
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "content": "Setup: Clone repo, install deps, seed DB, verify services green + login works",
+    "status": "completed"
+  },
+  {
+    "content": "Establish baseline: run forensic_master_suite.sh + tour render probe to get current Phase 3 FAIL list",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Fix component-side testid mismatches + loading-state root anchors",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Fix tour-side target selectors",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Fix route mismatches in tourMap.js + real routing bug (/admin/approvals)",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 3: Re-run audit_tours + probe until FAIL=0, healthy>=90% (DONE: 4x green, 100% health)",
+    "status": "completed"
+  },
+  {
+    "content": "Integrate tour probe as Gate 8 in forensic_master_suite.sh (DONE: 8/8 green)",
+    "status": "completed"
+  },
+  {
+    "content": "Run full forensic_master_suite (8 gates) + verify no regressions (DONE: 8/8, pytest 233 pass)",
+    "status": "completed"
+  },
+  {
+    "content": "Update plan.md + handoff docs with Phase 3 completion",
+    "status": "completed"
+  },
+  {
+    "content": "Phase 5: Run deployment_agent readiness check + fix any blockers",
+    "status": "in_progress"
+  }
+]

@@ -1,0 +1,92 @@
+/** navigationSchema/owner.js — Owner portal navigation. */
+
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  Package,
+  Settings,
+  FileText,
+  ScrollText,
+  CreditCard,
+  Calculator,
+  FileCheck,
+  Calendar,
+  Banknote,
+  Receipt,
+  TrendingUp,
+  Wallet,
+  UserCog,
+  DollarSign,
+  Gift,
+  ClipboardList,
+  ShoppingCart,
+  Truck,
+  Store,
+  BarChart3,
+  Boxes,
+  ArrowLeftRight,
+  ClipboardCheck,
+  WrenchIcon,
+  Crown,
+  Sparkles,
+  Brain,
+  MessageSquare,
+  Shield,
+  Activity,
+  Star,
+  AlertTriangle,
+  Layers,
+  BookOpen,
+  Archive,
+  Target,
+  Workflow,
+  Coffee,
+  ListChecks,
+  History,
+  BellRing,
+  ChevronRight,
+  Landmark,
+  LineChart,
+  PiggyBank,
+  QrCode,
+  FileSpreadsheet,
+  CalendarCheck,
+} from "lucide-react";
+
+// eslint-disable-next-line no-unused-vars
+export const ownerNav = {
+  id: "owner",
+  name: "Owner Portal",
+  sections: [
+    {
+      id: "cockpit",
+      name: "Cockpit",
+      icon: Crown,
+      items: [
+        { id: "overview", name: "Executive Summary", path: "/owner" },
+        { id: "my-approvals", name: "Approval Center", path: "/owner/approvals" },
+        { id: "daily-briefing", name: "Daily Briefing AI", path: "/owner/briefing" },
+        { id: "digest-settings", name: "Alert Settings", path: "/owner/digest-settings" },
+      ],
+    },
+    {
+      id: "financial",
+      name: "Financial Health",
+      icon: TrendingUp,
+      items: [
+        { id: "cash-position", name: "Cash Position", path: "/owner/cash" },
+      ],
+    },
+    {
+      id: "ai",
+      name: "AI Insights",
+      icon: Sparkles,
+      items: [
+        { id: "business-qa", name: "Business Q&A", path: "/owner/ai-assistant" },
+      ],
+    },
+    // REMOVED: Approvals section (single-item) - merged into Cockpit
+    // REMOVED: Digest & Alerts section (single-item) - merged into Cockpit
+  ],
+};

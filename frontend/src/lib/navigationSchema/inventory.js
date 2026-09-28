@@ -1,0 +1,95 @@
+/** navigationSchema/inventory.js — Inventory portal navigation. */
+
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  Package,
+  Settings,
+  FileText,
+  ScrollText,
+  CreditCard,
+  Calculator,
+  FileCheck,
+  Calendar,
+  Banknote,
+  Receipt,
+  TrendingUp,
+  Wallet,
+  UserCog,
+  DollarSign,
+  Gift,
+  ClipboardList,
+  ShoppingCart,
+  Truck,
+  Store,
+  BarChart3,
+  Boxes,
+  ArrowLeftRight,
+  ClipboardCheck,
+  WrenchIcon,
+  Crown,
+  Sparkles,
+  Brain,
+  MessageSquare,
+  Shield,
+  Activity,
+  Star,
+  AlertTriangle,
+  Layers,
+  BookOpen,
+  Archive,
+  Target,
+  Workflow,
+  Coffee,
+  ListChecks,
+  History,
+  BellRing,
+  ChevronRight,
+  Landmark,
+  LineChart,
+  PiggyBank,
+  QrCode,
+  FileSpreadsheet,
+  CalendarCheck,
+} from "lucide-react";
+
+// eslint-disable-next-line no-unused-vars
+export const inventoryNav = {
+  id: "inventory",
+  name: "Inventory Portal",
+  sections: [
+    {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      items: [
+        { id: "overview", name: "Overview", path: "/inventory" },
+        { id: "movements-hub", name: "Movements Hub", path: "/inventory/movements-hub", badge: "HUB" },
+      ],
+    },
+    {
+      id: "stock",
+      name: "Stock Management",
+      icon: Boxes,
+      items: [
+        { id: "balance", name: "Stock Balance", path: "/inventory/balance" },
+        { id: "low-stock", name: "Low Stock Alert", path: "/inventory/low-stock" },
+        { id: "valuation", name: "Stock Valuation", path: "/inventory/valuation" },
+        { id: "opname", name: "Stock Opname", path: "/inventory/opname" },
+        { id: "market-list", name: "Market List (Harga Acuan)", path: "/inventory/market-list" },
+      ],
+    },
+    {
+      id: "inventory-config",
+      name: "Configuration",
+      icon: WrenchIcon,
+      items: [
+        { id: "items", name: "Item Catalog", path: "/admin/master/items" },
+      ],
+    },
+    // REMOVED: Movements section (single-item hub) - moved to Dashboard
+    // REMOVED: Stock Opname section (single-item) - merged into Stock Management
+    // REMOVED: Market List section (single-item) - merged into Stock Management
+  ],
+};
