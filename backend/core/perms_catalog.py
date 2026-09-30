@@ -241,6 +241,8 @@ PERMISSIONS_CATALOG: list[dict] = [
     {"code": "hr.leave.approve", "category": "HR", "label": "Approve leave request"},
     {"code": "hr.employee.read", "category": "HR", "label": "Read employee records"},
     {"code": "hr.payroll.read",  "category": "HR", "label": "Read payroll data"},
+    {"code": "hr.payroll.manage", "category": "HR", "label": "Generate / cancel payroll, manage salary master"},
+    {"code": "hr.payroll.approve", "category": "HR", "label": "Approve & post payroll"},
 
     # ── Missing Admin permissions ──
     {"code": "admin.settings",  "category": "Admin", "label": "Generic admin settings access"},

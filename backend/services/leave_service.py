@@ -96,10 +96,8 @@ async def _assert_within_quota(db, *, employee_id: str, leave_type: str,
 
 
 async def _next_doc_no(db) -> str:
-    year = datetime.now(timezone.utc).year
-    key = f"LR-{year}"
-    count = await db.leave_requests.count_documents({"doc_no": {"$regex": f"^{key}"}})
-    return f"{key}-{count + 1:04d}"
+    from utils.number_series import next_doc_no  # SSOT-12: atomic counter (no count+1 race)
+    return await next_doc_no("LR")
 
 
 async def create_leave_request(payload: dict, *, user_id: str) -> dict:

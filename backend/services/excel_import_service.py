@@ -76,35 +76,32 @@ ENTITY_CONFIGS = {
     "employees": {
         "collection": "employees",
         "label": "Employees",
-        "unique_key": "email",
+        "unique_key": "code",
         "template_columns": [
-            ("email", "Email*", "employee@fnbgroup.id"),
-            ("name", "Full Name*", "John Doe"),
-            ("nik", "NIK (Employee ID)", "EMP001"),
-            ("phone", "Phone", "08123456789"),
+            ("code", "Employee Code*", "EMP-0100"),
+            ("full_name", "Full Name*", "John Doe"),
+            ("outlet_code", "Outlet Code*", "CFS"),
             ("position", "Position", "Cashier / Chef / Manager"),
             ("department", "Department", "Outlet / Kitchen / Finance"),
-            ("hire_date", "Hire Date", "2026-01-15"),
-            ("salary", "Base Salary", "5000000"),
-            ("bank_name", "Bank Name", "BCA"),
-            ("bank_account", "Bank Account Number", "9876543210"),
+            ("join_date", "Join Date", "2026-01-15"),
+            ("npwp", "NPWP", ""),
+            ("status", "Status (active/leave/terminated)", "active"),
         ],
-        "required_fields": ["email", "name"],
+        "required_fields": ["code", "full_name", "outlet_code"],
     },
     "coa": {
-        "collection": "coa",
+        "collection": "chart_of_accounts",
         "label": "Chart of Accounts",
-        "unique_key": "account_code",
+        "unique_key": "code",
         "template_columns": [
-            ("account_code", "Account Code*", "1-1010"),
-            ("account_name", "Account Name*", "Kas Bank BCA"),
-            ("account_type", "Account Type*", "asset / liability / equity / revenue / expense"),
-            ("subtype", "Subtype", "cash / ar / inventory / ap / sales / cogs / opex"),
-            ("parent_code", "Parent Account Code", "1-1000"),
+            ("code", "Account Code*", "1103"),
+            ("name", "Account Name*", "Kas Bank BCA"),
+            ("type", "Account Type*", "asset / liability / equity / revenue / cogs / expense"),
+            ("parent_code", "Parent Account Code", "1100"),
             ("is_header", "Is Header", "FALSE"),
-            ("normal_balance", "Normal Balance*", "debit / credit"),
+            ("normal_balance", "Normal Balance*", "Dr / Cr"),
         ],
-        "required_fields": ["account_code", "account_name", "account_type", "normal_balance"],
+        "required_fields": ["code", "name", "type", "normal_balance"],
     },
     "customers": {
         "collection": "ar_customers",
@@ -279,15 +276,14 @@ def _validate_entity_data(entity_type: str, data: dict) -> list[str]:
             errors.append("cost_method must be one of: avg, fifo, std")
 
     elif entity_type == "coa":
-        if data.get("account_type") and data["account_type"] not in ["asset", "liability", "equity", "revenue", "expense"]:
-            errors.append("account_type must be one of: asset, liability, equity, revenue, expense")
-        if data.get("normal_balance") and data["normal_balance"] not in ["debit", "credit"]:
-            errors.append("normal_balance must be one of: debit, credit")
+        if data.get("type") and str(data["type"]).lower() not in ["asset", "liability", "equity", "revenue", "cogs", "expense"]:
+            errors.append("type must be one of: asset, liability, equity, revenue, cogs, expense")
+        if data.get("normal_balance") and str(data["normal_balance"]).lower() not in ["dr", "cr", "debit", "credit"]:
+            errors.append("normal_balance must be Dr or Cr")
 
     elif entity_type == "employees":
-        email = data.get("email")
-        if email and "@" not in email:
-            errors.append("email must be valid email format")
+        if data.get("status") and str(data["status"]).lower() not in ["active", "leave", "terminated"]:
+            errors.append("status must be one of: active, leave, terminated")
 
     return errors
 
@@ -331,10 +327,21 @@ async def commit_import(entity_type: str, valid_rows: list[dict], user_id: str) 
                 continue
 
             # Check if exists
-            existing = await collection.find_one({unique_key: unique_value})
+            existing = await collection.find_one({unique_key: unique_value, "deleted_at": None})
 
             # Prepare document
             doc = _prepare_document(entity_type, row_data, user_id, is_update=bool(existing))
+            if entity_type == "employees":
+                outlet = await db.outlets.find_one({"code": doc.pop("_outlet_code", None), "deleted_at": None})
+                if not outlet:
+                    errors.append({"data": row_data, "error": "outlet_code tidak ditemukan"})
+                    skipped += 1
+                    continue
+                doc["outlet_id"], doc["brand_id"] = outlet["id"], outlet.get("brand_id")
+            if entity_type == "coa":
+                pc = doc.pop("_parent_code", None)
+                parent = await db.chart_of_accounts.find_one({"code": pc, "deleted_at": None}) if pc else None
+                doc["parent_id"] = parent["id"] if parent else None
 
             if existing:
                 # Update
@@ -402,35 +409,35 @@ def _prepare_document(entity_type: str, row_data: dict, user_id: str, is_update:
             doc["created_at"] = _now()
         doc["updated_at"] = _now()
 
-    elif entity_type == "employees":
+    elif entity_type == "employees":  # CTL-11: canonical employee fields (pay lives in Salary Master)
         if not is_update:
             doc["id"] = str(uuid.uuid4())
-        doc["email"] = row_data.get("email")
-        doc["name"] = row_data.get("name")
-        doc["nik"] = row_data.get("nik")
-        doc["phone"] = row_data.get("phone")
+            doc["created_at"] = _now()
+            doc["created_by"] = user_id
+            doc["deleted_at"] = None
+        doc["code"] = row_data.get("code")
+        doc["full_name"] = row_data.get("full_name")
+        doc["_outlet_code"] = row_data.get("outlet_code")
         doc["position"] = row_data.get("position")
         doc["department"] = row_data.get("department")
-        doc["hire_date"] = row_data.get("hire_date")
-        doc["salary"] = float(row_data.get("salary") or 0)
-        doc["bank_name"] = row_data.get("bank_name")
-        doc["bank_account"] = row_data.get("bank_account")
-        if not is_update:
-            doc["created_at"] = _now()
+        doc["join_date"] = row_data.get("join_date")
+        doc["npwp"] = row_data.get("npwp")
+        doc["status"] = (row_data.get("status") or "active").strip().lower()
         doc["updated_at"] = _now()
 
-    elif entity_type == "coa":
+    elif entity_type == "coa":  # CTL-11: canonical chart_of_accounts
         if not is_update:
             doc["id"] = str(uuid.uuid4())
-        doc["account_code"] = row_data.get("account_code")
-        doc["account_name"] = row_data.get("account_name")
-        doc["account_type"] = row_data.get("account_type")
-        doc["subtype"] = row_data.get("subtype")
-        doc["parent_code"] = row_data.get("parent_code")
-        doc["is_header"] = row_data.get("is_header", "").lower() in ["true", "yes", "1"]
-        doc["normal_balance"] = row_data.get("normal_balance")
-        if not is_update:
             doc["created_at"] = _now()
+            doc["deleted_at"] = None
+            doc["active"] = True
+        doc["code"] = str(row_data.get("code"))
+        doc["name"] = row_data.get("name")
+        doc["type"] = (row_data.get("type") or "").strip().lower()
+        nb = (row_data.get("normal_balance") or "").strip().lower()
+        doc["normal_balance"] = "Dr" if nb in ("dr", "debit", "d") else "Cr"
+        doc["_parent_code"] = row_data.get("parent_code")
+        doc["is_postable"] = str(row_data.get("is_header", "")).lower() not in ["true", "yes", "1"]
         doc["updated_at"] = _now()
 
     elif entity_type == "customers":

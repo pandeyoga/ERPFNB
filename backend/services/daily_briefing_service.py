@@ -70,7 +70,7 @@ async def _aggregate_briefing_data(user: Optional[dict] = None) -> dict:
 
     # ---- Sales: Yesterday vs Same day last week ----
     pipe_y = [
-        {"$match": {"sales_date": yesterday.isoformat(), "status": {"$in": ["validated", "submitted"]}}},
+        {"$match": {"sales_date": yesterday.isoformat(), "status": "validated", "deleted_at": None}},
         {"$group": {"_id": "$outlet_id",
                      "revenue": {"$sum": "$grand_total"},
                      "transactions": {"$sum": "$transaction_count"}}},
@@ -79,7 +79,7 @@ async def _aggregate_briefing_data(user: Optional[dict] = None) -> dict:
     y_total = sum(float(r["revenue"] or 0) for r in y_rows)
 
     pipe_w = [
-        {"$match": {"sales_date": week_ago.isoformat(), "status": {"$in": ["validated", "submitted"]}}},
+        {"$match": {"sales_date": week_ago.isoformat(), "status": "validated", "deleted_at": None}},
         {"$group": {"_id": "$outlet_id", "revenue": {"$sum": "$grand_total"}}},
     ]
     w_rows = await db.daily_sales.aggregate(pipe_w).to_list(50)
@@ -115,7 +115,7 @@ async def _aggregate_briefing_data(user: Optional[dict] = None) -> dict:
     # ---- MTD vs Last MTD ----
     mtd_rows = await db.daily_sales.aggregate([
         {"$match": {"sales_date": {"$gte": month_start.isoformat(), "$lte": today.isoformat()},
-                     "status": {"$in": ["validated", "submitted"]}}},
+                     "status": "validated", "deleted_at": None}},
         {"$group": {"_id": None, "revenue": {"$sum": "$grand_total"}}},
     ]).to_list(1)
     mtd_revenue = float(mtd_rows[0]["revenue"]) if mtd_rows else 0
@@ -123,7 +123,7 @@ async def _aggregate_briefing_data(user: Optional[dict] = None) -> dict:
     last_mtd_rows = await db.daily_sales.aggregate([
         {"$match": {"sales_date": {"$gte": last_month_start.isoformat(),
                                      "$lte": last_month_same_day.isoformat()},
-                     "status": {"$in": ["validated", "submitted"]}}},
+                     "status": "validated", "deleted_at": None}},
         {"$group": {"_id": None, "revenue": {"$sum": "$grand_total"}}},
     ]).to_list(1)
     last_mtd_revenue = float(last_mtd_rows[0]["revenue"]) if last_mtd_rows else 0

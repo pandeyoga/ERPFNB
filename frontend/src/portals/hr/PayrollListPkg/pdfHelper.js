@@ -36,19 +36,9 @@ import { useAuth } from "@/lib/auth";
 import api, { unwrap, unwrapError } from "@/lib/api";
 import useOutletScope from "@/hooks/useOutletScope";
 
-const PTKP_OPTIONS = [
-  "TK/0", "TK/1", "TK/2", "TK/3",
-  "K/0", "K/1", "K/2", "K/3",
-  "K/I/0", "K/I/1", "K/I/2", "K/I/3",
-];
 
-const STD_COMPONENTS = [
-  { code: "TUNJ_JABATAN", name: "Tunjangan Jabatan" },
-  { code: "TUNJ_MAKAN", name: "Tunjangan Makan" },
-  { code: "TUNJ_TRANSPORT", name: "Tunjangan Transport" },
-  { code: "TUNJ_KESEHATAN", name: "Tunjangan Kesehatan" },
-];
 
+import { PTKP_OPTIONS, STD_COMPONENTS } from "@/lib/payroll";
 function currentPeriod() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;

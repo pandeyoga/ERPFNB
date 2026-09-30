@@ -127,7 +127,7 @@ export default function JournalList() {
           columns={[
             {
               key: "doc_no", label: "Doc No", primary: true, sortable: true,
-              render: je => <span className="font-mono text-xs">{je.doc_no || je.id.slice(0, 8)}</span>,
+              render: je => <span className="font-mono text-xs">{je.doc_no || je.je_number || je.id.slice(0, 8)}</span>,
             },
             { key: "entry_date", label: "Tanggal", sortable: true, render: je => fmtDate(je.entry_date) },
             { key: "source_type", label: "Source", sortable: true, render: je => <span className="capitalize">{(je.source_type || "").replace("_", " ")}</span> },

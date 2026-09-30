@@ -37,6 +37,8 @@ async def create_invoice(payload: dict, *, user_id: str) -> dict:
     invoice_date = payload.get("invoice_date", _biz_today())
     period = invoice_date[:7]
 
+    from services.tax_service import get_ppn_rate
+    ppn_rate_setting = await get_ppn_rate()  # SSOT-06: client-sent rate is ignored
     lines = []
     subtotal = 0.0
     for ln in payload.get("lines", []):
@@ -44,7 +46,7 @@ async def create_invoice(payload: dict, *, user_id: str) -> dict:
         unit_price = float(ln.get("unit_price", 0))
         discount = float(ln.get("discount", 0))
         dpp = qty * unit_price - discount
-        ppn_rate = float(ln.get("ppn_rate", PPN_DEFAULT_RATE)) if ln.get("include_ppn") else 0
+        ppn_rate = ppn_rate_setting if ln.get("include_ppn") else 0
         ppn = round(dpp * ppn_rate, 2)
         subtotal += dpp
         lines.append({
@@ -179,6 +181,8 @@ async def update_invoice(invoice_id: str, payload: dict, *, user_id: str) -> Opt
         raw_lines = upd.get("lines") or []
         if not raw_lines:
             raise ValidationError("Minimal 1 line item diperlukan")
+        from services.tax_service import get_ppn_rate
+        ppn_rate_setting = await get_ppn_rate()
         lines = []
         subtotal = 0.0
         for ln in raw_lines:
@@ -186,7 +190,7 @@ async def update_invoice(invoice_id: str, payload: dict, *, user_id: str) -> Opt
             unit_price = float(ln.get("unit_price", 0))
             discount = float(ln.get("discount", 0))
             dpp = qty * unit_price - discount
-            ppn_rate = float(ln.get("ppn_rate", PPN_DEFAULT_RATE)) if ln.get("include_ppn") else 0
+            ppn_rate = ppn_rate_setting if ln.get("include_ppn") else 0
             ppn = round(dpp * ppn_rate, 2)
             subtotal += dpp
             lines.append({

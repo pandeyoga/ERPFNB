@@ -470,8 +470,8 @@ async def today_claimed_vouchers(
 
     query = {
         "status": "claimed",
-        "claimed_reference_type": "outlet_redeem",
-        "claimed_at": {"$gte": today_start},
+        "claimed_reference_type": {"$in": ["outlet_redeem", "daily_sales"]},
+        "$or": [{"claimed_at": {"$gte": today_start}}, {"claimed_at": {"$gte": today_start.isoformat()}}],
     }
     if outlet_id:
         query["claimed_outlet_id"] = outlet_id

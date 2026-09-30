@@ -14,7 +14,8 @@ def _ser(doc):
 
 
 # Configure upload directory
-UPLOAD_DIR = Path("/app/backend/uploads")
+from core.config import settings as _settings  # B6: single upload root
+UPLOAD_DIR = Path(_settings.upload_dir)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Allowed image types and max size

@@ -72,11 +72,13 @@ async def is_ppn_enabled() -> bool:
 
 
 async def get_ppn_rate() -> float:
+    """SSOT-06: single PPN rate source (setting TAX_PPN_RATE, fraction). Legacy percent values are normalised."""
     v = await get_value("TAX_PPN_RATE")
     try:
-        return float(v or str(PPN_DEFAULT_RATE))
+        rate = float(v or str(PPN_DEFAULT_RATE))
     except (ValueError, TypeError):
         return PPN_DEFAULT_RATE
+    return rate / 100 if rate > 1 else rate
 
 
 async def is_pph_enabled(pph_type: str) -> bool:
@@ -331,6 +333,13 @@ async def get_withholding_by_source(source_type: str, source_id: str) -> list[di
 async def resolve_wh_coa_id(wh_type: str) -> Optional[str]:
     """Return the GL account id for the given withholding type."""
     db = get_db()
+    from services import gl_mapping  # SSOT-14: mapping first, code only as fallback
+    try:
+        mapped = (await gl_mapping.get_mapping()).get(f"withholding_{wh_type}")
+        if mapped:
+            return mapped
+    except Exception:  # noqa: BLE001
+        pass
     code_map = {"pph21": "2112", "pph23": "2113", "pph42": "2114"}
     code = code_map.get(wh_type)
     if not code:

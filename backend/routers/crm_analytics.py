@@ -16,7 +16,7 @@ from dateutil.relativedelta import relativedelta
 
 from core.db import get_db
 from core.exceptions import ok_envelope
-from core.security import require_perm
+from core.security import require_any_perm
 
 router = APIRouter(prefix="/api/admin/crm", tags=["crm-analytics"])
 
@@ -43,7 +43,7 @@ def _month_start(dt: datetime) -> datetime:
 # ============================================================================
 
 @router.get("/analytics/overview")
-async def crm_overview(user: dict = Depends(require_perm("admin", "loyalty"))):
+async def crm_overview(user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage"))):
     """Return high-level CRM KPIs."""
     db = get_db()
     now = NOW()
@@ -122,7 +122,7 @@ async def crm_overview(user: dict = Depends(require_perm("admin", "loyalty"))):
 @router.get("/analytics/retention")
 async def crm_retention(
     months: int = Query(12, ge=3, le=24),
-    user: dict = Depends(require_perm("admin", "loyalty")),
+    user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage")),
 ):
     """Monthly retention rate and churn rate for the last N months."""
     db = get_db()
@@ -177,7 +177,7 @@ async def crm_retention(
 # ============================================================================
 
 @router.get("/analytics/segments")
-async def crm_segments(user: dict = Depends(require_perm("admin", "loyalty"))):
+async def crm_segments(user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage"))):
     """Customer segment breakdown with counts and percentages."""
     db = get_db()
     now = NOW()
@@ -220,7 +220,7 @@ async def crm_segments(user: dict = Depends(require_perm("admin", "loyalty"))):
 @router.get("/analytics/cohorts")
 async def crm_cohorts(
     months: int = Query(6, ge=3, le=12),
-    user: dict = Depends(require_perm("admin", "loyalty")),
+    user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage")),
 ):
     """Cohort retention matrix: signup-month x activity-month-offset."""
     db = get_db()
@@ -298,7 +298,7 @@ async def crm_cohorts(
 @router.get("/analytics/trends")
 async def crm_trends(
     months: int = Query(12, ge=3, le=24),
-    user: dict = Depends(require_perm("admin", "loyalty")),
+    user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage")),
 ):
     """Monthly acquisition (new customers) and transaction volume trends."""
     db = get_db()
@@ -360,7 +360,7 @@ async def crm_trends(
 async def crm_top_customers(
     limit: int = Query(15, ge=5, le=50),
     sort_by: str = Query("total_spend"),
-    user: dict = Depends(require_perm("admin", "loyalty")),
+    user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage")),
 ):
     """Top customers by total spend, visit count, or CLV."""
     db = get_db()
@@ -413,7 +413,7 @@ async def crm_top_customers(
 # ============================================================================
 
 @router.get("/analytics/clv")
-async def crm_clv(user: dict = Depends(require_perm("admin", "loyalty"))):
+async def crm_clv(user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage"))):
     """CLV distribution by tier and spending histogram."""
     db = get_db()
 
@@ -472,7 +472,7 @@ async def crm_clv(user: dict = Depends(require_perm("admin", "loyalty"))):
 # ============================================================================
 
 @router.get("/analytics/rfm")
-async def crm_rfm(user: dict = Depends(require_perm("admin", "loyalty"))):
+async def crm_rfm(user: dict = Depends(require_any_perm("crm.view", "crm.customer.read", "loyalty.read", "admin.loyalty.manage"))):
     """RFM (Recency, Frequency, Monetary) distribution."""
     db = get_db()
     now = NOW()

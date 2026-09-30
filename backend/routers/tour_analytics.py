@@ -63,7 +63,7 @@ async def submit_events(
 @router.get("/summary")
 async def get_summary(
     days: int = Query(30, ge=1, le=365),
-    _user: dict = Depends(require_any_perm("admin.dashboard.view", "admin.view", "settings.manage", "audit.view")),
+    _user: dict = Depends(require_any_perm("admin.audit_log.read", "admin.settings")),
 ):
     """Aggregated summary of tour analytics across all tours (last N days)."""
     data = await tour_analytics_service.summary(days=days)
@@ -74,7 +74,7 @@ async def get_summary(
 async def get_tour_detail(
     tour_id: str,
     days: int = Query(30, ge=1, le=365),
-    _user: dict = Depends(require_any_perm("admin.dashboard.view", "admin.view", "settings.manage", "audit.view")),
+    _user: dict = Depends(require_any_perm("admin.audit_log.read", "admin.settings")),
 ):
     """Detailed analytics for a single tour, including per-step drop-off."""
     data = await tour_analytics_service.detail(tour_id=tour_id, days=days)

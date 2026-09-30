@@ -92,6 +92,7 @@ def encrypt(plaintext: str | None) -> str | None:
         return f"{PREFIX}{token}"
     except Exception:  # noqa: BLE001
         logger.exception("encrypt failed")
+        raise RuntimeError("Enkripsi secret gagal — periksa SECRETS_ENCRYPTION_KEY")  # SEC-18: never persist plaintext
         # If encryption fails, return plaintext (best-effort) so the caller
         # doesn't lose data. The migration step will re-try later.
         return plaintext

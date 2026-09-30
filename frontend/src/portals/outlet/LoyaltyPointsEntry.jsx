@@ -11,6 +11,7 @@ const TIER_CONFIG = {
   bronze: { label: "Bronze", color: "#C9813C", bg: "rgba(201,129,60,0.12)", icon: "🥉", multiplier: "×1.0" },
   silver: { label: "Silver", color: "#A0AEC0", bg: "rgba(160,174,192,0.12)", icon: "🥈", multiplier: "×1.2" },
   gold:   { label: "Gold",   color: "#C9A876", bg: "rgba(201,168,118,0.15)", icon: "🥇", multiplier: "×1.5" },
+  platinum: { label: "Platinum", color: "#7F8EA3", bg: "rgba(127,142,163,0.15)", icon: "💎", multiplier: "×2.0" },
 };
 
 function normalizePhone(raw) {
@@ -27,7 +28,7 @@ function formatRupiah(v) {
 
 function calcPoints(amount, multiplier = 1.0) {
   const base = Math.floor(amount / 10000);
-  return Math.round(base * multiplier);
+  return Math.floor(base * multiplier); // SSOT-21: same as backend int()
 }
 
 // ─── Phase: search ──────────────────────────────────────────────

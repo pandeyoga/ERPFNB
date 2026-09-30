@@ -40,8 +40,7 @@ export default function OpnameSession() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await api.get("/inventory/opname", { params: { per_page: 50 } });
-      const found = (unwrap(list) || []).find(x => x.id === id);
+      const found = unwrap(await api.get(`/inventory/opname/${id}`));
       setSess(found || null);
       const init = {};
       (found?.lines || []).forEach(ln => {

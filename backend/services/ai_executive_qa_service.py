@@ -285,13 +285,15 @@ async def _ensure_indexes() -> None:
         logger.warning(f"AI QA index create failed: {e}")
 
 
-async def _load_session(session_id: str) -> dict:
+async def _load_session(session_id: str, user_id: str | None = None) -> dict:
     if not session_id:
         return {"session_id": "", "messages": []}
     db = get_db()
     doc = await db.ai_qa_sessions.find_one({"session_id": session_id})
     if not doc:
         return {"session_id": session_id, "messages": []}
+    if user_id is not None and doc.get("user_id") not in (None, user_id):
+        return {"session_id": "", "messages": [], "foreign": True}  # CTL-03: never read another user's session
     return {
         "session_id": doc["session_id"],
         "messages": doc.get("messages", []) or [],
@@ -303,7 +305,7 @@ async def _save_session(session_id: str, messages: list[dict], user: dict) -> No
     now = datetime.now(timezone.utc)
     expires_at = now + timedelta(days=SESSION_TTL_DAYS)
     await db.ai_qa_sessions.update_one(
-        {"session_id": session_id},
+        {"session_id": session_id, "user_id": {"$in": [user.get("id"), None]}},
         {"$set": {
             "session_id": session_id,
             "user_id": user.get("id"),
@@ -361,8 +363,15 @@ async def ask(question: str, *, user: dict, session_id: Optional[str] = None) ->
             "history": [],
         }
 
+    perms = set(user.get("permissions") or [])
+    if not perms & {"*", "executive.dashboard.read"}:  # CTL-03: tools expose group-wide finance data
+        from core.exceptions import ForbiddenError
+        raise ForbiddenError("AI Q&A eksekutif butuh izin executive.dashboard.read")
     sid = session_id or str(uuid.uuid4())
-    state = await _load_session(sid)
+    state = await _load_session(sid, user.get("id"))
+    if state.get("foreign"):
+        sid = str(uuid.uuid4())
+        state = {"session_id": sid, "messages": []}
     history = state["messages"]
 
     # Build conversation snapshot for context (last few only)

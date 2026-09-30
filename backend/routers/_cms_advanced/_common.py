@@ -6,7 +6,8 @@ from pathlib import Path
 from core.db import get_db
 
 # Upload dirs
-UPLOAD_DIR = Path("/app/backend/uploads")
+from core.config import settings as _settings  # B6: single upload root
+UPLOAD_DIR = Path(_settings.upload_dir)
 THUMBS_DIR = UPLOAD_DIR / "thumbs"
 MEDIUM_DIR = UPLOAD_DIR / "medium"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

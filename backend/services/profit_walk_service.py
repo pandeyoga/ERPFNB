@@ -69,7 +69,7 @@ async def _aggregate_stages(start: date, end: date) -> dict[str, float]:
     db = get_db()
     pipeline = [
         {"$match": {
-            "status": "posted",
+            "status": "posted", "deleted_at": None,
             "entry_date": {"$gte": start.isoformat(), "$lte": end.isoformat()},
         }},
         {"$unwind": "$lines"},
@@ -108,7 +108,7 @@ async def _aggregate_accounts(start: date, end: date) -> dict[str, dict]:
     db = get_db()
     pipeline = [
         {"$match": {
-            "status": "posted",
+            "status": "posted", "deleted_at": None,
             "entry_date": {"$gte": start.isoformat(), "$lte": end.isoformat()},
         }},
         {"$unwind": "$lines"},

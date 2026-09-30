@@ -26,6 +26,37 @@ async def _on_hand_qty(db, outlet_id: str, item_id: str) -> float:
     return 0.0
 
 
+class stock_lock:
+    """INV-01: per (outlet,item) mutex so check-then-insert of stock-out cannot race (no replica-set txn needed)."""
+
+    def __init__(self, db, outlet_id: str, item_ids: list):
+        self.db, self.keys = db, sorted({f"{outlet_id}:{i}" for i in item_ids})
+        self.held: list = []
+
+    async def __aenter__(self):
+        import asyncio
+        from pymongo.errors import DuplicateKeyError
+        now = datetime.now(timezone.utc)
+        await self.db.stock_locks.delete_many({"expires_at": {"$lt": now}})
+        for key in self.keys:
+            for _ in range(100):
+                try:
+                    await self.db.stock_locks.insert_one({"_id": key, "expires_at": datetime.now(timezone.utc).replace(microsecond=0) + __import__("datetime").timedelta(seconds=30)})
+                    self.held.append(key)
+                    break
+                except DuplicateKeyError:
+                    await asyncio.sleep(0.05)
+            else:
+                await self.__aexit__(None, None, None)
+                raise ValidationError("Stok item sedang diproses transaksi lain, coba lagi")
+        return self
+
+    async def __aexit__(self, *exc):
+        if self.held:
+            await self.db.stock_locks.delete_many({"_id": {"$in": self.held}})
+        self.held = []
+
+
 async def _assert_can_decrement(db, outlet_id: str, needs: list) -> None:
     """Negative-stock guard. `needs` = list of (item_id, item_name, qty_out) where
     qty_out is the POSITIVE quantity leaving stock. Raises ValidationError if any
@@ -237,6 +268,13 @@ async def _avg_unit_cost(db, outlet_id: str, item_id: str) -> float:
 
 async def send_transfer(id_: str, *, user: dict) -> dict:
     db = get_db()
+    t = await db.transfers.find_one({"id": id_, "deleted_at": None}) or {}
+    async with stock_lock(db, t.get("from_outlet_id", ""), [ln["item_id"] for ln in t.get("lines", [])]):
+        return await _send_transfer_locked(id_, user=user)
+
+
+async def _send_transfer_locked(id_: str, *, user: dict) -> dict:
+    db = get_db()
     t = await db.transfers.find_one({"id": id_, "deleted_at": None})
     if not t:
         raise NotFoundError("Transfer")
@@ -418,6 +456,12 @@ async def get_adjustment_approval_state(id_: str) -> dict:
 
 
 async def _post_adjustment_movements(adj: dict, *, user: dict) -> dict:
+    async with stock_lock(get_db(), adj["outlet_id"],
+                          [ln["item_id"] for ln in adj["lines"] if float(ln.get("qty_delta", 0) or 0) < 0]):
+        return await _post_adjustment_movements_locked(adj, user=user)
+
+
+async def _post_adjustment_movements_locked(adj: dict, *, user: dict) -> dict:
     db = get_db()
     # Phase 3 hardening — block if target period locked
     from services._period import derive_period_from_date, assert_period_unlocked

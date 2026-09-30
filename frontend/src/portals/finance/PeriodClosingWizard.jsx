@@ -192,7 +192,7 @@ export default function PeriodClosingWizard() {
             <div className="flex-1">
               <h3 className="font-semibold text-sm">Tax Settlement Auto-Generated</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                JE {taxSettlement.je_number} telah dibuat otomatis untuk settlement PPN periode {period}
+                JE {taxSettlement.je_number || taxSettlement.doc_no} telah dibuat otomatis untuk settlement PPN periode {period}
               </p>
               <div className="mt-3 flex gap-3 flex-wrap text-xs">
                 <div>

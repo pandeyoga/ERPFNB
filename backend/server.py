@@ -74,7 +74,11 @@ async def lifespan(_: FastAPI):
 
     try:
         from services._hr_payroll.salary_migration import migrate_employee_salary_to_master
+        from utils.number_series import ensure_dedicated_series
         await migrate_employee_salary_to_master()
+        await ensure_dedicated_series()
+        from services.data_migrations import unify_journal_schema
+        await unify_journal_schema()
     except Exception:  # noqa: BLE001
         logger.exception("salary_migration_failed")
 
@@ -281,7 +285,8 @@ app.include_router(public_menu.router)     # E-Menu: Public menu viewing per bra
 app.include_router(tour_analytics.router)  # Help & Tour: analytics event tracking + admin summary
 
 # Mount static files for uploaded images
-app.mount("/uploads", StaticFiles(directory="/app/backend/uploads"), name="uploads")
+from core.config import settings as _up_settings  # B6/SSOT-09
+app.mount("/uploads", StaticFiles(directory=_up_settings.upload_dir), name="uploads")
 
 
 @app.get("/api/health")

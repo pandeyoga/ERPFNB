@@ -442,7 +442,7 @@ function PPh21SPTExport() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      alert("Gagal mengunduh: " + (e.message || "Unknown error"));
+      toast.error("Gagal mengunduh: " + (e.message || "Unknown error"));
     } finally { setDownloading(false); }
   };
 

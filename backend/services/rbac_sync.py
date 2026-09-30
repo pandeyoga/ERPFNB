@@ -6,19 +6,20 @@ from core.db import get_db
 logger = logging.getLogger("aurora.rbac")
 
 GRANTS: dict[str, list[str]] = {
-    "EXECUTIVE": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read"],
-    "OWNER": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read"],
+    "EXECUTIVE": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read", "executive.view", "anomaly.scan.trigger"],
+    "OWNER": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read", "executive.view", "crm.view"],
+    "GM": ["executive.view", "reservations.reports"],
     "FINANCE_MANAGER": ["finance.asset.dispose", "finance.asset.revalue", "finance.asset.delete",
                         "tax.efaktur.read", "tax.efaktur.export", "tax.ebupot.read", "tax.ebupot.export",
                         "report_schedules.manage", "admin.audit_log.read", "outlet.daily_sales.validate"],
     "FINANCE_STAFF": ["tax.efaktur.read", "tax.ebupot.read"],
-    "HR_MANAGER": ["hr.read", "hr.write"],
-    "HR_OFFICER": ["hr.read"],
+    "HR_MANAGER": ["hr.read", "hr.write", "hr.payroll.read", "hr.payroll.manage", "hr.payroll.approve", "hr.employee.read"],
+    "HR_OFFICER": ["hr.read", "hr.payroll.read", "hr.payroll.manage", "hr.employee.read"],
     "INVENTORY_MANAGER": ["inventory.item.read", "inventory.item.update"],
     "INVENTORY_STAFF": ["inventory.item.read"],
     "PROCUREMENT_MANAGER": ["inventory.item.read"],
     "PROCUREMENT_STAFF": ["inventory.item.read"],
-    "OUTLET_MANAGER": ["inventory.item.read"],
+    "OUTLET_MANAGER": ["inventory.item.read", "reservations.reports"],
 }
 
 

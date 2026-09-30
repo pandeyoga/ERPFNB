@@ -24,18 +24,7 @@ import { useAuth } from "@/lib/auth";
 import api, { unwrap, unwrapError } from "@/lib/api";
 import useOutletScope from "@/hooks/useOutletScope";
 
-const PTKP_OPTIONS = [
-  "TK/0", "TK/1", "TK/2", "TK/3",
-  "K/0", "K/1", "K/2", "K/3",
-  "K/I/0", "K/I/1", "K/I/2", "K/I/3",
-];
 
-const STD_COMPONENTS = [
-  { code: "TUNJ_JABATAN", name: "Tunjangan Jabatan" },
-  { code: "TUNJ_MAKAN", name: "Tunjangan Makan" },
-  { code: "TUNJ_TRANSPORT", name: "Tunjangan Transport" },
-  { code: "TUNJ_KESEHATAN", name: "Tunjangan Kesehatan" },
-];
 
 // ── Payslip PDF generator ──────────────────────────────────────────────────────
 import { generatePayslipPDF } from "./pdfHelper";
@@ -44,6 +33,7 @@ import PayrollDetailDialog from "./PayrollDetailDialog";
 import { SalaryMasterDialog, SalaryImportDialog } from "./SalaryDialogs";
 import useExcelExport from "@/hooks/useExcelExport";
 
+import { PTKP_OPTIONS, STD_COMPONENTS } from "@/lib/payroll";
 export default function PayrollList() {
   const { user } = useAuth();
   const { allOutlets: outlets } = useOutletScope();
@@ -54,8 +44,8 @@ export default function PayrollList() {
   const [editSm, setEditSm] = useState(null); // employee data being edited
   const [importOpen, setImportOpen] = useState(false);
 
-  const canApprove = (user?.permissions || []).includes("hr.advance.approve")
-    || (user?.permissions || []).includes("*");
+  const canApprove = ["hr.advance.approve", "hr.payroll.approve", "hr.payroll.manage", "*"]
+    .some((p) => (user?.permissions || []).includes(p));
   const { downloading, exportXlsx } = useExcelExport();
 
   // Payroll cycles — always loaded

@@ -17,7 +17,6 @@ const KEYS = [
   { key: "LOCALE", label: "Default Locale", icon: Globe, placeholder: "id-ID", default: "id-ID" },
   { key: "TIMEZONE", label: "Default Timezone", icon: Clock, placeholder: "Asia/Jakarta", default: "Asia/Jakarta" },
   { key: "FISCAL_YEAR_START_MONTH", label: "Awal Tahun Fiskal (bulan, 1-12)", icon: MapPin, placeholder: "1", default: "1" },
-  { key: "DEFAULT_PPN_RATE", label: "Default PPN Rate (% — gunakan Tax Center untuk detail)", icon: MapPin, placeholder: "12", default: "12" },
 ];
 
 export default function SystemSettings() {

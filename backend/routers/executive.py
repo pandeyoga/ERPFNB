@@ -6,11 +6,28 @@ from core.exceptions import ok_envelope
 from core.security import require_perm
 from services import executive_service, ai_insights_service, executive_drilldown_service, profit_walk_service
 
+async def _require_group_scope(user: dict, brand_id: str | None = None) -> None:
+    """CTL-02: group/brand-wide executive views only when the user's outlet scope covers every outlet shown."""
+    from core.db import get_db
+    from core.exceptions import ForbiddenError
+    from core.security import scoped_outlet_ids
+    scope = scoped_outlet_ids(user)
+    if scope is None:
+        return
+    q: dict = {"deleted_at": None, "active": {"$ne": False}}
+    if brand_id:
+        q["brand_id"] = brand_id
+    needed = {o["id"] async for o in get_db().outlets.find(q, {"id": 1})}
+    if needed - set(scope):
+        raise ForbiddenError("Data ini mencakup outlet di luar akses Anda", code="OUTLET_OUT_OF_SCOPE")
+
+
 router = APIRouter(prefix="/api/executive", tags=["executive"])
 
 
 @router.get("/home")
 async def executive_home(user: dict = Depends(require_perm("executive.dashboard.read"))):
+    await _require_group_scope(user)
     """Executive dashboard home - aggregated KPIs and insights."""
     return ok_envelope(await executive_service.executive_home())
 
@@ -142,6 +159,7 @@ async def ap_aging_summary(
     top_n: int = Query(5, ge=1, le=20),
     user: dict = Depends(require_perm("executive.dashboard.read")),
 ):
+    await _require_group_scope(user)
     return ok_envelope(await executive_drilldown_service.ap_aging_summary(
         as_of=as_of, top_n=top_n,
     ))
@@ -153,6 +171,7 @@ async def brand_drilldown(
     period: Optional[str] = None,
     user: dict = Depends(require_perm("executive.dashboard.read")),
 ):
+    await _require_group_scope(user, brand_id)
     return ok_envelope(await executive_drilldown_service.brand_drilldown(
         brand_id=brand_id, period=period,
     ))
@@ -164,6 +183,7 @@ async def outlet_drilldown(
     period: Optional[str] = None,
     user: dict = Depends(require_perm("executive.dashboard.read")),
 ):
+    from core.security import enforce_outlet_scope; enforce_outlet_scope(user, outlet_id)
     return ok_envelope(await executive_drilldown_service.outlet_drilldown(
         outlet_id=outlet_id, period=period,
     ))
@@ -175,6 +195,7 @@ async def profit_walk(
     compare_kind: Optional[str] = Query("lmtd"),
     user: dict = Depends(require_perm("executive.dashboard.read")),
 ):
+    await _require_group_scope(user)
     return ok_envelope(await profit_walk_service.compute_profit_walk(
         period_kind=period_kind, compare_kind=compare_kind,
     ))
@@ -186,6 +207,7 @@ async def period_compare(
     period_kinds: str = Query("mtd,lmtd,yoy"),
     user: dict = Depends(require_perm("executive.dashboard.read")),
 ):
+    await _require_group_scope(user)
     metric_list = [m.strip() for m in metrics.split(",") if m.strip()]
     period_list = [p.strip() for p in period_kinds.split(",") if p.strip()]
     return ok_envelope(await profit_walk_service.compute_period_compare(

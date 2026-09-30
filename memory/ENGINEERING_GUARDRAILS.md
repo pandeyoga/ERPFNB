@@ -186,7 +186,7 @@ grep -rn "from services\." backend/routers/<handler>.py                         
 ```bash
 API=$(grep REACT_APP_BACKEND_URL frontend/.env | cut -d= -f2)
 TOKEN=$(curl -s -X POST "$API/api/auth/login" -H "Content-Type: application/json" \
-  -d '{"email":"admin@torado.id","password":"Torado@2026"}' \
+  -d '{"email":"admin@fnbgroup.id","password":"Demo@2026"}' \
   | python3 -c "import sys,json;d=json.load(sys.stdin);print((d.get('data') or d)['access_token'])")
 for ep in /api/procurement/prs /api/inventory/balance /api/finance/journal-entries /api/anomalies; do
   curl -s -o /dev/null -w "[%{http_code}] $ep\n" "$API$ep" -H "Authorization: Bearer $TOKEN"; done
@@ -262,7 +262,7 @@ await db.col.update_one({"id": i}, {"$set": {"deleted_at": now}})  # soft delete
 
 **INTEGRASI PIHAK-3 / AUTH**
 - [ ] `integration_playbook_expert_v2` SEBELUM nulis kode.
-- [ ] Auth: `hash_password` dari `core.security`; field = **`password`** (bukan `password_hash`).
+- [ ] Auth: `hash_password` dari `core.security`; field = **`password_hash`** (bukan `password`).
 - [ ] Kredensial dari `.env` saja.
 
 ---
@@ -351,3 +351,13 @@ cd backend && python -m pytest -q                 # 215 passed
 - Tanggal bisnis: `core.clock.today_str()` (Asia/Jakarta), bukan `datetime.now(timezone.utc)`.
 - Settlement PPN membaca saldo GL `input_vat`/`output_vat` (SSOT = GL).
 - Modul Payment Request lama (`/api/finance/payment-requests`) dipensiunkan (410); gunakan `/api/finance/payments`.
+
+
+## Addendum 2026-09-28 (audit Phase 2c)
+- Gaji hanya di `salary_masters` (satu dokumen per karyawan, unique). `employees` TIDAK boleh punya `basic_salary/gross_salary/salary`.
+- Karyawan ikut payroll bila `status` ∈ {active, leave}. Filter aktif = `status`, bukan `active`.
+- Nomor dokumen: `PAYR` (payroll), `PAY` (payment), `UP` (urgent purchase), `PR` (purchase request), `LR` (cuti). `reset` monthly/yearly hanya berlaku bila format memuat token periode.
+- Tarif PPN: hanya `tax_service.get_ppn_rate()` (setting `TAX_PPN_RATE`, fraksi). Klien tidak boleh menentukan tarif.
+- Folder upload tunggal: `settings.upload_dir` (default `/app/backend/uploads`).
+- JE: selalu punya `doc_no` dan `je_number` (sama) + `outlet_id` top-level bila satu outlet.
+- Posting dokumen berstatus: klaim status atomik (`approved→posting`) lalu rollback bila JE gagal.

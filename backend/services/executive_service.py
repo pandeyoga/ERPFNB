@@ -140,9 +140,11 @@ async def kpis(
     gr_filter: dict = {"deleted_at": None}
     if effective_outlets is not None:
         gr_filter["outlet_id"] = {"$in": effective_outlets}
-    grs = await db.goods_receipts.find(gr_filter).to_list(10000)
-    ap_total = sum(float(g.get("grand_total", 0)) for g in grs
-                   if not g.get("paid_at") and g.get("payment_status") != "paid")
+    # SSOT-03: AP exposure = open balance of AP ledger (same source as AP aging)
+    gr_filter["balance"] = {"$gt": 0}
+    agg = await db.ap_ledgers.aggregate([{"$match": gr_filter},
+                                         {"$group": {"_id": None, "t": {"$sum": "$balance"}}}]).to_list(1)
+    ap_total = float(agg[0]["t"]) if agg else 0.0
 
     # Pending sales validation
     pv_filter: dict = {"deleted_at": None, "status": "submitted"}

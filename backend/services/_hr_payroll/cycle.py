@@ -176,7 +176,7 @@ async def create_payroll(payload: dict, *, user: dict) -> dict:
         totals["adv"] += repay_amount
         totals["th"] += take_home
 
-    doc_no = await next_doc_no("PAY")
+    doc_no = await next_doc_no("PAYR")
     doc = {
         "id": str(uuid.uuid4()), "doc_no": doc_no, "period": period, "outlet_id": outlet_id,
         "payroll_date": payload.get("payroll_date") or f"{period}-25",

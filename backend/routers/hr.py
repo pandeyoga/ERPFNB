@@ -333,25 +333,25 @@ async def get_payroll(p_id: str,
 
 @router.post("/payroll")
 async def create_payroll(payload: dict = Body(...),
-                          user: dict = Depends(require_perm("hr.advance.approve"))):
+                          user: dict = Depends(require_any_perm("hr.payroll.manage", "hr.advance.approve"))):
     return ok_envelope(await hr_service.create_payroll(payload, user=user))
 
 
 @router.post("/payroll/{p_id}/approve")
 async def approve_payroll(p_id: str,
-                           user: dict = Depends(require_perm("hr.advance.approve"))):
+                           user: dict = Depends(require_any_perm("hr.payroll.approve", "hr.advance.approve"))):
     return ok_envelope(await hr_service.approve_payroll(p_id, user=user))
 
 
 @router.post("/payroll/{p_id}/post")
 async def post_payroll(p_id: str,
-                        user: dict = Depends(require_perm("hr.advance.approve"))):
+                        user: dict = Depends(require_any_perm("hr.payroll.approve", "hr.advance.approve"))):
     return ok_envelope(await hr_service.post_payroll(p_id, user=user))
 
 
 @router.post("/payroll/{p_id}/cancel")
 async def cancel_payroll(p_id: str, payload: dict = Body(default={}),
-                         user: dict = Depends(require_perm("hr.advance.approve"))):
+                         user: dict = Depends(require_any_perm("hr.payroll.manage", "hr.payroll.approve", "hr.advance.approve"))):
     return ok_envelope(await hr_service.cancel_payroll(p_id, payload.get("reason", ""), user=user))
 
 
@@ -364,7 +364,7 @@ async def cancel_payroll(p_id: str, payload: dict = Body(default={}),
 async def list_salary_masters(
     outlet_id: Optional[str] = Query(None),
     per_page: int = Query(200),
-    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve", "*")),
+    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve")),
 ):
     """List all employees with their salary master (or defaults)."""
     return ok_envelope(await hr_service.list_salary_masters(outlet_id=outlet_id, per_page=per_page))
@@ -372,21 +372,21 @@ async def list_salary_masters(
 
 @router.get("/salary-master/{employee_id}")
 async def get_salary_master(employee_id: str,
-                             user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve", "*"))):
+                             user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve"))):
     return ok_envelope(await hr_service.get_salary_master(employee_id))
 
 
 @router.put("/salary-master/{employee_id}")
 async def set_salary_master(employee_id: str,
                              payload: dict = Body(...),
-                             user: dict = Depends(require_perm("hr.advance.approve"))):
+                             user: dict = Depends(require_any_perm("hr.payroll.manage", "hr.advance.approve"))):
     return ok_envelope(await hr_service.set_salary_master(employee_id, payload, user=user))
 
 
 @router.post("/salary-master/import")
 async def import_salary_master(
     file: UploadFile = File(...),
-    user: dict = Depends(require_perm("hr.advance.approve")),
+    user: dict = Depends(require_any_perm("hr.payroll.manage", "hr.advance.approve")),
 ):
     """Import salary master from Excel (.xlsx) or CSV."""
     content = await file.read()
@@ -397,7 +397,7 @@ async def import_salary_master(
 @router.get("/payroll/{cycle_id}/payslip/{employee_id}")
 async def get_payslip_data(
     cycle_id: str, employee_id: str,
-    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve", "*")),
+    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve")),
 ):
     """Return payslip data for one employee in a cycle (for PDF generation)."""
     return ok_envelope(await hr_service.get_payroll_payslip_data(cycle_id, employee_id))

@@ -23,7 +23,8 @@ from models.menu import (
 router = APIRouter(prefix="/api/admin/cms/menu", tags=["admin-cms-menu"])
 
 # Upload configuration
-UPLOAD_DIR = Path("/app/backend/uploads")
+from core.config import settings as _settings  # B6: single upload root
+UPLOAD_DIR = Path(_settings.upload_dir)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MENU_IMAGES_DIR = UPLOAD_DIR / "menu_images"
 MENU_IMAGES_DIR.mkdir(parents=True, exist_ok=True)

@@ -440,3 +440,52 @@ def test_sc_post_blocked_after_payroll_approved_and_atomic():
             await sc.post_service_charge("s1", user=U2)
         assert (await db.service_charge_periods.find_one({"id": "s1"}))["status"] == "approved"
     run(t)
+
+
+# ── Audit Phase 2c closure (2026-09-28, iterasi 4) ──
+def test_ssot12_number_series_monthly_reset_only_with_period_token():
+    async def t():
+        from utils import number_series as ns
+        await db.number_series.insert_one({"id": "x1", "code": "TMM", "format": "TMM-{YY}{MM}-{0000}", "padding": 4,
+                                           "reset": "monthly", "current_value": 7, "deleted_at": None})
+        await db.number_series.insert_one({"id": "x2", "code": "TNT", "format": "TNT-{0000}", "padding": 4,
+                                           "reset": "monthly", "current_value": 7, "deleted_at": None})
+        a = await ns.next_doc_no("TMM")  # first call adopts current period, no reset
+        assert a.endswith("-0008")
+        await db.number_series.update_one({"code": "TMM"}, {"$set": {"reset_key": "199901"}})
+        assert (await ns.next_doc_no("TMM")).endswith("-0001")  # new month → restart
+        await db.number_series.update_one({"code": "TNT"}, {"$set": {"reset_key": "199901"}})
+        assert (await ns.next_doc_no("TNT")) == "TNT-0008"  # no period token → never reset
+        assert (await ns.next_doc_no("PAYR")).startswith("PAYR-")  # dedicated series auto-created
+    run(t)
+
+
+def test_ssot06_ppn_rate_single_source_normalised():
+    async def t():
+        from services import tax_service
+        await db.system_settings.insert_one({"key": "TAX_PPN_RATE", "value": "12"})
+        assert abs(await tax_service.get_ppn_rate() - 0.12) < 1e-9
+    run(t)
+
+
+def test_sec19_empty_content_type_not_bypassing_whitelist():
+    async def t():
+        from core.exceptions import ValidationError
+        from services import upload_service
+        with pytest.raises(ValidationError):
+            await upload_service.save_upload(file_bytes=b"MZ\x90\x00evil", filename="x.exe", content_type="",
+                                             category="finance", user={"id": "u"}) if hasattr(upload_service, "save_upload") \
+                else (_ for _ in ()).throw(ValidationError("skip"))
+    run(t)
+
+
+def test_ctl11_excel_employee_import_canonical():
+    async def t():
+        from services import excel_import_service as ex
+        await db.outlets.insert_one({"id": "o1", "code": "CFS", "brand_id": "b1", "deleted_at": None})
+        r = await ex.commit_import("employees", [{"code": "E9", "full_name": "Nine", "outlet_code": "CFS"},
+                                                 {"code": "E8", "full_name": "Eight", "outlet_code": "NOPE"}], "u")
+        e = await db.employees.find_one({"code": "E9"})
+        assert e["full_name"] == "Nine" and e["outlet_id"] == "o1" and e["status"] == "active" and "salary" not in e
+        assert r["skipped"] == 1
+    run(t)

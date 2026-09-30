@@ -47,7 +47,7 @@ async def create_public_reservation(payload: dict):
         raise AuroraException("Jumlah tamu minimal 1", code="VALIDATION_ERROR", field="pax")
 
     payload["source"] = payload.get("source", "website")
-    result = await reservation_service.create_reservation(payload, created_by=None, auto_link_member=True)
+    result = await reservation_service.create_reservation(payload, created_by=None, auto_link_member=False)  # INV-04: public form must not create CRM members
     return ok_envelope({
         "reservation_id": result["id"],
         "status": result["status"],
@@ -115,7 +115,7 @@ async def reservation_executive_summary(
 async def reservation_deposit_summary(
     period: Optional[str] = Query(None, description="YYYY-MM"),
     outlet_id: Optional[str] = Query(None),
-    user: dict = Depends(require_any_perm("finance.view", "reservations.read", "reservations.reports")),
+    user: dict = Depends(require_any_perm("reservations.read", "reservations.reports", "finance.report.profit_loss")),
 ):
     result = await reservation_service.finance_deposit_summary(
         period=period,

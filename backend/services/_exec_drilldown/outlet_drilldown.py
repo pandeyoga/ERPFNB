@@ -57,6 +57,10 @@ async def outlet_drilldown(*, outlet_id: str, period: Optional[str] = None) -> d
     async for up in db.urgent_purchases.find({"outlet_id": outlet_id, "deleted_at": None, "purchase_date": {"$gte": period_start, "$lt": next_start}, "status": {"$in": ["approved", "posted"]}}):
         up_expense += float(up.get("total", 0) or 0)
     opex = pc_expense + up_expense
+    # FIN-17/RPT-08: outlet P&L = GL P&L (net revenue buckets, COGS = usage, not purchases)
+    from services._finance.reports import profit_loss as _gl_pl
+    gl = await _gl_pl(period=period_start[:7], compare_prev=False, outlet_id=outlet_id)
+    revenue, cogs, opex = gl["revenue"]["total"], gl["cogs"]["total"], gl["expense"]["total"]
     gross_profit = revenue - cogs
     net = gross_profit - opex
     pl = {"revenue": round(revenue, 2), "cogs": round(cogs, 2), "gross_profit": round(gross_profit, 2), "gp_pct": round((gross_profit / revenue * 100) if revenue else 0, 2), "opex": round(opex, 2), "petty_cash_expense": round(pc_expense, 2), "urgent_purchase_expense": round(up_expense, 2), "service": round(service_total, 2), "tax": round(tax_total, 2), "net": round(net, 2), "net_margin_pct": round((net / revenue * 100) if revenue else 0, 2), "transaction_count": int(trx), "days_active": int(days_count), "avg_daily_sales": round((revenue / days_count) if days_count else 0, 2)}

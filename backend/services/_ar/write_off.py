@@ -54,8 +54,12 @@ async def write_off_invoice(
     je = None
     try:
         from services import journal_service
-        ar_coa = await db.chart_of_accounts.find_one({"code": _COA_AR, "deleted_at": None})
-        bd_coa = await db.chart_of_accounts.find_one({"code": _COA_BAD_DEBT, "deleted_at": None})
+        from services import gl_mapping  # SSOT-14: resolve via mapping, code only as fallback
+        m = await gl_mapping.get_mapping()
+        ar_coa = ({"id": m["ar_receivable"]} if m.get("ar_receivable") else
+                  await db.chart_of_accounts.find_one({"code": _COA_AR, "deleted_at": None}))
+        bd_coa = ({"id": m["bad_debt_expense"]} if m.get("bad_debt_expense") else
+                  await db.chart_of_accounts.find_one({"code": _COA_BAD_DEBT, "deleted_at": None}))
         if ar_coa and bd_coa:
             je = await journal_service._post_journal(
                 entry_date=wo_date,

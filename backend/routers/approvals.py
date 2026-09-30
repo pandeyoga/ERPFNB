@@ -76,7 +76,7 @@ ENTITY_QUERY_PROFILES = {
         "secondary": "employee_id",
     },
     "stock_transfer": {
-        "collection": "stock_transfers",
+        "collection": "transfers",
         "statuses": ["submitted", "awaiting_approval"],
         "status_field": "status",
         "amount_label": "Total Value",

@@ -25,7 +25,7 @@ export default function AdminHome() {
   const perms = user?.permissions || [];
   const isFullAdmin = perms.includes("*");
   const canViewUsers = isFullAdmin || perms.some(p =>
-    p.startsWith("admin.users") || p.startsWith("admin.audit_log") || p.startsWith("admin.roles")
+    p.startsWith("admin.user.") || p.startsWith("admin.audit_log") || p.startsWith("admin.role.")
   );
   const canBulkImport = isFullAdmin || perms.includes("admin.master_data.write");
 

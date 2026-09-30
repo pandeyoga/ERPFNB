@@ -35,9 +35,22 @@ CATEGORY_MAP: dict[str, str] = {
     "voucher_issue": "operating",
     "voucher_redeem": "operating",
     "foc": "operating",
+    "payment_run": "operating",
+    "ar_receipt": "operating",
+    "ar_invoice": "operating",
+    "employee_advance_repayment": "operating",
+    "tax_settlement": "operating",
+    "customer_compensation": "operating",
+    "daily_close": "operating",
+    "fixed_asset_disposal": "investing",
+    "fixed_asset_purchase": "investing",
+    "fixed_asset": "investing",
+    "loan": "financing",
+    "capital": "financing",
+    "dividend": "financing",
     "manual": "other",
     "reversal": "other",
-}
+}  # RPT-07
 
 
 CATEGORY_LABELS = {
@@ -76,8 +89,15 @@ async def _cash_coa_ids() -> list[str]:
     }):
         code = coa.get("code", "")
         name = (coa.get("name") or "").lower()
-        if code.startswith("110") or code.startswith("111") or "cash" in name or "kas" in name or "bank" in name:
+        # RPT-07: code-based only (name heuristics matched e.g. "Utang Bank"/"Kasbon")
+        if code.startswith("110") or code.startswith("111"):
             ids.add(coa["id"])
+    try:
+        from services import gl_mapping
+        m = await gl_mapping.get_mapping()
+        ids.update(v for k, v in m.items() if k in ("cash_on_hand", "petty_cash", "bank_default") and v)
+    except Exception:  # noqa: BLE001
+        pass
     return list(ids)
 
 

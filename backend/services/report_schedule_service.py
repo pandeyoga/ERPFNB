@@ -77,15 +77,15 @@ async def _build_owner_daily_digest() -> dict:
 
     # Sales yesterday
     sales_pipeline = [
-        {"$match": {"date": yesterday}},
+        {"$match": {"sales_date": yesterday, "status": "validated", "deleted_at": None}},
         {"$group": {
             "_id": "$outlet_id",
-            "total": {"$sum": "$total_revenue"},
-            "covers": {"$sum": "$covers"},
+            "total": {"$sum": {"$ifNull": ["$grand_total", 0]}},
+            "covers": {"$sum": {"$ifNull": ["$transaction_count", 0]}},
         }},
         {"$sort": {"total": -1}},
     ]
-    sales_agg = await db["daily_sales"].aggregate(sales_pipeline).to_list(10)
+    sales_agg = await db["daily_sales"].aggregate(sales_pipeline).to_list(None)
     total_sales = sum(s["total"] for s in sales_agg)
 
     # Active anomalies
@@ -217,8 +217,9 @@ async def _build_exec_weekly_performance() -> dict:
 
     async def week_sales(start: date, end: date) -> float:
         pipeline = [
-            {"$match": {"date": {"$gte": start.isoformat(), "$lte": end.isoformat()}}},
-            {"$group": {"_id": None, "total": {"$sum": "$total_revenue"}}},
+            {"$match": {"sales_date": {"$gte": start.isoformat(), "$lte": end.isoformat()},
+                        "status": "validated", "deleted_at": None}},
+            {"$group": {"_id": None, "total": {"$sum": {"$ifNull": ["$grand_total", 0]}}}},
         ]
         res = await db["daily_sales"].aggregate(pipeline).to_list(1)
         return float((res[0] if res else {}).get("total", 0))

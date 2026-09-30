@@ -30,7 +30,8 @@ UPLOAD_ROOT = Path("/app/uploads")
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Configuration
-MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+from core.config import settings as _settings
+MAX_BYTES = _settings.max_upload_mb * 1024 * 1024  # B6: single size limit (MAX_UPLOAD_SIZE_MB)
 
 # Magic bytes (first bytes) yang valid per tipe file — A17 fix: SEC-014
 _MAGIC_SIGNATURES: dict[str, list[bytes]] = {
@@ -142,7 +143,10 @@ async def save_upload(
             field="file",
         )
     ct = (content_type or "").lower().split(";")[0].strip()
-    if ct and ct not in ALLOWED_MIME:
+    if not ct or ct == "application/octet-stream":
+        import mimetypes
+        ct = (mimetypes.guess_type(filename or "")[0] or "").lower()
+    if ct not in ALLOWED_MIME:
         raise ValidationError(
             f"Tipe file '{ct}' tidak didukung. Gunakan JPG/PNG/WEBP/PDF/CSV/XLSX.",
             field="file",

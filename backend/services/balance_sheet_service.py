@@ -137,6 +137,6 @@ async def balance_sheet(*, as_of: Optional[str] = None, dim_outlet: Optional[str
             "liabilities_plus_equity": total_liab_equity,
             "net_income": net_income,
             "diff": diff,
-            "is_balanced": abs(diff) < 0.5,
+            "is_balanced": abs(diff) < 0.01,
         },
     }

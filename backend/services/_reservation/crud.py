@@ -45,21 +45,38 @@ async def create_reservation(
                 field="reservation_time"
             )
 
-    # Capacity validation
-    outlet = await db.outlets.find_one({"id": outlet_id})
+    # Capacity validation (INV-04: outlet must exist; capacity counts overlapping seatings, not the exact hour only)
+    from core.exceptions import ValidationError as _VE
+    outlet = await db.outlets.find_one({"id": outlet_id, "deleted_at": None}) if outlet_id else None
+    if not outlet or outlet.get("active") is False:
+        raise _VE("Outlet tidak ditemukan / tidak aktif", field="outlet_id")
+    try:
+        hh, mm = [int(x) for x in str(reservation_time).split(":")[:2]]
+    except (ValueError, TypeError):
+        raise _VE("Format jam reservasi harus HH:MM", field="reservation_time")
     if outlet:
         settings = await db.system_configs.find_one({
             "type": "reservation_settings",
             "outlet_id": outlet_id
         })
         max_pax = settings.get("max_pax") if settings else 100
-        reservations_at_slot = await db.reservations.find({
+        seating_min = int((settings or {}).get("seating_minutes", 120))
+        same_day = await db.reservations.find({
             "outlet_id": outlet_id,
             "reservation_date": reservation_date,
-            "reservation_time": reservation_time,
             "status": {"$in": ["pending", "confirmed"]},
             "deleted_at": None
-        }).to_list(100)
+        }).to_list(None)
+
+        def _mins(t):
+            try:
+                h, m = [int(x) for x in str(t).split(":")[:2]]
+                return h * 60 + m
+            except (ValueError, TypeError):
+                return None
+        reservations_at_slot = [r for r in same_day
+                                if _mins(r.get("reservation_time")) is not None
+                                and abs(_mins(r.get("reservation_time")) - (hh * 60 + mm)) < seating_min]
         total_pax = sum(r.get("pax", 0) for r in reservations_at_slot)
         requested_pax = int(payload.get("pax", 2))
         if total_pax + requested_pax > max_pax:

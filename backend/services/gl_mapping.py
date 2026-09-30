@@ -11,12 +11,15 @@ from core.exceptions import AuroraException
 logger = logging.getLogger("aurora.gl_mapping")
 
 _cache: dict | None = None
+_cache_at: float = 0.0
+_CACHE_TTL_S = 30  # SSOT-14: other workers pick up mapping changes within 30s
 
 
 async def get_mapping() -> dict:
     """Returns flat dict logical_name → coa_id (cached)."""
-    global _cache
-    if _cache is not None:
+    global _cache, _cache_at
+    import time as _t
+    if _cache is not None and _t.monotonic() - _cache_at < _CACHE_TTL_S:
         return _cache
     db = get_db()
     s = await db.system_settings.find_one({"key": "gl_mapping"})
@@ -26,6 +29,7 @@ async def get_mapping() -> dict:
             code="GL_MAPPING_MISSING", status_code=500,
         )
     _cache = s["value"]
+    _cache_at = _t.monotonic()
     return _cache
 
 

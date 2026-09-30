@@ -2,6 +2,7 @@
  * Shows per-vendor item catalog with actual prices, price history,
  * and comparison vs Market List reference price.
  */
+import { toast } from "sonner";
 import React, { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import { Button } from "../../components/ui/button";
@@ -106,7 +107,7 @@ export default function VendorCatalog() {
       await api.post(`/vendor-items/vendor/${selectedVendor.id}/item/${item.item_id}/${action}`, {});
       await fetchCatalog();
     } catch (e) {
-      alert(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
     }
   };
 

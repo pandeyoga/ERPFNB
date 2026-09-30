@@ -129,8 +129,8 @@ export default function FdoPage() {
   const updateLine = (idx, field, value) => setLines(prev => prev.map((l, i) => i === idx ? { ...l, [field]: value } : l));
 
   const handleSubmit = async () => {
-    if (!selectedOutlet) return alert("Pilih outlet");
-    if (lines.length === 0) return alert("Tambahkan minimal 1 item");
+    if (!selectedOutlet) return toast.error("Pilih outlet");
+    if (lines.length === 0) return toast.error("Tambahkan minimal 1 item");
     setSaving(true);
     try {
       await api.post("/outlet/fdo", {

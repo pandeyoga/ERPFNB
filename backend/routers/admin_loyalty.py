@@ -43,7 +43,8 @@ from services.reward_service import (
 router = APIRouter(prefix="/api/admin/loyalty", tags=["admin-loyalty"])
 
 # ── Upload config (mirrors CMS upload) ──────────────────────────────────────
-UPLOAD_DIR = Path("/app/backend/uploads")
+from core.config import settings as _settings  # B6: single upload root
+UPLOAD_DIR = Path(_settings.upload_dir)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_SIZE_MB = 5

@@ -120,7 +120,7 @@ async def ensure_indexes() -> None:
         [("outlet_id", 1), ("status", 1), ("sales_date", -1)],
         name="ds_outlet_status_date",
     )
-    await db.petty_cash.create_index([("outlet_id", 1), ("txn_date", -1)])
+    await db.petty_cash_transactions.create_index([("outlet_id", 1), ("txn_date", -1)])
     await db.urgent_purchases.create_index([("outlet_id", 1), ("purchase_date", -1)])
     await db.urgent_purchases.create_index([("status", 1), ("purchase_date", -1)])
     # Procurement
@@ -134,7 +134,7 @@ async def ensure_indexes() -> None:
     # Inventory movements — canonical collection is `inventory_movements`
     await db.inventory_movements.create_index([("outlet_id", 1), ("item_id", 1), ("movement_date", -1)])
     await db.inventory_movements.create_index([("movement_date", -1)])
-    await db.stock_transfers.create_index([("status", 1), ("created_at", -1)])
+    await db.transfers.create_index([("status", 1), ("created_at", -1)])
     await db.adjustments.create_index([("outlet_id", 1), ("created_at", -1)])
     await db.opname_sessions.create_index([("outlet_id", 1), ("status", 1), ("started_at", -1)])
     # Finance

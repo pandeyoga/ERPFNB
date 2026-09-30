@@ -25,7 +25,7 @@ PPH_4_2_FINAL_RATE: float = 0.01   # PPh 4(2) final rate (sewa tanah/bangunan)
 # ---------------------------------------------------------------------------
 # Token & Auth
 # ---------------------------------------------------------------------------
-ACCESS_TOKEN_DEFAULT_MINUTES: int = 30   # JWT access token TTL
+ACCESS_TOKEN_DEFAULT_MINUTES: int = 1440  # JWT access token TTL (B5: same default as core.config)
 REFRESH_TOKEN_DEFAULT_DAYS: int = 7      # JWT refresh token TTL
 BCRYPT_ROUNDS: int = 12                  # bcrypt cost factor
 

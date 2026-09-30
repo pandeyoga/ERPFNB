@@ -11,7 +11,7 @@ async def post_for_adjustment(adj: dict, *, user_id: str) -> dict:
     inv_acc = await gl_mapping.resolve("inventory", scope_outlet_id=adj["outlet_id"])
     total = float(adj.get("total_value", 0))
     if total >= 0:
-        income_acc = await gl_mapping.resolve("adjustment_income")
+        income_acc = await gl_mapping.resolve_or("inventory_variance", "cogs")  # RPT-09: contra-COGS
         lines = [
             {"coa_id": inv_acc, "dr": total, "cr": 0, "memo": "Adj +"},
             {"coa_id": income_acc, "dr": 0, "cr": total, "memo": "Adj income"},
@@ -51,10 +51,10 @@ async def post_for_opname(session: dict, *, user_id: str) -> Optional[dict]:
             {"coa_id": inv_acc, "dr": 0, "cr": amt, "memo": "Inventory reduction"},
         ]
     else:
-        income_acc = await gl_mapping.resolve("adjustment_income")
+        cogs_acc = await gl_mapping.resolve("cogs")  # RPT-09: symmetric with shortage (contra-COGS)
         lines = [
             {"coa_id": inv_acc, "dr": total, "cr": 0, "memo": "Opname variance (more)"},
-            {"coa_id": income_acc, "dr": 0, "cr": total, "memo": "Adj income"},
+            {"coa_id": cogs_acc, "dr": 0, "cr": total, "memo": "Opname variance (more) — contra HPP"},
         ]
     return await _post_journal(
         entry_date=session["opname_date"],

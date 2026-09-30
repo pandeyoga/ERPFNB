@@ -111,12 +111,13 @@ async def report_builder(
 
             grand = float(gr.get("grand_total", 0) or 0)
             unpaid = not (gr.get("paid_at") or gr.get("payment_status") == "paid")
+            outstanding = max(grand - float(gr.get("paid_amount", 0) or 0), 0.0)  # RPT-06: open balance only
 
             # If category dimension requested → split by line.item.category
             if "category" in dimensions:
                 lines = gr.get("lines", [])
                 # Split grand_total weighted by line total
-                line_totals = [float(ln.get("total", 0) or 0) for ln in lines]
+                line_totals = [float(ln.get("total_cost", ln.get("total", 0)) or 0) for ln in lines]
                 line_sum = sum(line_totals) or 1
                 for ln, lt in zip(lines, line_totals):
                     cat_id = (items_map.get(ln.get("item_id"), {}) or {}).get("category_id")
@@ -129,7 +130,7 @@ async def report_builder(
                     r["po_count"] = r.get("po_count", 0.0)  # po_count is per PO - skip line split
                     r["gr_count"] = r.get("gr_count", 0.0) + (1 / max(len(lines), 1))
                     if unpaid:
-                        r["ap_exposure"] = r.get("ap_exposure", 0.0) + grand * weight
+                        r["ap_exposure"] = r.get("ap_exposure", 0.0) + outstanding * weight
             else:
                 if category_ids:
                     continue  # filter doesn't apply at GR level
@@ -138,7 +139,7 @@ async def report_builder(
                 r["purchase_value"] = r.get("purchase_value", 0.0) + grand
                 r["gr_count"] = r.get("gr_count", 0.0) + 1
                 if unpaid:
-                    r["ap_exposure"] = r.get("ap_exposure", 0.0) + grand
+                    r["ap_exposure"] = r.get("ap_exposure", 0.0) + outstanding
 
         # PO count
         if "po_count" in metrics:

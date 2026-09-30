@@ -95,7 +95,17 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
     payload["voucher_discount_amount"] = await _server_voucher_discount(payload, outlet_id, sales_date,
                                                                         exclude_id=(existing or {}).get("id"))
     grand_total = _calc_grand_total(payload)
+    # SSOT-22: SC policy (business rule) is the reference; manual SC input is kept but its variance is recorded
+    from services import business_rules_service
+    pol = await business_rules_service.resolve_rule(rule_type="service_charge_policy", outlet_id=outlet_id,
+                                                    brand_id=payload.get("brand_id"), on_date=sales_date)
+    sc_pct = float(((pol or {}).get("rule_data") or {}).get("service_charge_pct") or 0)
+    net_rev = sum(float(b.get("amount", 0) or 0) for b in payload.get("revenue_buckets", []))
+    sc_expected = round(net_rev * sc_pct, 2) if sc_pct else None
     common = {
+        "service_charge_expected": sc_expected,
+        "service_charge_variance": (round(float(payload.get("service_charge", 0) or 0) - sc_expected, 2)
+                                    if sc_expected is not None else None),
         "outlet_id": outlet_id, "brand_id": payload.get("brand_id"),
         "sales_date": sales_date,
         "channels": payload.get("channels", []),
@@ -453,7 +463,7 @@ async def create_urgent_purchase(payload: dict, *, user: dict) -> dict:
         _logging.getLogger("aurora.forecast_guard").exception("guard pre-check failed for UP")
 
     from utils.number_series import next_doc_no
-    doc_no = await next_doc_no("PR")  # sharing PR series for now
+    doc_no = await next_doc_no("UP")
     doc = {
         "id": str(uuid.uuid4()),
         "doc_no": doc_no,

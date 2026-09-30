@@ -195,3 +195,48 @@ Fokus: mempertajam fitur yang sudah ada, bukan menambah modul. Regression suite:
 - SC untuk karyawan Cuti: alokasi SC tetap hanya karyawan aktif (berbasis hari kerja).
 - Budget `unlock` & RFQ `cancel` ada di backend tapi belum ada tombol UI.
 - Item Fase 2c di atas (SEC-08 permission payroll terpisah, SSOT-*, RPT-06..10) belum dikerjakan.
+
+## 14. Iterasi 4 — Penutupan temuan AUDIT_2026-09-27_PHASE2 (2026-09-28)
+Input user (`memory/audit_inputs/AUDIT_2026-09-27_PHASE2_1.md` + `audit_verification_scripts_1.zip`) **identik** dengan `memory/AUDIT_2026-09-27_PHASE2.md` & `tests/audit_regression/t_*.py` (diverifikasi `diff`). Regression suite: **28 PASS**.
+
+| ID | Status | Perbaikan |
+|---|---|---|
+| A1 / SSOT-03 | ✅ | AP Executive & cash position = saldo `ap_ledgers` (sama dengan AP aging) |
+| A7 | ✅ | Toleransi balance seragam 0,01 (Balance Sheet 0,5 → 0,01) |
+| B1 / RPT-10 / SSOT-05 | ✅ | Migrasi startup: semua JE punya `doc_no`=`je_number` + `outlet_id`; FE menampilkan fallback |
+| B2 / SSOT-06 / FE-03 | ✅ | Satu sumber tarif PPN `get_ppn_rate()` (persen legacy dinormalisasi); AR mengabaikan tarif dari klien; setting `DEFAULT_PPN_RATE` dihapus dari UI |
+| B3 / SSOT-12 | ✅ | Seri terpisah `PAYR`/`UP`/`LR`; reset monthly/yearly diterapkan (hanya bila format punya token periode); cuti pakai counter atomik |
+| B4 / RBAC | ✅ | Kode yang tidak ada di catalog diganti; grant `executive.view`, `hr.payroll.*`, `reservations.reports`, dll. `admin.*`/`system.*` sengaja SUPER_ADMIN |
+| B5 | ✅ | `ACCESS_TOKEN_DEFAULT_MINUTES` = config (1440), config membaca konstanta |
+| B6 / SSOT-09 | ✅ | Satu root upload `settings.upload_dir` (static mount, 4 router, public menu); batas ukuran dari `MAX_UPLOAD_SIZE_MB` |
+| C4 / FE-05 | ✅ | `alert()` → `toast.error` (11 tempat) |
+| FIN-16 | ✅ | Digest: `sales_date`/`grand_total`/`transaction_count`, status validated, tanpa `to_list(10)` |
+| FIN-17 / RPT-08 | ✅ | P&L outlet Executive = P&L GL per outlet; profit walk filter `deleted_at` |
+| INV-01 | ✅ | Mutex per outlet+item (`stock_locks`) untuk kirim transfer & adjustment keluar |
+| INV-04 | ✅ | Reservasi: outlet wajib valid, kapasitas menghitung seating yang overlap (default 120 menit), form publik tidak membuat member CRM |
+| SEC-03 | ✅ | (sudah di 2b) password acak + rate-limit login loyalty |
+| SEC-08 | ✅ | Permission `hr.payroll.read/manage/approve` + SoD |
+| SEC-18 | ✅ | Gagal enkripsi → error (tidak menyimpan plaintext) |
+| SEC-19 | ✅ | `content_type` kosong ditebak dari nama file lalu tetap wajib lolos whitelist + magic bytes |
+| SEC-20 | ✅ | JSON-LD di-escape (`<` → `\u003c`) |
+| SEC-21 | ✅ | CRM analytics: `crm.view`/`loyalty.read` (bukan kode fiktif) |
+| SSOT-01 / SSOT-20 | ✅ | Guardrails dikoreksi (`password_hash`, filter `status`) + addendum |
+| SSOT-04 | ✅ | Briefing memakai status `validated` saja (sama dengan digest/GL) |
+| SSOT-08 | ✅ | Approval transfer → `transfers`; index & data management memakai koleksi kanonik |
+| SSOT-10 | ✅ | Cash position menampilkan saldo kas GL + selisih vs saldo manual |
+| SSOT-14 | ✅ | Write-off AR & akun PPh lewat `gl_mapping`; cache mapping TTL 30 dtk (lintas worker) |
+| SSOT-16 | ✅ | Query voucher hari ini membaca datetime & ISO, dari outlet redeem & daily sales |
+| SSOT-21 | ✅ | Poin FE = BE (`floor`), tier platinum di FE, `PTKP_OPTIONS`/`STD_COMPONENTS` satu sumber `lib/payroll.js` |
+| SSOT-22 | ✅ | Daily sales menyimpan `service_charge_expected` (policy) & `service_charge_variance` |
+| RPT-06 | ✅ | Report builder memakai `total_cost`; AP exposure = sisa belum dibayar |
+| RPT-07 | ✅ | Cashflow memetakan payment_run/ar_receipt/tax_settlement/fixed asset; deteksi akun kas berbasis kode + mapping |
+| RPT-09 | ✅ | Selisih stok lebih (opname/adjustment) → kontra HPP, bukan pendapatan |
+| CTL-02 | ✅ | Tampilan grup/brand eksekutif hanya bila scope outlet mencakup semua outlet; drilldown outlet dicek scope |
+| CTL-03 | ✅ | AI Q&A butuh `executive.dashboard.read`; sesi milik user lain tidak bisa dibaca/ditimpa; rate-limit `ai` aktif |
+| CTL-11 | ✅ | Import Excel: karyawan kanonik (`code/full_name/outlet_code/status`), COA ke `chart_of_accounts` |
+| CTL-15 | 🟡 | Opname diambil per id (bukan cari di 50 terakhir). Pola dropdown `per_page` 100–500 lain belum disapu |
+| FE-04 | ✅ | Prefix permission AdminHome sesuai catalog |
+| FE-06 | ⏳ | Token di localStorage → cookie httpOnly: perubahan auth, perlu playbook integrasi auth & uji login menyeluruh (belum dikerjakan) |
+| DUP-01..14 | 🟡 | Konstanta payroll FE disatukan, helper scope/number series dipakai ulang; duplikasi formatter/status lain belum disapu |
+| SSOT-07 / SSOT-15 | 🟡 | Sebagian (lihat §5) |
+| G. Pajak | 🔍 | Menunggu konsultan pajak (PBJT/PPN, TER) — tidak diubah |

@@ -16,7 +16,7 @@ ENTITY_COLLECTIONS: dict[str, str] = {
     # New entity types
     "budget":            "budgets",
     "leave_request":     "leave_requests",
-    "stock_transfer":    "stock_transfers",
+    "stock_transfer":    "transfers",
     "ar_invoice":        "ar_invoices",
 }
 

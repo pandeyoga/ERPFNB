@@ -148,7 +148,7 @@ async def get_brand_menu_pdf(
 @router.get("/uploads/menu_images/{filename}")
 async def serve_menu_image(filename: str):
     """Serve uploaded menu image."""
-    file_path = Path("/app/backend/uploads/menu_images") / filename
+    file_path = Path(__import__("core.config", fromlist=["settings"]).settings.upload_dir) / "menu_images" / filename
     if not file_path.exists():
         raise NotFoundError("Image not found")
     
@@ -158,7 +158,7 @@ async def serve_menu_image(filename: str):
 @router.get("/uploads/menu_pdfs/{filename}")
 async def serve_menu_pdf(filename: str):
     """Serve uploaded menu PDF."""
-    file_path = Path("/app/backend/uploads/menu_pdfs") / filename
+    file_path = Path(__import__("core.config", fromlist=["settings"]).settings.upload_dir) / "menu_pdfs" / filename
     if not file_path.exists():
         raise NotFoundError("PDF not found")
     

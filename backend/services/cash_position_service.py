@@ -301,7 +301,7 @@ async def compute_position(
     # 30-day burn rate (avg daily expenses from journal_entries last 30 days)
     cut = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
     pipeline = [
-        {"$match": {"status": "posted", "entry_date": {"$gte": cut}}},
+        {"$match": {"status": "posted", "deleted_at": None, "entry_date": {"$gte": cut}}},
         {"$unwind": "$lines"},
         {"$lookup": {"from": "chart_of_accounts", "localField": "lines.coa_id",
                      "foreignField": "id", "as": "coa"}},
@@ -320,7 +320,17 @@ async def compute_position(
         elif days_runway < 45:
             health = "amber"
 
+    # SSOT-10: reconcile manual cash balances against the GL (cash/bank COA from bank_accounts + gl_mapping)
+    from services.cashflow_service import _cash_coa_ids
+    gl_ids = await _cash_coa_ids()
+    gl_rows = await db.journal_entries.aggregate([
+        {"$match": {"status": "posted", "deleted_at": None}}, {"$unwind": "$lines"},
+        {"$match": {"lines.coa_id": {"$in": gl_ids}}},
+        {"$group": {"_id": None, "dr": {"$sum": "$lines.dr"}, "cr": {"$sum": "$lines.cr"}}}]).to_list(1)
+    gl_cash = round(float(gl_rows[0]["dr"]) - float(gl_rows[0]["cr"]), 2) if gl_rows else 0.0
     return {
+        "gl_cash_balance": gl_cash,
+        "variance_manual_vs_gl": round(total - gl_cash, 2),
         "net_liquid_cash": total,
         "ap_exposure": ap_total,
         "net_after_ap": total - ap_total,

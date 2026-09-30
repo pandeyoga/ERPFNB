@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -152,7 +153,7 @@ export default function MarketListPage() {
       await fetchQuarters();
       setShowCreateQuarter(false);
     } catch (e) {
-      alert(e.response?.data?.errors?.[0]?.message || "Gagal membuat quarter");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal membuat quarter");
     } finally { setSaving(false); }
   };
 
@@ -163,7 +164,7 @@ export default function MarketListPage() {
       await api.post(`/market-list/quarters/${qId}/activate`, {});
       await fetchQuarters();
     } catch (e) {
-      alert(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
     }
   };
 
@@ -174,11 +175,11 @@ export default function MarketListPage() {
   };
 
   const handleSetPrice = async () => {
-    if (!selectedQuarter) return alert("Pilih quarter terlebih dahulu");
+    if (!selectedQuarter) return toast.error("Pilih quarter terlebih dahulu");
     // AUDIT FIX: Validate ref_price > 0
     const price = parseFloat(priceForm.ref_price);
     if (isNaN(price) || price <= 0) {
-      alert("Harga referensi harus lebih besar dari 0");
+      toast.error("Harga referensi harus lebih besar dari 0");
       return;
     }
     
@@ -214,7 +215,7 @@ export default function MarketListPage() {
       setShowSetPrice(false);
       await fetchItems();
     } catch (e) {
-      alert(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
     } finally { setSaving(false); }
   };
 
@@ -234,7 +235,7 @@ export default function MarketListPage() {
       setShowApprove(false);
       await fetchItems();
     } catch (e) {
-      alert(e.response?.data?.errors?.[0]?.message || "Gagal approve");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal approve");
     } finally { setSaving(false); }
   };
 
@@ -261,7 +262,7 @@ export default function MarketListPage() {
       a.download = `market_list_${year}.xlsx`;
       a.click();
     } catch (e) {
-      alert("Gagal export");
+      toast.error("Gagal export");
     } finally { setExporting(false); }
   };
 
