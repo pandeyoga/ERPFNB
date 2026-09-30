@@ -6,17 +6,14 @@ import { logger } from "./logger";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
 
+// FE-06: session rides on httpOnly cookies (aurora_at / aurora_rt) — no token in JS storage
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
+  withCredentials: true,
 });
 
-// Attach token from localStorage + track request start time
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("aurora_access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
   // Track request start time for performance monitoring
   config.metadata = { startTime: Date.now() };
   return config;
@@ -78,36 +75,23 @@ api.interceptors.response.use(
       throw error;
     }
 
-    if (status === 401 && code === "TOKEN_EXPIRED" && !original._retry) {
+    const isAuthCall = /\/auth\/(login|refresh)$/.test(original?.url || "");
+    if (status === 401 && !isAuthCall && !original._retry) {
       original._retry = true;
       try {
+        // expired/missing access cookie → rotate via refresh cookie (single-flight)
         if (!refreshPromise) {
-          refreshPromise = (async () => {
-            const rt = localStorage.getItem("aurora_refresh_token");
-            if (!rt) throw new Error("no refresh");
-            const res = await axios.post(`${API_BASE}/auth/refresh`, {
-              refresh_token: rt,
-            });
-            const newToken = res.data.data.access_token;
-            localStorage.setItem("aurora_access_token", newToken);
-            // FE-01: backend rotates refresh tokens — persist the new one or the next refresh is revoked
-            const newRefresh = res.data.data.refresh_token;
-            if (newRefresh) localStorage.setItem("aurora_refresh_token", newRefresh);
-            return newToken;
-          })();
+          refreshPromise = axios.post(`${API_BASE}/auth/refresh`, null, { withCredentials: true });
         }
-        const newToken = await refreshPromise;
+        await refreshPromise;
         refreshPromise = null;
-        original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch (e) {
         refreshPromise = null;
-        localStorage.removeItem("aurora_access_token");
-        localStorage.removeItem("aurora_refresh_token");
-        if (window.location.pathname !== "/login") {
+        if (!original._skipAuthRedirect && window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
-        throw e;
+        throw error;
       }
     }
     throw error;
@@ -128,6 +112,20 @@ export const throttledPut = (url, data, config) =>
 
 export const throttledDelete = (url, config) => 
   requestQueue.add(() => api.delete(url, config));
+
+// CTL-15: dropdown sources must never be silently truncated — page through meta.total
+export async function fetchAll(url, params = {}, pageSize = 500) {
+  const get = (page) => api.get(url, { params: { ...params, page, per_page: pageSize } });
+  const first = await get(1);
+  const items = [...(first.data?.data || [])];
+  const total = first.data?.meta?.total ?? items.length;
+  for (let page = 2; items.length < total && page <= 40; page++) {
+    const chunk = (await get(page)).data?.data || [];
+    if (!chunk.length) break;
+    items.push(...chunk);
+  }
+  return { ...first, data: { ...first.data, data: items, meta: { ...(first.data?.meta || {}), total: items.length } } };
+}
 
 // Helper: extract data envelope
 export const unwrap = (response) => response.data?.data ?? null;

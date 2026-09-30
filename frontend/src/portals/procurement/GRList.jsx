@@ -12,6 +12,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtDate } from "@/lib/format";
 
+import { fetchAll } from "@/lib/api";
 export default function GRList() {
   const { allOutlets } = useOutletScope();
   const [vendors, setVendors] = useState([]);
@@ -27,7 +28,7 @@ export default function GRList() {
   );
 
   useEffect(() => {
-    api.get("/master/vendors", { params: { per_page: 200 } })
+    fetchAll("/master/vendors")
       .then(v => setVendors(unwrap(v) || [])).catch(() => {});
   }, []);
 

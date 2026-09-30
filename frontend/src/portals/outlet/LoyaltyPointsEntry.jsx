@@ -44,7 +44,7 @@ function SearchPhase({ onFound, onNotFound, loading, setLoading }) {
     try {
       const { data } = await axios.get(`${API}/api/outlet/loyalty/cashier/lookup`, {
         params: { phone: raw },
-        headers: { Authorization: `Bearer ${localStorage.getItem("aurora_access_token")}` },
+        withCredentials: true,
       });
       if (data?.success && data?.data) {
         onFound(data.data, raw);
@@ -357,7 +357,7 @@ export default function LoyaltyPointsEntry() {
       const { data } = await axios.post(
         `${API}/api/outlet/loyalty/cashier/add-points`,
         { phone, amount_idr, note },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("aurora_access_token")}` } }
+        { withCredentials: true }
       );
       if (data?.success) {
         setResult(data.data);

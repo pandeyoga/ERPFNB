@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function PODetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -47,8 +48,8 @@ export default function PODetail() {
     try {
       const [poRes, v, o, st] = await Promise.all([
         api.get(`/procurement/pos/${id}`),
-        api.get("/master/vendors", { params: { per_page: 200 } }),
-        api.get("/master/outlets", { params: { per_page: 100 } }),
+        fetchAll("/master/vendors"),
+        fetchAll("/master/outlets"),
         api.get(`/procurement/pos/${id}/approval-state`).catch(() => null),
       ]);
       setVendors(unwrap(v) || []);
@@ -117,10 +118,7 @@ export default function PODetail() {
   async function downloadPdf() {
     setDownloadingPdf(true);
     try {
-      const token = localStorage.getItem("aurora_access_token");
-      const res = await fetch(`${API_BASE}/procurement/pos/${id}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${API_BASE}/procurement/pos/${id}/pdf`, { credentials: "include" });
       if (!res.ok) throw new Error("PDF download failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

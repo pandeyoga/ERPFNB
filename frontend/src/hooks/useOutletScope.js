@@ -12,6 +12,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import api, { unwrap } from "@/lib/api";
 
+import { fetchAll } from "@/lib/api";
 export default function useOutletScope(initialOutletId = "") {
   const { user } = useAuth();
   const [allOutlets, setAllOutlets] = useState([]);
@@ -23,7 +24,7 @@ export default function useOutletScope(initialOutletId = "") {
   const defaultOutletId = user?.default_outlet_id || "";
 
   useEffect(() => {
-    api.get("/master/outlets", { params: { per_page: 100 } })
+    fetchAll("/master/outlets")
       .then((r) => setAllOutlets(unwrap(r) || []))
       .catch(() => {})
       .finally(() => setLoaded(true));

@@ -1,3 +1,4 @@
+import { fmtRp } from "@/lib/format";
 /** ReservationList/constants.js */
 /**
  * Outlet Portal — Reservation Management
@@ -66,9 +67,6 @@ const SOURCE_LABELS = {
   website: "Website", whatsapp: "WhatsApp", phone: "Telepon", walkin: "Walk-in", app: "App",
 };
 
-function fmtRp(n) {
-  return `Rp ${(n || 0).toLocaleString("id-ID")}`;
-}
 function fmtDate(d) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });

@@ -489,3 +489,42 @@ def test_ctl11_excel_employee_import_canonical():
         assert e["full_name"] == "Nine" and e["outlet_id"] == "o1" and e["status"] == "active" and "salary" not in e
         assert r["skipped"] == 1
     run(t)
+
+
+# ── Iterasi 5: FE-06 / DUP / SSOT-07 ──
+def test_dup13_forecast_period_end_inclusive_last_day():
+    from services.forecast_guard_service import _period_bounds
+    assert _period_bounds("2026-02") == ("2026-02-01", "2026-02-28")
+    assert _period_bounds("2026-12") == ("2026-12-01", "2026-12-31")
+
+
+def test_dup14_closed_day_freezes_sales_and_reopen_keeps_history():
+    async def t():
+        from core.exceptions import ValidationError
+        from services.daily_close_service import assert_day_open
+        await db.daily_close_records.insert_one({"id": "dc1", "outlet_id": "o1", "close_date": "2026-08-01",
+                                                 "status": "closed", "deleted_at": None})
+        with pytest.raises(ValidationError):
+            await assert_day_open("o1", "2026-08-01")
+        await db.daily_close_records.update_one({"id": "dc1"}, {"$set": {"status": "reopened"}})
+        await assert_day_open("o1", "2026-08-01")
+        assert await db.daily_close_records.count_documents({"id": "dc1", "deleted_at": None}) == 1
+    run(t)
+
+
+def test_ssot07_pr_amount_uses_unit_cost():
+    from services._approval.evaluator import compute_amount
+    amt = compute_amount("purchase_request", {"lines": [{"qty": 2, "unit_cost": 5000}, {"qty": 1, "est_cost": 100}]})
+    assert amt == 10100
+
+
+def test_fe06_cookie_origin_check():
+    from starlette.requests import Request
+    from core.security import _same_origin
+    def req(origin, host, xfh=None):
+        h = [(b"host", host.encode())] + ([(b"origin", origin.encode())] if origin else []) + ([(b"x-forwarded-host", xfh.encode())] if xfh else [])
+        return Request({"type": "http", "method": "POST", "headers": h, "path": "/"})
+    assert _same_origin(req("https://a.example", "a.example"))
+    assert _same_origin(req("https://b.example", "a.example", "b.example"))
+    assert not _same_origin(req("https://evil.example", "a.example"))
+    assert _same_origin(req(None, "a.example"))

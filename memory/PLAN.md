@@ -234,9 +234,22 @@ Input user (`memory/audit_inputs/AUDIT_2026-09-27_PHASE2_1.md` + `audit_verifica
 | CTL-02 | ✅ | Tampilan grup/brand eksekutif hanya bila scope outlet mencakup semua outlet; drilldown outlet dicek scope |
 | CTL-03 | ✅ | AI Q&A butuh `executive.dashboard.read`; sesi milik user lain tidak bisa dibaca/ditimpa; rate-limit `ai` aktif |
 | CTL-11 | ✅ | Import Excel: karyawan kanonik (`code/full_name/outlet_code/status`), COA ke `chart_of_accounts` |
-| CTL-15 | 🟡 | Opname diambil per id (bukan cari di 50 terakhir). Pola dropdown `per_page` 100–500 lain belum disapu |
+| CTL-15 | ✅ | Opname per id; 42 sumber dropdown master memakai `fetchAll()` (paging sampai `meta.total`, tidak terpotong) |
 | FE-04 | ✅ | Prefix permission AdminHome sesuai catalog |
-| FE-06 | ⏳ | Token di localStorage → cookie httpOnly: perubahan auth, perlu playbook integrasi auth & uji login menyeluruh (belum dikerjakan) |
-| DUP-01..14 | 🟡 | Konstanta payroll FE disatukan, helper scope/number series dipakai ulang; duplikasi formatter/status lain belum disapu |
-| SSOT-07 / SSOT-15 | 🟡 | Sebagian (lihat §5) |
+| FE-06 | ✅ | Sesi staff & loyalty di cookie httpOnly (`aurora_at`/`aurora_rt`, `loyalty_at`); refresh via cookie (body tanpa token); cek Origin untuk request cookie non-GET; header Bearer tetap didukung untuk API/script; semua `localStorage` token dihapus |
+| DUP-01 | ✅ | `reverse_journal` satu implementasi (journal_service hanya delegasi) |
+| DUP-02 | ✅ | Payroll/SC/insentif: post hanya dari `approved`, klaim atomik + rollback |
+| DUP-03 | ✅ | Scope outlet lewat `enforce_outlet_scope` (daily sales, KDO/BDO, daily close, opname) |
+| DUP-04 / DUP-05 | 🟡 | Diterima sebagai utang teknis (helper `_now`/pipeline stok identik perilakunya); tidak mengubah hasil |
+| DUP-06 | ✅ | `resolve_payment_target()` tunggal untuk daily sales, urgent purchase, kasbon |
+| DUP-07 | ✅ | Fasad approval tidak lagi mengekspor simbol privat |
+| DUP-08 | ✅ | 19 skrip test ad-hoc dipindah ke `tests/legacy_adhoc/` |
+| DUP-09 | ✅ | Kode mati dihapus (`get_open_ap_for_pr`, `award_points_for_daily_sales`, variabel tak terpakai); digest memakai tanggal WIB |
+| DUP-10 | ✅ | Formatter FE memakai `lib/format` (fmtRp/fmtNumber); `alert()` sudah 0 |
+| DUP-11 | ✅ | Upload sudah via object storage (tidak ada `open()` blocking di router) |
+| DUP-12 | ✅ | Excel Market List: PREVIOUS PRICE & VARIANCE terisi (kuartal berharga sebelumnya vs terbaru) |
+| DUP-13 | ✅ | Forecast guard: batas akhir = hari terakhir bulan |
+| DUP-14 | ✅ | Slip setoran harus baru & belum terpakai; hari yang di-close membekukan daily sales; reopen = status `reopened` (riwayat tetap) |
+| SSOT-07 | ✅ | Harga baris PR kanonik `unit_cost` (fallback `est_cost`) di approval tier & budget guard; KDO/BDO mengisi keduanya |
+| SSOT-15 | ✅ | 23 `to_list(500/1000)` pada data keuangan diganti tanpa batas (AP, TB/COA, depresiasi, budget, payment run, dll.) |
 | G. Pajak | 🔍 | Menunggu konsultan pajak (PBJT/PPN, TER) — tidak diubah |

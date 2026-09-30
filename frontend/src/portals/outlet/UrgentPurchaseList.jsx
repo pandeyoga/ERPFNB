@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 const STATUS_TABS = [
   { key: "",          label: "Semua" },
   { key: "submitted", label: "Menunggu Approval" },
@@ -46,7 +47,7 @@ export default function UrgentPurchaseList() {
   const [meta, setMeta] = useState({ total: 0, per_page: 20 });
 
   useEffect(() => {
-    api.get("/master/payment-methods", { params: { per_page: 100 } })
+    fetchAll("/master/payment-methods")
       .then(p => setPaymentMethods(unwrap(p) || [])).catch(() => {});
   }, []);
 

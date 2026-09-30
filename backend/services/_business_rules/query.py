@@ -31,7 +31,7 @@ async def list_rules(
         q["active"] = bool(active)
     items = await db.business_rules.find(q).sort(
         [("scope_type", 1), ("scope_id", 1), ("rule_type", 1), ("version", -1)]
-    ).to_list(500)
+    ).to_list(None)
     out = [serialize(d) for d in items]
     if effective_on:
         out = [

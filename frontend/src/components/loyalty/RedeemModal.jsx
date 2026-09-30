@@ -32,7 +32,7 @@ export default function RedeemModal({ open, onClose, reward, customer, token, on
       const response = await axios.post(
         `${API_URL}/api/loyalty/rewards/redeem`,
         { reward_id: reward.id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
 
       setRedemption(response.data);

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function TransferDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function TransferDetail() {
     try {
       const [tRes, oRes] = await Promise.all([
         api.get(`/inventory/transfers/${id}`),
-        api.get("/master/outlets", { params: { per_page: 100 } }),
+        fetchAll("/master/outlets"),
       ]);
       setTransfer(unwrap(tRes));
       const oList = unwrap(oRes) || [];

@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function ReportBuilder() {
   const [catalog, setCatalog] = useState(null);
   const [brands, setBrands] = useState([]);
@@ -44,8 +45,8 @@ export default function ReportBuilder() {
   useEffect(() => {
     Promise.all([
       api.get("/reports/catalog").then(r => setCatalog(unwrap(r))),
-      api.get("/master/brands", { params: { per_page: 100 } }).then(r => setBrands(unwrap(r) || [])),
-      api.get("/master/vendors", { params: { per_page: 100 } }).then(r => setVendors(unwrap(r) || [])),
+      fetchAll("/master/brands").then(r => setBrands(unwrap(r) || [])),
+      fetchAll("/master/vendors").then(r => setVendors(unwrap(r) || [])),
     ]).catch(() => {});
     loadSaved();
   }, []);

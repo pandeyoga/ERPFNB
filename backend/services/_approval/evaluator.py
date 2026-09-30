@@ -12,9 +12,9 @@ def compute_amount(entity_type: str, entity: dict, amount_field: Optional[str] =
         except Exception:  # noqa: BLE001
             pass
     if entity_type == "purchase_request":
-        # Sum qty * est_cost over lines
+        # SSOT-07: same line price as budget guard (unit_cost, est_cost legacy)
         return sum(
-            float(ln.get("qty", 0) or 0) * float(ln.get("est_cost", 0) or 0)
+            float(ln.get("qty", 0) or 0) * float(ln.get("unit_cost") or ln.get("est_cost") or 0)
             for ln in (entity.get("lines") or [])
         )
     if entity_type == "purchase_order":

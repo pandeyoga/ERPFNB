@@ -18,7 +18,7 @@ async def hr_dashboard() -> dict:
     pending_adv = await db.employee_advances.count_documents(
         {"deleted_at": None, "status": {"$in": ["draft", "awaiting_approval"]}})
     advances = await db.employee_advances.find(
-        {"deleted_at": None, "status": {"$in": ["awaiting_approval", "repaying"]}}).to_list(1000)
+        {"deleted_at": None, "status": {"$in": ["awaiting_approval", "repaying"]}}).to_list(None)
     outstanding = 0.0
     for a in advances:
         sched = a.get("schedule") or []

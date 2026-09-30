@@ -23,7 +23,6 @@ from services._approval import (  # noqa: F401
     create_delegation,
     list_delegations,
     revoke_delegation,
-    _check_delegation,
     # workflow
     get_workflow,
     list_workflows,
@@ -35,21 +34,13 @@ from services._approval import (  # noqa: F401
     compute_amount,
     evaluate,
     # permissions
-    _user_has_any_perm,
-    _user_matches_step,
     # notifications
     notify_pending_approvers,
     notify_creator,
-    _resolve_eligible_approvers,
-    _push_approval_notif,
-    _entity_label,
-    _entity_link,
-    _doc_descriptor,
+    _resolve_eligible_approvers,  # used by routers/approvals (eligible approver list)
     # runtime
     approve,
     reject,
-    _collection_for,
-    _get_entity,
     # escalation
     check_and_escalate,
 )

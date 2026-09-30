@@ -12,6 +12,7 @@ import DataTable from "@/components/shared/DataTable";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
+import { fetchAll } from "@/lib/api";
 const TYPES = [
   { v: "",          l: "Semua Type" },
   { v: "asset",     l: "Asset" },
@@ -31,7 +32,7 @@ export default function COABrowser() {
   const [postableOnly, setPostableOnly] = useState(false);
 
   useEffect(() => {
-    api.get("/master/chart-of-accounts", { params: { per_page: 100 } })
+    fetchAll("/master/chart-of-accounts")
       .then(r => setCoas(unwrap(r) || []))
       .catch(() => {})
       .finally(() => setLoading(false));

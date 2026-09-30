@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
 
+import { fetchAll } from "@/lib/api";
 export default function POSummaryReport() {
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date();
@@ -23,7 +24,7 @@ export default function POSummaryReport() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    api.get("/master/vendors", { params: { per_page: 100 } })
+    fetchAll("/master/vendors")
       .then(r => setVendors(r.data?.data || []))
       .catch(() => {});
   }, []);

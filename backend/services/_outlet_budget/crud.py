@@ -154,7 +154,7 @@ async def list_budgets(
         q["outlet_id"] = {"$in": outlet_ids}
     if brand_id:
         q["brand_id"] = brand_id
-    docs = await db.outlet_budgets.find(q).sort([("outlet_id", 1)]).to_list(500)
+    docs = await db.outlet_budgets.find(q).sort([("outlet_id", 1)]).to_list(None)
     out = []
     for d in docs:
         sd = serialize(d)

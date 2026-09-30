@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
 
+import { fetchAll } from "@/lib/api";
 const COL_TONE = {
   muted: "border-foreground/10 bg-foreground/[0.02]",
   amber: "border-amber-500/30 bg-amber-500/5",
@@ -96,7 +97,7 @@ export default function KanbanWorkboard() {
   }, [days, outletId, vendorId]);
 
   useEffect(() => {
-    api.get("/master/vendors", { params: { per_page: 200 } })
+    fetchAll("/master/vendors")
       .then(v => setVendors(unwrap(v) || [])).catch(() => {});
   }, []);
 

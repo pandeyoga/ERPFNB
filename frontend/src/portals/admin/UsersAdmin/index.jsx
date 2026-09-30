@@ -30,6 +30,7 @@ import UserDialog from "./UserDialog";
 import ResetPwdDialog from "./ResetPwdDialog";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function Users() {
   const { user: me } = useAuth();
   const { allOutlets } = useOutletScope();
@@ -68,7 +69,7 @@ export default function Users() {
 
   useEffect(() => {
     api.get("/admin/roles").then((r) => setRoles(unwrap(r) || [])).catch(() => {});
-    api.get("/master/brands", { params: { per_page: 100 } })
+    fetchAll("/master/brands")
       .then((r) => setBrands(unwrap(r) || [])).catch(() => {});
   }, []);
 

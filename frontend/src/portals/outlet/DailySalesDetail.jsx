@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function DailySalesDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function DailySalesDetail() {
     try {
       const [r, o] = await Promise.all([
         api.get(`/outlet/daily-sales/${id}`),
-        api.get("/master/outlets", { params: { per_page: 100 } }),
+        fetchAll("/master/outlets"),
       ]);
       setDs(unwrap(r));
       setOutlets(unwrap(o) || []);

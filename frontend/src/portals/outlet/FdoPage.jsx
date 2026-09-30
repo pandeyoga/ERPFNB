@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
-const fmt = (n) => n != null ? new Intl.NumberFormat("id-ID").format(n) : "-";
+import { fmtNumber } from "@/lib/format";
+const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 export default function FdoPage() {
   const { user } = useAuth();

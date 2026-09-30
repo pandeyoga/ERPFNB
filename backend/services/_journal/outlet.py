@@ -4,7 +4,7 @@ from typing import Optional
 from core.db import get_db
 from core.exceptions import ValidationError
 from services import gl_mapping
-from services._journal._common import _post_journal
+from services._journal._common import _post_journal, resolve_payment_target
 
 
 async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
@@ -38,17 +38,7 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
         pm = pm_lookup.get(pm_id)
         if not pm:
             continue
-        target = None
-        if pm.get("bank_account_id"):
-            ba = ba_lookup.get(pm["bank_account_id"])
-            target = ba and ba.get("gl_account_id")
-        if not target:
-            if pm["type"] == "card":
-                target = await gl_mapping.resolve("cards_receivable")
-            elif pm["code"] == "PETTY":
-                target = await gl_mapping.resolve("petty_cash", scope_outlet_id=outlet_id)
-            else:
-                target = await gl_mapping.resolve("cash_on_hand")
+        target = await resolve_payment_target(pm, outlet_id, ba_lookup.get(pm.get("bank_account_id")))
         lines.append({
             "coa_id": target, "dr": amount, "cr": 0,
             "memo": f"Sales {sales['sales_date']} via {pm['name']}",
@@ -141,14 +131,7 @@ async def post_for_urgent_purchase(up: dict, *, user_id: str) -> Optional[dict]:
     db = get_db()
     pm_id = up.get("payment_method_id")
     pm = await db.payment_methods.find_one({"id": pm_id}) if pm_id else None
-    target = None
-    if pm and pm.get("code") == "PETTY":
-        target = await gl_mapping.resolve("petty_cash", scope_outlet_id=up["outlet_id"])
-    elif pm and pm.get("bank_account_id"):
-        ba = await db.bank_accounts.find_one({"id": pm["bank_account_id"]})
-        target = ba and ba.get("gl_account_id")
-    if not target:
-        target = await gl_mapping.resolve("cash_on_hand")
+    target = await resolve_payment_target(pm, up["outlet_id"])
 
     lines = []
     for it in up.get("items", []):

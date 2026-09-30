@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function AdvancesList() {
   const { user } = useAuth();
   const { allOutlets: outlets } = useOutletScope();
@@ -46,7 +47,7 @@ export default function AdvancesList() {
   const { data: employees = [] } = useQuery({
     queryKey: ["master", "employees", { per_page: 200 }],
     queryFn: async () => {
-      const r = await api.get("/master/employees", { params: { per_page: 200 } });
+      const r = await fetchAll("/master/employees");
       return (unwrap(r) || []).filter((x) => x.status === "active");
     },
     staleTime: 5 * 60 * 1000,
@@ -55,7 +56,7 @@ export default function AdvancesList() {
   const { data: paymentMethods = [] } = useQuery({
     queryKey: ["master", "payment-methods", { per_page: 50 }],
     queryFn: async () => {
-      const r = await api.get("/master/payment-methods", { params: { per_page: 50 } });
+      const r = await fetchAll("/master/payment-methods");
       return unwrap(r) || [];
     },
     staleTime: 5 * 60 * 1000,

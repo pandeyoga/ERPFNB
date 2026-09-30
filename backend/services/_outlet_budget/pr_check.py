@@ -35,7 +35,7 @@ async def check_pr_against_budget(pr_payload: dict) -> dict:
 
     # B9 fix: batch-lookup market_list_prices for all items missing unit_cost (was N+1)
     no_cost_item_ids = list({ln["item_id"] for ln in lines
-                             if float(ln.get("unit_cost", 0) or 0) == 0 and ln.get("item_id")})
+                             if float(ln.get("unit_cost") or ln.get("est_cost") or 0) == 0 and ln.get("item_id")})
     ml_price_map: dict[str, float] = {}
     if no_cost_item_ids:
         # Aggregate latest ref_price per item_id (most recent created_at)
@@ -49,7 +49,7 @@ async def check_pr_against_budget(pr_payload: dict) -> dict:
 
     for ln in lines:
         qty = float(ln.get("qty", 0) or 0)
-        unit_cost = float(ln.get("unit_cost", 0) or 0)
+        unit_cost = float(ln.get("unit_cost") or ln.get("est_cost") or 0)  # SSOT-07
         # Fallback: use pre-fetched map
         if unit_cost == 0 and ln.get("item_id"):
             unit_cost = ml_price_map.get(ln["item_id"], 0)

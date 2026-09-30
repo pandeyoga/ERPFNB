@@ -17,7 +17,7 @@ async def monitor_overview(
     }
     if brand_id:
         q["brand_id"] = brand_id
-    docs = await db.outlet_budgets.find(q).to_list(1000)
+    docs = await db.outlet_budgets.find(q).to_list(None)
     items = []
     totals = {"kdo": 0.0, "fdo": 0.0, "bdo": 0.0, "combined": 0.0, "total": 0.0,
               "actual_kdo": 0.0, "actual_fdo": 0.0, "actual_bdo": 0.0, "actual_total": 0.0,
@@ -65,7 +65,7 @@ async def heatmap(
     }
     if outlet_ids:
         q["outlet_id"] = {"$in": outlet_ids}
-    docs = await db.outlet_budgets.find(q).to_list(1000)
+    docs = await db.outlet_budgets.find(q).to_list(None)
     matrix: dict = {}
     for d in docs:
         actuals = await compute_actuals(d["outlet_id"], d["period_start"], d["period_end"])

@@ -5,12 +5,13 @@ import EmptyState from "@/components/shared/EmptyState";
 import { Hash } from "lucide-react";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 
+import { fetchAll } from "@/lib/api";
 export default function NumberSeries() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/master/number-series", { params: { per_page: 50 } })
+    fetchAll("/master/number-series")
       .then(r => setItems(unwrap(r) || []))
       .finally(() => setLoading(false));
   }, []);

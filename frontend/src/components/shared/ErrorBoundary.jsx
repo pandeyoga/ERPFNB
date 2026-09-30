@@ -51,13 +51,12 @@ class ErrorBoundary extends React.Component {
     // Optional: send to backend error log endpoint
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || "";
-      const token = localStorage.getItem("aurora_token");
-      if (backendUrl && token) {
+      if (backendUrl) {
         fetch(`${backendUrl}/api/errors/client`, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             error_ref: errorRef,

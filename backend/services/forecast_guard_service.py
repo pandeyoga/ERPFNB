@@ -42,8 +42,9 @@ def _period_bounds(period: str) -> tuple[str, str]:
             ny, nm = y + 1, 1
         else:
             ny, nm = y, m + 1
-        # last day of month = (next month start - 1 day) — keep as inclusive end
-        end = f"{ny:04d}-{nm:02d}-01"
+        # DUP-13: inclusive end = last day of the month (not the 1st of next month)
+        from datetime import date as _date, timedelta as _td
+        end = (_date(ny, nm, 1) - _td(days=1)).isoformat()
         return start, end
     except Exception as e:
         raise ValidationError(f"Period harus YYYY-MM: {period}") from e

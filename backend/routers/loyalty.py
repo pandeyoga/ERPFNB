@@ -1,5 +1,5 @@
 """Customer loyalty API routes."""
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 from typing import List
@@ -33,7 +33,13 @@ from services.loyalty_service import (
 )
 
 router = APIRouter(prefix="/api/loyalty", tags=["loyalty"])
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
+LOYALTY_COOKIE = "loyalty_at"  # FE-06: customer session in httpOnly cookie
+
+
+def _set_customer_cookie(response: Response, token: str) -> None:
+    response.set_cookie(LOYALTY_COOKIE, token, httponly=True, secure=True, samesite="lax",
+                        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60, path="/api/loyalty")
 
 # JWT settings untuk customer loyalty (terpisah dari ERP JWT)
 # Menggunakan JWT_SECRET dari .env (A5 fix: SEC-002 + unify secrets)
@@ -69,9 +75,15 @@ def create_access_token(customer_id: str) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_customer(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Get current authenticated customer from JWT."""
-    token = credentials.credentials
+async def get_current_customer(request: Request, credentials: HTTPAuthorizationCredentials | None = Depends(security)):
+    """Get current authenticated customer from JWT (Bearer header or httpOnly cookie)."""
+    token = credentials.credentials if credentials else request.cookies.get(LOYALTY_COOKIE)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    if not credentials and request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        from core.security import _same_origin
+        if not _same_origin(request):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cross-origin request ditolak")
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         customer_id: str = payload.get("sub")
@@ -109,7 +121,7 @@ async def get_current_customer(credentials: HTTPAuthorizationCredentials = Depen
 
 
 @router.post("/register", response_model=LoginResponse, status_code=status.HTTP_201_CREATED)
-async def register_customer(customer_data: CustomerCreate):
+async def register_customer(customer_data: CustomerCreate, response: Response):
     """Register new customer."""
     db = get_db()
     
@@ -123,6 +135,7 @@ async def register_customer(customer_data: CustomerCreate):
     
     # Auto-login after registration
     access_token = create_access_token(customer.id)
+    _set_customer_cookie(response, access_token)
     customer_response = CustomerResponse(**customer.dict())
     
     return LoginResponse(
@@ -132,7 +145,7 @@ async def register_customer(customer_data: CustomerCreate):
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login_customer(login_data: LoginRequest):
+async def login_customer(login_data: LoginRequest, response: Response):
     """Customer login by email."""
     db = get_db()
     
@@ -144,6 +157,7 @@ async def login_customer(login_data: LoginRequest):
         )
     
     access_token = create_access_token(customer.id)
+    _set_customer_cookie(response, access_token)
     customer_response = CustomerResponse(**customer.dict())
     
     return LoginResponse(
@@ -152,13 +166,19 @@ async def login_customer(login_data: LoginRequest):
     )
 
 
+@router.post("/logout")
+async def logout_customer(response: Response):
+    response.delete_cookie(LOYALTY_COOKIE, path="/api/loyalty", secure=True, httponly=True, samesite="lax")
+    return {"message": "Logged out"}
+
+
 class PhoneLoginRequest(BaseModel):
     phone: str
     password: str
 
 
 @router.post("/login-phone", response_model=LoginResponse)
-async def login_customer_by_phone(payload: PhoneLoginRequest):
+async def login_customer_by_phone(payload: PhoneLoginRequest, response: Response):
     """Customer login by phone number (for auto-created accounts).
 
     Auto-created accounts by cashier use phone as both identifier and initial password.
@@ -177,6 +197,7 @@ async def login_customer_by_phone(payload: PhoneLoginRequest):
         )
 
     access_token = create_access_token(customer.id)
+    _set_customer_cookie(response, access_token)
     return LoginResponse(
         access_token=access_token,
         customer=CustomerResponse(**customer.dict())

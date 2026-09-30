@@ -136,7 +136,7 @@ async def build_digest_payload(user: dict | None = None) -> dict:
     ap_due_rows = await db.ap_ledgers.find({
         "status": {"$in": ["open", "partial", "overdue"]}, "deleted_at": None,
         "due_date": {"$lte": week_end.isoformat()},
-    }, {"vendor_id": 1, "balance": 1, "due_date": 1}).to_list(500)
+    }, {"vendor_id": 1, "balance": 1, "due_date": 1}).to_list(None)
     ap_due_total = sum(float(r.get("balance", 0) or 0) for r in ap_due_rows)
 
     # 4) Anomalies last 24h

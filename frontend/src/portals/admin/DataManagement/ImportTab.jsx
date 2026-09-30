@@ -83,7 +83,7 @@ function ImportTab({ collections, onSuccess }) {
         `${process.env.REACT_APP_BACKEND_URL}${endpoint}`,
         {
           method: "POST",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          credentials: "include",
           body: formData,
         }
       );

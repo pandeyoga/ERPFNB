@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 
+import { fetchAll } from "@/lib/api";
 export default function DailySalesReport() {
   const { allOutlets } = useOutletScope(); // FIX: Get outlets from hook
   const outlets = allOutlets; // FIX: Create alias for component usage
@@ -26,7 +27,7 @@ export default function DailySalesReport() {
 
   useEffect(() => {
     // FIX: Removed outlets fetch - already from hook
-    api.get("/master/brands", { params: { per_page: 100 } })
+    fetchAll("/master/brands")
       .then(r => setBrands(r.data?.data || []))
       .catch(() => {});
   }, []);

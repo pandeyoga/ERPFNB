@@ -54,7 +54,7 @@ async def list_accounts(
         q["is_active"] = active
     # B13 fix: asyncio.gather untuk load accounts + outlets + brands secara paralel
     import asyncio as _aio
-    accounts_future = db.cash_accounts.find(q).sort([("type", 1), ("name", 1)]).to_list(500)
+    accounts_future = db.cash_accounts.find(q).sort([("type", 1), ("name", 1)]).to_list(None)
     outlet_ids_future = db.outlets.find({"deleted_at": None}, {"id": 1, "name": 1, "_id": 0}).to_list(100)
     brand_ids_future  = db.brands.find({"deleted_at": None},  {"id": 1, "name": 1, "_id": 0}).to_list(20)
     accounts, outlets_all, brands_all = await _aio.gather(
@@ -239,7 +239,7 @@ async def list_history(account_id: str, *, days: int = 30) -> list[dict]:
     rows = await db.cash_balance_snapshots.find({
         "cash_account_id": account_id,
         "recorded_at": {"$gte": since},
-    }).sort([("recorded_at", -1)]).to_list(500)
+    }).sort([("recorded_at", -1)]).to_list(None)
     return [serialize(r) for r in rows]
 
 
@@ -257,7 +257,7 @@ async def compute_position(
         q["$or"] = [{"outlet_id": {"$in": outlet_ids}}, {"outlet_id": None}]
     if brand_ids:
         q.setdefault("$or", []).append({"brand_id": {"$in": brand_ids}})
-    accounts = await db.cash_accounts.find(q).to_list(500)
+    accounts = await db.cash_accounts.find(q).to_list(None)
 
     # B2 fix: pre-load all unique outlet IDs to avoid N+1 in loop below
     _all_oids = list({a["outlet_id"] for a in accounts if a.get("outlet_id")})
@@ -401,7 +401,7 @@ async def project_position(*, days: int = 30) -> dict:
 async def daily_snapshot_all(*, user_id: str = "system") -> dict:
     """Scheduled daily job — take a snapshot of every active account's current balance."""
     db = get_db()
-    accounts = await db.cash_accounts.find({"deleted_at": None, "is_active": True}).to_list(500)
+    accounts = await db.cash_accounts.find({"deleted_at": None, "is_active": True}).to_list(None)
     n = 0
     for a in accounts:
         await _snapshot(a["id"], float(a.get("current_balance", 0)),

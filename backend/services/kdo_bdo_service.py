@@ -51,9 +51,8 @@ async def create(payload: dict, *, kind: str, user: dict) -> dict:
     outlet_id = payload.get("outlet_id")
     if not outlet_id:
         raise ValidationError("outlet_id wajib", field="outlet_id")
-    perms = await _user_perms(user)
-    if outlet_id not in (user.get("outlet_ids") or []) and "*" not in perms:
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope  # DUP-03
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")
 
     # Auto-create items not in market list as pending_review
     lines = payload.get("lines", [])
@@ -115,11 +114,13 @@ async def _enrich_lines_with_market_list(lines: list[dict], *, user: dict) -> li
             # Already has item_id — use pre-loaded map
             item = items_by_id.get(item_id) or await db.items.find_one({"id": item_id, "deleted_at": None})
             if item:
-                ln_out = {**ln, "unit_cost": await _resolve_unit_cost(ln)}
+                _uc = await _resolve_unit_cost(ln)
+                ln_out = {**ln, "unit_cost": _uc, "est_cost": _uc}  # SSOT-07: approval tier sees the price
                 enriched.append(ln_out)
                 continue
         if not name:
-            enriched.append({**ln, "unit_cost": await _resolve_unit_cost(ln)})
+            _uc = await _resolve_unit_cost(ln)
+            enriched.append({**ln, "unit_cost": _uc, "est_cost": _uc})
             continue
         # Try to find by name (case insensitive)
         item = await db.items.find_one({

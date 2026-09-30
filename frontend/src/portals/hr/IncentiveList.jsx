@@ -28,6 +28,7 @@ import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
 import { WorkflowButton } from "./ServiceChargeList";
 
+import { fetchAll } from "@/lib/api";
 function currentPeriod() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -74,7 +75,7 @@ export default function IncentiveList() {
   };
 
   useEffect(() => {
-    api.get("/master/employees", { params: { per_page: 200 } })
+    fetchAll("/master/employees")
       .then((e) => setEmployees((unwrap(e) || []).filter(x => x.status === "active")))
       .catch(() => {});
     load();

@@ -15,6 +15,7 @@ import { fmtRp, fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+import { fetchAll } from "@/lib/api";
 export default function POComparison() {
   const [pos, setPos] = useState([]);
   const [vendors, setVendors] = useState([]);
@@ -27,7 +28,7 @@ export default function POComparison() {
     try {
       const [pRes, vRes] = await Promise.all([
         api.get("/procurement/pos", { params: { ...filters, per_page: 100 } }),
-        api.get("/master/vendors", { params: { per_page: 100 } }),
+        fetchAll("/master/vendors"),
       ]);
       setPos(unwrap(pRes) || []);
       setVendors(unwrap(vRes) || []);

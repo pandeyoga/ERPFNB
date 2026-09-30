@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function PRDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function PRDetail() {
     try {
       const [prRes, o, st] = await Promise.all([
         api.get(`/procurement/prs/${id}`),
-        api.get("/master/outlets", { params: { per_page: 100 } }),
+        fetchAll("/master/outlets"),
         api.get(`/procurement/prs/${id}/approval-state`).catch(() => null),
       ]);
       setOutlets(unwrap(o) || []);

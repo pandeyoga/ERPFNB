@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 
+import { fetchAll } from "@/lib/api";
 export default function JournalLedgerReport() {
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
   const { scopedOutlets: outlets } = useOutletScope();
@@ -27,7 +28,7 @@ export default function JournalLedgerReport() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    api.get("/master/coa", { params: { per_page: 500 } })
+    fetchAll("/master/coa")
       .then(r => setCoaList(r.data?.data || []))
       .catch(() => {});
   }, []);

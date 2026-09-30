@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
+import { fetchAll } from "@/lib/api";
+import { fmtRp } from "@/lib/format";
 /** Schema: which fields each entity has, plus labels. */
 const SCHEMA = {
   items: {
@@ -419,7 +421,7 @@ function EntityDialog({ entity, schema, editing, onClose, onSaved }) {
   );
 }
 
-const fmtIDR = (n) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n) => fmtRp(Number(n || 0)); // DUP-10
 
 function SalaryCell({ summary }) {
   if (!summary) return <span className="text-muted-foreground">—</span>;
@@ -463,7 +465,7 @@ function SalaryReadOnly({ summary, isNew }) {
 function OutletField({ field, value, onChange }) {
   const { data: outlets = [] } = useQuery({
     queryKey: ["master", "outlets", "picker"],
-    queryFn: async () => unwrap(await api.get("/master/outlets", { params: { per_page: 500, active: true } })) || [],
+    queryFn: async () => unwrap(await fetchAll("/master/outlets", { active: true })) || [],
     staleTime: 5 * 60 * 1000,
   });
   return (

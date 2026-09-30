@@ -22,14 +22,15 @@ import useOutletScopeGuard from "@/hooks/useOutletScopeGuard";
 import { AIVendorRecommendationModal } from "@/components/shared/AIVendorRecommendation";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
-import { fmtRp, todayJakartaISO } from "@/lib/format";
+import { fmtRp, todayJakartaISO, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 
-const fmt = (n) => n != null ? new Intl.NumberFormat("id-ID").format(n) : "-";
+import { fetchAll } from "@/lib/api";
+const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 export default function POForm() {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ export default function POForm() {
 
   useEffect(() => {
     // Load vendors only — outlets are provided by useOutletScope
-    api.get("/master/vendors", { params: { per_page: 200 } })
+    fetchAll("/master/vendors")
       .then((v) => setVendors(unwrap(v) || []))
       .catch(() => {});
   }, []);

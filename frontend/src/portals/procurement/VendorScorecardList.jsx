@@ -12,6 +12,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { fmtRp, fmtPct, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 
+import { fetchAll } from "@/lib/api";
 export default function VendorScorecardList() {
   const [data, setData] = useState([]);
   const [period, setPeriod] = useState("ytd");
@@ -27,7 +28,7 @@ export default function VendorScorecardList() {
         rows = unwrap(res);
       } catch {
         // Fallback: build from vendor list (no scoring)
-        const v = await api.get("/master/vendors", { params: { per_page: 100, active: true } });
+        const v = await fetchAll("/master/vendors", { active: true });
         rows = (unwrap(v) || []).map((vd) => ({
           vendor_id: vd.id, vendor_name: vd.name, vendor_code: vd.code,
           po_count: 0, total_value: 0, score: null,

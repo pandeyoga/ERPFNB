@@ -72,8 +72,8 @@ REPORT_TYPE_IDS = {rt["id"] for rt in REPORT_TYPES}
 async def _build_owner_daily_digest() -> dict:
     """Build owner daily digest payload."""
     db = get_db()
-    today = date.today().isoformat()
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    from core.clock import today_local
+    yesterday = (today_local() - timedelta(days=1)).isoformat()
 
     # Sales yesterday
     sales_pipeline = [
@@ -131,7 +131,8 @@ async def _build_owner_daily_digest() -> dict:
 async def _build_finance_ap_aging_weekly() -> dict:
     """Build finance AP aging weekly summary."""
     db = get_db()
-    today_dt = datetime.now(timezone.utc).date()
+    from core.clock import today_local
+    today_dt = today_local()
     today = today_dt.isoformat()
 
     # AP invoices — group by aging bucket

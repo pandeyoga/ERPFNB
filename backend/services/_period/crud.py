@@ -18,7 +18,7 @@ async def list_periods(*, year: Optional[int] = None) -> list[dict]:
     q: dict = {}
     if year is not None:
         q["fiscal_year"] = year
-    items = await db.accounting_periods.find(q).sort([("period", -1)]).to_list(500)
+    items = await db.accounting_periods.find(q).sort([("period", -1)]).to_list(None)
     existing = {p["period"] for p in items}
 
     today = datetime.now(timezone.utc)

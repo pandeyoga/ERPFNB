@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 
+import { fmtNumber } from "@/lib/format";
 // PERFORMANCE OPTIMIZATION: Debounce hook for search
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -37,7 +38,7 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-const fmt = (n) => n != null ? new Intl.NumberFormat("id-ID").format(n) : "-";
+const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 const VarianceBadge = ({ pct }) => {
   if (pct == null) return <span className="text-gray-400 text-xs">-</span>;
@@ -251,10 +252,7 @@ export default function MarketListPage() {
     try {
       const year = activeQuarter?.year || 2026;
       const { API_BASE } = await import("@/lib/api");
-      const token = localStorage.getItem("aurora_token") || "";
-      const res = await fetch(`${API_BASE}/market-list/export.xlsx?year=${year}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${API_BASE}/market-list/export.xlsx?year=${year}`, { credentials: "include" });
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

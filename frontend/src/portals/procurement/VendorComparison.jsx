@@ -28,6 +28,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 
+import { fetchAll } from "@/lib/api";
 export default function VendorComparison() {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
@@ -40,8 +41,8 @@ export default function VendorComparison() {
 
   useEffect(() => {
     Promise.all([
-      api.get("/master/items", { params: { per_page: 500 } }),
-      api.get("/master/vendors", { params: { per_page: 200 } }),
+      fetchAll("/master/items"),
+      fetchAll("/master/vendors"),
     ]).then(([i, v]) => {
       setAllItems(unwrap(i) || []);
       setVendors(unwrap(v) || []);

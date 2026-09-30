@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
-from fastapi import Depends, Header
+from urllib.parse import urlparse
+
+from fastapi import Depends, Header, Request
 
 from .config import settings
 from .db import get_db
@@ -64,10 +66,30 @@ def decode_token(token: str) -> dict:
 
 
 # ---------- Current user dependency ----------
-async def current_user(authorization: str | None = Header(default=None)) -> dict:
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise UnauthorizedError("Missing bearer token")
-    token = authorization.split(" ", 1)[1].strip()
+ACCESS_COOKIE = "aurora_at"
+REFRESH_COOKIE = "aurora_rt"
+_UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _same_origin(request: Request) -> bool:
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    if not origin:
+        return True  # SameSite=Lax already withholds the cookie on cross-site sub-requests
+    hosts = {h.strip().lower() for v in (request.headers.get("x-forwarded-host"), request.headers.get("host"))
+             if v for h in v.split(",")}
+    return urlparse(origin).netloc.lower() in hosts
+
+
+async def current_user(request: Request, authorization: str | None = Header(default=None)) -> dict:
+    """Bearer header (API clients) or httpOnly cookie (web app, FE-06)."""
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+    else:
+        token = request.cookies.get(ACCESS_COOKIE)
+        if not token:
+            raise UnauthorizedError("Missing bearer token")
+        if request.method in _UNSAFE and not _same_origin(request):
+            raise ForbiddenError("Cross-origin request ditolak", code="CSRF_ORIGIN_MISMATCH")
     payload = decode_token(token)
     if payload.get("type") != "access":
         raise UnauthorizedError("Wrong token type")

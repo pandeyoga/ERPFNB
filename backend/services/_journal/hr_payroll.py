@@ -5,7 +5,7 @@ from typing import Optional
 
 from core.db import get_db
 from services import gl_mapping
-from services._journal._common import _post_journal
+from services._journal._common import _post_journal, resolve_payment_target
 
 
 def _period_end(period: Optional[str]) -> str:
@@ -29,17 +29,8 @@ async def post_for_employee_advance(adv: dict, *, user_id: str) -> Optional[dict
         return None
     ar_acc = await gl_mapping.resolve("employee_advance_receivable")
     pm_id = adv.get("payment_method_id")
-    target = None
-    pm = None
-    if pm_id:
-        pm = await db.payment_methods.find_one({"id": pm_id})
-    if pm and pm.get("code") == "PETTY":
-        target = await gl_mapping.resolve("petty_cash", scope_outlet_id=adv.get("outlet_id"))
-    elif pm and pm.get("bank_account_id"):
-        ba = await db.bank_accounts.find_one({"id": pm["bank_account_id"]})
-        target = ba and ba.get("gl_account_id")
-    if not target:
-        target = await gl_mapping.resolve("cash_on_hand")
+    pm = await db.payment_methods.find_one({"id": pm_id}) if pm_id else None
+    target = await resolve_payment_target(pm, adv.get("outlet_id"))
 
     return await _post_journal(
         entry_date=adv.get("disbursed_at", "")[:10] or adv.get("advance_date"),

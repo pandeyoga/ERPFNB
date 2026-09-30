@@ -78,9 +78,11 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
             raise ValidationError(f"{_fld} harus berupa list")
     outlet_id = payload["outlet_id"]
     sales_date = payload["sales_date"]
-    if outlet_id not in user.get("outlet_ids", []) and "*" not in await _user_perms(user):
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")  # DUP-03
 
+    from services.daily_close_service import assert_day_open
+    await assert_day_open(outlet_id, sales_date)
     # FIN-04: one daily sales per outlet+date — no new draft once submitted/validated exists
     if await db.daily_sales.find_one({"outlet_id": outlet_id, "sales_date": sales_date,
                                       "status": {"$in": ["submitted", "validated"]}, "deleted_at": None}):
@@ -159,6 +161,8 @@ async def submit_daily_sales(id_: str, *, user: dict) -> dict:
         raise NotFoundError("Daily sales")
     if s["status"] not in ("draft", "rejected"):
         raise ValidationError(f"Status saat ini: {s['status']}, tidak bisa submit")
+    from services.daily_close_service import assert_day_open
+    await assert_day_open(s["outlet_id"], s["sales_date"])
     # Validate payment vs grand total balance
     pay_total = sum(float(p.get("amount", 0) or 0) for p in s.get("payment_breakdown", []))
     if abs(pay_total - s["grand_total"]) > 1:
@@ -335,8 +339,8 @@ async def petty_cash_balance(outlet_id: str) -> float:
 async def add_petty_cash(payload: dict, *, user: dict) -> dict:
     db = get_db()
     outlet_id = payload["outlet_id"]
-    if outlet_id not in user.get("outlet_ids", []) and "*" not in await _user_perms(user):
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")  # DUP-03
     if payload.get("type") not in ("purchase", "replenish", "adjustment"):
         raise ValidationError("type harus purchase / replenish / adjustment")
     if float(payload.get("amount", 0) or 0) <= 0:
@@ -441,8 +445,8 @@ async def list_urgent_purchases(
 async def create_urgent_purchase(payload: dict, *, user: dict) -> dict:
     db = get_db()
     outlet_id = payload["outlet_id"]
-    if outlet_id not in user.get("outlet_ids", []) and "*" not in await _user_perms(user):
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")  # DUP-03
     items = payload.get("items", [])
     if not items:
         raise ValidationError("Minimal 1 item")

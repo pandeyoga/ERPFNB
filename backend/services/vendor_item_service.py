@@ -91,7 +91,6 @@ async def upsert_vendor_item(
 
     # Existing record — update
     old_price = existing.get("current_price", 0.0)
-    price_changed = abs(new_price - old_price) > 0.01
 
     updates: dict = {"updated_at": _now()}
 

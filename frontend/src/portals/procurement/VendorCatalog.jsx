@@ -23,7 +23,8 @@ import {
   AlertTriangle, CheckCircle, XCircle
 } from "lucide-react";
 
-const fmt = (n) => n != null ? new Intl.NumberFormat("id-ID").format(n) : "-";
+import { fmtNumber } from "@/lib/format";
+const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 const DeviationBadge = ({ pct }) => {
   if (pct == null) return <span className="text-gray-400 text-xs">No ref</span>;

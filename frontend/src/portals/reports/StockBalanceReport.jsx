@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 
+import { fetchAll } from "@/lib/api";
 export default function StockBalanceReport() {
   const { allOutlets } = useOutletScope();
   const outlets = allOutlets;
@@ -20,7 +21,7 @@ export default function StockBalanceReport() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    api.get("/master/categories", { params: { per_page: 100 } })
+    fetchAll("/master/categories")
       .then(r => setCategories(r.data?.data || []))
       .catch(() => {});
   }, []);

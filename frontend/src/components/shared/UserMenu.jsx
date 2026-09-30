@@ -17,6 +17,7 @@ import ChangePasswordDialog from "@/components/shared/ChangePasswordDialog";
 import ProfileDialog from "@/components/shared/ProfileDialog";
 import PreferencesDialog from "@/components/shared/PreferencesDialog";
 
+import { fetchAll } from "@/lib/api";
 export default function UserMenu() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -30,9 +31,9 @@ export default function UserMenu() {
 
   useEffect(() => {
     if (!user) return;
-    api.get("/master/outlets", { params: { per_page: 100 } })
+    fetchAll("/master/outlets")
       .then((r) => setOutlets(unwrap(r) || [])).catch(() => {});
-    api.get("/master/brands", { params: { per_page: 100 } })
+    fetchAll("/master/brands")
       .then((r) => setBrands(unwrap(r) || [])).catch(() => {});
   }, [user]);
 

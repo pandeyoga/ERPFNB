@@ -64,7 +64,7 @@ export default function LoyaltyDashboard() {
     if (!token) return;
     try {
       const res = await axios.get(`${API_URL}/api/loyalty/transactions?limit=5`, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setTransactions(res.data || []);
     } catch {}

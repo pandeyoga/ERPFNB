@@ -164,7 +164,6 @@ def calc_monthly_dep(asset: dict) -> float:
     life = int(asset.get("useful_life_years", 1) or 1)
     method = asset.get("dep_method", "straight_line")
     book = float(asset.get("book_value", cost))
-    accum = float(asset.get("accumulated_dep", 0))
 
     if life <= 0 or book <= salvage:
         return 0.0
@@ -289,7 +288,7 @@ async def post_depreciation(asset_id: str, period: str, *, user_id: str) -> Opti
 async def post_all_depreciation(period: str, *, user_id: str) -> dict:
     """Post depreciation for ALL active assets for given period."""
     db = get_db()
-    assets = await db.fixed_assets.find({"status": {"$in": ["active", "revalued"]}, "deleted_at": None}).to_list(500)
+    assets = await db.fixed_assets.find({"status": {"$in": ["active", "revalued"]}, "deleted_at": None}).to_list(None)
     posted = 0
     skipped = 0
     for a in assets:

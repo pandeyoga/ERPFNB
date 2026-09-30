@@ -4,6 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 
+import { fetchAll } from "@/lib/api";
 const MASTER_TILES = [
   { entity: "items", col: "items" },
   { entity: "vendors", col: "vendors" },
@@ -24,7 +25,7 @@ export function useAdminHome(canViewUsers) {
     queryFn: async () => {
       const tiles = MASTER_TILES.map(t => t.entity);
       const results = await Promise.allSettled([
-        ...tiles.map(e => api.get(`/master/${e}`, { params: { per_page: 1 } })),
+        ...tiles.map(e => fetchAll(`/master/${e}`)),
         ...(canViewUsers ? [
           api.get("/admin/users", { params: { per_page: 1 } }),
           api.get("/admin/roles"),

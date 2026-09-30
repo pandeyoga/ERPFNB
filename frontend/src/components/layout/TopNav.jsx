@@ -19,6 +19,7 @@ import ApprovalsInboxButton from "@/components/shared/ApprovalsInboxButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import HelpTourButton from "@/components/shared/HelpTourButton";
 
+import { fetchAll } from "@/lib/api";
 export default function TopNav({ onSearchOpen }) {
   const { user } = useAuth();
   const { openMobileDrawer } = useNavigation();
@@ -28,7 +29,7 @@ export default function TopNav({ onSearchOpen }) {
 
   useEffect(() => {
     // Load outlet list to resolve names (lightweight, cached)
-    api.get("/master/outlets", { params: { per_page: 100 } })
+    fetchAll("/master/outlets")
       .then((r) => setOutlets(unwrap(r) || []))
       .catch(() => {});
   }, []);

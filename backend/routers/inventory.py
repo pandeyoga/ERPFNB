@@ -164,9 +164,8 @@ async def list_o(
 @router.get("/opname/{id_}")
 async def get_o(id_: str, user: dict = Depends(require_perm("inventory.balance.read"))):
     sess = await inventory_service.get_opname(id_)
-    user_perms = await get_user_permissions(user)
-    if "*" not in user_perms and sess.get("outlet_id") not in (user.get("outlet_ids") or []):
-        raise ForbiddenError("Opname bukan milik outlet Anda")
+    from core.security import enforce_outlet_scope  # DUP-03
+    enforce_outlet_scope(user, sess.get("outlet_id") or "__missing__")
     return ok_envelope(sess)
 
 

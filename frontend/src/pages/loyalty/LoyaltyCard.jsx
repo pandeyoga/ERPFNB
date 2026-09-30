@@ -28,7 +28,7 @@ export default function LoyaltyCard() {
   }, []);
 
   useEffect(() => {
-    axios.get(`${API_URL}/api/loyalty/card`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${API_URL}/api/loyalty/card`, { withCredentials: true })
       .then((r) => setCardData(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));

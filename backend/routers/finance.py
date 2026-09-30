@@ -197,7 +197,7 @@ async def chart_of_accounts_alias(
         q["type"] = type
     if is_postable is not None:
         q["is_postable"] = is_postable
-    rows = await db.chart_of_accounts.find(q, {"_id": 0}).sort("code", 1).to_list(500)
+    rows = await db.chart_of_accounts.find(q, {"_id": 0}).sort("code", 1).to_list(None)
     return ok_envelope(rows)
 
 

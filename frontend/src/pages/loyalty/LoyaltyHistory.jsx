@@ -23,7 +23,7 @@ export default function LoyaltyHistory() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`${API_URL}/api/loyalty/transactions?limit=50`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${API_URL}/api/loyalty/transactions?limit=50`, { withCredentials: true })
       .then((r) => setTransactions(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));

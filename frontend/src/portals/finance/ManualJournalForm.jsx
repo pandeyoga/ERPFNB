@@ -22,6 +22,7 @@ import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { fetchAll } from "@/lib/api";
 export default function ManualJournalForm() {
   const navigate = useNavigate();
   const [coas, setCoas] = useState([]);
@@ -43,9 +44,9 @@ export default function ManualJournalForm() {
   useEffect(() => {
     setLoadingRefs(true);
     Promise.all([
-      api.get("/master/chart-of-accounts", { params: { per_page: 100 } }),
-      api.get("/master/outlets", { params: { per_page: 100 } }),
-      api.get("/master/brands", { params: { per_page: 100 } }),
+      fetchAll("/master/chart-of-accounts"),
+      fetchAll("/master/outlets"),
+      fetchAll("/master/brands"),
     ]).then(([c, o, b]) => {
       setCoas((unwrap(c) || []).filter(x => x.is_postable && x.active));
       setOutlets(unwrap(o) || []);

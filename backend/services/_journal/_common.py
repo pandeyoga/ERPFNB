@@ -123,3 +123,17 @@ async def _post_journal(
         action="post", after={"source_type": source_type, "source_id": source_id, "doc_no": doc_no},
     )
     return serialize(doc)
+
+
+async def resolve_payment_target(pm: dict | None, outlet_id: str | None, ba: dict | None = None) -> str:
+    """DUP-06: one rule for 'which GL account does this payment method hit'."""
+    from services import gl_mapping
+    if pm and pm.get("code") == "PETTY":
+        return await gl_mapping.resolve("petty_cash", scope_outlet_id=outlet_id)
+    if pm and pm.get("bank_account_id"):
+        ba = ba or await get_db().bank_accounts.find_one({"id": pm["bank_account_id"]})
+        if ba and ba.get("gl_account_id"):
+            return ba["gl_account_id"]
+    if pm and pm.get("type") == "card":
+        return await gl_mapping.resolve("cards_receivable")
+    return await gl_mapping.resolve("cash_on_hand")

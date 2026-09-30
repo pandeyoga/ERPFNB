@@ -59,7 +59,7 @@ export default function LoyaltyProfile() {
     setLoading(true);
     setError("");
     try {
-      await axios.put(`${API_URL}/api/loyalty/me`, profileData, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_URL}/api/loyalty/me`, profileData, { withCredentials: true });
       await refreshCustomer();
       toast.success("Profile berhasil diupdate!");
     } catch (err) {
@@ -78,7 +78,7 @@ export default function LoyaltyProfile() {
     if (passwordData.newPassword === passwordData.currentPassword) { setPwError("Password baru tidak boleh sama"); return; }
     setPwLoading(true);
     try {
-      await axios.post(`${API_URL}/api/loyalty/me/change-password`, { current_password: passwordData.currentPassword, new_password: passwordData.newPassword }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${API_URL}/api/loyalty/me/change-password`, { current_password: passwordData.currentPassword, new_password: passwordData.newPassword }, { withCredentials: true });
       toast.success("Password berhasil diubah!");
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {

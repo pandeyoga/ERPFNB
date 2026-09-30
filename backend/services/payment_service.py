@@ -478,7 +478,7 @@ async def list_unpaid_grs() -> list[dict]:
     grs = await db.goods_receipts.find({
         "deleted_at": None,
         "payment_status": {"$nin": ["paid"]},
-    }).sort("receive_date", 1).to_list(500)
+    }).sort("receive_date", 1).to_list(None)
     vendors_by_id: dict = {}
     async for v in db.vendors.find({}):
         vendors_by_id[v["id"]] = v

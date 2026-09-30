@@ -125,7 +125,7 @@ async def _aggregate_accounts(start: date, end: date) -> dict[str, dict]:
             "credit": {"$sum": {"$ifNull": ["$lines.cr", 0]}},
         }},
     ]
-    rows = await db.journal_entries.aggregate(pipeline).to_list(500)
+    rows = await db.journal_entries.aggregate(pipeline).to_list(None)
     out: dict[str, dict] = {}
     for r in rows:
         gid = r.get("_id") or {}

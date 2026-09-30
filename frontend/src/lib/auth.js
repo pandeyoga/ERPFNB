@@ -3,50 +3,37 @@ import api, { unwrap, unwrapError } from "./api";
 import { _resetCollapsibleCache } from "@/components/shared/CollapsibleSection";
 
 const AuthContext = createContext(null);
+// FE-06: session tokens live in httpOnly cookies; clear any legacy copies left in localStorage
+const LEGACY_KEYS = ["aurora_access_token", "aurora_refresh_token", "aurora_token", "token"];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check session on mount
   useEffect(() => {
-    const token = localStorage.getItem("aurora_access_token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
     api
-      .get("/auth/me")
+      .get("/auth/me", { _skipAuthRedirect: true })
       .then((res) => setUser(unwrap(res)))
-      .catch(() => {
-        localStorage.removeItem("aurora_access_token");
-        localStorage.removeItem("aurora_refresh_token");
-      })
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 
   const logout = useCallback(async () => {
-    const rt = localStorage.getItem("aurora_refresh_token");
     try {
-      await api.post("/auth/logout", rt ? { refresh_token: rt } : null);
+      await api.post("/auth/logout", null, { _skipAuthRedirect: true });
     } catch (e) {
       // ignore
     }
-    localStorage.removeItem("aurora_access_token");
-    localStorage.removeItem("aurora_refresh_token");
-    // Phase F3 stretch — clear preference caches so the next user starts fresh
     _resetCollapsibleCache();
     setUser(null);
   }, []);
 
   const login = useCallback(async (email, password) => {
     try {
-      // Reset preference caches before establishing a new session (prevents stale state cross-user)
       _resetCollapsibleCache();
       const res = await api.post("/auth/login", { email, password });
       const data = unwrap(res);
-      localStorage.setItem("aurora_access_token", data.access_token);
-      localStorage.setItem("aurora_refresh_token", data.refresh_token);
       setUser(data.user);
       return { ok: true, user: data.user };
     } catch (e) {

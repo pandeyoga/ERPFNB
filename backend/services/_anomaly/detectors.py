@@ -137,7 +137,7 @@ async def detect_vendor_leadtime(
     gr_list = await db.goods_receipts.find({
         "deleted_at": None, "vendor_id": vendor_id,
         "receive_date": {"$gte": start, "$lte": end},
-    }, {"po_id": 1, "receive_date": 1}).to_list(500)
+    }, {"po_id": 1, "receive_date": 1}).to_list(None)
     po_ids = list({gr["po_id"] for gr in gr_list if gr.get("po_id")})
     pos_raw = await db.purchase_orders.find(
         {"id": {"$in": po_ids}},

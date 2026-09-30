@@ -52,7 +52,7 @@ async def _petty_cash_check(outlet_id: str, date_str: str) -> dict:
     q = {
         "outlet_id": outlet_id, "txn_date": date_str, "deleted_at": None,
     }
-    txns = await db.petty_cash_transactions.find(q).to_list(500)
+    txns = await db.petty_cash_transactions.find(q).to_list(None)
     drafts = [t for t in txns if t.get("status") == "draft"]
     bal = await outlet_service.petty_cash_balance(outlet_id)
     ok = (len(drafts) == 0) and (bal >= 0)
@@ -75,7 +75,7 @@ async def _kdo_bdo_check(outlet_id: str, date_str: str) -> dict:
         "deleted_at": None,
         "request_date": date_str,
         "source": {"$in": ["kdo", "bdo"]},
-    }).to_list(500)
+    }).to_list(None)
     drafts = [p for p in pr_today if p.get("status") == "draft"]
     ok = len(drafts) == 0  # any non-draft (including "none") is OK
     return {
@@ -100,7 +100,7 @@ async def _deposit_slip_check(outlet_id: str, date_str: str,
                     "attachment_id": attachment_id}
     # Look up any existing record for this date (perhaps already closed)
     rec = await db.daily_close_records.find_one({
-        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None,
+        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None, "status": {"$ne": "reopened"},
     })
     if rec and rec.get("deposit_slip_attachment_id"):
         return {"ok": True, "label": "Slip sudah pernah diunggah",
@@ -118,9 +118,8 @@ async def get_status(outlet_id: str, date_str: str, *, user: dict,
     if not date_str:
         raise ValidationError("date wajib", field="date")
     # Scope guard
-    perms = await _user_perms(user)
-    if outlet_id not in (user.get("outlet_ids") or []) and "*" not in perms:
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope  # DUP-03
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")
 
     sales = await _sales_check(outlet_id, date_str)
     pc = await _petty_cash_check(outlet_id, date_str)
@@ -135,7 +134,7 @@ async def get_status(outlet_id: str, date_str: str, *, user: dict,
     ]
     overall_ok = all(it.get("ok") for it in items)
     rec = await db.daily_close_records.find_one({
-        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None,
+        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None, "status": {"$ne": "reopened"},
     })
     return {
         "outlet_id": outlet_id,
@@ -175,9 +174,8 @@ async def submit(
 ) -> dict:
     """Submit daily close. Validates checklist + persists record."""
     db = get_db()
-    perms = await _user_perms(user)
-    if outlet_id not in (user.get("outlet_ids") or []) and "*" not in perms:
-        raise ForbiddenError("Outlet bukan dalam scope Anda")
+    from core.security import enforce_outlet_scope  # DUP-03
+    enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")
 
     # Validate attachment exists and is a deposit slip
     if not deposit_slip_attachment_id:
@@ -185,10 +183,18 @@ async def submit(
     att = await db.attachments.find_one({"id": deposit_slip_attachment_id, "deleted_at": None})
     if not att:
         raise NotFoundError("Attachment slip setoran tidak ditemukan")
+    # DUP-14: slip must be fresh for this outlet/date — not linked elsewhere, not reused, not older than the sales day
+    if att.get("source_type") not in (None, "daily_close") or (att.get("source_type") == "daily_close" and att.get("source_id")):
+        raise ValidationError("Slip setoran ini sudah terpakai di dokumen lain", field="deposit_slip_attachment_id")
+    if await db.daily_close_records.find_one({"deposit_slip_attachment_id": deposit_slip_attachment_id,
+                                              "status": {"$ne": "reopened"}, "deleted_at": None}):
+        raise ValidationError("Slip setoran ini sudah dipakai daily close lain", field="deposit_slip_attachment_id")
+    if str(att.get("created_at") or "")[:10] < date_str:
+        raise ValidationError("Slip setoran harus diunggah pada/after tanggal penjualan", field="deposit_slip_attachment_id")
 
     # Check existing
     existing = await db.daily_close_records.find_one({
-        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None,
+        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None, "status": {"$ne": "reopened"},
     })
     if existing:
         raise ConflictError("Daily close sudah dilakukan untuk tanggal ini")
@@ -224,6 +230,7 @@ async def submit(
         "deposit_slip_url": att.get("url"),
         "deposit_slip_filename": att.get("filename"),
         "notes": notes,
+        "status": "closed",
         "closed_at": _now_iso(),
         "closed_by": user.get("id"),
         "closed_by_name": user.get("full_name") or user.get("email"),
@@ -294,10 +301,11 @@ async def reopen(record_id: str, *, reason: str, user: dict) -> dict:
     perms = await _user_perms(user)
     if "*" not in perms and "admin.system_settings.manage" not in perms:
         raise ForbiddenError("Hanya admin yang bisa reopen daily close")
+    # DUP-14: reopen keeps the record as history (status), it is not deleted
     await db.daily_close_records.update_one(
         {"id": record_id},
-        {"$set": {"deleted_at": _now_iso(), "reopened_reason": reason,
-                  "reopened_by": user.get("id"), "reopened_at": _now_iso()}},
+        {"$set": {"status": "reopened", "reopened_reason": reason,
+                  "reopened_by": user.get("id"), "reopened_at": _now_iso(), "updated_at": _now_iso()}},
     )
     await audit_log(
         user_id=user.get("id"), entity_type="daily_close", entity_id=record_id,
@@ -329,3 +337,11 @@ async def _outlet_name(outlet_id: str) -> str:
     db = get_db()
     o = await db.outlets.find_one({"id": outlet_id})
     return (o or {}).get("name") or outlet_id
+
+
+async def assert_day_open(outlet_id: str, date_str: str) -> None:
+    """DUP-14: a closed day is frozen — sales for it cannot be created/edited/submitted until reopened."""
+    rec = await get_db().daily_close_records.find_one({
+        "outlet_id": outlet_id, "close_date": date_str, "deleted_at": None, "status": {"$ne": "reopened"}})
+    if rec:
+        raise ValidationError(f"Hari {date_str} sudah di-close untuk outlet ini. Minta admin reopen dulu.")

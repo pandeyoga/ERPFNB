@@ -85,7 +85,7 @@ async def kpi() -> dict:
     posted_docs = await db.payment_runs.find({
         **base_q, "status": "posted",
         "payment_date": {"$gte": start, "$lte": cap},
-    }, {"total_amount": 1}).to_list(500)
+    }, {"total_amount": 1}).to_list(None)
     posted_amount = sum(float(d.get("total_amount", 0) or 0) for d in posted_docs)
     posted_count = len(posted_docs)
 

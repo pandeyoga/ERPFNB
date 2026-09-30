@@ -26,6 +26,7 @@ import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
+import { fetchAll } from "@/lib/api";
 export default function PettyCashList() {
   const { scopedOutlets, outletId, currentOutlet, setOutletId } = useOutletScopeCtx();
   const [showForm, setShowForm] = useState(false);
@@ -42,7 +43,7 @@ export default function PettyCashList() {
   const { data: coas = [] } = useQuery({
     queryKey: ["master", "chart-of-accounts", { per_page: 100, postable: true }],
     queryFn: async () => {
-      const c = await api.get("/master/chart-of-accounts", { params: { per_page: 100 } });
+      const c = await fetchAll("/master/chart-of-accounts");
       return (unwrap(c) || []).filter(coa => coa.is_postable && coa.active);
     },
     staleTime: 5 * 60 * 1000,

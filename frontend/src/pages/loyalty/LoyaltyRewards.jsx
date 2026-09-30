@@ -184,7 +184,7 @@ export default function LoyaltyRewards() {
     try {
       const params = {};
       if (category !== "all") params.category = category;
-      const res = await axios.get(`${API_URL}/api/loyalty/rewards`, { headers: { Authorization: `Bearer ${token}` }, params });
+      const res = await axios.get(`${API_URL}/api/loyalty/rewards`, { withCredentials: true, params });
       setRewards(res.data || []);
     } catch {}
     finally { setLoading(false); }
@@ -197,7 +197,7 @@ export default function LoyaltyRewards() {
     setRedeeming(reward.id);
     setErrorMsg("");
     try {
-      const res = await axios.post(`${API_URL}/api/loyalty/rewards/redeem`, { reward_id: reward.id }, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API_URL}/api/loyalty/rewards/redeem`, { reward_id: reward.id }, { withCredentials: true });
       setSuccessResult(res.data);
       await refreshCustomer();
     } catch (err) {

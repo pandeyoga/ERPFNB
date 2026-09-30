@@ -190,11 +190,11 @@ async def vendor_scorecard(vendor_id: str, *, days: int = 180) -> dict:
     pos = await db.purchase_orders.find({
         "vendor_id": vendor_id, "deleted_at": None,
         "order_date": {"$gte": cutoff},
-    }).to_list(500)
+    }).to_list(None)
     grs = await db.goods_receipts.find({
         "vendor_id": vendor_id, "deleted_at": None,
         "receive_date": {"$gte": cutoff},
-    }).to_list(500)
+    }).to_list(None)
 
     # Lead time per matched PO -> GR
     lead_times: list[float] = []

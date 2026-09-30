@@ -207,7 +207,7 @@ async def get_ref_prices_bulk(
         return {}
     docs = await db.market_list_prices.find({
         "quarter_id": quarter_id, "item_id": {"$in": item_ids}
-    }).to_list(500)
+    }).to_list(None)
     result = {}
     for doc in docs:
         iid = doc["item_id"]
@@ -297,7 +297,7 @@ async def get_market_list(
             prev_docs = await db.market_list_prices.find({
                 "item_id": {"$in": item_ids},
                 "quarter_id": {"$ne": quarter_id},
-            }).sort([("created_at", -1)]).to_list(1000)
+            }).sort([("created_at", -1)]).to_list(None)
             seen = set()
             for doc in prev_docs:
                 iid = doc["item_id"]
@@ -491,11 +491,11 @@ async def export_market_list_excel(year: int) -> bytes:
         # Previous price = last price before the earliest quarter in this year
         prev_price = ""
         variance_pct = ""
-        last_quarter_price = None
-        for q_id in quarter_ids:
-            p = price_map.get((item["id"], q_id))
-            if p:
-                last_quarter_price = p
+        priced = [price_map.get((item["id"], q_id)) for q_id in quarter_ids]
+        priced = [p for p in priced if p]
+        if len(priced) >= 2:  # DUP-12: previous = prior priced quarter; variance vs latest
+            prev_price = priced[-2]
+            variance_pct = round((priced[-1] - priced[-2]) / priced[-2] * 100, 2) if priced[-2] else ""
 
         row_values = [
             row_idx - 3,                              # NO

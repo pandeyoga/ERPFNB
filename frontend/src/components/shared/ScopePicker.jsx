@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+import { fetchAll } from "@/lib/api";
 const TYPES = [
   { value: "group", label: "Group", icon: Globe2 },
   { value: "brand", label: "Brand", icon: Building2 },
@@ -33,8 +34,8 @@ export default function ScopePicker({ className, onChange }) {
       try {
         setLoadingScopes(true);
         const [b, o] = await Promise.all([
-          api.get("/master/brands", { params: { active: true, per_page: 100 } }),
-          api.get("/master/outlets", { params: { active: true, per_page: 100 } }),
+          fetchAll("/master/brands", { active: true }),
+          fetchAll("/master/outlets", { active: true }),
         ]);
         if (mounted) {
           setBrands(unwrap(b) || []);

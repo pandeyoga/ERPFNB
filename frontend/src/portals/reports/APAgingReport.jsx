@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
 
+import { fetchAll } from "@/lib/api";
 export default function APAgingReport() {
   const [asOfDate, setAsOfDate] = useState(todayJakartaISO());
   const [vendors, setVendors] = useState([]);
@@ -16,7 +17,7 @@ export default function APAgingReport() {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    api.get("/master/vendors", { params: { per_page: 100 } })
+    fetchAll("/master/vendors")
       .then(r => setVendors(r.data?.data || []))
       .catch(() => {});
   }, []);

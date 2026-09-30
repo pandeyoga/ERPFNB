@@ -17,6 +17,7 @@ import useOutletScopeGuard from "@/hooks/useOutletScopeGuard";
 import { fmtRp, fmtDate } from "@/lib/format";
 import useExcelExport from "@/hooks/useExcelExport";
 
+import { fetchAll } from "@/lib/api";
 const STATUS_TABS = [
   { key: "",          label: "Semua" },
   { key: "draft",     label: "Draft" },
@@ -41,7 +42,7 @@ export default function POList() {
   useOutletScopeGuard({ requestedOutletId: urlOutletId, setOutletId, scopedOutlets, isRestricted, loaded });
 
   useEffect(() => {
-    api.get("/master/vendors", { params: { per_page: 200 } })
+    fetchAll("/master/vendors")
       .then(r => setVendors(unwrap(r) || [])).catch(() => {});
   }, []);
 
