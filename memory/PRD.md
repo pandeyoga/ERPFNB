@@ -351,3 +351,8 @@ Hasil: **3 bug ASLI (FIXED)**, **19 artefak** (false-positive testing lama yg ta
 - Salary Master = satu-satunya sumber gaji. Migrasi otomatis & idempoten saat startup (`services/_hr_payroll/salary_migration.py`); field gaji di employees dihapus dan ditolak API; form karyawan menampilkan gaji read-only.
 - Gap diperbaiki: tombol Approve di UI Payroll/SC/Insentif, posting atomik, pembatalan payroll, snapshot SC/insentif, kasbon per baris, blokir karyawan tanpa Salary Master, user demo HR. Detail: PLAN.md §13.
 - Backlog: pro-rata join/keluar di tengah bulan, SoD approve SC/insentif, tombol UI unlock budget & cancel RFQ, item Fase 2c.
+
+## 2026-09-28 — Iterasi 4 (penutupan AUDIT_2026-09-27_PHASE2)
+- File audit & skrip verifikasi dari user disimpan di `memory/audit_inputs/` (identik dengan versi di repo).
+- 33 temuan ditutup (detail PLAN.md §14); regression suite 28 PASS; testing agent iteration_15: backend 41/42 → bug RBAC list payroll diperbaiki, frontend smoke 100%.
+- Sisa: FE-06 (token → cookie httpOnly), CTL-15 (sapu dropdown per_page), DUP-* lanjutan, SSOT-07/15 sebagian, pajak (konsultan).

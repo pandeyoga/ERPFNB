@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 15 audit fix verification (backend + frontend regression). Ran unit suite (28/28 pass) and 14 live backend integration tests (13/13 relevant passing; 1 real bug found in HR payroll list RBAC). Frontend smoke covered login, /hr/payroll, /admin/master employees (salary column), /finance/journals (doc_no shown, no UUIDs), inventory opname list, and market list.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "GET /api/hr/payroll (and /api/hr/payroll/{id}, /api/hr/payroll/export/xlsx)", "issue": "Uses require_perm('hr.advance.approve') as single required permission. Spec/rbac_sync grants HR_OFFICER 'hr.payroll.read'+'hr.payroll.manage' but no 'hr.advance.approve', so HR_OFFICER gets 403 'Missing permission: hr.advance.approve' when listing payroll. Should be require_any_perm('hr.payroll.read','hr.advance.approve') to align with the salary-master pattern and the audit fix intent. File: backend/routers/hr.py lines 303, 314, 330.", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_audit_iteration15.py",
+    "/app/tests/audit_regression/test_audit_fixes.py",
+    "/app/test_reports/pytest/iter15_results.xml"
+  ],
+  "action_items": [
+    "Fix require_perm -> require_any_perm on GET /api/hr/payroll (list), GET /api/hr/payroll/{p_id}, GET /api/hr/payroll/export/xlsx in backend/routers/hr.py so HR_OFFICER (hr.payroll.read) can list/view payroll as intended by the audit fix. Currently only users with hr.advance.approve can even read the list, which contradicts rbac_sync grants and the request spec."
+  ],
+  "critical_code_review_comments": [
+    "backend/routers/hr.py: inconsistent RBAC — salary-master endpoints use require_any_perm('hr.payroll.read','hr.advance.approve') but payroll list/detail/export use require_perm('hr.advance.approve'). Please align.",
+    "backend/services/rbac_sync.py: idempotent $addToSet is good; consider running it inside a startup task (already done via server.py:93) — verify no race with seed."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_audit_iteration15.py (new — live backend regression test file for iteration 15)"
+  ],
+  "success_rate": {"backend": "97% (41/42 tests: 28/28 unit + 13/14 integration; 1 integration fail exposes real HR RBAC bug)", "frontend": "100% smoke (login, payroll list, master/employees salary column, journals doc_no visible, opname list, market list all load)"},
+  "test_credentials": "admin@fnbgroup.id / Demo@2026 (SUPER_ADMIN); hr.officer@fnbgroup.id, hr.manager@fnbgroup.id, executive@fnbgroup.id, cfs.manager@fnbgroup.id — all Demo@2026",
+  "seed_data_creation": "Created and then cancelled one PAYR-* payroll cycle for period 2027-05 (far-future) to verify doc_no prefix; cleaned up via /api/hr/payroll/{id}/cancel with reason 'test cleanup'.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 15 verified: (a) 28/28 unit tests in /app/tests/audit_regression/test_audit_fixes.py still green; (b) executive RBAC (403 for outlet manager on /api/executive/home and on other-outlet drilldown, 200 for admin/executive); (c) CRM admin analytics 200; (d) new payroll doc_no starts with PAYR- (seed data remains PAY-SEED-, that's fine); (e) cash-position returns gl_cash_balance + variance_manual_vs_gl; (f) cashflow + P&L for 2026-08 return 200 with pl.revenue/cogs on drilldown; (g) public reservation with bogus outlet_id returns 400 at POST /api/public/reservations (note: path is /api/public/reservations, NOT /api/reservations/public); (h) journals list has doc_no populated (JAE-YYMM-NNNNN pattern) and UI shows them. Only outstanding bug: GET /api/hr/payroll RBAC — see action_items.",
+  "rca of the issue": "HR payroll list uses single permission require_perm('hr.advance.approve'). rbac_sync grants HR_OFFICER: ['hr.read','hr.payroll.read','hr.payroll.manage','hr.employee.read'] but not 'hr.advance.approve'. Login token embeds no perms directly (perms fetched per role at request time via get_user_permissions), and DB shows HR_OFFICER role has expected perms. Therefore mismatch is purely at the router dependency: change require_perm('hr.advance.approve') -> require_any_perm('hr.payroll.read','hr.advance.approve') on the three GET endpoints. Reproduction: login as hr.officer@fnbgroup.id then GET /api/hr/payroll → 403 with 'Missing permission: hr.advance.approve'. After fix expected: 200 with payroll list."
+}

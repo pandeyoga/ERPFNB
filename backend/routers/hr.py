@@ -300,7 +300,7 @@ async def list_lb_fund(
 async def list_payroll(
     period: Optional[str] = None, status: Optional[str] = None,
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
-    user: dict = Depends(require_perm("hr.advance.approve")),
+    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve")),
 ):
     items, meta = await hr_service.list_payroll(
         period=period, status=status, page=page, per_page=per_page,
@@ -311,7 +311,7 @@ async def list_payroll(
 @router.get("/payroll/export/xlsx")
 async def export_payroll_xlsx(
     period: Optional[str] = None,
-    user: dict = Depends(require_perm("hr.advance.approve")),
+    user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve")),
 ):
     """Export payroll cycles as Excel (.xlsx)."""
     from fastapi.responses import Response
@@ -327,7 +327,7 @@ async def export_payroll_xlsx(
 
 @router.get("/payroll/{p_id}")
 async def get_payroll(p_id: str,
-                       user: dict = Depends(require_perm("hr.advance.approve"))):
+                       user: dict = Depends(require_any_perm("hr.payroll.read", "hr.advance.approve"))):
     return ok_envelope(await hr_service.get_payroll(p_id))
 
 
