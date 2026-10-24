@@ -125,9 +125,12 @@ class CreateOutletRequest(BaseModel):
     lat: float
     lng: float
     status: str = "published"
+    # POS-08: link to the ERP outlet that receives online reservations / sales for this location
+    erp_outlet_id: Optional[str] = None
 
 
 class UpdateOutletRequest(BaseModel):
+    erp_outlet_id: Optional[str] = None
     name: Optional[str] = None
     address: Optional[str] = None
     area: Optional[str] = None

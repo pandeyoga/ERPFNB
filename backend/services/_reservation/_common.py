@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+
+from pymongo.errors import DuplicateKeyError
 import re
 import uuid
 from datetime import datetime, timezone
@@ -51,14 +53,14 @@ async def _get_or_create_member(
     source: str,
 ) -> tuple[str, bool]:
     """Return (member_id, created:bool). Creates CRM customer if not found."""
+    from services.customer_service import get_customer_by_phone, phone_e164, phone_key
     db = get_db()
     normalized = _normalize_phone(customer_phone)
-    variants = _phone_variants(normalized)
 
-    # Try to find existing customer by phone
-    existing = await db.customers.find_one({"phone": {"$in": variants}})
-    if existing:
-        return existing["id"], False
+    # Try to find existing customer by phone (canonical key, legacy formats as fallback)
+    found = await get_customer_by_phone(db, customer_phone)
+    if found:
+        return found.id, False
 
     # Try by email if provided
     if customer_email:
@@ -79,13 +81,15 @@ async def _get_or_create_member(
         "full_name": customer_name.strip(),
         "first_name": first_name,
         "last_name": last_name,
-        "phone": normalized if normalized else customer_phone,
+        "phone": phone_e164(customer_phone) or normalized or customer_phone,
+        "phone_key": phone_key(customer_phone),
         "date_of_birth": None,
         "gender": None,
         "hashed_password": None,
-        "points": 0,
+        # DB-13/POS-20: same loyalty schema as the cashier/register paths
+        "total_points": 0,
         "lifetime_points": 0,
-        "tier": "Bronze",
+        "loyalty_tier": "bronze",
         "tier_expires_at": None,
         "is_active": True,
         "is_verified": False,
@@ -96,7 +100,13 @@ async def _get_or_create_member(
         "updated_at": now,
         "deleted_at": None,
     }
-    await db.customers.insert_one(customer_doc)
+    try:
+        await db.customers.insert_one(customer_doc)
+    except DuplicateKeyError:
+        found = await get_customer_by_phone(db, customer_phone)
+        if found:
+            return found.id, False
+        raise
     logger.info("Auto-created member %s from reservation", member_id)
     return member_id, True
 

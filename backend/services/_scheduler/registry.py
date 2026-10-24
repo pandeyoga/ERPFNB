@@ -14,6 +14,7 @@ from services._scheduler.jobs import (
     job_flush_logs,
     job_owner_digest,
     job_report_schedules,
+    job_cms_schedule_publish,
 )
 
 
@@ -43,3 +44,5 @@ def _ensure_registered() -> None:
                description="Kirim digest harian pemilik (Telegram) jam 06:00 WIB.")
     _register("report_schedules", "Report Schedules", "* * * * *", job_report_schedules,
                description="Jalankan laporan terjadwal yang jatuh tempo (cek tiap menit, WIB).")
+    _register("cms_schedule_publish", "CMS Scheduled Publish", "*/15 * * * *", job_cms_schedule_publish,
+               description="Publish/unpublish konten CMS terjadwal (publish_at / unpublish_at).")

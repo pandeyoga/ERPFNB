@@ -164,6 +164,20 @@ def scoped_outlet_ids(user: dict) -> list[str] | None:
     return list(user.get("outlet_ids") or [])
 
 
+def resolve_outlet_filter(user: dict, outlet_id: str | None = None) -> list[str] | None:
+    """Outlet filter for list/aggregate queries. None = unrestricted; [] = nothing visible.
+
+    A requested outlet outside the caller's scope yields [] (never silently widened), and a scoped
+    user without any outlet grant sees nothing.
+    """
+    scope = scoped_outlet_ids(user)
+    if scope is None:
+        return [outlet_id] if outlet_id else None
+    if outlet_id:
+        return [outlet_id] if outlet_id in scope else []
+    return scope
+
+
 def enforce_outlet_scope(user: dict, outlet_id: str | None) -> None:
     """Raises if user cannot access outlet (super / '*' grant always passes)."""
     scope = scoped_outlet_ids(user)

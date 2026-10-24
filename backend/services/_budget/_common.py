@@ -21,6 +21,37 @@ def _now() -> str:
 # Category helpers
 # ─────────────────────────────────────────────────────────────
 
+_PL_TYPES_REV = ("revenue", "income", "other_income", "pendapatan")
+_PL_TYPES_COGS = ("cogs", "hpp")
+_PL_TYPES_EXP = ("expense", "beban", "other_expense")
+
+
+def pl_category(coa: dict) -> str | None:
+    """Budget category from the CoA master (type first, code/name only to refine expenses).
+
+    Returns None for balance-sheet accounts (asset/liability/equity) — they are not P&L lines
+    (UI-01/FIN-17: cash and payables used to be counted as OPEX because of the code-prefix guess).
+    """
+    typ = str(coa.get("type") or coa.get("category") or "").lower()
+    code = str(coa.get("code") or "")
+    name = str(coa.get("name") or "").lower()
+    if any(typ.startswith(t) for t in _PL_TYPES_REV):
+        return "REV"
+    if any(typ.startswith(t) for t in _PL_TYPES_COGS):
+        return "COGS"
+    if not any(typ.startswith(t) for t in _PL_TYPES_EXP):
+        return None if typ else guess_category(code)
+    if code.startswith("541") or "salary" in name or "gaji" in name or "bpjs" in name or "incentive" in name:
+        return "PAYROLL"
+    if "marketing" in name or "promosi" in name:
+        return "MKTG"
+    if "penyusutan" in name or "depreciation" in name or "amortis" in name:
+        return "DEP"
+    if "pajak penghasilan" in name or "income tax" in name:
+        return "TAX"
+    return "OPEX"
+
+
 def guess_category(coa_code: str) -> str:
     code = str(coa_code)
     if code.startswith("4"):

@@ -351,7 +351,8 @@ async def preview_workflow(
         "outlet_id": sample.get("outlet_id"),
         "brand_id": sample.get("brand_id"),
     }
-    tier = approval_service._tier_for_amount(wf, amount, entity=fake_entity)
+    from services._approval.evaluator import _tier_for_amount  # DUP-01: not re-exported by the facade
+    tier = _tier_for_amount(wf, amount, entity=fake_entity)
     if not tier:
         return ok_envelope({"has_workflow": True, "tier": None, "amount": amount})
 

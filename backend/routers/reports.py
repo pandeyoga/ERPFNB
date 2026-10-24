@@ -345,6 +345,19 @@ async def stock_movement_excel(
     )
 
 
+@router.get("/inventory-valuation/excel")
+async def inventory_valuation_excel_canonical(
+    outlet_ids: Optional[str] = None,
+    category_ids: Optional[str] = None,
+    as_of: Optional[str] = None,
+    user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
+):
+    """DUP-10: canonical path used by the Reports portal (it returned 404 — only the deprecated
+    alias existed). Same report as /inventory/valuation.xlsx."""
+    return await inventory_valuation_excel(outlet_ids=outlet_ids, category_ids=category_ids,
+                                           as_of_date=as_of, user=user)
+
+
 @router.get("/inventory/valuation.xlsx", deprecated=True)
 async def inventory_valuation_excel(
     outlet_ids: Optional[str] = None,

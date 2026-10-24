@@ -30,6 +30,9 @@ class Settings:
     max_upload_mb: int = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "10"))
     emergent_llm_key: str = os.environ.get("EMERGENT_LLM_KEY", "")
     feature_ai_enabled: bool = os.environ.get("FEATURE_AI_ENABLED", "true").lower() == "true"
+    # Session cookies are Secure by default (HTTPS). Only a local http:// dev/test stack may set
+    # COOKIE_SECURE=false — browsers/clients drop Secure cookies on plain http.
+    cookie_secure: bool = os.environ.get("COOKIE_SECURE", "true").lower() != "false"
 
 
 settings = Settings()

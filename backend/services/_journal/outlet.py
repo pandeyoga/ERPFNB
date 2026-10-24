@@ -72,11 +72,17 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
         coa_id = await gl_mapping.resolve("service_charge_liability")
         lines.append({"coa_id": coa_id, "dr": 0, "cr": svc, "memo": "Service charge"})
 
-    # Credit: output VAT
+    # Credit: sales tax. POS-02: restaurant F&B is subject to PB1/PBJT (regional tax) → its own liability
+    # account, kept OUT of PPN Keluaran so the PPN settlement / e-Faktur only see real PPN.
     tax = float(sales.get("tax_amount", 0) or 0)
     if tax:
-        coa_id = await gl_mapping.resolve("output_vat")
-        lines.append({"coa_id": coa_id, "dr": 0, "cr": tax, "memo": "PPN Keluaran"})
+        if sales.get("tax_type") == "ppn":
+            coa_id = await gl_mapping.resolve("output_vat")
+            memo = "PPN Keluaran"
+        else:
+            coa_id = await gl_mapping.resolve("pb1_payable")
+            memo = "PB1/PBJT (pajak restoran)"
+        lines.append({"coa_id": coa_id, "dr": 0, "cr": tax, "memo": memo})
 
     return await _post_journal(
         entry_date=sales["sales_date"],

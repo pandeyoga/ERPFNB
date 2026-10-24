@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pymongo.errors import DuplicateKeyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 ROOT_DIR = Path(__file__).parent
@@ -77,8 +78,9 @@ async def lifespan(_: FastAPI):
         from utils.number_series import ensure_dedicated_series
         await migrate_employee_salary_to_master()
         await ensure_dedicated_series()
-        from services.data_migrations import unify_journal_schema
+        from services.data_migrations import customer_identity_keys, unify_journal_schema
         await unify_journal_schema()
+        await customer_identity_keys()
     except Exception:  # noqa: BLE001
         logger.exception("salary_migration_failed")
 
@@ -219,6 +221,20 @@ async def validation_exception_handler(_, exc: RequestValidationError):
         status_code=422,
         content={"success": False, "data": None, "errors": errs, "meta": None},
     )
+
+
+# SEC-ERR: services raise plain ValueError for business-rule violations ("Invoice berstatus draft…");
+# those are client errors, not server faults → 400 in the standard envelope instead of a bare 500.
+@app.exception_handler(ValueError)
+async def value_error_handler(_, exc: ValueError):
+    return JSONResponse(status_code=400, content=error_envelope("VALIDATION_ERROR", str(exc) or "Input tidak valid"))
+
+
+# A unique index rejected a concurrent duplicate (double click / retry) → 409, never a 500.
+@app.exception_handler(DuplicateKeyError)
+async def duplicate_key_handler(_, exc: DuplicateKeyError):
+    return JSONResponse(status_code=409, content=error_envelope(
+        "CONFLICT", "Data yang sama sudah diproses (duplikat). Muat ulang lalu coba lagi."))
 
 
 # Routers

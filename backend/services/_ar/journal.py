@@ -17,13 +17,23 @@ async def resolve_ar_accounts() -> tuple[str, str, str]:
 
     async def by_code(*codes):
         for c in codes:
-            d = await db.chart_of_accounts.find_one({"code": c, "deleted_at": None})
+            # FIN-11: only postable accounts — "4000 Pendapatan" is a header and used to be picked
+            d = await db.chart_of_accounts.find_one(
+                {"code": c, "deleted_at": None, "is_postable": {"$ne": False}})
             if d:
                 return d["id"]
         return None
 
-    ar = m.get("ar_receivable") or await by_code("1201")
-    rev = m.get("ar_revenue") or await by_code("4101", "4000", "4001") or m.get("revenue_other")
+    async def postable(coa_id):
+        if not coa_id:
+            return None
+        d = await db.chart_of_accounts.find_one({"id": coa_id, "deleted_at": None, "is_postable": {"$ne": False}},
+                                                {"_id": 1})
+        return coa_id if d else None
+
+    ar = await postable(m.get("ar_receivable")) or await by_code("1201")
+    rev = (await postable(m.get("ar_revenue")) or await by_code("4101", "4003", "4001")
+           or m.get("revenue_other"))
     ppn = m.get("output_vat")
     if not ar or not rev:
         from core.exceptions import ValidationError

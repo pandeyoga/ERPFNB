@@ -71,10 +71,13 @@ async def build_keluaran_dataset(period: str, *, assign_numbers: bool = False) -
         "sales_date": {"$regex": f"^{period}"},
         "status": "validated",
         "deleted_at": None,
+        # POS-02/FIN-18: restaurant sales carry PB1/PBJT (regional tax), not PPN → no Faktur Pajak.
+        # Only outlets explicitly configured as PPN outlets (sales_tax_type='ppn') produce fakturs.
+        "tax_type": "ppn",
     }):
         dpp = round(sum(float(b.get("amount", 0) or 0) for b in sale.get("revenue_buckets", [])), 2)
         tax_amount = float(sale.get("tax_amount", 0) or 0)
-        if dpp <= 0:
+        if dpp <= 0 or tax_amount <= 0:
             continue
         revenue = dpp + tax_amount
         faktur_no = await next_faktur_no("keluaran", year) if assign_numbers else None

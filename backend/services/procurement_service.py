@@ -171,11 +171,22 @@ async def create_po(payload: dict, *, user: dict) -> dict:
     lines = []
     subtotal = 0.0
     tax_total = 0.0
-    for ln in payload["lines"]:
+    for i, ln in enumerate(payload["lines"]):
         qty = float(ln.get("qty", 0) or 0)
         unit_cost = float(ln.get("unit_cost", 0) or 0)
         discount = float(ln.get("discount", 0) or 0)
         tax_rate = float(ln.get("tax_rate", 0) or 0)
+        # FIN-14: PO lines must be economically valid (qty>0, no negative price/discount, sane tax)
+        if qty <= 0:
+            raise ValidationError(f"Baris {i + 1}: qty harus > 0", field=f"lines[{i}].qty")
+        if unit_cost < 0 or discount < 0:
+            raise ValidationError(f"Baris {i + 1}: harga/diskon tidak boleh negatif", field=f"lines[{i}]")
+        if discount > qty * unit_cost:
+            raise ValidationError(f"Baris {i + 1}: diskon melebihi nilai baris", field=f"lines[{i}].discount")
+        if tax_rate > 1:
+            tax_rate = tax_rate / 100  # "11" (percent) → 0.11 fraction, like payments do
+        if not 0 <= tax_rate <= 0.5:
+            raise ValidationError(f"Baris {i + 1}: tarif pajak tidak wajar", field=f"lines[{i}].tax_rate")
         line_subtotal = qty * unit_cost - discount
         line_tax = line_subtotal * tax_rate
         total = line_subtotal + line_tax
@@ -331,6 +342,16 @@ async def list_grs(
 
 
 async def post_gr(payload: dict, *, user: dict) -> dict:
+    """FIN-02: serialise receipts against the same PO — the remaining-qty check below is a
+    read-then-insert, so parallel GRs for one PO used to receive the full quantity N times."""
+    if payload.get("po_id"):
+        from services.inventory_service import stock_lock
+        async with stock_lock(get_db(), "po", [payload["po_id"]]):
+            return await _post_gr_unlocked(payload, user=user)
+    return await _post_gr_unlocked(payload, user=user)
+
+
+async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
     """Post goods receipt:
     - Create GR doc with status=posted
     - Create inventory_movements (receipt) per line
@@ -348,6 +369,13 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
     receive_date = payload.get("receive_date") or _biz_today()
     outlet_id = payload["outlet_id"]
     vendor_id = payload["vendor_id"]
+    # FIN-14: vendor must exist; one vendor invoice can only be received once (duplicate AP)
+    if not await db.vendors.find_one({"id": vendor_id, "deleted_at": None}, {"_id": 1}):
+        raise ValidationError("Vendor tidak ditemukan", field="vendor_id")
+    inv_no = (payload.get("invoice_no") or "").strip()
+    if inv_no and await db.goods_receipts.find_one(
+            {"vendor_id": vendor_id, "invoice_no": inv_no, "status": "posted", "deleted_at": None}, {"_id": 1}):
+        raise ValidationError(f"Invoice vendor {inv_no} sudah pernah diterima (GR lain)", field="invoice_no")
 
     # Phase 3 hardening — block if target period locked
     from services._period import derive_period_from_date, assert_period_unlocked

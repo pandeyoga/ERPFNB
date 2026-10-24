@@ -46,3 +46,24 @@ async def apply_gr_payment(db, *, gr_id: str, amount: float, payment_ref: str | 
         await db.goods_receipts.update_one({"id": gr_id}, {"$set": {
             "paid_amount": paid, "payment_status": status,
             "paid_at": now if status == "paid" else gr.get("paid_at")}})
+
+
+async def revert_gr_payment(db, *, gr_id: str, amount: float, payment_id: str) -> None:
+    """FIN-04: compensation for apply_gr_payment when the bank JE that should follow it fails."""
+    now = datetime.now(timezone.utc).isoformat()
+    amount = round(float(amount or 0), 2)
+    res = await db.ap_ledgers.update_one(
+        {"gr_id": gr_id, "deleted_at": None, "payments.payment_id": payment_id},
+        {"$inc": {"balance": amount}, "$pull": {"payments": {"payment_id": payment_id}},
+         "$set": {"updated_at": now}})
+    if res.modified_count:
+        ap = await db.ap_ledgers.find_one({"gr_id": gr_id, "deleted_at": None})
+        bal = round(float((ap or {}).get("balance", 0) or 0), 2)
+        await db.ap_ledgers.update_one({"gr_id": gr_id, "deleted_at": None}, {"$set": {
+            "balance": bal, "status": "open" if not (ap or {}).get("payments") else "partial", "paid_at": None}})
+        gr = await db.goods_receipts.find_one({"id": gr_id})
+        if gr:
+            paid = round(float(gr.get("paid_amount", 0) or 0) - amount, 2)
+            await db.goods_receipts.update_one({"id": gr_id}, {"$set": {
+                "paid_amount": max(paid, 0.0), "payment_status": "partial" if paid > 0.01 else "unpaid",
+                "paid_at": None, "updated_at": now}})

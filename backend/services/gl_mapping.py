@@ -64,6 +64,8 @@ async def resolve_or(logical: str, fallback: str, *, scope_outlet_id: Optional[s
 _PAYROLL_ACCOUNTS = [
     # (logical, code, name, type, normal_balance, parent_code)
     ("bpjs_payable", "2115", "Utang BPJS", "liability", "Cr", "2100"),
+    # POS-02: restaurant tax (PB1/PBJT) is a regional tax liability, separate from PPN Keluaran (2110)
+    ("pb1_payable", "2116", "Utang Pajak Restoran (PB1/PBJT)", "liability", "Cr", "2100"),
     ("bpjs_employer_expense", "5413", "Beban BPJS Perusahaan", "expense", "Dr", "5400"),
 ]
 
@@ -91,11 +93,14 @@ async def ensure_default_accounts() -> list[str]:
             await db.chart_of_accounts.insert_one(coa)
         mapping[logical] = coa["id"]
         added.append(logical)
-    for logical, codes in (("ar_receivable", ("1201",)), ("ar_revenue", ("4101", "4000", "4001"))):
+    for logical, codes in (("ar_receivable", ("1201",)), ("ar_revenue", ("4101", "4003", "4001"))):
         if mapping.get(logical):
-            continue
+            cur = await db.chart_of_accounts.find_one({"id": mapping[logical]})
+            if cur and cur.get("is_postable") is not False and not cur.get("deleted_at"):
+                continue
+            # FIN-11: an earlier fallback mapped AR revenue to header account 4000 — remap to a postable one
         for c in codes:
-            coa = await db.chart_of_accounts.find_one({"code": c, "deleted_at": None})
+            coa = await db.chart_of_accounts.find_one({"code": c, "deleted_at": None, "is_postable": {"$ne": False}})
             if coa:
                 mapping[logical] = coa["id"]
                 added.append(logical)

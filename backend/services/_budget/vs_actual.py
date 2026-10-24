@@ -6,7 +6,7 @@ from typing import Optional
 from core.db import get_db
 from models.budget import BUDGET_CATEGORIES
 
-from services._budget._common import guess_category
+from services._budget._common import pl_category
 
 
 async def _get_outlet_ids_for_brand(brand_id: str) -> list[str]:
@@ -93,7 +93,7 @@ async def vs_actual(
     # B3 fix: batch-lookup all COA docs at once (was N+1 find_one per coa_id)
     coa_docs_raw = await db.chart_of_accounts.find(
         {"id": {"$in": list(all_coa_ids)}, "deleted_at": None},
-        {"id": 1, "code": 1, "name": 1, "_id": 0}
+        {"id": 1, "code": 1, "name": 1, "type": 1, "category": 1, "_id": 0}
     ).to_list(len(all_coa_ids) + 1)
     coa_lookup = {c["id"]: c for c in coa_docs_raw}
     coa_level = []
@@ -101,12 +101,15 @@ async def vs_actual(
         coa_doc = coa_lookup.get(coa_id)
         if not coa_doc:
             continue
+        cat = pl_category(coa_doc)
+        if cat is None:
+            continue  # balance-sheet account — not part of budget vs actual
+        is_revenue = cat == "REV"
         budget_amt = budget_by_coa.get(coa_id, 0)
-        actual_amt = actual_by_coa.get(coa_id, 0)
+        # actuals are summed as dr−cr; revenue is credit-normal → flip so sales show positive
+        actual_amt = -actual_by_coa.get(coa_id, 0) if is_revenue else actual_by_coa.get(coa_id, 0)
         variance = actual_amt - budget_amt
         variance_pct = (variance / budget_amt * 100) if budget_amt != 0 else None
-        cat = guess_category(coa_doc.get("code", ""))
-        is_revenue = cat == "REV"
         coa_level.append({
             "coa_id": coa_id,
             "coa_code": coa_doc.get("code"),

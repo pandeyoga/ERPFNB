@@ -68,7 +68,9 @@ async def run_job_now(job_id: str) -> dict:
         raise ValueError(f"Job '{job_id}' tidak ditemukan")
     import asyncio
     asyncio.create_task(_wrap_job(job_id, job["func"])())
-    return {"job_id": job_id, "triggered": True}
+    # DUP-02: the job runs in the background — its outcome is recorded in /scheduler/runs
+    return {"job_id": job_id, "triggered": True, "status": "queued",
+            "note": "Hasil eksekusi tercatat di riwayat scheduler runs"}
 
 
 async def list_runs(

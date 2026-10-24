@@ -86,6 +86,9 @@ async def admin_update_outlet(
     update_data = {k: v for k, v in payload.dict(exclude_unset=True).items() if v is not None}
     if not update_data:
         return ok_envelope({"message": "No changes"})
+    if update_data.get("erp_outlet_id") and not await db.outlets.find_one(
+            {"id": update_data["erp_outlet_id"], "deleted_at": None}, {"_id": 1}):
+        raise ValidationError("Outlet ERP tidak ditemukan")
     
     update_data["updated_at"] = datetime.now(timezone.utc)
     

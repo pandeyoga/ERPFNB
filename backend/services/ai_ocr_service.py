@@ -244,11 +244,10 @@ async def extract_from_file_id(
     """Run OCR on an existing uploaded attachment (Phase 8B integration)."""
     from services import upload_service
     meta = await upload_service.get_attachment(file_id, user=user)
-    path = await upload_service.get_attachment_path(file_id, user=user)
     mime = (meta.get("content_type") or "image/jpeg").lower()
     if mime not in ALLOWED_MIME:
         return {"error": f"File MIME {mime} bukan gambar yang didukung."}
-    raw = path.read_bytes()
+    raw = await upload_service.get_attachment_bytes(file_id, user=user)  # DUP-01: get_attachment_path never existed
     b64 = base64.b64encode(raw).decode("ascii")
     return await extract_receipt(
         image_base64=b64,

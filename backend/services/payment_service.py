@@ -146,26 +146,8 @@ async def create_payment(payload: dict, *, user: dict) -> dict:
 
     # Validate linked GR (optional) — used to reduce AP on mark_paid
     gr_id = payload.get("gr_id")
-    if gr_id:
-        gr = await db.goods_receipts.find_one({"id": gr_id, "deleted_at": None})
-        if not gr:
-            raise ValidationError("gr_id tidak ditemukan")
-        if gr.get("payment_status") == "paid" or gr.get("paid_at"):
-            raise ConflictError("GR sudah dibayar")
-        # FIN-09: GR must belong to the payee; amount ≤ outstanding (net of other open PAYs); GL = AP
-        if payee_type != "vendor" or (payee_id and payee_id != gr.get("vendor_id")):
-            raise ValidationError("gr_id bukan milik vendor/payee ini", field="gr_id")
-        open_pays = await db.payment_requests.find(
-            {"gr_id": gr_id, "deleted_at": None, "status": {"$in": ["draft", "submitted", "awaiting_approval", "approved", "paying"]}}
-        ).to_list(None)
-        outstanding = float(gr.get("grand_total", 0) or 0) - float(gr.get("paid_amount", 0) or 0) \
-            - sum(float(p.get("amount", 0) or 0) for p in open_pays)
-        if amount > round(outstanding, 2) + 0.01:
-            raise ValidationError(f"Jumlah melebihi sisa hutang GR (Rp {max(outstanding, 0):,.0f})", field="amount")
-        from services import gl_mapping as _glm
-        ap_id = await _glm.resolve("accounts_payable")
-        if gl_debit_id != ap_id:
-            raise ValidationError("Pembayaran GR harus mendebit akun Hutang Usaha (accounts_payable)", field="gl_debit_id")
+    await _validate_gr_link(db, gr_id=gr_id, amount=amount, gl_debit_id=gl_debit_id,
+                            payee_type=payee_type, payee_id=payee_id)
 
     wh_amount_in = round(float(payload.get("wh_amount", 0) or 0), 2)
     if wh_amount_in < 0 or wh_amount_in >= amount:
@@ -216,6 +198,34 @@ async def create_payment(payload: dict, *, user: dict) -> dict:
     return await _enrich(serialize(doc))
 
 
+async def _validate_gr_link(db, *, gr_id, amount: float, gl_debit_id, payee_type, payee_id,
+                            exclude_pay_id: Optional[str] = None) -> None:
+    """FIN-04: one validator for create AND update — a PATCH used to attach any GR / any amount."""
+    if not gr_id:
+        return
+    gr = await db.goods_receipts.find_one({"id": gr_id, "deleted_at": None})
+    if not gr:
+        raise ValidationError("gr_id tidak ditemukan")
+    if gr.get("payment_status") == "paid" or gr.get("paid_at"):
+        raise ConflictError("GR sudah dibayar")
+    # FIN-09: GR must belong to the payee; amount ≤ outstanding (net of other open PAYs); GL = AP
+    if payee_type != "vendor" or (payee_id and payee_id != gr.get("vendor_id")):
+        raise ValidationError("gr_id bukan milik vendor/payee ini", field="gr_id")
+    q = {"gr_id": gr_id, "deleted_at": None,
+         "status": {"$in": ["draft", "submitted", "awaiting_approval", "approved", "paying"]}}
+    if exclude_pay_id:
+        q["id"] = {"$ne": exclude_pay_id}
+    open_pays = await db.payment_requests.find(q).to_list(None)
+    outstanding = float(gr.get("grand_total", 0) or 0) - float(gr.get("paid_amount", 0) or 0) \
+        - sum(float(p.get("amount", 0) or 0) for p in open_pays)
+    if amount > round(outstanding, 2) + 0.01:
+        raise ValidationError(f"Jumlah melebihi sisa hutang GR (Rp {max(outstanding, 0):,.0f})", field="amount")
+    from services import gl_mapping as _glm
+    ap_id = await _glm.resolve("accounts_payable")
+    if gl_debit_id != ap_id:
+        raise ValidationError("Pembayaran GR harus mendebit akun Hutang Usaha (accounts_payable)", field="gl_debit_id")
+
+
 async def update_payment(pay_id: str, patch: dict, *, user: dict) -> dict:
     db = get_db()
     before = await db.payment_requests.find_one({"id": pay_id, "deleted_at": None})
@@ -233,6 +243,17 @@ async def update_payment(pay_id: str, patch: dict, *, user: dict) -> dict:
         update["amount"] = round(float(update["amount"]), 2)
         if update["amount"] <= 0:
             raise ValidationError("amount harus > 0")
+    merged = {**before, **update}
+    if "gl_debit_id" in update:
+        coa = await db.chart_of_accounts.find_one({"id": merged["gl_debit_id"], "deleted_at": None})
+        if not coa or not coa.get("is_postable"):
+            raise ValidationError("gl_debit_id tidak valid (harus postable COA)")
+    if update.keys() & {"gr_id", "amount", "gl_debit_id", "payee_id"}:
+        await _validate_gr_link(db, gr_id=merged.get("gr_id"), amount=float(merged.get("amount") or 0),
+                                gl_debit_id=merged.get("gl_debit_id"), payee_type=merged.get("payee_type"),
+                                payee_id=merged.get("payee_id"), exclude_pay_id=pay_id)
+        if float(merged.get("wh_amount") or 0) >= float(merged.get("amount") or 0):
+            raise ValidationError("wh_amount harus < amount", field="wh_amount")
     update["updated_at"] = _now()
     await db.payment_requests.update_one({"id": pay_id}, {"$set": update})
     after = await db.payment_requests.find_one({"id": pay_id})
@@ -351,6 +372,27 @@ async def mark_paid(pay_id: str, payload: dict, *, user: dict) -> dict:
 
 async def _finish_mark_paid(db, doc, pay_id, payment_date, payment_ref, bank_account_id,
                             ba, cr_coa_id, amount, description, user) -> dict:
+    # FIN-04: settle AP FIRST (atomic, rejects overpayment) — the bank JE is only posted once AP
+    # accepted the amount, and AP is reverted if the JE fails. Previously the JE was posted and the
+    # payment marked paid before AP rejected the amount, leaving money out of the bank behind a 400.
+    if doc.get("gr_id"):
+        from services._finance.ap_settlement import apply_gr_payment
+        await apply_gr_payment(
+            db, gr_id=doc["gr_id"], amount=amount, payment_ref=payment_ref,
+            payment_id=pay_id, payment_date=payment_date,
+        )
+    try:
+        return await _post_payment_je_and_finish(db, doc, pay_id, payment_date, payment_ref,
+                                                 bank_account_id, ba, cr_coa_id, amount, description, user)
+    except Exception:
+        if doc.get("gr_id"):
+            from services._finance.ap_settlement import revert_gr_payment
+            await revert_gr_payment(db, gr_id=doc["gr_id"], amount=amount, payment_id=pay_id)
+        raise
+
+
+async def _post_payment_je_and_finish(db, doc, pay_id, payment_date, payment_ref, bank_account_id,
+                                      ba, cr_coa_id, amount, description, user) -> dict:
     # Sprint 1: PPh Withholding support
     wh_type = doc.get("wh_type")   # pph23 | pph42 | None
     wh_rate = float(doc.get("wh_rate", 0) or 0)
@@ -440,14 +482,7 @@ async def _finish_mark_paid(db, doc, pay_id, payment_date, payment_ref, bank_acc
         "updated_at": _now(),
     }
     await db.payment_requests.update_one({"id": pay_id}, {"$set": update})
-
-    # Reduce AP on linked GR (goods_receipts + ap_ledgers, single write-path; idempotent per payment)
-    if doc.get("gr_id"):
-        from services._finance.ap_settlement import apply_gr_payment
-        await apply_gr_payment(
-            db, gr_id=doc["gr_id"], amount=amount, payment_ref=payment_ref,
-            payment_id=pay_id, payment_date=payment_date,
-        )
+    # (AP on the linked GR was already settled in _finish_mark_paid, before the JE)
 
     # Notify creator ("your payment was paid")
     try:

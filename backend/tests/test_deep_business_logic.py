@@ -62,6 +62,16 @@ def admin_token(session):
     return token
 
 
+def _session_as(email: str) -> requests.Session:
+    """Second user for maker-checker steps — SoD blocks the creator from approving its own document."""
+    s = requests.Session()
+    s.headers.update({"Content-Type": "application/json"})
+    r = s.post(f"{BASE_URL}/api/auth/login", json={"email": email, "password": ADMIN_PASS}, timeout=30)
+    assert r.status_code == 200, f"Login {email} failed {r.status_code}: {r.text[:200]}"
+    s.headers.update({"Authorization": f"Bearer {r.json()['data']['access_token']}"})
+    return s
+
+
 @pytest.fixture(scope="session")
 def auth(session, admin_token):
     session.headers.update({"Authorization": f"Bearer {admin_token}"})
@@ -197,6 +207,23 @@ def test_daily_sales_draft_invalid_shape_rejected(auth, me):
 
 
 # ---------- DAILY SALES FULL FLOW ----------
+def _free_sales_date(auth, outlet_id: str) -> str:
+    """One daily sales per outlet+date: pick the most recent date that has none (and isn't closed)."""
+    from datetime import timedelta
+    d = date.today()
+    for _ in range(120):
+        s_ = d.isoformat()
+        r = auth.get(f"{BASE_URL}/api/outlet/daily-sales",
+                     params={"outlet_id": outlet_id, "date_from": s_, "date_to": s_}, timeout=15)
+        st = auth.get(f"{BASE_URL}/api/outlet/daily-close/status",
+                      params={"outlet_id": outlet_id, "date": s_}, timeout=15)
+        closed = st.status_code == 200 and (_unwrap(st).get("data") or {}).get("closed")
+        if r.status_code == 200 and not (_unwrap(r).get("data") or []) and not closed:
+            return s_
+        d -= timedelta(days=1)
+    pytest.skip("no free sales date")
+
+
 def test_daily_sales_full_flow(auth, me):
     outlet_ids = me.get("outlet_ids") or []
     if not outlet_ids:
@@ -221,7 +248,7 @@ def test_daily_sales_full_flow(auth, me):
             pm_id = pm_items[0].get("id")
     payload = {
         "outlet_id": outlet_id,
-        "sales_date": date.today().isoformat(),
+        "sales_date": _free_sales_date(auth, outlet_id),
         "revenue_buckets": [
             {"bucket": "food", "amount": 300000},
             {"bucket": "beverage", "amount": 200000},
@@ -586,8 +613,9 @@ def test_inventory_adjustment_and_transfer_stock_movement(auth, me, inv_item):
     assert (adj.get("doc_no") or "").startswith("ADJ-"), f"adj doc_no: {adj.get('doc_no')}"
     adj_id = adj["id"]
 
-    # Approve (admin '*' satisfies Tier-1 single step) -> posts movement + JE
-    r2 = auth.post(f"{BASE_URL}/api/inventory/adjustments/{adj_id}/approve", json={}, timeout=30)
+    # Approve by a different user (SoD) holding inventory.adjustment.approve -> posts movement + JE
+    r2 = _session_as("finance@fnbgroup.id").post(
+        f"{BASE_URL}/api/inventory/adjustments/{adj_id}/approve", json={}, timeout=30)
     j2 = _unwrap(r2)
     assert j2.get("success") is True, f"adjustment approve failed: {r2.status_code} {r2.text[:250]}"
     adj2 = j2.get("data") or {}
@@ -660,8 +688,9 @@ def test_procurement_po_approve_and_gr(auth, me, vendor_id, inv_item):
     r2 = auth.post(f"{BASE_URL}/api/procurement/pos/{po_id}/submit", timeout=20)
     assert _unwrap(r2).get("success") is True, f"PO submit failed: {r2.text[:250]}"
 
-    # approve (admin) -> approved
-    r3 = auth.post(f"{BASE_URL}/api/procurement/pos/{po_id}/approve", json={}, timeout=30)
+    # approve by the procurement manager (SoD: the creator cannot approve) -> approved
+    r3 = _session_as("procurement@fnbgroup.id").post(
+        f"{BASE_URL}/api/procurement/pos/{po_id}/approve", json={}, timeout=30)
     j3 = _unwrap(r3)
     assert j3.get("success") is True, f"PO approve failed: {r3.status_code} {r3.text[:250]}"
     po3 = j3.get("data") or {}

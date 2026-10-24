@@ -24,7 +24,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from core.exceptions import ok_envelope
-from core.security import current_user, require_perm
+from core.security import current_user, enforce_outlet_scope, require_perm, resolve_outlet_filter
 from models.outlet_budget import (
     OutletBudgetCreate, OutletBudgetBulkSet,
     BudgetIncreaseRequestCreate, BudgetIncreaseDecision,
@@ -47,7 +47,9 @@ async def list_budgets(
     outlet_id: Optional[str] = Query(None),
     user: dict = Depends(require_perm("outlet_budget.read")),
 ):
-    outlet_ids = [outlet_id] if outlet_id else None
+    outlet_ids = resolve_outlet_filter(user, outlet_id)  # SEC: budgets of other outlets are not visible
+    if outlet_ids == []:
+        return ok_envelope({"items": [], "total": 0})
     items = await svc.list_budgets(
         period_type=period_type, period_key=period_key,
         brand_id=brand_id, outlet_ids=outlet_ids,
@@ -79,6 +81,8 @@ async def get_budget(
     user: dict = Depends(require_perm("outlet_budget.read")),
 ):
     doc = await svc.get_budget(budget_id)
+    if doc and doc.get("outlet_id"):
+        enforce_outlet_scope(user, doc["outlet_id"])
     return ok_envelope(doc)
 
 
@@ -123,6 +127,7 @@ async def current_by_outlet(
     outlet_id: str,
     user: dict = Depends(require_perm("outlet_budget.read")),
 ):
+    enforce_outlet_scope(user, outlet_id)
     cur = await svc.current_periods_for_outlet(outlet_id)
     return ok_envelope({"outlet_id": outlet_id, **cur})
 
@@ -136,6 +141,7 @@ async def precheck_pr(
 
     Body: { outlet_id, source: kdo|fdo|bdo, lines: [{qty, unit_cost}], request_date? }
     """
+    enforce_outlet_scope(user, payload.get("outlet_id") or "__missing__")
     res = await svc.check_pr_against_budget(payload)
     return ok_envelope(res)
 

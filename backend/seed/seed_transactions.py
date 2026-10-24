@@ -103,12 +103,14 @@ async def seed_transactions():
         manager = next((u for u in users if oid in (u.get("outlet_ids") or [])), None)
         manager_id = manager["id"] if manager else None
 
-        for day in range(60):
+        # DB-03: start at yesterday — "today" is still being sold and must not be pre-validated
+        # (a validated record for today blocked every draft for today and had no JE)
+        for day in range(1, 61):
             dt = days_ago(day)
             date_str = jakiso(dt)
 
             # Skip ~15% of days (closed / no data)
-            if random.random() < 0.08 and day > 0:
+            if random.random() < 0.08 and day > 1:
                 continue
 
             # Weekend boost

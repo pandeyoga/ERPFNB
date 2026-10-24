@@ -16,7 +16,9 @@ async def executive_summary(
     """Aggregated reservation statistics for Executive Portal."""
     db = get_db()
     q: dict = {"deleted_at": None}
-    if outlet_id:
+    if isinstance(outlet_id, list):  # outlet scope list from the router (SEC: POS-07)
+        q["outlet_id"] = {"$in": outlet_id}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if date_from:
         q.setdefault("reservation_date", {})["$gte"] = date_from
@@ -95,7 +97,9 @@ async def finance_deposit_summary(
     """Deposit summary for Finance Portal."""
     db = get_db()
     q: dict = {"deleted_at": None}
-    if outlet_id:
+    if isinstance(outlet_id, list):  # outlet scope list from the router (SEC: POS-07)
+        q["outlet_id"] = {"$in": outlet_id}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if period:
         q["reservation_date"] = {

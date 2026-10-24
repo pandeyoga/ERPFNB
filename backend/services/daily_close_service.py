@@ -11,6 +11,8 @@ The service computes status idempotently from existing data + records the
 close event in `daily_close_records` with notification to finance.
 """
 import uuid
+
+from pymongo.errors import DuplicateKeyError
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -238,7 +240,11 @@ async def submit(
         "updated_at": _now_iso(),
         "deleted_at": None,
     }
-    await db.daily_close_records.insert_one(doc)
+    try:
+        await db.daily_close_records.insert_one(doc)
+    except DuplicateKeyError:
+        # POS-10: concurrent submit — unique index dc_outlet_date_closed_unique keeps one close per day
+        raise ConflictError("Daily close sudah dilakukan untuk tanggal ini")
 
     # Link attachment to this close record
     try:
@@ -301,12 +307,18 @@ async def reopen(record_id: str, *, reason: str, user: dict) -> dict:
     perms = await _user_perms(user)
     if "*" not in perms and "admin.system_settings.manage" not in perms:
         raise ForbiddenError("Hanya admin yang bisa reopen daily close")
-    # DUP-14: reopen keeps the record as history (status), it is not deleted
-    await db.daily_close_records.update_one(
-        {"id": record_id},
-        {"$set": {"status": "reopened", "reopened_reason": reason,
+    if not (reason or "").strip():
+        raise ValidationError("Alasan reopen wajib diisi", field="reason")
+    # DUP-14: reopen keeps the record as history (status), it is not deleted.
+    # POS-10: reopen every live close of that outlet+day (legacy duplicates kept the day frozen).
+    res = await db.daily_close_records.update_many(
+        {"outlet_id": rec.get("outlet_id"), "close_date": rec.get("close_date"),
+         "deleted_at": None, "status": {"$ne": "reopened"}},
+        {"$set": {"status": "reopened", "reopened_reason": reason.strip(),
                   "reopened_by": user.get("id"), "reopened_at": _now_iso(), "updated_at": _now_iso()}},
     )
+    if not res.modified_count:
+        raise ValidationError("Daily close ini sudah dibuka kembali sebelumnya")
     await audit_log(
         user_id=user.get("id"), entity_type="daily_close", entity_id=record_id,
         action="reopen", reason=reason,

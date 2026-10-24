@@ -189,16 +189,19 @@ async def accept_quote(rfq_id: str, vendor_id: str, user: dict) -> Optional[dict
     from services.procurement_service import create_po
     po_lines = []
     rfq_item_map = {it["item_id"]: it for it in rfq.get("items", [])}
+    from services.tax_service import get_ppn_rate
+    ppn_rate = await get_ppn_rate()  # DUP-15: PPN from the tax SSOT, not a hard-coded 0.12
     for ln in quote.get("lines", []):
         rfq_item = rfq_item_map.get(ln["item_id"], {})
         if ln["unit_price"] > 0:
+            # FIN-20: field names match create_po (qty / unit_cost / unit), else the PO is zero-valued
             po_lines.append({
                 "item_id": ln["item_id"],
                 "item_name": ln.get("item_name") or rfq_item.get("item_name", ""),
-                "qty_ordered": rfq_item.get("qty", 1),
-                "uom": rfq_item.get("uom", "pcs"),
-                "unit_price": ln["unit_price"],
-                "tax_rate": 0.12,
+                "qty": rfq_item.get("qty", 1),
+                "unit": rfq_item.get("uom", "pcs"),
+                "unit_cost": ln["unit_price"],
+                "tax_rate": ppn_rate,
             })
 
     now = datetime.now(timezone.utc).isoformat()
@@ -210,9 +213,9 @@ async def accept_quote(rfq_id: str, vendor_id: str, user: dict) -> Optional[dict
         "rfq_id": rfq_id,
         "lines": po_lines,
         "notes": f"Auto-created from RFQ {rfq.get('rfq_no')} — accepted vendor: {quote.get('vendor_name')}",
-        "expected_delivery": (date.today() + timedelta(days=max(ln.get("lead_time_days", 3) for ln in quote.get("lines", [{"lead_time_days": 3}])))).isoformat(),
+        "expected_delivery_date": (date.today() + timedelta(days=max(ln.get("lead_time_days", 3) for ln in quote.get("lines", [{"lead_time_days": 3}])))).isoformat(),
     }
-    po = await create_po(po_data, user)
+    po = await create_po(po_data, user=user)
 
     # Mark RFQ accepted
     await db.rfqs.update_one(

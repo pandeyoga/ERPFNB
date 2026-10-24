@@ -6,8 +6,10 @@ from typing import Optional
 
 from core.audit import log as audit_log
 from core.db import get_db, serialize
+from pymongo.errors import DuplicateKeyError
+
 from core.exceptions import (
-    ForbiddenError, NotFoundError, ValidationError,
+    ConflictError, ForbiddenError, NotFoundError, ValidationError,
 )
 from services import journal_service
 
@@ -64,6 +66,61 @@ async def list_daily_sales(
     return enriched_items, {"page": page, "per_page": per_page, "total": total}
 
 
+def _num(value, field: str) -> float:
+    """Parse a non-negative money/qty value from client input (400 instead of a 500 on junk)."""
+    try:
+        v = float(value or 0)
+    except (TypeError, ValueError):
+        raise ValidationError(f"{field} harus berupa angka", field=field)
+    if v != v or v in (float("inf"), float("-inf")):
+        raise ValidationError(f"{field} harus berupa angka", field=field)
+    if v < 0:
+        raise ValidationError(f"{field} tidak boleh negatif", field=field)
+    return v
+
+
+async def _validate_draft_payload(payload: dict) -> None:
+    """POS-12: reject malformed daily-sales input up front with a 400 (never a 500 at validate time)."""
+    sales_date = payload.get("sales_date")
+    try:
+        datetime.strptime(str(sales_date), "%Y-%m-%d")
+    except ValueError:
+        raise ValidationError("sales_date harus berformat YYYY-MM-DD", field="sales_date")
+    if str(sales_date) > _biz_today():
+        raise ValidationError("sales_date tidak boleh di masa depan", field="sales_date")
+    for fld in ("channels", "payment_breakdown", "revenue_buckets"):
+        rows = payload.get(fld)
+        if rows is None:
+            continue
+        if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            raise ValidationError(f"{fld} harus berupa list objek", field=fld)
+        for i, r in enumerate(rows):
+            _num(r.get("amount"), f"{fld}[{i}].amount")
+    for fld in ("service_charge", "tax_amount"):
+        _num(payload.get(fld), fld)
+    try:
+        if int(payload.get("transaction_count") or 0) < 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        raise ValidationError("transaction_count harus bilangan bulat >= 0", field="transaction_count")
+    pm_ids = {p.get("payment_method_id") for p in payload.get("payment_breakdown") or []
+              if _num(p.get("amount"), "payment_breakdown.amount")}
+    if None in pm_ids or "" in pm_ids:
+        raise ValidationError("payment_method_id wajib diisi untuk setiap pembayaran",
+                              field="payment_breakdown")
+    if pm_ids:
+        found = await get_db().payment_methods.count_documents(
+            {"id": {"$in": list(pm_ids)}, "deleted_at": None})
+        if found != len(pm_ids):
+            raise ValidationError("payment_method_id tidak dikenal", field="payment_breakdown")
+
+
+def _sales_tax_type(outlet: dict) -> str:
+    """POS-02: restaurant F&B is taxed with PB1/PBJT (regional tax), not PPN — PPN only when the
+    outlet is explicitly configured with sales_tax_type='ppn'."""
+    return "ppn" if (outlet or {}).get("sales_tax_type") == "ppn" else "pb1"
+
+
 async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
     """Create or update DRAFT daily_sales (one per outlet+date)."""
     db = get_db()
@@ -71,21 +128,21 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
         raise ValidationError("outlet_id wajib diisi")
     if not payload.get("sales_date"):
         raise ValidationError("sales_date wajib diisi")
-    # Guard input shape: these fields must be lists of objects (FE sends list-of-dicts).
-    # Prevents an uncaught AttributeError (500) when a caller sends a dict/scalar.
-    for _fld in ("channels", "payment_breakdown", "revenue_buckets"):
-        if payload.get(_fld) is not None and not isinstance(payload[_fld], list):
-            raise ValidationError(f"{_fld} harus berupa list")
     outlet_id = payload["outlet_id"]
     sales_date = payload["sales_date"]
     from core.security import enforce_outlet_scope
     enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")  # DUP-03
+    await _validate_draft_payload(payload)
+    outlet = await db.outlets.find_one({"id": outlet_id, "deleted_at": None})
+    if not outlet:
+        raise ValidationError("Outlet tidak ditemukan", field="outlet_id")
 
     from services.daily_close_service import assert_day_open
     await assert_day_open(outlet_id, sales_date)
     # FIN-04: one daily sales per outlet+date — no new draft once submitted/validated exists
     if await db.daily_sales.find_one({"outlet_id": outlet_id, "sales_date": sales_date,
-                                      "status": {"$in": ["submitted", "validated"]}, "deleted_at": None}):
+                                      "status": {"$in": ["submitted", "validating", "validated"]},
+                                      "deleted_at": None}):
         raise ValidationError(f"Daily sales {sales_date} untuk outlet ini sudah disubmit/divalidasi")
     existing = await db.daily_sales.find_one({
         "outlet_id": outlet_id, "sales_date": sales_date,
@@ -100,7 +157,7 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
     # SSOT-22: SC policy (business rule) is the reference; manual SC input is kept but its variance is recorded
     from services import business_rules_service
     pol = await business_rules_service.resolve_rule(rule_type="service_charge_policy", outlet_id=outlet_id,
-                                                    brand_id=payload.get("brand_id"), on_date=sales_date)
+                                                    brand_id=outlet.get("brand_id"), on_date=sales_date)
     sc_pct = float(((pol or {}).get("rule_data") or {}).get("service_charge_pct") or 0)
     net_rev = sum(float(b.get("amount", 0) or 0) for b in payload.get("revenue_buckets", []))
     sc_expected = round(net_rev * sc_pct, 2) if sc_pct else None
@@ -108,7 +165,9 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
         "service_charge_expected": sc_expected,
         "service_charge_variance": (round(float(payload.get("service_charge", 0) or 0) - sc_expected, 2)
                                     if sc_expected is not None else None),
-        "outlet_id": outlet_id, "brand_id": payload.get("brand_id"),
+        # POS-26: brand comes from the outlet master, never from the client
+        "outlet_id": outlet_id, "brand_id": outlet.get("brand_id"),
+        "tax_type": _sales_tax_type(outlet),
         "sales_date": sales_date,
         "channels": payload.get("channels", []),
         "payment_breakdown": payload.get("payment_breakdown", []),
@@ -126,14 +185,19 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
         "voucher_meta": payload.get("voucher_meta") or None,
         "updated_at": _now(), "updated_by": user["id"],
     }
-    if existing:
-        common["status"] = "draft"  # back to draft on edit
-        common["rejected_reason"] = None
-        await db.daily_sales.update_one({"id": existing["id"]}, {"$set": common})
-        result = await db.daily_sales.find_one({"id": existing["id"]})
+    async def _update_existing(row: dict) -> dict:
+        upd = {**common, "status": "draft", "rejected_reason": None}  # back to draft on edit
+        result = await db.daily_sales.find_one_and_update(
+            {"id": row["id"], "status": {"$in": ["draft", "rejected"]}, "deleted_at": None},
+            {"$set": upd}, return_document=True)
+        if not result:
+            raise ConflictError("Daily sales sudah disubmit/diubah oleh proses lain — muat ulang data")
         await audit_log(user_id=user["id"], entity_type="daily_sales",
-                        entity_id=existing["id"], action="update")
+                        entity_id=row["id"], action="update")
         return serialize(result)
+
+    if existing:
+        return await _update_existing(existing)
     # Create new
     doc = {
         "id": str(uuid.uuid4()), "status": "draft", "schema_version": 1,
@@ -148,17 +212,36 @@ async def upsert_daily_sales_draft(payload: dict, *, user: dict) -> dict:
         "voucher_meta": None,
         **common,
     }
-    await db.daily_sales.insert_one(doc)
+    try:
+        await db.daily_sales.insert_one(doc)
+    except DuplicateKeyError:
+        # POS-01: a concurrent request created the outlet+date record first (unique index
+        # ds_outlet_date_unique) — fold this save into that record instead of duplicating revenue.
+        row = await db.daily_sales.find_one({"outlet_id": outlet_id, "sales_date": sales_date,
+                                             "deleted_at": None})
+        if not row or row.get("status") not in ("draft", "rejected"):
+            raise ValidationError(f"Daily sales {sales_date} untuk outlet ini sudah disubmit/divalidasi")
+        return await _update_existing(row)
     await audit_log(user_id=user["id"], entity_type="daily_sales", entity_id=doc["id"],
                     action="create")
     return serialize(doc)
 
 
-async def submit_daily_sales(id_: str, *, user: dict) -> dict:
+async def _load_scoped(id_: str, user: Optional[dict]) -> dict:
+    """Fetch a daily_sales record and enforce the caller's outlet scope (no cross-outlet IDOR)."""
     db = get_db()
     s = await db.daily_sales.find_one({"id": id_, "deleted_at": None})
     if not s:
         raise NotFoundError("Daily sales")
+    if user is not None:
+        from core.security import enforce_outlet_scope
+        enforce_outlet_scope(user, s.get("outlet_id") or "__missing__")
+    return s
+
+
+async def submit_daily_sales(id_: str, *, user: dict) -> dict:
+    db = get_db()
+    s = await _load_scoped(id_, user)
     if s["status"] not in ("draft", "rejected"):
         raise ValidationError(f"Status saat ini: {s['status']}, tidak bisa submit")
     from services.daily_close_service import assert_day_open
@@ -169,43 +252,69 @@ async def submit_daily_sales(id_: str, *, user: dict) -> dict:
         raise ValidationError(
             f"Total pembayaran ({pay_total}) tidak cocok dengan grand total ({s['grand_total']})"
         )
-    await db.daily_sales.update_one(
-        {"id": id_},
+    res = await db.daily_sales.update_one(
+        {"id": id_, "status": {"$in": ["draft", "rejected"]}, "deleted_at": None},
         {"$set": {"status": "submitted", "submitted_at": _now(),
                  "submitted_by": user["id"], "updated_at": _now()}},
     )
+    if not res.modified_count:
+        raise ConflictError("Daily sales sudah disubmit oleh proses lain")
     await audit_log(user_id=user["id"], entity_type="daily_sales", entity_id=id_, action="submit")
     return await get_daily_sales(id_)
 
 
+_VALIDATING_STALE_SEC = 300  # a crashed validation releases its claim after 5 minutes
+
+
 async def validate_daily_sales(id_: str, *, user: dict) -> dict:
     db = get_db()
-    s = await db.daily_sales.find_one({"id": id_, "deleted_at": None})
-    if not s:
-        raise NotFoundError("Daily sales")
-    if s["status"] != "submitted":
+    s = await _load_scoped(id_, user)
+    if s["status"] == "validated":
+        raise ConflictError("Daily sales sudah divalidasi")
+    if s["status"] not in ("submitted", "validating"):
         raise ValidationError(f"Status saat ini: {s['status']}, tidak bisa validate")
+    if user["id"] in (s.get("submitted_by"), s.get("created_by")) and "*" not in (user.get("permissions") or []):
+        raise ForbiddenError("Pembuat/pengirim daily sales tidak boleh memvalidasi sendiri (SoD)",
+                             code="APPROVAL_SOD_VIOLATION")
     # Phase 3 hardening — block if target period locked
     from services._period import derive_period_from_date, assert_period_unlocked
     target_period = derive_period_from_date(s.get("sales_date"))
     if target_period:
         await assert_period_unlocked(target_period, action="validate Daily Sales")
+    # POS-03: claim the record atomically so a double click / retry can never post twice
+    stale = datetime.fromtimestamp(datetime.now(timezone.utc).timestamp() - _VALIDATING_STALE_SEC,
+                                   timezone.utc).isoformat()
+    claim = await db.daily_sales.find_one_and_update(
+        {"id": id_, "deleted_at": None,
+         "$or": [{"status": "submitted"},
+                 {"status": "validating", "validating_at": {"$lt": stale}}]},
+        {"$set": {"status": "validating", "validating_at": _now(), "validating_by": user["id"]}},
+        return_document=True)
+    if not claim:
+        raise ConflictError("Daily sales sedang/sudah divalidasi oleh proses lain")
+    s = claim
     # FIN-03: claim the voucher atomically BEFORE posting (one voucher = one daily sales)
     claimed = False
-    if s.get("voucher_code"):
-        claimed = await _claim_voucher(db, s["voucher_code"], id_)
     try:
+        if s.get("voucher_code"):
+            claimed = await _claim_voucher(db, s["voucher_code"], id_)
         je = await journal_service.post_for_daily_sales(s, user_id=user["id"])
     except Exception:
-        if claimed:
+        # Release only what this request took, and only when no JE exists for the record.
+        posted = await db.journal_entries.find_one(
+            {"source_type": "sales", "source_id": id_, "deleted_at": None}, {"_id": 1})
+        if claimed and not posted:
             await db.redemptions.update_one(
                 {"voucher_code": s["voucher_code"], "claimed_reference_id": id_},
                 {"$set": {"status": "pending", "claimed_reference_id": None, "claimed_at": None}})
+        if not posted:
+            await db.daily_sales.update_one({"id": id_, "status": "validating"},
+                                            {"$set": {"status": "submitted", "validating_at": None}})
         raise
     await db.daily_sales.update_one(
         {"id": id_},
         {"$set": {"status": "validated", "validated_at": _now(),
-                 "validated_by": user["id"],
+                 "validated_by": user["id"], "validating_at": None,
                  "journal_entry_id": je["id"], "updated_at": _now()}},
     )
     await audit_log(user_id=user["id"], entity_type="daily_sales", entity_id=id_, action="validate")
@@ -264,26 +373,22 @@ async def _claim_voucher(db, code: str, daily_sales_id: str) -> bool:
 
 async def reject_daily_sales(id_: str, *, user: dict, reason: str) -> dict:
     db = get_db()
-    s = await db.daily_sales.find_one({"id": id_, "deleted_at": None})
-    if not s:
-        raise NotFoundError("Daily sales")
-    if s["status"] != "submitted":
-        raise ValidationError(f"Status saat ini: {s['status']}, tidak bisa reject")
-    await db.daily_sales.update_one(
-        {"id": id_},
-        {"$set": {"status": "rejected", "rejected_reason": reason, "updated_at": _now()}},
+    await _load_scoped(id_, user)
+    if not (reason or "").strip():
+        raise ValidationError("Alasan penolakan wajib diisi", field="reason")
+    res = await db.daily_sales.update_one(
+        {"id": id_, "status": "submitted", "deleted_at": None},
+        {"$set": {"status": "rejected", "rejected_reason": reason.strip(), "updated_at": _now()}},
     )
+    if not res.modified_count:
+        raise ValidationError("Hanya daily sales berstatus submitted yang bisa ditolak")
     await audit_log(user_id=user["id"], entity_type="daily_sales", entity_id=id_,
                     action="reject", reason=reason)
     return await get_daily_sales(id_)
 
 
-async def get_daily_sales(id_: str) -> dict:
-    db = get_db()
-    s = await db.daily_sales.find_one({"id": id_, "deleted_at": None})
-    if not s:
-        raise NotFoundError("Daily sales")
-    return serialize(s)
+async def get_daily_sales(id_: str, *, user: Optional[dict] = None) -> dict:
+    return serialize(await _load_scoped(id_, user))
 
 
 def _calc_grand_total(payload: dict) -> float:
@@ -343,8 +448,15 @@ async def add_petty_cash(payload: dict, *, user: dict) -> dict:
     enforce_outlet_scope({**user, "permissions": sorted(await _user_perms(user))}, outlet_id or "__missing__")  # DUP-03
     if payload.get("type") not in ("purchase", "replenish", "adjustment"):
         raise ValidationError("type harus purchase / replenish / adjustment")
-    if float(payload.get("amount", 0) or 0) <= 0:
+    if _num(payload.get("amount"), "amount") <= 0:
         raise ValidationError("Amount harus > 0")
+    try:
+        datetime.strptime(str(payload.get("txn_date")), "%Y-%m-%d")
+    except ValueError:
+        raise ValidationError("txn_date harus berformat YYYY-MM-DD", field="txn_date")
+    # POS-10: a closed day is frozen for petty cash too (it is part of the day's cash count)
+    from services.daily_close_service import assert_day_open
+    await assert_day_open(outlet_id, payload["txn_date"])
     # FIN-05: purchase needs a GL account (always journaled); replenish/adjustment need approval + JE
     direction = "out" if payload.get("direction") == "out" else "in"
     if payload["type"] == "purchase" and not payload.get("gl_account_id"):

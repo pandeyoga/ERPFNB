@@ -3,7 +3,7 @@ Sprint B: Voucher Redemption Station (verify + claim + customer vouchers + today
 Sprint C: Voucher validation for Daily Sales.
 Sprint D fix: /outlet/home dashboard.
 """
-from datetime import datetime, date, timezone, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 import uuid
 
@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 from core.db import get_db
 from core.exceptions import ok_envelope
-from core.security import current_user, get_user_permissions, require_perm
+from core.security import current_user, require_any_perm, require_perm
 from services.voucher_service import validate_voucher, get_voucher_rules
 
 router = APIRouter(prefix="/api/outlet", tags=["outlet"])
@@ -68,34 +68,37 @@ async def outlet_home_summary(
         - Restricted users → aggregate over their `outlet_ids` scope
     - If `outlet_id` provided but user has no access → 403
     """
-    today_str = date.today().isoformat()
-    yesterday_str = (date.today() - timedelta(days=1)).isoformat()
+    from core.clock import today_local
+    from core.security import scoped_outlet_ids
+    # POS-14/DB-14: business date (Asia/Jakarta), not the server's UTC date
+    today_str = today_local().isoformat()
+    yesterday_str = (today_local() - timedelta(days=1)).isoformat()
 
+    user_scope = scoped_outlet_ids(user)  # None = unrestricted
+    is_full_access = user_scope is None
     user_outlet_ids = list(user.get("outlet_ids", []) or [])
-    user_perms = await get_user_permissions(user)
-    is_full_access = "*" in user_perms
 
     # Resolve effective scope filter
     requested = (outlet_id or "").strip() or None
     if requested:
         # Single-outlet filter — validate access
-        if not is_full_access and user_outlet_ids and requested not in user_outlet_ids:
+        if user_scope is not None and requested not in user_scope:
             raise HTTPException(status_code=403, detail="outlet_not_in_scope")
         scope_filter = {"outlet_id": requested}
         scope_outlet_ids = [requested]
     else:
-        # Aggregate mode
-        if is_full_access or not user_outlet_ids:
+        # Aggregate mode (a scoped user without any outlet sees nothing — DUP-04)
+        if user_scope is None:
             scope_filter = {}  # all outlets
             scope_outlet_ids = []  # signals "all"
         else:
-            scope_filter = {"outlet_id": {"$in": user_outlet_ids}}
-            scope_outlet_ids = user_outlet_ids
+            scope_filter = {"outlet_id": {"$in": user_scope}}
+            scope_outlet_ids = user_scope
 
     # ── Sales today ─────────────────────────────────────────
     # Fetch the most-recent daily_sales doc for today within scope (one per outlet
     # in restricted case; for single-outlet scope we get the unique doc).
-    ds_today_filter = {"date": today_str, "deleted_at": None, **scope_filter}
+    ds_today_filter = {"sales_date": today_str, "deleted_at": None, **scope_filter}
     ds_today_docs = await db["daily_sales"].find(ds_today_filter).to_list(50)
     if requested and ds_today_docs:
         ds = ds_today_docs[0]
@@ -127,7 +130,7 @@ async def outlet_home_summary(
         sales_today = None
 
     # ── Sales yesterday ─────────────────────────────────────
-    ds_yest_filter = {"date": yesterday_str, "deleted_at": None, **scope_filter}
+    ds_yest_filter = {"sales_date": yesterday_str, "deleted_at": None, **scope_filter}
     ds_yest_docs = await db["daily_sales"].find(ds_yest_filter).to_list(50)
     if requested and ds_yest_docs:
         ds = ds_yest_docs[0]
@@ -466,7 +469,9 @@ async def today_claimed_vouchers(
     from core.security import scoped_outlet_ids
     scope = scoped_outlet_ids(user)
     outlet_id = {"$in": scope} if scope is not None else None
-    today_start = datetime.combine(date.today(), datetime.min.time()).replace(tzinfo=timezone.utc)
+    from core.clock import TZ, today_local
+    # business day starts at 00:00 Asia/Jakarta (POS-24), expressed in UTC for the stored timestamps
+    today_start = datetime.combine(today_local(), datetime.min.time()).replace(tzinfo=TZ).astimezone(timezone.utc)
 
     query = {
         "status": "claimed",
@@ -521,6 +526,7 @@ class CashierAddPointsRequest(BaseModel):
     amount_idr: float
     note: Optional[str] = None
     order_ref: Optional[str] = None
+    outlet_id: Optional[str] = None  # required when the cashier has access to more than one outlet
 
 
 @router.post("/loyalty/cashier/add-points")
@@ -561,7 +567,16 @@ async def cashier_add_loyalty_points(
         raise HTTPException(status_code=400, detail="order_ref (nomor struk) wajib diisi")
     if amount > _CASHIER_MAX_AMOUNT:
         raise HTTPException(status_code=400, detail=f"Nominal melebihi batas Rp {_CASHIER_MAX_AMOUNT:,.0f}")
-    if await db.loyalty_transactions.find_one({"reference_type": "cashier_entry", "reference_id": order_ref}):
+    # DUP-09/POS-04: a receipt number is unique per OUTLET (two outlets may both print "TRX-001")
+    from core.security import enforce_outlet_scope, scoped_outlet_ids
+    scope = scoped_outlet_ids(user)
+    outlet_id = (payload.outlet_id or "").strip() or (scope[0] if scope and len(scope) == 1 else None)
+    if not outlet_id:
+        raise HTTPException(status_code=400, detail="outlet_id wajib diisi (akses lebih dari satu outlet)")
+    enforce_outlet_scope(user, outlet_id)
+    ref_key = f"{outlet_id}:{order_ref}"
+    if await db.loyalty_transactions.find_one({"reference_type": "cashier_entry",
+                                               "reference_id": {"$in": [ref_key, order_ref]}}):
         raise HTTPException(status_code=409, detail=f"Poin untuk struk {order_ref} sudah pernah diberikan")
 
     # 1. Lookup or auto-create customer
@@ -587,8 +602,9 @@ async def cashier_add_loyalty_points(
             points=points_awarded,
             description=note,
             reference_type="cashier_entry",
-            reference_id=order_ref,
+            reference_id=ref_key,
             created_by=user["id"],
+            outlet_id=outlet_id,
         )
 
     # Refresh customer after point update
@@ -645,7 +661,8 @@ async def cashier_add_loyalty_points(
 @router.get("/loyalty/cashier/lookup")
 async def cashier_lookup_customer(
     phone: str = Query(..., description="Customer phone number"),
-    user: dict = Depends(current_user),
+    user: dict = Depends(require_any_perm("loyalty.transaction.create", "loyalty.redemption.create",
+                                          "admin.loyalty.manage_customers")),  # POS-11: member PII
     db=Depends(get_db),
 ):
     """Quick lookup customer by phone for cashier UI.

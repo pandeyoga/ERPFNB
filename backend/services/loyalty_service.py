@@ -5,6 +5,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 import logging
 import uuid
 
+from pymongo.errors import DuplicateKeyError
+
+from core.exceptions import ConflictError
+
 from models.loyalty_transaction import (
     LoyaltyTransactionInDB,
     LoyaltyTransactionResponse,
@@ -23,6 +27,7 @@ async def create_transaction(
     reference_type: Optional[str] = None,
     reference_id: Optional[str] = None,
     created_by: Optional[str] = None,
+    outlet_id: Optional[str] = None,
 ) -> LoyaltyTransactionInDB:
     """Create loyalty transaction and update customer points.
     
@@ -44,13 +49,23 @@ async def create_transaction(
         "reference_id": reference_id,
         "created_at": now,
         "created_by": created_by,
+        "outlet_id": outlet_id,  # POS-04: which outlet/terminal granted or redeemed the points
     }
     
-    # CTL-13: change the balance FIRST (atomic, raises if insufficient), then record the ledger row
+    # POS-04: the ledger row is written FIRST — the unique (reference_type, reference_id) index makes
+    # a retried/duplicated award fail here, before any points move. CTL-13: the balance change itself
+    # is atomic and raises if insufficient; then the row is rolled back.
     is_lifetime = transaction_type == "earn"  # Only earning adds to lifetime
-    await update_customer_points(db, customer_id, points, is_lifetime=is_lifetime)
-    await db.loyalty_transactions.insert_one(transaction_doc)
-    
+    try:
+        await db.loyalty_transactions.insert_one(transaction_doc)
+    except DuplicateKeyError:
+        raise ConflictError(f"Transaksi poin untuk referensi {reference_id} sudah tercatat")
+    try:
+        await update_customer_points(db, customer_id, points, is_lifetime=is_lifetime)
+    except Exception:
+        await db.loyalty_transactions.delete_one({"id": transaction_id})
+        raise
+
     return LoyaltyTransactionInDB(**transaction_doc)
 
 

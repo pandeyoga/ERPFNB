@@ -149,7 +149,9 @@ async def list_reservations(
 ) -> tuple[list[dict], dict]:
     db = get_db()
     q: dict = {"deleted_at": None}
-    if outlet_id:
+    if isinstance(outlet_id, list):  # outlet scope list from the router (SEC: POS-07)
+        q["outlet_id"] = {"$in": outlet_id}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if status:
         q["status"] = status

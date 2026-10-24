@@ -304,6 +304,58 @@ async def post_payment_run(run_id: str, payload: dict, *, user: dict) -> dict:
     if issues:
         raise ConflictError("Eksekusi gagal — beberapa payment bermasalah: " + "; ".join(issues))
 
+    # FIN-03: claim the run and every payment atomically before any JE — a double click on "post"
+    # or two runs sharing one PAY used to post the bank JE twice.
+    claim = await db.payment_runs.update_one({"id": run_id, "status": "confirmed", "deleted_at": None},
+                                             {"$set": {"status": "posting", "updated_at": _now()}})
+    if not claim.modified_count:
+        raise ConflictError("Payment run sedang/sudah dieksekusi oleh proses lain")
+    pay_claim = await db.payment_requests.update_many(
+        {"id": {"$in": pay_ids}, "status": "approved", "deleted_at": None},
+        {"$set": {"status": "paying", "payment_run_id": run_id, "updated_at": _now()}})
+    if pay_claim.modified_count != len(set(pay_ids)):
+        await _release_run_claims(db, run_id)
+        raise ConflictError("Sebagian payment sedang dibayar oleh proses/run lain — eksekusi dibatalkan")
+    try:
+        return await _execute_claimed_run(db, run_id, doc, ba, cr_coa_id, pays, pay_map, pay_ids,
+                                          payment_date, user=user)
+    except Exception:
+        await _release_run_claims(db, run_id)
+        raise
+
+
+async def _release_run_claims(db, run_id: str) -> None:
+    await db.payment_requests.update_many({"payment_run_id": run_id, "status": "paying"},
+                                          {"$set": {"status": "approved"}, "$unset": {"payment_run_id": ""}})
+    await db.payment_runs.update_one({"id": run_id, "status": "posting"}, {"$set": {"status": "confirmed"}})
+
+
+async def _execute_claimed_run(db, run_id: str, doc: dict, ba: dict, cr_coa_id: str, pays: list,
+                               pay_map: dict, pay_ids: list, payment_date: str, *, user: dict) -> dict:
+    # FIN-04: settle AP for GR-linked payments before any bank JE; revert all on failure
+    from services._finance.ap_settlement import apply_gr_payment, revert_gr_payment
+    applied: list[dict] = []
+    try:
+        for pid in pay_ids:
+            p = pay_map[pid]
+            if p.get("gr_id"):
+                await apply_gr_payment(db, gr_id=p["gr_id"], amount=float(p.get("amount", 0) or 0),
+                                       payment_ref=doc["doc_no"], payment_id=pid, payment_date=payment_date)
+                applied.append(p)
+        return await _post_run_jes(db, run_id, doc, ba, cr_coa_id, pays, pay_map, pay_ids, payment_date,
+                                   user=user)
+    except Exception:
+        for p in applied:
+            await revert_gr_payment(db, gr_id=p["gr_id"], amount=float(p.get("amount", 0) or 0),
+                                    payment_id=p["id"])
+        raise
+
+
+async def _post_run_jes(db, run_id: str, doc: dict, ba: dict, cr_coa_id: str, pays: list,
+                        pay_map: dict, pay_ids: list, payment_date: str, *, user: dict) -> dict:
+    issues: list[str] = []
+    bank_account_id = doc["bank_account_id"]
+
     # Build JE lines for non-WHT pays (WHT pays have individual JEs below)
     je_lines = []
     coa_cache: dict[str, dict] = {}
@@ -436,13 +488,7 @@ async def post_payment_run(run_id: str, payload: dict, *, user: dict) -> dict:
             "journal_entry_id": pay_je_id or primary_je_id,
             "updated_at": now,
         }})
-        # Reduce AP on linked GR (goods_receipts + ap_ledgers, single write-path)
-        if p.get("gr_id"):
-            from services._finance.ap_settlement import apply_gr_payment
-            await apply_gr_payment(
-                db, gr_id=p["gr_id"], amount=float(p.get("amount", 0) or 0),
-                payment_ref=doc["doc_no"], payment_id=pid, payment_date=payment_date,
-            )
+        # (AP on the linked GR was settled before the JE in _execute_claimed_run)
 
     # Notify creator of the run
     try:

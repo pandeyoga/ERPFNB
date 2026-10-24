@@ -104,7 +104,8 @@ async def post_manual_journal(payload: dict, *, user: dict) -> dict:
     coa_map = {}
     async for c in db.chart_of_accounts.find({"id": {"$in": coa_ids}}):
         coa_map[c["id"]] = c
-    entry_date = payload.get("entry_date", _biz_today())
+    from services._journal._common import normalize_entry_date
+    entry_date = normalize_entry_date(payload.get("entry_date") or _biz_today())  # FIN-10: "2019-1-15" bypassed locks
     period = entry_date[:7]  # FIN-01: period is derived from entry_date, never from payload
     from services._period import assert_period_unlocked
     await assert_period_unlocked(period, action="manual journal posting")

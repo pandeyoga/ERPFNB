@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ForbiddenError, ok_envelope
-from core.security import current_user, require_perm, get_user_permissions
+from core.security import current_user, require_perm, get_user_permissions, resolve_outlet_filter
 from services import inventory_service, inventory_matrix_service
 
 router = APIRouter(prefix="/api/inventory", tags=["inventory"])
@@ -15,8 +15,9 @@ async def stock_balance(
     page: int = Query(1, ge=1), per_page: int = Query(100, ge=1, le=500),
     user: dict = Depends(require_perm("inventory.balance.read")),
 ):
+    scope = resolve_outlet_filter(user, outlet_id)  # SEC: no cross-outlet stock reads
     items, meta = await inventory_service.stock_balance(
-        outlet_id=outlet_id, item_id=item_id, page=page, per_page=per_page,
+        outlet_ids=scope, item_id=item_id, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
 
@@ -28,12 +29,7 @@ async def list_mov(
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
     user: dict = Depends(require_perm("inventory.movement.read")),
 ):
-    user_perms = await get_user_permissions(user)
-    outlet_ids = None
-    if "*" not in user_perms:
-        outlet_ids = [outlet_id] if outlet_id else user.get("outlet_ids", [])
-    elif outlet_id:
-        outlet_ids = [outlet_id]
+    outlet_ids = resolve_outlet_filter(user, outlet_id)  # requested outlet must be in scope
     items, meta = await inventory_service.list_movements(
         outlet_ids=outlet_ids, item_id=item_id, movement_type=movement_type,
         date_from=date_from, page=page, per_page=per_page,
@@ -44,7 +40,7 @@ async def list_mov(
 @router.get("/valuation")
 async def get_valuation(outlet_id: Optional[str] = None,
                          user: dict = Depends(require_perm("inventory.valuation.read"))):
-    return ok_envelope(await inventory_service.valuation(outlet_id=outlet_id))
+    return ok_envelope(await inventory_service.valuation(outlet_ids=resolve_outlet_filter(user, outlet_id)))
 
 
 # Transfer
@@ -55,15 +51,7 @@ async def list_t(
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("inventory.balance.read")),
 ):
-    user_perms = await get_user_permissions(user)
-    if "*" not in user_perms:
-        # Restricted user: use their scope, optionally narrowed to one outlet
-        raw = user.get("outlet_ids", [])
-        outlet_ids = [outlet_id] if (outlet_id and outlet_id in raw) else raw
-    elif outlet_id:
-        outlet_ids = [outlet_id]
-    else:
-        outlet_ids = None
+    outlet_ids = resolve_outlet_filter(user, outlet_id)
     items, meta = await inventory_service.list_transfers(
         outlet_ids=outlet_ids, status=status, page=page, per_page=per_page,
     )
@@ -72,7 +60,12 @@ async def list_t(
 
 @router.get("/transfers/{id_}")
 async def get_t(id_: str, user: dict = Depends(require_perm("inventory.balance.read"))):
-    return ok_envelope(await inventory_service.get_transfer(id_))
+    t = await inventory_service.get_transfer(id_)
+    from core.security import scoped_outlet_ids
+    scope = scoped_outlet_ids(user)
+    if scope is not None and not ({t.get("from_outlet_id"), t.get("to_outlet_id")} & set(scope)):
+        raise ForbiddenError("Outlet not in your scope", code="OUTLET_OUT_OF_SCOPE")
+    return ok_envelope(t)
 
 
 @router.post("/transfers")
@@ -99,14 +92,7 @@ async def list_a(
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("inventory.movement.read")),
 ):
-    user_perms = await get_user_permissions(user)
-    if "*" not in user_perms:
-        raw = user.get("outlet_ids", [])
-        outlet_ids = [outlet_id] if (outlet_id and outlet_id in raw) else raw
-    elif outlet_id:
-        outlet_ids = [outlet_id]
-    else:
-        outlet_ids = None
+    outlet_ids = resolve_outlet_filter(user, outlet_id)
     items, meta = await inventory_service.list_adjustments(
         outlet_ids=outlet_ids, status=status, page=page, per_page=per_page,
     )
@@ -147,14 +133,7 @@ async def list_o(
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("inventory.balance.read")),
 ):
-    user_perms = await get_user_permissions(user)
-    if "*" not in user_perms:
-        raw = user.get("outlet_ids", [])
-        outlet_ids = [outlet_id] if (outlet_id and outlet_id in raw) else raw
-    elif outlet_id:
-        outlet_ids = [outlet_id]
-    else:
-        outlet_ids = None
+    outlet_ids = resolve_outlet_filter(user, outlet_id)
     items, meta = await inventory_service.list_opname(
         outlet_ids=outlet_ids, status=status, page=page, per_page=per_page,
     )

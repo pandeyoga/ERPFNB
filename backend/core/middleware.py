@@ -81,7 +81,15 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
                     "status_code": 500,
                 },
             )
-            raise
+            # Answer with the standard envelope instead of re-raising: a re-raise inside
+            # BaseHTTPMiddleware surfaces as a plain-text 500 or a dropped connection.
+            return JSONResponse(
+                status_code=500,
+                headers={_X_REQ_ID: rid},
+                content={"success": False, "data": None, "meta": {"request_id": rid},
+                         "errors": [{"code": "INTERNAL_ERROR",
+                                     "message": f"Terjadi kesalahan server (ref {rid[:8]})"}]},
+            )
         duration_ms = (time.perf_counter_ns() - request.state.start_ns) / 1e6
         response.headers[_X_REQ_ID] = rid
         # Access log line

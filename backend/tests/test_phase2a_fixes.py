@@ -100,9 +100,18 @@ class TestA3DailySalesVoucher:
             bucket_id = rb.json()["data"][0]["id"]
 
         import datetime
+        # one daily sales per outlet+date → use the most recent date without a record
+        day = datetime.date.today()
+        for _ in range(120):
+            lst = requests.get(f"{API}/outlet/daily-sales", headers=cfs_h, timeout=15,
+                               params={"outlet_id": outlet_id, "date_from": day.isoformat(),
+                                       "date_to": day.isoformat()}).json().get("data") or []
+            if not lst:
+                break
+            day -= datetime.timedelta(days=1)
         payload = {
             "outlet_id": outlet_id,
-            "sales_date": datetime.date.today().isoformat(),
+            "sales_date": day.isoformat(),
             "revenue_buckets": [{"bucket_id": bucket_id, "amount": 100000}] if bucket_id else [{"amount": 100000}],
             "service_charge": 0,
             "tax_amount": 0,
@@ -113,13 +122,15 @@ class TestA3DailySalesVoucher:
         assert r.status_code in (200, 201), f"Create daily-sales draft failed: {r.status_code} {r.text[:400]}"
         data = r.json()["data"]
         gt = data.get("grand_total")
-        assert gt in (80000, 80000.0), f"Expected grand_total 80000, got {gt}"
         ds_id = data.get("id")
+        # FIN-03: a voucher discount is computed server-side from a real voucher_code — a client-sent
+        # voucher_discount_amount without a voucher is ignored (it used to be trusted).
+        assert data.get("voucher_discount_amount") in (0, 0.0), data
+        assert gt in (100000, 100000.0), f"Expected grand_total 100000 (no voucher), got {gt}"
 
-        # Submit -> should NOT fail with 'tidak cocok' since 100000 - 20000 == 80000 payment total
+        # Submit with payments 80,000 vs grand total 100,000 → rejected as mismatch
         rs = requests.post(f"{API}/outlet/daily-sales/{ds_id}/submit", headers=cfs_h, timeout=30)
-        assert "tidak cocok" not in rs.text.lower(), f"Voucher fix broken: {rs.text[:400]}"
-        assert rs.status_code in (200, 201), f"Submit failed: {rs.status_code} {rs.text[:400]}"
+        assert rs.status_code == 400 and "tidak cocok" in rs.text.lower(), rs.text[:400]
 
         # Cleanup: delete draft doc directly from db
         try:

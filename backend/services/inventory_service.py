@@ -83,6 +83,7 @@ async def _assert_can_decrement(db, outlet_id: str, needs: list) -> None:
 
 async def stock_balance(
     *, outlet_id: Optional[str] = None, item_id: Optional[str] = None,
+    outlet_ids: Optional[list[str]] = None,
     page: int = 1, per_page: int = 100,
 ) -> tuple[list[dict], dict]:
     """Aggregate signed qty per (item, outlet) from inventory_movements."""
@@ -90,6 +91,8 @@ async def stock_balance(
     match: dict = {"deleted_at": None}
     if outlet_id:
         match["outlet_id"] = outlet_id
+    elif outlet_ids is not None:
+        match["outlet_id"] = {"$in": outlet_ids}
     if item_id:
         match["item_id"] = item_id
     pipeline = [
@@ -172,8 +175,8 @@ async def list_movements(
     return out, {"page": page, "per_page": per_page, "total": total}
 
 
-async def valuation(*, outlet_id: Optional[str] = None) -> dict:
-    rows, _ = await stock_balance(outlet_id=outlet_id, per_page=10000)
+async def valuation(*, outlet_id: Optional[str] = None, outlet_ids: Optional[list[str]] = None) -> dict:
+    rows, _ = await stock_balance(outlet_id=outlet_id, outlet_ids=outlet_ids, per_page=10000)
     total_value = sum(r["total_value"] for r in rows if r["qty"] > 0)
     by_outlet: dict[str, float] = {}
     for r in rows:

@@ -119,7 +119,9 @@ async def profit_loss(
             continue
         b = current_balances.get(coa["id"], {})
         bp = prev_balances.get(coa["id"], {}) if compare_prev else {}
-        normal = coa.get("normal_balance") or coa.get("normal") or "debit"
+        # FIN-06: sign follows the P&L SECTION, not the account's normal balance — a contra-revenue
+        # account (4010 Discount, normal Dr) must REDUCE revenue (cr−dr < 0), not be added to it.
+        normal = "credit" if is_revenue else "debit"
         period_net = round(_get_period_net(b, normal), 2)
         prev_net = round(_get_period_net(bp, normal), 2) if compare_prev else None
         if period_net == 0 and (not compare_prev or prev_net == 0):
