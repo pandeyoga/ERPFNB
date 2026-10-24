@@ -110,7 +110,7 @@ function ImageUploadField({ value, onChange }) {
         toast.success("Gambar berhasil diupload");
       }
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal upload gambar");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal upload gambar");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -256,7 +256,7 @@ export default function LoyaltyAdminRewards() {
       setForm(EMPTY_FORM);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal menyimpan reward");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal menyimpan reward");
     } finally {
       setSaving(false);
     }
@@ -287,7 +287,7 @@ export default function LoyaltyAdminRewards() {
       setRestocking(null);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal restock");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal restock");
     } finally {
       setRestockSaving(false);
     }

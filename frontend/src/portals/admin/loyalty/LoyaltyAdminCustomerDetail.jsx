@@ -131,7 +131,7 @@ export default function LoyaltyAdminCustomerDetail() {
       setAdjustForm({ points: 100, description: "", is_lifetime: true, sign: "+" });
       loadAll();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal adjust poin");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal adjust poin");
     } finally {
       setAdjusting(false);
     }

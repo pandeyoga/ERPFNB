@@ -44,7 +44,7 @@ export default function RedeemModal({ open, onClose, reward, customer, token, on
         onSuccess();
       }
     } catch (err) {
-      const message = err.response?.data?.detail || "Gagal menukar reward";
+      const message = (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Gagal menukar reward";
       setError(message);
       toast.error(message);
     } finally {

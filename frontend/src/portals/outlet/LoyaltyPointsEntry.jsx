@@ -4,6 +4,7 @@ import { Search, Zap, CheckCircle2, Crown, Plus, RefreshCw, Phone, Loader2, User
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import axios from "axios";
+import { useOutletScopeCtx } from "@/portals/outlet/OutletScopeContext";
 
 const API = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -102,6 +103,7 @@ function SearchPhase({ onFound, onNotFound, loading, setLoading }) {
 function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading }) {
   const [rawAmount, setRawAmount] = useState("");
   const [note, setNote] = useState("");
+  const [orderRef, setOrderRef] = useState("");
   const tier = TIER_CONFIG[customer?.loyalty_tier] || TIER_CONFIG.bronze;
   const amount = Number(String(rawAmount).replace(/\D/g, ""));
   const points = calcPoints(amount, customer?.multiplier ?? 1.0);
@@ -114,7 +116,9 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (amount < 10000) { toast.error("Nominal minimal Rp 10.000"); return; }
-    onConfirm({ phone: rawPhone, amount_idr: amount, note: note || undefined });
+    // Backend requires the receipt number: one receipt can earn points only once (idempotent)
+    if (!orderRef.trim()) { toast.error("Nomor struk wajib diisi"); return; }
+    onConfirm({ phone: rawPhone, amount_idr: amount, note: note || undefined, order_ref: orderRef.trim() });
   };
 
   return (
@@ -207,6 +211,19 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
         )}
       </AnimatePresence>
 
+      {/* Receipt number (required — one receipt earns points once) */}
+      <div>
+        <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.7)]">Nomor Struk</p>
+        <input
+          type="text"
+          value={orderRef}
+          onChange={(e) => setOrderRef(e.target.value)}
+          placeholder="mis. TRX-000123"
+          className="glass-input w-full h-10 px-4 text-sm rounded-xl"
+          data-testid="cashier-order-ref-input"
+        />
+      </div>
+
       {/* Note (optional) */}
       <div>
         <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.5)]">Catatan (opsional)</p>
@@ -223,7 +240,7 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
       {/* Submit */}
       <button
         type="submit"
-        disabled={loading || amount < 10000}
+        disabled={loading || amount < 10000 || !orderRef.trim()}
         className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
         style={{
           background: amount >= 10000 ? "hsl(var(--primary))" : "hsl(var(--muted))",
@@ -314,6 +331,7 @@ function SuccessPhase({ result, onNext }) {
 
 // ─── Main component ──────────────────────────────────────────────
 export default function LoyaltyPointsEntry() {
+  const outletScope = useOutletScopeCtx();
   const { token } = useAuth();
   const [phase, setPhase] = useState("search"); // search | confirm | success
   const [loading, setLoading] = useState(false);
@@ -351,12 +369,13 @@ export default function LoyaltyPointsEntry() {
     setResult(null);
   };
 
-  const handleConfirm = async ({ phone, amount_idr, note }) => {
+  const handleConfirm = async ({ phone, amount_idr, note, order_ref }) => {
     setLoading(true);
     try {
       const { data } = await axios.post(
         `${API}/api/outlet/loyalty/cashier/add-points`,
-        { phone, amount_idr, note },
+        // receipt numbers are unique per outlet → send the outlet currently in view (if any)
+        { phone, amount_idr, note, order_ref, outlet_id: outletScope?.outletId || undefined },
         { withCredentials: true }
       );
       if (data?.success) {
@@ -367,7 +386,7 @@ export default function LoyaltyPointsEntry() {
         toast.error(data?.errors?.[0]?.message || "Gagal menambah poin");
       }
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Terjadi kesalahan. Coba lagi.");
+      toast.error(err?.response?.data?.errors?.[0]?.message || err?.response?.data?.detail || "Terjadi kesalahan. Coba lagi.");
     } finally {
       setLoading(false);
     }

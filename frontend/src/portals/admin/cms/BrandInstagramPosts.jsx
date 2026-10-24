@@ -75,7 +75,7 @@ export default function BrandInstagramPosts({ brand }) {
       setImgPreview("");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Gagal menyimpan");
+      toast.error((e.response?.data?.errors?.[0]?.message || e.response?.data?.detail) || "Gagal menyimpan");
     } finally {
       setSaving(false);
     }

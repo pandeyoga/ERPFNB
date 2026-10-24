@@ -148,16 +148,8 @@ export default function AnomalyFeed() {
     // Load last scan info
     api.get("/anomalies/last-scan").then((r) => setLastScan(unwrap(r))).catch(() => {});
     // Phase 5C.3: Load users for assignment dropdown
-    api.get("/admin/users").then((r) => {
-      const allUsers = unwrap(r) || [];
-      // Filter to finance/admin users only
-      const financeUsers = allUsers.filter(u => 
-        u.roles?.some(role => 
-          role.includes("finance") || role.includes("admin") || role.includes("executive")
-        )
-      );
-      setUsers(financeUsers);
-    }).catch(() => {});
+    // UI-04: scoped assignee list (finance staff cannot read /admin/users)
+    api.get("/anomalies/assignees").then((r) => setUsers(unwrap(r) || [])).catch(() => {});
   }, []);
 
   useEffect(() => {

@@ -50,7 +50,7 @@ export default function LoyaltyLogin() {
       navigate("/loyalty");
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message ||
-                  err.response?.data?.detail || "Email atau password salah";
+                  (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Email atau password salah";
       setError(msg);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ export default function LoyaltyLogin() {
       toast.success("Selamat datang!");
       navigate("/loyalty");
     } catch (err) {
-      const msg = err.response?.data?.detail || "Nomor HP atau password salah";
+      const msg = (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Nomor HP atau password salah";
       setError(msg);
     } finally {
       setLoading(false);

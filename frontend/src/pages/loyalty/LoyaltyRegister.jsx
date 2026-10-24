@@ -51,7 +51,7 @@ export default function LoyaltyRegister() {
       navigate("/loyalty");
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message ||
-                  err.response?.data?.detail || "Registrasi gagal";
+                  (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Registrasi gagal";
       setError(msg);
       toast.error(msg);
     } finally {

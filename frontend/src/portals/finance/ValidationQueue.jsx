@@ -23,6 +23,7 @@ export default function ValidationQueue() {
   const [meta, setMeta] = useState({ total: 0, per_page: 50 });
   const [reject, setReject] = useState(null);
   const [reason, setReason] = useState("");
+  const [actingId, setActingId] = useState(null);
 
   async function load() {
     setLoading(true);
@@ -37,24 +38,34 @@ export default function ValidationQueue() {
   useEffect(() => { load(); }, [page]);
 
   async function validate(ds) {
+    if (actingId) return; // RC-12/POS-03: one in-flight action at a time (no double-posting)
     if (!(await confirmDialog(`Validate daily sales ${fmtDate(ds.sales_date)} di ${ds.outlet_name}? Jurnal akan dibuat.`))) return;
+    setActingId(ds.id);
     try {
       await api.post(`/outlet/daily-sales/${ds.id}/validate`);
       toast.success("Validated. Jurnal dibuat.");
       load();
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal validate");
+    } finally {
+      setActingId(null);
     }
   }
 
   async function rejectSubmit() {
     if (!reason.trim()) { toast.error("Alasan wajib"); return; }
+    if (actingId) return;
+    setActingId(reject.id);
     try {
       await api.post(`/outlet/daily-sales/${reject.id}/reject`, { reason });
       toast.success("Rejected. Outlet manager akan diberi tahu.");
       setReject(null); setReason("");
       load();
-    } catch (e) { toast.error("Gagal reject"); }
+    } catch (e) {
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal reject");
+    } finally {
+      setActingId(null);
+    }
   }
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 50)));
@@ -103,7 +114,7 @@ export default function ValidationQueue() {
               <Button onClick={() => setReject(ds)} size="sm" variant="outline" className="rounded-full gap-1 h-7 px-3 text-red-600 hover:bg-red-500/10" data-testid={`fin-vq-reject-${ds.id}`}>
                 <XCircle className="h-3 w-3" /> Reject
               </Button>
-              <Button onClick={() => validate(ds)} size="sm" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`fin-vq-validate-${ds.id}`}>
+              <Button onClick={() => validate(ds)} disabled={!!actingId} size="sm" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`fin-vq-validate-${ds.id}`}>
                 <CheckCircle2 className="h-3 w-3" /> Validate
               </Button>
             </div>

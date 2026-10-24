@@ -49,6 +49,9 @@ export default function OpnameSession() {
         }
       });
       setCounts(init);
+    } catch (e) {
+      // UI-07: unknown/forbidden session → render the empty state instead of an uncaught rejection
+      setSess(null);
     } finally { setLoading(false); }
   }, [id]);
 

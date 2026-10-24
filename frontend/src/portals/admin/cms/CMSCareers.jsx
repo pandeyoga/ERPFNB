@@ -128,7 +128,7 @@ export default function CMSCareers() {
       setEditing(null);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal menyimpan lowongan");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal menyimpan lowongan");
     } finally {
       setSaving(false);
     }

@@ -63,7 +63,7 @@ export default function LoyaltyProfile() {
       await refreshCustomer();
       toast.success("Profile berhasil diupdate!");
     } catch (err) {
-      const msg = err.response?.data?.detail || "Gagal update profile";
+      const msg = (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Gagal update profile";
       setError(msg);
       toast.error(msg);
     } finally { setLoading(false); }

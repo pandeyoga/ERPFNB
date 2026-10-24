@@ -316,7 +316,7 @@ function BankReconDetail({ sessionId, onBack }) {
       await Promise.all([load(), loadHistory()]);
       toast.success("Rekonsiliasi berhasil dibatalkan — session kembali ke status Pending");
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal reverse commit");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal reverse commit");
     } finally { setActing(false); }
   }
 

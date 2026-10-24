@@ -130,7 +130,7 @@ export default function LoyaltyAdminRedemptions() {
       setConfirmAction(null);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal mengubah status");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal mengubah status");
     } finally {
       setStatusUpdating(false);
     }

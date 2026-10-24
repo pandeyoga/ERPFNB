@@ -245,8 +245,9 @@ function ItemFormDialog({ item, onClose, onSave, saving }) {
       const d = r.data?.data || (Array.isArray(r.data) ? r.data : []);
       setVendors(d);
     }).catch(() => {});
-    api.get("/finance/coa?is_postable=true&page=1&per_page=200").then(r => {
-      const d = r.data?.data || (Array.isArray(r.data) ? r.data : []);
+    // DUP-10: /finance/coa never existed (404 → empty dropdown); master CoA list + postable filter
+    api.get("/master/chart-of-accounts?page=1&per_page=500").then(r => {
+      const d = (r.data?.data || (Array.isArray(r.data) ? r.data : [])).filter(c => c.is_postable !== false);
       setCoas(d);
       const whCoas = d.filter(c => /withholding|pph|pajak/i.test(c.name || "") || /21[0-9]{3}/.test(c.code || ""));
       setWhtCoas(whCoas.length > 0 ? whCoas : d);

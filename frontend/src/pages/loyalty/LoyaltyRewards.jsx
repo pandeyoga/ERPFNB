@@ -201,8 +201,8 @@ export default function LoyaltyRewards() {
       setSuccessResult(res.data);
       await refreshCustomer();
     } catch (err) {
-      setErrorMsg(err?.response?.data?.detail || "Penukaran gagal. Coba lagi.");
-      toast.error(err?.response?.data?.detail || "Penukaran gagal");
+      setErrorMsg((err?.response?.data?.errors?.[0]?.message || err?.response?.data?.detail) || "Penukaran gagal. Coba lagi.");
+      toast.error((err?.response?.data?.errors?.[0]?.message || err?.response?.data?.detail) || "Penukaran gagal");
     } finally { setRedeeming(null); }
   };
 
