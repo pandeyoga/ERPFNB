@@ -361,3 +361,21 @@ cd backend && python -m pytest -q                 # 215 passed
 - Folder upload tunggal: `settings.upload_dir` (default `/app/backend/uploads`).
 - JE: selalu punya `doc_no` dan `je_number` (sama) + `outlet_id` top-level bila satu outlet.
 - Posting dokumen berstatus: klaim status atomik (`approved→posting`) lalu rollback bila JE gagal.
+
+
+## Addendum 2026-10-24 (audit kesiapan POS — lihat docs/audit/AUDIT_REPORT_2026-10-24.md)
+- **Cakupan outlet:** pakai `core.security.resolve_outlet_filter(user, outlet_id)` untuk query list (None = tanpa batas,
+  `[]` = tidak ada akses) dan `enforce_outlet_scope` untuk detail/tulis. JANGAN menulis salinan logika scope baru.
+- **Permission tulis ≠ permission baca:** endpoint POST/PUT/PATCH/DELETE tidak boleh hanya dijaga `*.read`.
+- **Idempotensi = unique index + DuplicateKeyError → 409/kembalikan yang ada.** Sudah ada: `ds_outlet_date_unique`,
+  `dc_outlet_date_closed_unique`, `loyalty_ref_unique`, `customers_phone_key_unique`, `customers_email_unique`,
+  `je_source_unique_partial`. Transisi status: klaim atomik (`find_one_and_update` dengan filter status) sebelum efek samping.
+- **`_post_journal` adalah satu-satunya pintu jurnal otomatis:** nominal di sen integer, akun harus ada/postable/aktif,
+  tanggal `YYYY-MM-DD` maks 1 bulan ke depan, periode dibuat setelah validasi. Jurnal penjualan `source_type="sales"`.
+- **Pajak penjualan restoran = PB1/PBJT → akun 2116 (`pb1_payable`)**, bukan PPN 2110. PPN hanya bila outlet
+  `sales_tax_type="ppn"`. e-Faktur keluaran hanya dari penjualan PPN.
+- **Identitas member = `customers.phone_key`** (digit kanonik 62…) via `customer_service.phone_key()`; semua writer wajib mengisinya.
+- **Error:** service boleh melempar `ValidationError`/`ConflictError`; `ValueError` kini otomatis 400 dan duplicate key 409,
+  tetapi exception tak terduga tetap 500 (jangan menelan exception tanpa log).
+- **Status test:** pytest pada seed bersih = 363 lulus / 12 gagal yang hanya karena lingkungan (cookie Secure di http,
+  object storage Emergent, test usang). Klaim "semua hijau" di dokumen lama tidak berlaku.
