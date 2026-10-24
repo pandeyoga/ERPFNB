@@ -154,7 +154,7 @@ export default function PaymentRunTemplateDetail() {
                 render: (it) => (
                   <div>
                     <div className="font-medium">{it.payee_name || "-"}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">{it.payee_type}</div>
+                    <div className="text-[11px] text-muted-foreground uppercase">{it.payee_type}</div>
                   </div>
                 ) },
               { key: "description", label: "Keterangan",

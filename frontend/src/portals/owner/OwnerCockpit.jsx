@@ -89,7 +89,7 @@ function PendingApprovalsWidget() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[10px] text-muted-foreground">{it.amount_label}</div>
+              <div className="text-[11px] text-muted-foreground">{it.amount_label}</div>
               <div className="font-bold font-mono">{fmtRp(it.amount || 0)}</div>
             </div>
             <Button size="sm" disabled={busy === `${it.entity_id}-approve`}
@@ -280,7 +280,7 @@ export default function OwnerCockpit() {
                         {o.outlet_name}
                       </span>
                       <span className="font-mono font-semibold">{fmtRp(o.revenue)}
-                        <span className="text-[10px] text-muted-foreground ml-2">{o.transactions} txn</span>
+                        <span className="text-[11px] text-muted-foreground ml-2">{o.transactions} txn</span>
                       </span>
                     </li>
                   ))}

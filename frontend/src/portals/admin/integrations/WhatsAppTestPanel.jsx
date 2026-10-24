@@ -53,7 +53,7 @@ export default function WhatsAppTestPanel() {
         </span>
         <div className="flex-1">
           <h3 className="font-semibold text-sm">Test WhatsApp</h3>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Active: <span className="font-mono">{info.provider}</span>
           </p>
         </div>
@@ -82,12 +82,12 @@ export default function WhatsAppTestPanel() {
         </Button>
 
         {result && (
-          <pre className="p-2 rounded bg-muted text-[10px] overflow-x-auto max-h-40">
+          <pre className="p-2 rounded bg-muted text-[11px] overflow-x-auto max-h-40">
             {JSON.stringify(result, null, 2)}
           </pre>
         )}
 
-        <div className="text-[10px] text-muted-foreground space-y-1">
+        <div className="text-[11px] text-muted-foreground space-y-1">
           <p>
             💡 Pilih provider:
           </p>

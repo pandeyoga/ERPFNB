@@ -129,7 +129,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
         </span>
       </button>
     ) : (
-    <div className={cn("glass-card p-5 flex flex-col", collapsible ? "h-[460px]" : "h-[560px]")} data-testid="exec-qa">
+    <div className={cn("glass-card p-4 flex flex-col", collapsible ? "h-[460px]" : "h-[560px]")} data-testid="exec-qa">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h3 className="font-semibold inline-flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
                       <button
                         type="button"
                         onClick={() => setExpandedTools(s => ({ ...s, [expandedKey]: !s[expandedKey] }))}
-                        className="text-[10px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                        className="text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
                         data-testid={`exec-qa-tool-toggle-${i}`}
                       >
                         <Wrench className="h-3 w-3" />
@@ -218,7 +218,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
                       {isToolsExpanded && (
                         <div className="mt-1 space-y-1">
                           {m.tool_calls.map((tc, ti) => (
-                            <div key={ti} className="text-[10px] text-muted-foreground bg-background/60 rounded px-2 py-1 border border-border/40">
+                            <div key={ti} className="text-[11px] text-muted-foreground bg-background/60 rounded px-2 py-1 border border-border/40">
                               <span className="font-mono font-semibold text-violet-700 dark:text-violet-300">{tc.tool}</span>
                               {tc.params && Object.keys(tc.params).length > 0 && (
                                 <span> · <span className="font-mono">{JSON.stringify(tc.params)}</span></span>

@@ -356,7 +356,7 @@ export default function CRMHub() {
                 <TabsList className="h-7 text-xs">
                   <TabsTrigger value="all" className="h-6 px-2 text-xs">Semua</TabsTrigger>
                   <TabsTrigger value="pending" className="h-6 px-2 text-xs">
-                    Menunggu {pendingCount > 0 && <span className="ml-1 bg-amber-500 text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center">{pendingCount}</span>}
+                    Menunggu {pendingCount > 0 && <span className="ml-1 bg-amber-500 text-white rounded-full text-[11px] w-4 h-4 flex items-center justify-center">{pendingCount}</span>}
                   </TabsTrigger>
                   <TabsTrigger value="confirmed" className="h-6 px-2 text-xs">Konfirmasi</TabsTrigger>
                   <TabsTrigger value="done" className="h-6 px-2 text-xs">Selesai</TabsTrigger>
@@ -458,7 +458,7 @@ export default function CRMHub() {
                     { label: "Redemption/30d", val: loyaltyStats?.redemptions_30d ?? 0, icon: Gift, accent: "text-violet-600" },
                   ].map(({ label, val, icon: Ic, accent }) => (
                     <div key={label} className="glass-input rounded-xl p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Ic className={`h-3.5 w-3.5 ${accent}`} />
                         <span className="text-base font-bold tabular-nums">{val}</span>

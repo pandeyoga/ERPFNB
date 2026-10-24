@@ -11,6 +11,7 @@
  *   navigationSchema/inventory.js  — Inventory portal
  *   navigationSchema/outlet.js     — Outlet portal
  *   navigationSchema/owner.js      — Owner portal
+ *   navigationSchema/reports.js    — Report Center (katalog laporan Excel)
  *
  * Backward-compatible: NAVIGATION_SCHEMA, getNavigationSchema, getPortalSections unchanged.
  */
@@ -22,6 +23,7 @@ import { procurementNav } from './navigationSchema/procurement';
 import { inventoryNav }   from './navigationSchema/inventory';
 import { outletNav }      from './navigationSchema/outlet';
 import { ownerNav }       from './navigationSchema/owner';
+import { reportsNav }     from './navigationSchema/reports';
 
 export const NAVIGATION_SCHEMA = {
   admin:        adminNav,
@@ -32,6 +34,7 @@ export const NAVIGATION_SCHEMA = {
   inventory:    inventoryNav,
   outlet:       outletNav,
   owner:        ownerNav,
+  reports:      reportsNav,
 };
 
 /**

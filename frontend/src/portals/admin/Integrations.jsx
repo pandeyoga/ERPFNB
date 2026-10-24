@@ -120,7 +120,7 @@ export default function Integrations() {
                 {t.label}
                 {stat.total > 0 && (
                   <span className={cn(
-                    "px-1.5 rounded-full text-[10px] font-mono",
+                    "px-1.5 rounded-full text-[11px] font-mono",
                     isActive ? "bg-background/20" : "bg-muted",
                     stat.set === stat.total && stat.total > 0 && !isActive && "bg-emerald-100 text-emerald-700",
                   )}>

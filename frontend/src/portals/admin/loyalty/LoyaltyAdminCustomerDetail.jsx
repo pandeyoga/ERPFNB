@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, TrendingUp, TrendingDown, Gift, Save, Plus, Minus } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Gift, Save, Plus, Minus, UserRound, Coins, Award, Receipt, Ticket } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
 
 const TIER_BADGE = {
   bronze: "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200",
@@ -141,7 +144,7 @@ export default function LoyaltyAdminCustomerDetail() {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-48" />
+        <Skeleton className="h-[88px]" />
         <Skeleton className="h-64" />
       </div>
     );
@@ -150,12 +153,16 @@ export default function LoyaltyAdminCustomerDetail() {
   if (!detail) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-sm text-muted-foreground mb-3">Customer tidak ditemukan.</p>
-          <Button variant="outline" onClick={() => navigate("/admin/loyalty/customers")}>
-            Kembali
-          </Button>
-        </CardContent>
+        <EmptyState
+          icon={UserRound}
+          title="Customer tidak ditemukan"
+          description="Data customer mungkin sudah dihapus atau ID tidak valid."
+          action={
+            <Button variant="outline" onClick={() => navigate("/admin/loyalty?tab=customers")}>
+              <ArrowLeft className="h-4 w-4" /> Kembali ke Customers
+            </Button>
+          }
+        />
       </Card>
     );
   }
@@ -163,69 +170,72 @@ export default function LoyaltyAdminCustomerDetail() {
   const c = detail.customer;
 
   return (
-    <div className="space-y-5" data-testid="admin-loyalty-customer-detail">
-      {/* Header */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <Link to="/admin/loyalty/customers">
-          <Button variant="ghost" size="sm" data-testid="customer-detail-back">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
-          </Button>
+    <div className="space-y-3 lg:space-y-4" data-testid="admin-loyalty-customer-detail">
+      {/* Back affordance (satu tombol ghost) */}
+      <Button asChild variant="ghost" size="sm" className="-ml-2">
+        <Link to="/admin/loyalty?tab=customers" data-testid="customer-detail-back">
+          <ArrowLeft className="h-4 w-4" />
+          Kembali ke Customers
         </Link>
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            {c.full_name}
-            <Badge className={`capitalize ${TIER_BADGE[c.loyalty_tier] || ""}`} variant="secondary">
-              {c.loyalty_tier}
+      </Button>
+
+      <PageHeader
+        icon={UserRound}
+        title={c.full_name}
+        subtitle={c.email}
+        actions={
+          <Button onClick={() => setAdjustOpen(true)} data-testid="open-adjust-points">
+            <Plus className="h-4 w-4" />
+            Sesuaikan Poin
+          </Button>
+        }
+      >
+        <div className="flex items-center gap-2">
+          <Badge className={`capitalize ${TIER_BADGE[c.loyalty_tier] || ""}`} variant="secondary">
+            {c.loyalty_tier}
+          </Badge>
+          {detail.is_active ? (
+            <Badge variant="outline" className="border-emerald-500/40 text-emerald-600">
+              Aktif
             </Badge>
-            {detail.is_active ? (
-              <Badge variant="outline" className="border-emerald-500/40 text-emerald-600">
-                Aktif
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="border-red-500/40 text-red-600">
-                Nonaktif
-              </Badge>
-            )}
-          </h2>
-          <div className="text-sm text-muted-foreground">{c.email}</div>
+          ) : (
+            <Badge variant="outline" className="border-red-500/40 text-red-600">
+              Nonaktif
+            </Badge>
+          )}
         </div>
-        <Button onClick={() => setAdjustOpen(true)} data-testid="open-adjust-points">
-          <Plus className="h-4 w-4 mr-2" />
-          Adjust Poin
-        </Button>
-      </div>
+      </PageHeader>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" data-testid="customer-stats">
-        <Card data-testid="stat-total-points">
-          <CardContent className="p-4">
-            <div className="text-xs uppercase text-muted-foreground">Total Poin</div>
-            <div className="text-2xl font-bold tabular-nums mt-1" data-testid="customer-total-points">
-              {c.total_points.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card data-testid="stat-lifetime-points">
-          <CardContent className="p-4">
-            <div className="text-xs uppercase text-muted-foreground">Lifetime Poin</div>
-            <div className="text-2xl font-bold tabular-nums mt-1" data-testid="customer-lifetime-points">
-              {c.lifetime_points.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card data-testid="stat-transaction-count">
-          <CardContent className="p-4">
-            <div className="text-xs uppercase text-muted-foreground">Transaksi</div>
-            <div className="text-2xl font-bold tabular-nums mt-1" data-testid="customer-tx-count">{detail.transaction_count}</div>
-          </CardContent>
-        </Card>
-        <Card data-testid="stat-redemption-count">
-          <CardContent className="p-4">
-            <div className="text-xs uppercase text-muted-foreground">Redemption</div>
-            <div className="text-2xl font-bold tabular-nums mt-1" data-testid="customer-redemption-count">{detail.redemption_count}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="customer-stats">
+        <CompactStatCard
+          testId="stat-total-points"
+          label="Total Poin"
+          icon={Coins}
+          color="aurora-5"
+          value={<span data-testid="customer-total-points">{c.total_points.toLocaleString()}</span>}
+        />
+        <CompactStatCard
+          testId="stat-lifetime-points"
+          label="Lifetime Poin"
+          icon={Award}
+          color="aurora-2"
+          value={<span data-testid="customer-lifetime-points">{c.lifetime_points.toLocaleString()}</span>}
+        />
+        <CompactStatCard
+          testId="stat-transaction-count"
+          label="Transaksi"
+          icon={Receipt}
+          color="aurora-3"
+          value={<span data-testid="customer-tx-count">{detail.transaction_count}</span>}
+        />
+        <CompactStatCard
+          testId="stat-redemption-count"
+          label="Redemption"
+          icon={Ticket}
+          color="aurora-4"
+          value={<span data-testid="customer-redemption-count">{detail.redemption_count}</span>}
+        />
       </div>
 
       {/* Tabs */}
@@ -236,15 +246,16 @@ export default function LoyaltyAdminCustomerDetail() {
           <TabsTrigger value="redemptions" data-testid="tab-redemptions">Redemption ({redemptions.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-4">
+        <TabsContent value="profile">
           <Card data-testid="profile-form-card">
             <CardHeader>
-              <CardTitle className="text-base">Informasi Customer</CardTitle>
+              <CardTitle>Informasi Customer</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label>Nama Lengkap</Label>
+                <Label htmlFor="profile-full-name">Nama Lengkap</Label>
                 <Input
+                  id="profile-full-name"
                   value={profileForm.full_name}
                   onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
                   className="mt-1.5"
@@ -252,12 +263,13 @@ export default function LoyaltyAdminCustomerDetail() {
                 />
               </div>
               <div>
-                <Label>Email</Label>
-                <Input value={c.email} disabled className="mt-1.5 bg-muted" data-testid="profile-email" />
+                <Label htmlFor="profile-email">Email</Label>
+                <Input id="profile-email" value={c.email} disabled className="mt-1.5 bg-muted" data-testid="profile-email" />
               </div>
               <div>
-                <Label>Nomor Telepon</Label>
+                <Label htmlFor="profile-phone">Nomor Telepon</Label>
                 <Input
+                  id="profile-phone"
                   value={profileForm.phone}
                   onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
                   className="mt-1.5"
@@ -266,8 +278,9 @@ export default function LoyaltyAdminCustomerDetail() {
                 />
               </div>
               <div>
-                <Label>Tanggal Lahir</Label>
+                <Label htmlFor="profile-dob">Tanggal Lahir</Label>
                 <Input
+                  id="profile-dob"
                   type="date"
                   value={profileForm.date_of_birth || ""}
                   onChange={(e) =>
@@ -279,7 +292,7 @@ export default function LoyaltyAdminCustomerDetail() {
               </div>
               <div className="sm:col-span-2 flex justify-end">
                 <Button onClick={saveProfile} disabled={savingProfile} data-testid="save-customer-profile">
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4" />
                   {savingProfile ? "Menyimpan…" : "Simpan Perubahan"}
                 </Button>
               </div>
@@ -287,13 +300,11 @@ export default function LoyaltyAdminCustomerDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="transactions" className="mt-4">
+        <TabsContent value="transactions">
           <Card>
             <CardContent className="p-0">
               {transactions.length === 0 ? (
-                <div className="p-10 text-center text-sm text-muted-foreground">
-                  Belum ada transaksi.
-                </div>
+                <EmptyState icon={Receipt} title="Belum ada transaksi" description="Transaksi poin customer akan tampil di sini." />
               ) : (
                 <ul className="divide-y">
                   {transactions.map((t) => {
@@ -330,13 +341,11 @@ export default function LoyaltyAdminCustomerDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="redemptions" className="mt-4">
+        <TabsContent value="redemptions">
           <Card>
             <CardContent className="p-0">
               {redemptions.length === 0 ? (
-                <div className="p-10 text-center text-sm text-muted-foreground">
-                  Belum ada redemption.
-                </div>
+                <EmptyState icon={Gift} title="Belum ada redemption" description="Penukaran reward oleh customer ini akan tampil di sini." />
               ) : (
                 <ul className="divide-y">
                   {redemptions.map((r) => (
@@ -379,13 +388,13 @@ export default function LoyaltyAdminCustomerDetail() {
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
         <DialogContent data-testid="adjust-points-dialog">
           <DialogHeader>
-            <DialogTitle>Adjust Poin Customer</DialogTitle>
+            <DialogTitle>Sesuaikan Poin Customer</DialogTitle>
             <DialogDescription>
               Menambah atau mengurangi poin akan tercatat di audit trail transaksi.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-2">
+          <div className="space-y-3">
+            <div className="flex gap-2" role="group" aria-label="Jenis penyesuaian">
               <Button
                 type="button"
                 variant={adjustForm.sign === "+" ? "default" : "outline"}
@@ -393,7 +402,7 @@ export default function LoyaltyAdminCustomerDetail() {
                 size="sm"
                 className="flex-1"
               >
-                <Plus className="h-4 w-4 mr-1" /> Tambah
+                <Plus className="h-4 w-4" /> Tambah
               </Button>
               <Button
                 type="button"
@@ -402,12 +411,13 @@ export default function LoyaltyAdminCustomerDetail() {
                 size="sm"
                 className="flex-1"
               >
-                <Minus className="h-4 w-4 mr-1" /> Kurangi
+                <Minus className="h-4 w-4" /> Kurangi
               </Button>
             </div>
             <div>
-              <Label>Jumlah Poin</Label>
+              <Label htmlFor="adjust-points-amount">Jumlah Poin *</Label>
               <Input
+                id="adjust-points-amount"
                 type="number"
                 min={1}
                 value={adjustForm.points}
@@ -417,8 +427,9 @@ export default function LoyaltyAdminCustomerDetail() {
               />
             </div>
             <div>
-              <Label>Deskripsi / Alasan</Label>
+              <Label htmlFor="adjust-points-description">Deskripsi / Alasan *</Label>
               <Input
+                id="adjust-points-description"
                 value={adjustForm.description}
                 onChange={(e) => setAdjustForm({ ...adjustForm, description: e.target.value })}
                 placeholder="Contoh: Kompensasi promo Lebaran"

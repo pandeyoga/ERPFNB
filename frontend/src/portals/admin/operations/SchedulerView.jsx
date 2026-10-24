@@ -88,9 +88,9 @@ export default function SchedulerView() {
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     {j.name}
                     {j.enabled ? (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">enabled</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">enabled</span>
                     ) : (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-300 text-zinc-600">disabled</span>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-zinc-300 text-zinc-600">disabled</span>
                     )}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1">{j.description}</p>

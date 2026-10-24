@@ -310,7 +310,7 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
           <div className="font-semibold text-sm flex items-center gap-2">
             {meta.label}
             {hasOverride && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-700 dark:text-amber-400">
+              <span className="px-1.5 py-0.5 rounded text-[11px] bg-amber-500/20 text-amber-700 dark:text-amber-400">
                 OVERRIDE
               </span>
             )}
@@ -330,7 +330,7 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
                 <div className="flex items-center gap-1">
                   <Label className="text-xs">{field.label}</Label>
                   {isDirty && (
-                    <span className="text-[9px] text-amber-600 px-1 rounded bg-amber-500/10">modified</span>
+                    <span className="text-[11px] text-amber-600 px-1 rounded bg-amber-500/10">modified</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -343,12 +343,12 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
                     disabled={!enabled}
                   />
                   {isDirty && (
-                    <span className="text-[9px] text-muted-foreground whitespace-nowrap">
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
                       default: {defaults[field.key]}
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground">{field.hint}</p>
+                <p className="text-[11px] text-muted-foreground">{field.hint}</p>
               </div>
             );
           })}

@@ -54,7 +54,7 @@ export default function MultiSelectFilter({
         >
           <span className="text-sm font-medium">{label}</span>
           {!isAll && (
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold pill-active">
+            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold pill-active">
               {selCount}
             </span>
           )}

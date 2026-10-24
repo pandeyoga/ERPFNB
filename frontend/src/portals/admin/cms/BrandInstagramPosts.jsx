@@ -203,12 +203,12 @@ export default function BrandInstagramPosts({ brand }) {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1">
                   {post.is_pinned && (
-                    <span className="bg-yellow-400 text-yellow-900 text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                    <span className="bg-yellow-400 text-yellow-900 text-[11px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
                       <Pin className="w-2.5 h-2.5" /> PIN
                     </span>
                   )}
                   {post.active === false && (
-                    <span className="bg-gray-800/80 text-white text-[9px] px-1.5 py-0.5 rounded-full">Hidden</span>
+                    <span className="bg-gray-800/80 text-white text-[11px] px-1.5 py-0.5 rounded-full">Hidden</span>
                   )}
                 </div>
 
@@ -244,13 +244,13 @@ export default function BrandInstagramPosts({ brand }) {
               <div className="p-2 bg-white">
                 <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{post.caption}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
                     <Heart className="w-3 h-3" /> {post.likes?.toLocaleString("id-ID")}
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
                     <MessageCircle className="w-3 h-3" /> {post.comments?.toLocaleString("id-ID")}
                   </span>
-                  <span className="text-[10px] text-gray-300 ml-auto">{fmtDate(post.posted_at)}</span>
+                  <span className="text-[11px] text-gray-300 ml-auto">{fmtDate(post.posted_at)}</span>
                 </div>
               </div>
             </motion.div>

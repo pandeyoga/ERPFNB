@@ -103,7 +103,7 @@ export default function PaymentList() {
               render: (p) => (
                 <div>
                   <div>{p.payee_name || p.payee_text || "-"}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase">{p.payee_type}</div>
+                  <div className="text-[11px] text-muted-foreground uppercase">{p.payee_type}</div>
                 </div>
               ) },
             { key: "description", label: "Description",

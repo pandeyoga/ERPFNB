@@ -99,7 +99,7 @@ export default function AIJournalGenerator({ onGenerated }) {
         </div>
 
         <div className="mt-3 text-xs text-muted-foreground">
-          💡 <strong>Tips:</strong> Semakin detail deskripsi, semakin akurat hasil AI. Sebutkan:
+          <strong>Tips:</strong> Semakin detail deskripsi, semakin akurat hasil AI. Sebutkan:
           outlet/brand, jenis transaksi (bayar/terima), nominal, dan periode.
         </div>
       </div>

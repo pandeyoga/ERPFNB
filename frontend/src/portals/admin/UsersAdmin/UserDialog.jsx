@@ -196,7 +196,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   />
                   <span className="leading-tight">
                     <span className="block">{r.name}</span>
-                    <span className="text-[10px] text-muted-foreground">{r.code}</span>
+                    <span className="text-[11px] text-muted-foreground">{r.code}</span>
                   </span>
                 </label>
               ))}
@@ -230,7 +230,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 <Globe2 className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Full Access</span>
-                  <span className="block text-[10px] opacity-70">Owner, Executive, Finance, Procurement</span>
+                  <span className="block text-[11px] opacity-70">Owner, Executive, Finance, Procurement</span>
                 </span>
               </button>
               <button
@@ -249,7 +249,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 <Store className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Outlet Staff</span>
-                  <span className="block text-[10px] opacity-70">Pilih outlet spesifik di bawah</span>
+                  <span className="block text-[11px] opacity-70">Pilih outlet spesifik di bawah</span>
                 </span>
               </button>
             </div>
@@ -277,7 +277,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                         style={{ background: brand.color || "#888" }}
                       />
                       {(form.brand_ids || []).includes(brand.id) && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 ml-auto">Brand ✓</span>
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 ml-auto">Brand ✓</span>
                       )}
                     </label>
                     {/* Outlet rows */}
@@ -356,7 +356,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   className="glass-input rounded-lg w-full px-3 h-10 text-sm"
                   testId="user-default-outlet"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Outlet yang otomatis dipilih saat user membuka halaman baru
                 </p>
               </Field>

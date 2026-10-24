@@ -160,7 +160,7 @@ export default function InteractiveMap({ outlets = [], className = "" }) {
                       {outlet.features.map((feat, idx) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-gold-500/15 text-gold-800 dark:text-gold-300"
+                          className="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-full bg-gold-500/15 text-gold-800 dark:text-gold-300"
                         >
                           {feat}
                         </span>

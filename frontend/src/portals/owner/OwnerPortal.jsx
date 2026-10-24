@@ -25,7 +25,7 @@ export default function OwnerPortal() {
       <Route path="cockpit" element={g("owner.cockpit.access", <OwnerCockpit />)} />
       <Route path="briefing" element={g("owner.cockpit.access", <DailyBriefing />)} />
       <Route path="cash" element={g(["finance.cash.read", "owner.cockpit.access"], <CashPosition />)} />
-      <Route path="approvals" element={<MyApprovals />} />
+      <Route path="approvals" element={<Navigate to="/my-approvals" replace />} />
       <Route path="ai-assistant" element={
         <div className="glass-card p-5">
           <ConversationalQA scopeLabel="Owner" />

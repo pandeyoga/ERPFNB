@@ -197,8 +197,8 @@ export default function PayrollList() {
                     <div>
                       <div className="font-medium text-sm flex items-center gap-1.5">
                         {sm.employee_name}
-                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
-                        {!sm.has_master && <Badge variant="outline" className="text-[10px] border-red-400 text-red-500" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
+                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-[11px] border-amber-500 text-amber-600" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
+                        {!sm.has_master && <Badge variant="outline" className="text-[11px] border-red-400 text-red-500" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
                       </div>
                       <div className="text-xs text-muted-foreground">{sm.employee_code}</div>
                     </div>

@@ -93,12 +93,12 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 11 }}
               tickFormatter={(v) => fmtDate(v, "DD/MM")}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 11 }}
               tickFormatter={(v) => {
                 if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                 if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;

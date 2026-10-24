@@ -165,7 +165,7 @@ function Section({ icon, title, hint, enabled, onToggle, children, testid }) {
           <div>
             <div className="font-semibold text-sm flex items-center gap-2">
               {title}
-              {!enabled && <Badge variant="outline" className="text-[9px]">Off</Badge>}
+              {!enabled && <Badge variant="outline" className="text-[11px]">Off</Badge>}
             </div>
             <p className="text-[11px] text-muted-foreground">{hint}</p>
           </div>

@@ -325,7 +325,7 @@ function Stat({ label, value, highlight = false, negative = false }) {
       highlight && negative && "bg-amber-500/10 border-amber-500/30",
       !highlight && "border-border/40",
     )}>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
       <div className="text-base font-semibold tabular-nums mt-0.5">{value}</div>
     </div>
   );

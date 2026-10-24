@@ -75,7 +75,7 @@ function CellMovementsDialog({ open, onClose, itemName, outletName, itemId, outl
                   render: (m) => <span className="text-xs">{m.movement_date || "—"}</span> },
                 { key: "movement_type", label: "Tipe",
                   render: (m) => (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-foreground/10">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-foreground/10">
                       {m.movement_type || "—"}
                     </span>
                   ) },
@@ -115,7 +115,7 @@ const MatrixCell = memo(function MatrixCell({ rowId, cell, onClick }) {
     >
       <span>{fmtNumber(cell.qty, cell.qty % 1 === 0 ? 0 : 1)}</span>
       {cell.par_level > 0 && (
-        <span className="text-[9px] font-normal opacity-70">par {fmtNumber(cell.par_level, 0)}</span>
+        <span className="text-[11px] font-normal opacity-70">par {fmtNumber(cell.par_level, 0)}</span>
       )}
     </button>
   );
@@ -194,7 +194,7 @@ export default function StockBalanceMatrix() {
       render: (row) => (
         <div data-testid={`matrix-row-${row.item_id}`}>
           <div className="font-medium text-sm">{row.item_name}</div>
-          <div className="text-[10px] text-muted-foreground">{row.item_code} · {row.unit}</div>
+          <div className="text-[11px] text-muted-foreground">{row.item_code} · {row.unit}</div>
         </div>
       ) },
     ...matrix.outlets.map((o) => ({
@@ -286,7 +286,7 @@ export default function StockBalanceMatrix() {
                 return (
                   <td key={o.id} className="px-2 py-2 text-center text-[11px] tabular-nums">
                     <div className="text-xs">{fmtNumber(t.qty || 0, 0)}</div>
-                    <div className="text-[10px] text-muted-foreground">{fmtRp(t.value || 0)}</div>
+                    <div className="text-[11px] text-muted-foreground">{fmtRp(t.value || 0)}</div>
                   </td>
                 );
               })}

@@ -173,7 +173,7 @@ function RuleCard({ rule, entityTypes, onEdit, onDelete }) {
                 <div className="mt-2 space-y-1">
                   {(t.steps || []).map((s, si) => (
                     <div key={si} className="flex items-center gap-2 text-xs">
-                      <span className="h-5 w-5 rounded-full bg-aurora/10 text-aurora flex items-center justify-center text-[10px] font-bold">{si + 1}</span>
+                      <span className="h-5 w-5 rounded-full bg-aurora/10 text-aurora flex items-center justify-center text-[11px] font-bold">{si + 1}</span>
                       <span className="font-medium truncate">{s.label}</span>
                       <span className="text-[11px] text-muted-foreground truncate">{(s.any_of_perms || []).join(" / ") || "(any)"}</span>
                     </div>
@@ -453,7 +453,7 @@ function StepEditor({ step, stepIdx, permsCatalog, onChange, onRemove, removable
             className="mt-1 h-8 text-xs"
             data-testid={`wf-step-deadline-${tIdx}-${stepIdx}`}
           />
-          <p className="text-[10px] text-muted-foreground mt-0.5">Eskalasi dikirim jika melewati batas</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Eskalasi dikirim jika melewati batas</p>
         </div>
         <div>
           <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -468,7 +468,7 @@ function StepEditor({ step, stepIdx, permsCatalog, onChange, onRemove, removable
             className="mt-1 h-8 text-xs"
             data-testid={`wf-step-escalate-${tIdx}-${stepIdx}`}
           />
-          <p className="text-[10px] text-muted-foreground mt-0.5">Pisahkan dengan koma. Kosong = step yang sama</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Pisahkan dengan koma. Kosong = step yang sama</p>
         </div>
       </div>
 
@@ -492,7 +492,7 @@ function StepEditor({ step, stepIdx, permsCatalog, onChange, onRemove, removable
                           onChange({ any_of_perms: Array.from(set) });
                         }} />
                       <span className="truncate flex-1">{p.label}</span>
-                      <code className="text-[10px] text-muted-foreground truncate">{p.code}</code>
+                      <code className="text-[11px] text-muted-foreground truncate">{p.code}</code>
                     </label>
                   );
                 })}

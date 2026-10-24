@@ -22,7 +22,7 @@ const ENTITY_LABELS = {
   ar_invoice:        "Invoice",
 };
 
-export default function ApprovalWidget({ approvalCenterPath = "/approvals" }) {
+export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();

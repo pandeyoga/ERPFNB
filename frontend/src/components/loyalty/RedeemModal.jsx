@@ -37,7 +37,7 @@ export default function RedeemModal({ open, onClose, reward, customer, token, on
 
       setRedemption(response.data);
       setShowSuccess(true);
-      toast.success("Reward berhasil ditukar! 🎉");
+      toast.success("Reward berhasil ditukar");
       
       // Notify parent
       if (onSuccess) {

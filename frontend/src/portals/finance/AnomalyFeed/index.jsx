@@ -567,7 +567,7 @@ function SummaryTile({ label, value, tone, testid }) {
   }[tone] || "text-foreground";
   return (
     <div className="glass-input rounded-xl p-3" data-testid={testid}>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
       <div className={cn("text-2xl font-bold tabular-nums", toneClass)}>{value}</div>
     </div>
   );
@@ -624,7 +624,7 @@ function ScanDialog({ scanning, scanResult, onClose, onRunScan }) {
               <Input type="month" value={period}
                 onChange={e => setPeriod(e.target.value)}
                 className="glass-input h-9 text-sm" data-testid="scan-period" />
-              <p className="text-[10px] text-muted-foreground">Digunakan untuk deteksi spike kas/AP bulan tertentu</p>
+              <p className="text-[11px] text-muted-foreground">Digunakan untuk deteksi spike kas/AP bulan tertentu</p>
             </div>
           </div>
         ) : (
@@ -665,7 +665,7 @@ function ResultTile({ label, value }) {
   return (
     <div className="bg-muted/30 rounded-lg p-3 text-center">
       <div className="text-2xl font-bold tabular-nums">{value}</div>
-      <div className="text-[10px] text-muted-foreground mt-1">{label}</div>
+      <div className="text-[11px] text-muted-foreground mt-1">{label}</div>
     </div>
   );
 }
@@ -699,17 +699,17 @@ function AnomalyRow({ ev, onOpen }) {
         <div className="flex-1 min-w-0">
           {/* Badges row */}
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className={cn("text-[10px] uppercase font-bold px-2 py-0.5 rounded", severityStyle(sev))}>
+            <span className={cn("text-[11px] uppercase font-bold px-2 py-0.5 rounded", severityStyle(sev))}>
               {SEVERITY_LABELS[sev] || sev}
             </span>
-            <span className={cn("text-[10px] uppercase font-semibold px-2 py-0.5 rounded", statusStyle(ev.status))}>
+            <span className={cn("text-[11px] uppercase font-semibold px-2 py-0.5 rounded", statusStyle(ev.status))}>
               {STATUS_LABELS[ev.status] || ev.status}
             </span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-foreground/5 text-muted-foreground">
+            <span className="text-[11px] px-2 py-0.5 rounded bg-foreground/5 text-muted-foreground">
               {ev.type_label || ev.type}
             </span>
             {ev.outlet_name && (
-              <span className="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="text-[11px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300">
                 {ev.outlet_name}
               </span>
             )}
@@ -850,7 +850,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
       <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto" data-testid="anomaly-detail-sheet">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <span className={cn("text-[10px] uppercase font-bold px-2 py-0.5 rounded", severityStyle(sev))}>
+            <span className={cn("text-[11px] uppercase font-bold px-2 py-0.5 rounded", severityStyle(sev))}>
               {SEVERITY_LABELS[sev] || sev}
             </span>
             <span>{event.title}</span>
@@ -882,7 +882,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="glass-input rounded-xl p-3 border-2 border-amber-500/20">
-                <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
+                <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                   Actual (Observed)
                 </div>
                 <div className="text-lg font-bold text-amber-600 dark:text-amber-400 tabular-nums">
@@ -894,7 +894,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
               </div>
               
               <div className="glass-input rounded-xl p-3 border-2 border-sky-500/20">
-                <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
+                <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                   Expected (Baseline)
                 </div>
                 <div className="text-lg font-bold text-sky-600 dark:text-sky-400 tabular-nums">
@@ -909,7 +909,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                 <div className="glass-input rounded-xl p-3 col-span-2 border-2 border-red-500/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
+                      <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                         Deviation (Impact)
                       </div>
                       <div className={cn(
@@ -921,7 +921,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                     </div>
                     {event.z_score != null && (
                       <div className="text-right">
-                        <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
+                        <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                           Z-Score (σ)
                         </div>
                         <div className="text-base font-semibold tabular-nums text-muted-foreground">
@@ -1004,7 +1004,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
           {/* Context metadata */}
           {ctx && Object.keys(ctx).length > 0 && (
             <div className="glass-input rounded-xl p-3 text-xs">
-              <div className="font-semibold mb-1 text-muted-foreground uppercase text-[10px] tracking-wide">Additional Context</div>
+              <div className="font-semibold mb-1 text-muted-foreground uppercase text-[11px] tracking-wide">Additional Context</div>
               <div className="space-y-0.5">
                 {Object.entries(ctx).map(([k, v]) => (
                   <div key={k} className="flex justify-between">
@@ -1049,7 +1049,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                   <div key={i} className="border-l-2 border-sky-500/30 pl-3 text-xs">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold text-foreground">{c.user_name}</span>
-                      <span className="text-[10px] text-muted-foreground">{fmtRelative(c.timestamp)}</span>
+                      <span className="text-[11px] text-muted-foreground">{fmtRelative(c.timestamp)}</span>
                     </div>
                     <div className="text-muted-foreground mb-1">
                       Action: <span className={cn("font-semibold", statusStyle(c.action))}>{STATUS_LABELS[c.action] || c.action}</span>
@@ -1157,7 +1157,7 @@ function DetailStat({ label, value, isMoney, tone }) {
                   : "";
   return (
     <div className="glass-input rounded-xl p-3">
-      <div className="text-[10px] uppercase text-muted-foreground tracking-wide font-semibold">{label}</div>
+      <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold">{label}</div>
       <div className={cn("text-sm font-bold tabular-nums mt-0.5", toneClass)}>{display}</div>
     </div>
   );

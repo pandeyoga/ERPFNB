@@ -47,7 +47,7 @@ export default function PettyCashPolicyEditor(props) {
                   onChange={(e) => set("monthly_limit", Number(e.target.value || 0))}
                   data-testid="pc-monthly-limit-input"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">{fmtRp(monthlyLimit)}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{fmtRp(monthlyLimit)}</p>
               </div>
               <div>
                 <Label className="text-xs">Frekuensi Replenish</Label>
@@ -92,7 +92,7 @@ export default function PettyCashPolicyEditor(props) {
                 step={25_000}
                 data-testid="pc-approval-threshold-slider"
               />
-              <p className="text-[10px] text-muted-foreground mt-1">
+              <p className="text-[11px] text-muted-foreground mt-1">
                 Transaksi di atas ambang ini akan memicu workflow approval kas kecil.
               </p>
             </div>
@@ -100,7 +100,7 @@ export default function PettyCashPolicyEditor(props) {
             <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
               <div>
                 <Label className="text-xs">Wajib Lampiran Struk</Label>
-                <p className="text-[10px] text-muted-foreground">Saat upload, sistem mengingatkan jika foto struk belum dilampirkan.</p>
+                <p className="text-[11px] text-muted-foreground">Saat upload, sistem mengingatkan jika foto struk belum dilampirkan.</p>
               </div>
               <Switch
                 checked={requireReceipt}

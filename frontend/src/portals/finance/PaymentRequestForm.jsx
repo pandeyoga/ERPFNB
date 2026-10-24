@@ -159,7 +159,7 @@ export default function PaymentRequestForm() {
               className="glass-input mt-1"
               data-testid="pr-period"
             />
-            <div className="text-[10px] text-muted-foreground mt-1">
+            <div className="text-[11px] text-muted-foreground mt-1">
               Format: YYYY-WW (year-week number)
             </div>
           </div>
@@ -273,13 +273,13 @@ export default function PaymentRequestForm() {
 function PriorityBadge({ priority }) {
   if (priority === "urgent") {
     return (
-      <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+      <span className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
         URGENT
       </span>
     );
   }
   return (
-    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+    <span className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
       Normal
     </span>
   );

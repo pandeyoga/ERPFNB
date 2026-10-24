@@ -86,14 +86,14 @@ export default function BrandMixDonut({ rows = [], onSliceClick, size = 180 }) {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
             {focused ? focused.name : "Total"}
           </div>
           <div className="text-base font-bold tabular-nums">
             {focused ? `${focused.share_pct?.toFixed?.(1) ?? "0"}%` : fmtRp(grandTotal)}
           </div>
           {focused && (
-            <div className="text-[10px] text-muted-foreground tabular-nums">{fmtRp(focused.value)}</div>
+            <div className="text-[11px] text-muted-foreground tabular-nums">{fmtRp(focused.value)}</div>
           )}
         </div>
       </div>

@@ -136,13 +136,13 @@ export default function AnomalyDetection() {
                 className="flex items-start gap-3 px-5 py-4 hover:bg-foreground/5 group"
                 data-testid={`anomaly-row-${a.id}`}
               >
-                <div className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-md border ${SEVERITY_STYLES[a.severity] || SEVERITY_STYLES.low}`}>
+                <div className={`px-2 py-0.5 text-[11px] uppercase font-bold rounded-md border ${SEVERITY_STYLES[a.severity] || SEVERITY_STYLES.low}`}>
                   {a.severity}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{a.title || a.label || a.type}</div>
                   <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.description || a.message || a.detail}</div>
-                  <div className="text-[10px] text-muted-foreground mt-1 flex gap-3">
+                  <div className="text-[11px] text-muted-foreground mt-1 flex gap-3">
                     <span>{fmtDate(a.detected_at || a.created_at)}</span>
                     {a.amount != null && <span>Amount: {fmtRp(Number(a.amount))}</span>}
                     {a.outlet_name && <span>Outlet: {a.outlet_name}</span>}

@@ -56,11 +56,11 @@ function Candidates({ data, onSelect, compact = false }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <div className="font-semibold text-sm truncate">{c.vendor_name}</div>
-              <div className="text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30 tabular-nums">
+              <div className="text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30 tabular-nums">
                 {(c.score * 100).toFixed(0)}%
               </div>
             </div>
-            <div className="text-[10px] text-muted-foreground tabular-nums mt-0.5 flex flex-wrap gap-x-2">
+            <div className="text-[11px] text-muted-foreground tabular-nums mt-0.5 flex flex-wrap gap-x-2">
               <span>avg {fmtRp(c.metrics?.avg_cost || 0)}</span>
               <span>last {fmtRp(c.metrics?.last_cost || 0)}</span>
               {c.metrics?.lead_time_avg != null && (
@@ -79,7 +79,7 @@ function Candidates({ data, onSelect, compact = false }) {
             {onSelect && (
               <Button
                 size="sm" variant="outline"
-                className="mt-1.5 h-6 px-2 text-[10px] rounded-full gap-1"
+                className="mt-1.5 h-6 px-2 text-[11px] rounded-full gap-1"
                 onClick={() => onSelect(c)}
                 data-testid={`vrec-select-${c.vendor_id}`}
               >
@@ -200,7 +200,7 @@ export function AIVendorRecommendationModal({ itemId, prId, topK = 3, onSelect, 
               </div>
             )}
             {!loading && data?.weights && (
-              <div className="mt-3 text-[10px] text-muted-foreground text-center">
+              <div className="mt-3 text-[11px] text-muted-foreground text-center">
                 Bobot: harga {(data.weights.price * 100).toFixed(0)}% ·
                 lead time {(data.weights.lead_time * 100).toFixed(0)}% ·
                 scorecard {(data.weights.scorecard * 100).toFixed(0)}% ·

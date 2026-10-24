@@ -256,7 +256,7 @@ export default function PeriodCompare() {
                     return (
                       <span className={cn("font-mono", delta >= 0 ? "text-emerald-600" : "text-rose-600")}>
                         {delta >= 0 ? "+" : ""}{fmtRp(delta)}
-                        {pctv != null && <span className="text-[10px] ml-1">({pctv > 0 ? "+" : ""}{pctv}%)</span>}
+                        {pctv != null && <span className="text-[11px] ml-1">({pctv > 0 ? "+" : ""}{pctv}%)</span>}
                       </span>
                     );
                   },

@@ -166,7 +166,7 @@ function PayrollDetailDialog({ pid, open, onOpenChange, outlets, canApprove, onP
                   { key: "name", label: "Karyawan", primary: true, render: (e) => (
                     <span className="font-medium inline-flex items-center gap-1.5">
                       {e.name}
-                      {e.employment_status === "leave" && <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600" data-testid={`payroll-emp-leave-${e._idx}`}>Cuti</Badge>}
+                      {e.employment_status === "leave" && <Badge variant="outline" className="text-[11px] border-amber-500 text-amber-600" data-testid={`payroll-emp-leave-${e._idx}`}>Cuti</Badge>}
                     </span>
                   ) },
                   { key: "basic", label: "Pokok", numeric: true, render: (e) => fmtRp(e.basic) },

@@ -196,7 +196,7 @@ function DailyChart({ daily, opening }) {
           );
         })}
       </svg>
-      <div className="text-[10px] text-muted-foreground mt-1">
+      <div className="text-[11px] text-muted-foreground mt-1">
         Y-axis: Rp {(min / 1e6).toFixed(0)}jt — {(max / 1e6).toFixed(0)}jt · dashed = opening balance
       </div>
     </div>

@@ -1,4 +1,4 @@
-/** Procurement Portal shell — Navigation Restructuring + ApprovalCenter (Sprint B).
+/** Procurement Portal shell. Approval PR/PO ada di Pusat Persetujuan (/my-approvals).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`. */
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -25,11 +25,7 @@ import PRConsolidation from "./PRConsolidation";
 import POComparison from "./POComparison";
 import AllVendors from "./AllVendors";
 import VendorScorecardList from "./VendorScorecardList";
-import ApprovalCenter from "../shared/ApprovalCenter";
 import ComingSoonPage from "@/components/shared/ComingSoonPage";
-
-// Procurement portal hanya melihat approval tipe PR & PO
-const PROC_TYPES = ["purchase_request", "purchase_order"];
 
 export default function ProcurementPortal() {
   const { user } = useAuth();
@@ -62,16 +58,6 @@ export default function ProcurementPortal() {
       <Route path="vendors" element={g(["procurement.view", "procurement.vendor.read"], <AllVendors />)} />
       <Route path="vendor-scorecard" element={g(["procurement.view", "procurement.vendor.read"], <VendorScorecardList />)} />
 
-      <Route
-        path="approvals"
-        element={
-          <ApprovalCenter
-            restrictedTypes={PROC_TYPES}
-            title="Procurement Approval Center"
-            subtitle="Antrian persetujuan PR dan PO"
-          />
-        }
-      />
       <Route path="*" element={<Navigate to="/procurement" replace />} />
       </Routes>
     </div>

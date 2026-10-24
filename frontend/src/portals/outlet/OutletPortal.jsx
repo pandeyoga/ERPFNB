@@ -1,4 +1,4 @@
-/** Outlet Portal shell — adds ApprovalCenter (outlet-scoped, Sprint B).
+/** Outlet Portal shell. Approval outlet ada di Pusat Persetujuan (/my-approvals).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`.
  * Non-sensitive shell/hub/CRM pages remain open to anyone with `outlet.*`; sensitive
@@ -28,18 +28,9 @@ import ReservationForm from "./ReservationForm";
 import CRMHub from "./CRMHub";
 import EndOfDayWorkflow from "./EndOfDayWorkflow";
 import OutletBudgetTracker from "./OutletBudgetTracker";
-import ApprovalCenter from "../shared/ApprovalCenter";
 import ComingSoonPage from "@/components/shared/ComingSoonPage";
 import { OutletScopeProvider } from "./OutletScopeContext";
 import OutletScopeHeader from "./OutletScopeHeader";
-
-// Outlet manager hanya lihat approval lokal: PR (urgent purchase), stock adj/transfer, payment req
-const OUTLET_TYPES = [
-  "purchase_request",
-  "stock_adjustment",
-  "stock_transfer",
-  "payment_request",
-];
 
 export default function OutletPortal() {
   const { user } = useAuth();
@@ -77,17 +68,6 @@ export default function OutletPortal() {
         <Route path="reservations/:id/edit" element={<ReservationForm />} />
         {/* Phase 14 — Outlet Operational Budget tracker */}
         <Route path="budget" element={<OutletBudgetTracker />} />
-        <Route
-          path="approvals"
-          element={
-            <ApprovalCenter
-              restrictedTypes={OUTLET_TYPES}
-              outletOnly
-              title="Outlet Approval Center"
-              subtitle="Antrian persetujuan untuk outlet kamu"
-            />
-          }
-        />
         <Route path="*" element={<Navigate to="/outlet" replace />} />
         </Routes>
       </div>

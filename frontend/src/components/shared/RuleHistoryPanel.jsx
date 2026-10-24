@@ -60,7 +60,7 @@ export default function RuleHistoryPanel({ items = [], onSelect, currentId, empt
                     </div>
                     {(r.overlaps_with?.length || 0) > 0 && (
                       <span
-                        className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300"
                         title="Periode bentrok"
                       >
                         Bentrok

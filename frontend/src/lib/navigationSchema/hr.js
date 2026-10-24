@@ -1,85 +1,46 @@
 /** navigationSchema/hr.js — Hr portal navigation. */
 
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Package,
-  Settings,
-  FileText,
-  ScrollText,
-  CreditCard,
-  Calculator,
-  FileCheck,
-  Calendar,
-  Banknote,
-  Receipt,
-  TrendingUp,
-  Wallet,
-  UserCog,
-  DollarSign,
-  Gift,
-  ClipboardList,
-  ShoppingCart,
-  Truck,
-  Store,
-  BarChart3,
-  Boxes,
-  ArrowLeftRight,
-  ClipboardCheck,
-  WrenchIcon,
-  Crown,
-  Sparkles,
-  Brain,
-  MessageSquare,
-  Shield,
-  Activity,
-  Star,
-  AlertTriangle,
-  Layers,
-  BookOpen,
-  Archive,
-  Target,
-  Workflow,
-  Coffee,
-  ListChecks,
-  History,
-  BellRing,
-  ChevronRight,
-  Landmark,
-  LineChart,
-  PiggyBank,
-  QrCode,
-  FileSpreadsheet,
-  CalendarCheck,
-} from "lucide-react";
+import { LayoutDashboard, CalendarDays, Wallet, Briefcase } from "lucide-react";
 
-// eslint-disable-next-line no-unused-vars
 export const hrNav = {
   id: "hr",
   name: "HR Portal",
   sections: [
     {
       id: "dashboard",
-      name: "Dashboard",
+      name: "Overview",
       icon: LayoutDashboard,
       items: [
-        { id: "leave-requests", name: "Leave Requests", path: "/hr/leaves", icon: "CalendarDays" },
-        { id: "my-approvals", name: "Approval Center", path: "/hr/approvals", icon: "CheckCircle" },
         { id: "overview", name: "Overview", path: "/hr" },
-        { id: "comp-hub", name: "Compensation Hub", path: "/hr/compensation", icon: "DollarSign", badge: "HUB" },
+      ],
+    },
+    {
+      id: "leave",
+      name: "Leave Requests",
+      icon: CalendarDays,
+      items: [
+        { id: "leave-requests", name: "Leave Requests", path: "/hr/leaves" },
+      ],
+    },
+    {
+      id: "compensation",
+      name: "Compensation",
+      icon: Wallet,
+      items: [
+        // Advances · Service Charge · Incentive · Voucher · FOC · LB Fund · Payroll
+        // are in-page TABS of /hr/compensation.
+        { id: "comp-hub", name: "Compensation", path: "/hr/compensation", matchPaths: ["/hr/advances", "/hr/service-charge", "/hr/incentive", "/hr/voucher", "/hr/foc", "/hr/lb-fund", "/hr/payroll"] },
       ],
     },
     {
       id: "hr-config",
-      name: "Recruitment & Config",
-      icon: WrenchIcon,
+      name: "Recruitment",
+      icon: Briefcase,
       items: [
-        // REMOVED: Employees (duplikat dengan Admin → Master Data)
-        { id: "job-listings", name: "Kelola Lowongan", path: "/hr/job-listings", icon: "Briefcase" },
-        { id: "job-applications", name: "Lamaran Kerja", path: "/hr/job-applications", icon: "Users" },
+        // Employees dikelola di Admin → Master Data (bukan duplikat di sini).
+        { id: "job-listings", name: "Job Listings", path: "/hr/job-listings" },
+        { id: "job-applications", name: "Job Applications", path: "/hr/job-applications" },
       ],
     },
-    // REMOVED: Compensation & Benefits section (single-item hub) - moved to Dashboard
   ],
 };

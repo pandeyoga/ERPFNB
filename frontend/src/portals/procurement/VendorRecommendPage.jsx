@@ -187,7 +187,7 @@ export default function VendorRecommendPage() {
             </div>
           ))}
           {data.weights && (
-            <div className="text-[10px] text-muted-foreground text-center pt-2" data-testid="vrec-weights">
+            <div className="text-[11px] text-muted-foreground text-center pt-2" data-testid="vrec-weights">
               Bobot: harga {(data.weights.price * 100).toFixed(0)}% ·
               lead time {(data.weights.lead_time * 100).toFixed(0)}% ·
               scorecard {(data.weights.scorecard * 100).toFixed(0)}% ·
@@ -229,7 +229,7 @@ export default function VendorRecommendPage() {
                 )}
                 {(ln.candidates || []).slice(0, 3).map((c, i) => (
                   <div key={c.vendor_id} className="flex items-center gap-2 mt-1.5 text-xs">
-                    <span className="text-[10px] tabular-nums w-6 text-muted-foreground">#{i + 1}</span>
+                    <span className="text-[11px] tabular-nums w-6 text-muted-foreground">#{i + 1}</span>
                     <span className="flex-1 truncate">{c.vendor_name}</span>
                     <span className="tabular-nums text-muted-foreground">{fmtRp(c.metrics?.avg_cost || 0)}</span>
                     <span className="tabular-nums text-violet-700 dark:text-violet-300 font-semibold">

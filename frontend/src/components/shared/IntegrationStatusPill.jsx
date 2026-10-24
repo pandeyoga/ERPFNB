@@ -18,7 +18,7 @@ export default function IntegrationStatusPill({ status, label, className, size =
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border font-medium",
-        size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
+        size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs",
         config.tone,
         className,
       )}

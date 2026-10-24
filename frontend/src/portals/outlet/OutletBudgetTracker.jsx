@@ -158,11 +158,11 @@ export default function OutletBudgetTracker() {
                   <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                     <span>{view === "weekly" ? "Minggu Berjalan" : "Bulan Berjalan"}</span>
                     {current.budget_mode === "combined" ? (
-                      <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400 text-[10px] px-1.5 py-0">
+                      <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400 text-[11px] px-1.5 py-0">
                         Mode Gabungan
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-[10px] px-1.5 py-0">
+                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-[11px] px-1.5 py-0">
                         Mode Per-Bucket
                       </Badge>
                     )}
@@ -390,7 +390,7 @@ function CombinedBudgetCard({ pace, actuals, onRequestIncrease }) {
 function BreakdownPill({ label, value, color }) {
   return (
     <div className="flex items-center justify-between rounded-md px-2 py-1.5 bg-muted/30">
-      <span className="font-mono uppercase text-[10px]" style={{ color }}>{label}</span>
+      <span className="font-mono uppercase text-[11px]" style={{ color }}>{label}</span>
       <span className="tabular-nums font-medium">{fmtRp(value)}</span>
     </div>
   );

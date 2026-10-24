@@ -133,7 +133,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
   }, {});
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="h-9 w-9 rounded-xl bg-aurora-3/15 text-aurora-3 flex items-center justify-center">
@@ -167,15 +167,15 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm">{item.label}</span>
-                        <span className="font-mono text-[10px] text-muted-foreground">{item.key}</span>
-                        {item.is_secret && <Badge variant="outline" className="text-[10px]">secret</Badge>}
+                        <span className="font-mono text-[11px] text-muted-foreground">{item.key}</span>
+                        {item.is_secret && <Badge variant="outline" className="text-[11px]">secret</Badge>}
                         {item.is_set ? (
-                          <Badge variant="default" className="text-[10px] gap-1">
+                          <Badge variant="default" className="text-[11px] gap-1">
                             {item.source === "database" ? <Database className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
                             {item.source}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px] text-amber-700 border-amber-300">
+                          <Badge variant="outline" className="text-[11px] text-amber-700 border-amber-300">
                             <FileWarning className="h-3 w-3 mr-1" /> belum diset
                           </Badge>
                         )}

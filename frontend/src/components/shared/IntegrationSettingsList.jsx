@@ -66,8 +66,8 @@ export default function IntegrationSettingsList({ items, onChange }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="font-semibold text-sm">{item.label}</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{item.key}</span>
-                  {item.is_secret && <Badge variant="outline" className="text-[10px]">secret</Badge>}
+                  <span className="font-mono text-[11px] text-muted-foreground">{item.key}</span>
+                  {item.is_secret && <Badge variant="outline" className="text-[11px]">secret</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">{item.description}</p>
               </div>

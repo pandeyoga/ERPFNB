@@ -154,12 +154,12 @@ function TemplateCard({ template: t, onApply, onEdit, onDelete }) {
           value={t.last_applied_at ? fmtRelative(t.last_applied_at) : "Belum pernah"} />
       </div>
 
-      <div className="text-[10px] text-muted-foreground truncate">
+      <div className="text-[11px] text-muted-foreground truncate">
         Bank: {t.bank_account_name || t.bank_account_id}
       </div>
 
       {t.auto_approve && (
-        <div className="inline-flex px-2 py-0.5 rounded-full text-[9px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+        <div className="inline-flex px-2 py-0.5 rounded-full text-[11px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
           Auto-Approve: On
         </div>
       )}
@@ -352,7 +352,7 @@ function CreateTemplateDialog({ onClose, onCreated }) {
               <Input type="number" min={1} max={28} value={form.schedule_day}
                 onChange={e => setForm(f => ({ ...f, schedule_day: parseInt(e.target.value) }))}
                 className="glass-input" data-testid="tmpl-form-day" />
-              <p className="text-[10px] text-muted-foreground">Hari ke-1 s/d 28 tiap bulan</p>
+              <p className="text-[11px] text-muted-foreground">Hari ke-1 s/d 28 tiap bulan</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

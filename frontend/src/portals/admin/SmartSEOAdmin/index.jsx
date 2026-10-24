@@ -423,12 +423,12 @@ export default function SmartSEO() {
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {cluster.keywords?.slice(0, 4).map((kw, j) => (
-                                    <span key={j} className="text-[10px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
+                                    <span key={j} className="text-[11px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
                                   ))}
                                 </div>
                                 <div className="flex gap-2 mt-1.5">
-                                  <span className="text-[10px] text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
-                                  <span className="text-[10px] text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
+                                  <span className="text-[11px] text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
+                                  <span className="text-[11px] text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
                                 </div>
                               </div>
                             ))}

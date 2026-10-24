@@ -1,79 +1,19 @@
 /** navigationSchema/outlet.js — Outlet portal navigation. */
 
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Package,
-  Settings,
-  FileText,
-  ScrollText,
-  CreditCard,
-  Calculator,
-  FileCheck,
-  Calendar,
-  Banknote,
-  Receipt,
-  TrendingUp,
-  Wallet,
-  UserCog,
-  DollarSign,
-  Gift,
-  ClipboardList,
-  ShoppingCart,
-  Truck,
-  Store,
-  BarChart3,
-  Boxes,
-  ArrowLeftRight,
-  ClipboardCheck,
-  WrenchIcon,
-  Crown,
-  Sparkles,
-  Brain,
-  MessageSquare,
-  Shield,
-  Activity,
-  Star,
-  AlertTriangle,
-  Layers,
-  BookOpen,
-  Archive,
-  Target,
-  Workflow,
-  Coffee,
-  ListChecks,
-  History,
-  BellRing,
-  ChevronRight,
-  Landmark,
-  LineChart,
-  PiggyBank,
-  QrCode,
-  FileSpreadsheet,
-  CalendarCheck,
-} from "lucide-react";
+import { LayoutDashboard, Receipt, History, PiggyBank, Sparkles, Boxes } from "lucide-react";
 
-// eslint-disable-next-line no-unused-vars
 export const outletNav = {
   id: "outlet",
   name: "Outlet Portal",
+  // Urutan mengikuti alur kerja harian outlet (design_guidelines → navigation_and_ia):
+  // ringkasan → operasi harian → tutup hari → budget → CRM → inventori.
   sections: [
     {
-      id: "crm-hub",
-      name: "CRM & Reservasi",
-      icon: Sparkles,
-      items: [
-        { id: "crm-hub", name: "CRM & Reservasi Hub", path: "/outlet/crm" },
-      ],
-    },
-    {
       id: "dashboard",
-      name: "Dashboard",
+      name: "Overview",
       icon: LayoutDashboard,
       items: [
-        { id: "overview", name: "Today's Summary", path: "/outlet" },
-        { id: "approval-center-outlet", name: "Approval Center", path: "/outlet/approvals" },
+        { id: "overview", name: "Overview", path: "/outlet" },
       ],
     },
     {
@@ -82,19 +22,9 @@ export const outletNav = {
       icon: Receipt,
       items: [
         { id: "daily-sales", name: "Daily Sales", path: "/outlet/daily-sales" },
-        { id: "urgent-purchase", name: "Urgent Purchase", path: "/outlet/urgent-purchase" },
+        { id: "daily-orders", name: "Daily Orders", path: "/outlet/daily-orders" },
         { id: "petty-cash", name: "Petty Cash", path: "/outlet/petty-cash" },
-        { id: "budget-tracker", name: "Budget Saya", path: "/outlet/budget" },
-      ],
-    },
-    // REMOVED: Cash Management section (single-item) - merged into Daily Operations
-    // REMOVED: Budget Outlet section (single-item) - merged into Daily Operations
-    {
-      id: "kitchen",
-      name: "Daily Orders",
-      icon: ScrollText,
-      items: [
-        { id: "daily-orders", name: "Kitchen / Bar / Floor", path: "/outlet/daily-orders" },
+        { id: "urgent-purchase", name: "Urgent Purchase", path: "/outlet/urgent-purchase" },
       ],
     },
     {
@@ -102,12 +32,25 @@ export const outletNav = {
       name: "End of Day",
       icon: History,
       items: [
-        { id: "end-of-day", name: "Tutup Hari Workflow", path: "/outlet/end-of-day" },
-        // REMOVED: Daily Close (Manual) - deprecated, use workflow above
+        { id: "end-of-day", name: "End of Day", path: "/outlet/end-of-day", matchPaths: ["/outlet/daily-close"] },
       ],
     },
-    // REMOVED: Loyalty section (duplikat dengan CRM & Reservasi)
-    // REMOVED: Reservasi section (duplikat dengan CRM & Reservasi)
+    {
+      id: "budget",
+      name: "Outlet Budget",
+      icon: PiggyBank,
+      items: [
+        { id: "budget-tracker", name: "Outlet Budget", path: "/outlet/budget" },
+      ],
+    },
+    {
+      id: "crm-hub",
+      name: "CRM & Reservations",
+      icon: Sparkles,
+      items: [
+        { id: "crm-hub", name: "CRM & Reservations", path: "/outlet/crm", matchPaths: ["/outlet/reservations", "/outlet/voucher-redeem", "/outlet/loyalty"] },
+      ],
+    },
     {
       id: "inventory",
       name: "Outlet Inventory",

@@ -128,7 +128,7 @@ export default function ForecastGuardBanner({
               ({verdict.deviation_pct >= 0 ? "+" : ""}{verdict.deviation_pct}%)
             </span>
           )}
-          <span className="text-[10px] uppercase tracking-wider opacity-70">period {verdict.period}</span>
+          <span className="text-[11px] uppercase tracking-wider opacity-70">period {verdict.period}</span>
         </div>
         <div className="mt-1 leading-relaxed">{verdict.message}</div>
         <div className="mt-2 grid grid-cols-2 lg:grid-cols-4 gap-2 text-[11px] tabular-nums opacity-90">
@@ -145,10 +145,10 @@ export default function ForecastGuardBanner({
 function Stat({ label, value, bold, ci }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[10px] uppercase tracking-wide opacity-60">{label}</span>
+      <span className="text-[11px] uppercase tracking-wide opacity-60">{label}</span>
       <span className={cn(bold && "font-bold")}>{value}</span>
       {ci != null && ci > 0 && (
-        <span className="text-[9px] opacity-50">±{fmtRp(ci)}</span>
+        <span className="text-[11px] opacity-50">±{fmtRp(ci)}</span>
       )}
     </div>
   );

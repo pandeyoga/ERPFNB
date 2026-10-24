@@ -1,7 +1,7 @@
 /** NavTree — pohon navigasi terpadu (dipakai Sidebar desktop & MobileSidebar).
  *
  * Struktur: Zona → (link | grup modul) → seksi → item.
- *  - Grup modul (portal) collapsible; grup yang memuat route aktif otomatis terbuka.
+ *  - Grup modul (portal) berupa accordion: satu grup terbuka, otomatis grup route aktif.
  *  - Seksi dengan 1 item DIRATAKAN menjadi link langsung (aturan flatten_rule).
  *  - Leaf-only active model: hanya route terdalam yang mendapat background aktif.
  *  - Favorit (pin) per user, maks 6, disimpan di localStorage.
@@ -11,7 +11,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronDown, ChevronRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { buildUnifiedNav, favKeyOf, flattenNavItems } from "@/lib/unifiedNav";
+import { buildUnifiedNav, favKeyOf, flattenNavItems, resolveNavContext } from "@/lib/unifiedNav";
 
 const MAX_FAVS = 6;
 
@@ -57,7 +57,7 @@ function ZoneLabel({ entry }) {
   return (
     <p
       data-testid={`nav-${entry.id}`}
-      className="mt-4 mb-1 px-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/80 first:mt-0"
+      className="mt-4 mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80 first:mt-0"
     >
       {entry.label}
     </p>
@@ -75,37 +75,19 @@ export default function NavTree({ onNavigate }) {
 
   // Grup portal yang memuat route aktif
   const activeGroupId = useMemo(() => {
-    const g = nav.find((e) => e.type === "group" && (pathname === e.path || pathname.startsWith(e.path + "/")));
+    const g = nav.find((e) => (e.type === "group" || e.portalId) && (pathname === e.path || pathname.startsWith(e.path + "/")));
     return g?.id || null;
   }, [nav, pathname]);
 
-  // Grup yang terbuka (persist) — default: grup aktif saja
-  const [expandedGroups, setExpandedGroups] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("aurora_nav_expanded") || "null");
-      if (Array.isArray(stored)) return new Set(stored);
-    } catch { /* ignore */ }
-    return new Set();
-  });
+  // Accordion: hanya SATU grup modul terbuka — grup yang memuat route aktif.
+  // Sebelumnya semua grup yang pernah dibuka tetap terbuka (persist), sehingga
+  // sidebar memanjang hingga 4–5 layar dan harus di-scroll.
+  const [openGroupId, setOpenGroupId] = useState(activeGroupId);
   useEffect(() => {
-    if (activeGroupId && !expandedGroups.has(activeGroupId)) {
-      setExpandedGroups((prev) => {
-        const next = new Set(prev);
-        next.add(activeGroupId);
-        localStorage.setItem("aurora_nav_expanded", JSON.stringify([...next]));
-        return next;
-      });
-    }
-  }, [activeGroupId]); // eslint-disable-line
+    if (activeGroupId) setOpenGroupId(activeGroupId);
+  }, [activeGroupId]);
 
-  const toggleGroup = (id) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      localStorage.setItem("aurora_nav_expanded", JSON.stringify([...next]));
-      return next;
-    });
-  };
+  const toggleGroup = (id) => setOpenGroupId((prev) => (prev === id ? null : id));
 
   // Seksi (level 3) — kompatibel dengan key lama `aurora_sidebar_sections`
   const [expandedSections, setExpandedSections] = useState(() => {
@@ -122,7 +104,13 @@ export default function NavTree({ onNavigate }) {
     });
   };
 
+  // Leaf-only active: satu item aktif = hasil resolveNavContext (persis, alias hub, atau
+  // induk halaman detail). Sebelumnya hanya kecocokan persis → sub-halaman hub dan
+  // halaman detail tidak menyorot apa pun di sidebar.
+  const navCtx = useMemo(() => resolveNavContext(pathname), [pathname]);
+  const activeKey = navCtx.portal && navCtx.item ? favKeyOf(navCtx.portal.id, navCtx.item) : null;
   const isActive = (path) => pathname === path;
+  const isActiveLeaf = (portalId, item) => (activeKey ? favKeyOf(portalId, item) === activeKey : pathname === item.path);
   const itemTestId = (item) => `sidebar-nav-item-${item.id || item.path.replace(/[^a-z0-9]/gi, "-")}`;
 
   const leafClass = (active) => cn(
@@ -134,7 +122,8 @@ export default function NavTree({ onNavigate }) {
 
   const renderLeaf = (portalId, item, opts = {}) => {
     const key = favKeyOf(portalId, item);
-    const active = isActive(item.path);
+    // Favorit tidak ikut disorot (hindari dua elemen aktif untuk halaman yang sama).
+    const active = !opts.isFavorite && isActiveLeaf(portalId, item);
     const Icon = opts.icon;
     return (
       <Link
@@ -148,7 +137,7 @@ export default function NavTree({ onNavigate }) {
         {Icon && <Icon className="h-4 w-4 shrink-0" />}
         <span className="flex-1 truncate">{opts.label || item.name}</span>
         {item.badge && (
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-foreground/10 text-foreground/70">{item.badge}</span>
+          <span className="text-[11px] leading-none font-semibold px-1.5 py-0.5 rounded bg-foreground/10 text-foreground/70">{item.badge}</span>
         )}
         <FavStar active={favs.includes(key)} onToggle={() => toggleFav(key)} testId={`fav-toggle-${portalId}-${item.id}`} />
       </Link>
@@ -162,12 +151,12 @@ export default function NavTree({ onNavigate }) {
       {/* Favorit */}
       {favItems.length > 0 && (
         <div data-testid="nav-favorites">
-          <p className="mb-1 px-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/80 flex items-center gap-1">
+          <p className="mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80 flex items-center gap-1">
             <Star className="h-3 w-3" /> Favorit
           </p>
           <div className="space-y-0.5 mb-2">
             {favItems.map((it) =>
-              renderLeaf(it.portalId, it, { icon: it.icon, testId: `nav-fav-${it.portalId}-${it.id}`, label: `${it.name}` })
+              renderLeaf(it.portalId, it, { icon: it.icon, testId: `nav-fav-${it.portalId}-${it.id}`, label: `${it.name}`, isFavorite: true })
             )}
           </div>
         </div>
@@ -178,7 +167,7 @@ export default function NavTree({ onNavigate }) {
 
         if (entry.type === "link") {
           const Icon = entry.icon;
-          const active = isActive(entry.path);
+          const active = entry.portalId ? activeGroupId === entry.portalId : isActive(entry.path);
           return (
             <Link
               key={entry.id}
@@ -199,7 +188,7 @@ export default function NavTree({ onNavigate }) {
 
         // ── Grup modul (portal) ──
         const GroupIcon = entry.icon;
-        const isOpen = expandedGroups.has(entry.id);
+        const isOpen = openGroupId === entry.id;
         const groupActive = activeGroupId === entry.id;
         return (
           <div key={entry.id} className="space-y-0.5" data-testid={`sidebar-portal-group-${entry.id}`}>
@@ -236,7 +225,7 @@ export default function NavTree({ onNavigate }) {
                   }
 
                   const sOpen = expandedSections[sKey] ?? true;
-                  const sActive = section.items.some((it) => isActive(it.path));
+                  const sActive = section.items.some((it) => isActiveLeaf(entry.id, it));
                   return (
                     <div key={sKey} className="space-y-0.5">
                       <button

@@ -82,7 +82,7 @@ export default function LoyaltyRegister() {
         <div className="relative z-10 flex flex-col h-full p-10 xl:p-14">
           <Link to="/" className="inline-block">
             <div className="font-['Cormorant_Garamond'] text-2xl tracking-[0.22em] uppercase font-semibold" style={{ color: "#F0EAE0" }}>FNB GROUP</div>
-            <div className="text-[10px] tracking-[0.3em] uppercase font-medium mt-0.5" style={{ color: "#C9A876" }}>REWARDS PROGRAM</div>
+            <div className="text-[11px] tracking-[0.3em] uppercase font-medium mt-0.5" style={{ color: "#C9A876" }}>REWARDS PROGRAM</div>
           </Link>
 
           <div className="my-auto">
@@ -105,7 +105,7 @@ export default function LoyaltyRegister() {
             </div>
           </div>
 
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(240,234,224,0.2)" }}>FnB Group &copy; {new Date().getFullYear()}</div>
+          <div className="text-[11px] tracking-widest uppercase" style={{ color: "rgba(240,234,224,0.2)" }}>FnB Group &copy; {new Date().getFullYear()}</div>
         </div>
       </div>
 
@@ -114,7 +114,7 @@ export default function LoyaltyRegister() {
         <div className="lg:hidden mb-8 text-center">
           <Link to="/">
             <div className="font-['Cormorant_Garamond'] text-2xl tracking-[0.22em] uppercase font-semibold" style={{ color: "#F0EAE0" }}>FNB GROUP</div>
-            <div className="text-[10px] tracking-[0.3em] uppercase mt-0.5" style={{ color: "#C9A876" }}>REWARDS</div>
+            <div className="text-[11px] tracking-[0.3em] uppercase mt-0.5" style={{ color: "#C9A876" }}>REWARDS</div>
           </Link>
         </div>
 
@@ -227,7 +227,7 @@ export default function LoyaltyRegister() {
             <Link to="/" className="text-xs hover:underline" style={{ color: "rgba(240,234,224,0.25)" }}>&larr; Kembali ke Website</Link>
           </div>
           <div className="mt-2 text-center">
-            <Link to="/login" className="text-[10px] hover:opacity-60" style={{ color: "rgba(240,234,224,0.18)" }}>Staff Access</Link>
+            <Link to="/login" className="text-[11px] hover:opacity-60" style={{ color: "rgba(240,234,224,0.18)" }}>Staff Access</Link>
           </div>
         </motion.div>
       </div>

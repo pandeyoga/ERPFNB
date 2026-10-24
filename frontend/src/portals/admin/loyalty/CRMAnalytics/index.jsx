@@ -292,9 +292,9 @@ export default function CRMAnalytics() {
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={trends.timeline} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
                   <Legend />
                   <Bar yAxisId="left" dataKey="new_customers" name="New Customers" fill="#3B82F6" radius={[3,3,0,0]} />
@@ -348,8 +348,8 @@ export default function CRMAnalytics() {
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={retention.monthly} margin={{ top: 5, right: 15, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                  <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 11 }} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => `${v}%`} />} />
                   <Legend />
                   <Line type="monotone" dataKey="retention_rate" name="Retention Rate %" stroke="#10B981"
@@ -569,7 +569,7 @@ export default function CRMAnalytics() {
                 <BarChart data={clv.by_tier.map(t=>({...t, tier: t.tier.charAt(0).toUpperCase()+t.tier.slice(1)}))}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="tier" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v/1000000).toFixed(1)}jt`} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v/1000000).toFixed(1)}jt`} />
                   <Tooltip formatter={v => [fmt(v), "Avg Spend"]} />
                   <Bar dataKey="avg_spend" radius={[4,4,0,0]}>
                     {clv.by_tier.map((t, i) => <Cell key={i} fill={TIER_COLORS[t.tier] || "#6B7280"} />)}
@@ -584,8 +584,8 @@ export default function CRMAnalytics() {
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={clv.histogram}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="range" tick={{ fontSize: 9 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                  <XAxis dataKey="range" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
                   <Bar dataKey="count" fill="#6366F1" radius={[3,3,0,0]} />
                 </BarChart>

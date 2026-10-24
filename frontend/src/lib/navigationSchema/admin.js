@@ -1,67 +1,14 @@
 /** navigationSchema/admin.js — Admin portal navigation. */
 
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Package,
-  Settings,
-  FileText,
-  ScrollText,
-  CreditCard,
-  Calculator,
-  FileCheck,
-  Calendar,
-  Banknote,
-  Receipt,
-  TrendingUp,
-  Wallet,
-  UserCog,
-  DollarSign,
-  Gift,
-  ClipboardList,
-  ShoppingCart,
-  Truck,
-  Store,
-  BarChart3,
-  Boxes,
-  ArrowLeftRight,
-  ClipboardCheck,
-  WrenchIcon,
-  Crown,
-  Sparkles,
-  Brain,
-  MessageSquare,
-  Shield,
-  Activity,
-  Star,
-  AlertTriangle,
-  Layers,
-  BookOpen,
-  Archive,
-  Target,
-  Workflow,
-  Coffee,
-  ListChecks,
-  History,
-  BellRing,
-  ChevronRight,
-  Landmark,
-  LineChart,
-  PiggyBank,
-  QrCode,
-  FileSpreadsheet,
-  CalendarCheck,
-} from "lucide-react";
+import { LayoutDashboard, Users, Package, Shield, Star, FileText, Sparkles, Activity, Settings } from "lucide-react";
 
-// eslint-disable-next-line no-unused-vars
 export const adminNav = {
   id: "admin",
   name: "Admin Portal",
   sections: [
     {
       id: "dashboard",
-      name: "Dashboard",
+      name: "Overview",
       icon: LayoutDashboard,
       items: [
         { id: "overview", name: "Overview", path: "/admin" },
@@ -69,11 +16,11 @@ export const adminNav = {
     },
     {
       id: "user-management",
-      name: "User Management",
+      name: "Users & Roles",
       icon: Users,
       reqPerm: "admin.user",
       items: [
-        { id: "user-mgmt-hub", name: "User Management", path: "/admin/user-management" },
+        { id: "user-mgmt-hub", name: "Users & Roles", path: "/admin/user-management", matchPaths: ["/admin/users", "/admin/roles", "/admin/audit-log"] },
         // All Users · Roles & Permissions · Activity Log are in-page TABS of
         // /admin/user-management (User Management Hub).
       ],
@@ -84,7 +31,7 @@ export const adminNav = {
       icon: Package,
       reqPerm: "admin.master_data",
       items: [
-        { id: "master-data-hub", name: "Items • Vendors • Outlets • Brands • Employees", path: "/admin/master-data" },
+        { id: "master-data-hub", name: "Master Data", path: "/admin/master-data", matchPaths: ["/admin/master"] },
       ],
     },
     {
@@ -94,9 +41,9 @@ export const adminNav = {
       reqPerm: "admin.business_rules",
       items: [
         { id: "business-rules", name: "Business Rules", path: "/admin/configuration" },
-        { id: "approval-matrix", name: "Approval Matrix", path: "/admin/approvals", badge: "Builder" },
+        { id: "approval-matrix", name: "Approval Matrix", path: "/admin/approvals", matchPaths: ["/admin/workflows"] },
         { id: "integrations", name: "Integrations", path: "/admin/integrations" },
-        { id: "setup", name: "Setup & Numbering", path: "/admin/setup" },
+        { id: "setup", name: "Setup & Numbering", path: "/admin/setup", matchPaths: ["/admin/number-series", "/admin/tax", "/admin/bulk-import"] },
         // Number Series · Tax Config · Bulk Excel Import are in-page TABS of /admin/setup.
       ],
     },
@@ -105,18 +52,36 @@ export const adminNav = {
       name: "Loyalty Program",
       icon: Star,
       items: [
-        { id: "loyalty-hub", name: "Loyalty Program", path: "/admin/loyalty" },
+        { id: "loyalty-hub", name: "Loyalty Program", path: "/admin/loyalty", matchPaths: ["/admin/loyalty"] },
         // Overview · Customers · Rewards Catalog · Redemptions · CRM Analytics are
         // in-page TABS of /admin/loyalty (Loyalty Hub).
       ],
     },
     {
+      id: "cms",
+      name: "CMS Studio",
+      icon: FileText,
+      reqPerm: "admin.cms",
+      items: [
+        { id: "cms-studio", name: "CMS Studio", path: "/admin/cms/brands", matchPaths: ["/admin/cms"] },
+      ],
+    },
+    {
+      id: "seo",
+      name: "Smart SEO",
+      icon: Sparkles,
+      reqPerm: "admin.cms",
+      items: [
+        { id: "smart-seo", name: "Smart SEO", path: "/admin/smart-seo", badge: "AI" },
+      ],
+    },
+    {
       id: "operations-monitoring",
-      name: "Operations & Monitoring",
+      name: "Monitoring",
       icon: Activity,
       reqPerm: "admin.audit_log",
       items: [
-        { id: "ops-hub", name: "Operations & Monitoring", path: "/admin/operations" },
+        { id: "ops-hub", name: "Monitoring", path: "/admin/operations", matchPaths: ["/admin/report-schedules", "/admin/data-management", "/admin/tour-analytics"] },
         // System Metrics · Logs · Scheduler · Archival · Rate Limits · Laporan Terjadwal
         // · Manajemen Data · Tour Analytics are in-page TABS of /admin/operations.
       ],
@@ -127,25 +92,7 @@ export const adminNav = {
       icon: Settings,
       reqPerm: "admin.system_settings",
       items: [
-        { id: "general", name: "General", path: "/admin/settings" },
-      ],
-    },
-    {
-      id: "cms",
-      name: "CMS Studio",
-      icon: FileText,
-      reqPerm: "admin.cms",
-      items: [
-        { id: "cms-studio", name: "Brands • News • Menu • Pages • Media", path: "/admin/cms/brands" },
-      ],
-    },
-    {
-      id: "seo",
-      name: "Smart SEO",
-      icon: Sparkles,
-      reqPerm: "admin.cms",
-      items: [
-        { id: "smart-seo", name: "Smart SEO AI", path: "/admin/smart-seo", badge: "AI" },
+        { id: "general", name: "System Settings", path: "/admin/settings" },
       ],
     },
   ],

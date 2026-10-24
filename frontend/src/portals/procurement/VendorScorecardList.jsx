@@ -89,7 +89,7 @@ export default function VendorScorecardList() {
               render: (v) => (
                 <div>
                   <div className="font-semibold" data-testid={`scorecard-name-${v.vendor_id}`}>{v.vendor_name || v.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{v.vendor_code || v.code}</div>
+                  <div className="text-[11px] text-muted-foreground">{v.vendor_code || v.code}</div>
                 </div>
               ) },
             { key: "po_count", label: "PO Count", numeric: true, sortable: true, sortAccessor: (v) => v.po_count || 0,

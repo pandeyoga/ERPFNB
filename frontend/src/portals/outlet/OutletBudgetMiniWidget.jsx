@@ -66,7 +66,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
               </span>
             )}
             {aggregateMode && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20 flex items-center gap-1">
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20 flex items-center gap-1">
                 <Globe2 className="h-2.5 w-2.5" />
                 {data?.outlet_name || "outlet pertama"}
               </span>
@@ -88,7 +88,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
               return (
                 <div key={bk}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] uppercase tracking-wide font-mono" style={{ color: BUCKET_COLORS[bk] }}>
+                    <span className="text-[11px] uppercase tracking-wide font-mono" style={{ color: BUCKET_COLORS[bk] }}>
                       {bk}
                     </span>
                     <span className={`text-[11px] font-semibold ${paceColor(cell.status)}`}>
@@ -99,7 +99,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
                     value={Math.min(100, cell.pct_used || 0)}
                     className="h-1.5"
                   />
-                  <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+                  <div className="mt-1 text-[11px] text-muted-foreground tabular-nums">
                     sisa {fmtRp(cell.remaining)}
                   </div>
                 </div>

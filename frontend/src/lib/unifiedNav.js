@@ -88,6 +88,12 @@ export function buildUnifiedNav(user) {
 
 function portalGroup(portal, perms, overrides = {}) {
   const sections = getPortalSections(portal.id).filter((s) => hasPerm(perms, s.reqPerm));
+  const items = sections.flatMap((s) => s.items);
+  // Modul dengan satu halaman (mis. Report Center) → link langsung, bukan grup yang
+  // berisi satu item bernama sama.
+  if (items.length === 1) {
+    return { type: "link", id: portal.id, portalId: portal.id, name: portal.name, icon: overrides.icon || portal.icon, path: items[0].path };
+  }
   return {
     type: "group",
     id: portal.id,
@@ -114,28 +120,37 @@ export function flattenNavItems(user) {
 }
 
 /**
- * Konteks lokasi untuk breadcrumb TopNav:
- * { portal, section, item } — mencocokkan path persis, lalu prefix terpanjang.
+ * Konteks lokasi untuk breadcrumb TopNav & item aktif sidebar:
+ * { portal, section, item, match } — `match` = "exact" | "alias" | "prefix".
+ *  - exact : path sama persis dengan item
+ *  - alias : path termasuk `matchPaths` item (sub-halaman/tab sebuah hub)
+ *  - prefix: halaman detail di bawah path item (mis. /procurement/pr/123)
+ * Dipilih kecocokan terpanjang sehingga hanya SATU item yang aktif.
  */
 export function resolveNavContext(pathname) {
-  const portal = PORTALS.find((p) => pathname === p.path || pathname.startsWith(p.path + "/"));
+  const under = (p) => pathname === p || pathname.startsWith(p + "/");
+  const portal = PORTALS.find((p) => under(p.path));
   if (!portal) {
     if (pathname === "/my-approvals" || pathname === "/approvals") {
-      return { portal: null, section: null, item: { name: "Pusat Persetujuan", path: pathname } };
+      return { portal: null, section: null, item: { name: "Pusat Persetujuan", path: pathname }, match: "exact" };
     }
-    return { portal: null, section: null, item: null };
+    return { portal: null, section: null, item: null, match: null };
   }
   const sections = getPortalSections(portal.id);
   let best = null;
+  const offer = (section, item, score, match) => {
+    if (!best || score > best.score) best = { section, item, score, match };
+  };
   sections.forEach((section) => {
     section.items.forEach((item) => {
-      if (pathname === item.path) {
-        if (!best || best.score < 1000) best = { section, item, score: 1000 };
-      } else if (pathname.startsWith(item.path + "/") && item.path !== portal.path) {
-        const score = item.path.length;
-        if (!best || best.score < score) best = { section, item, score };
+      if (pathname === item.path) offer(section, item, 10000, "exact");
+      (item.matchPaths || []).forEach((mp) => {
+        if (under(mp)) offer(section, item, 5000 + mp.length, "alias");
+      });
+      if (item.path !== portal.path && pathname.startsWith(item.path + "/")) {
+        offer(section, item, item.path.length, "prefix");
       }
     });
   });
-  return { portal, section: best?.section || null, item: best?.item || null };
+  return { portal, section: best?.section || null, item: best?.item || null, match: best?.match || null };
 }

@@ -47,7 +47,6 @@ import BudgetHub from "./BudgetHub";
 import ARInvoiceList from "./ARInvoiceList";
 import PeriodClosingHub from "./PeriodClosingHub";
 import ReservationDeposits from "./ReservationDeposits";
-import ApprovalCenter from "../shared/ApprovalCenter";
 import FinanceReportsHub from "./FinanceReportsHub";
 import FinancePaymentsHub from "./FinancePaymentsHub";
 import FinanceTaxHub from "./FinanceTaxHub";
@@ -116,7 +115,6 @@ export default function FinancePortal() {
       <Route path="closing-wizard" element={<Navigate to="/finance/periods" replace />} />
       <Route path="coa" element={g("finance.journal_entry.read", <COABrowser />)} />
       <Route path="reservation-deposits" element={g("finance.ar", <ReservationDeposits />)} />
-      <Route path="approvals" element={<ApprovalCenter />} />
       <Route path="*" element={<Navigate to="/finance" replace />} />
       </Routes>
     </div>

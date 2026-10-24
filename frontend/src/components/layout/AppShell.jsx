@@ -7,14 +7,12 @@ import TopNav from "./TopNav";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
 import GlobalSearch from "@/components/shared/GlobalSearch";
-import NotificationDrawer from "@/components/shared/NotificationDrawer";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
 export default function AppShell() {
   const { user, loading } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,7 +36,7 @@ export default function AppShell() {
     }
   }, [location.pathname, location.search, user, loading]); // eslint-disable-line
 
-  // ⌘K / Ctrl+K opens global search; sidebar "Cari menu…" juga memicu event ini
+  // ⌘K / Ctrl+K opens global search; komponen lain bisa memicu event "aurora-open-search"
   useEffect(() => {
     const handler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -85,10 +83,7 @@ export default function AppShell() {
         </a>
 
         {/* Level 1: Top Navigation */}
-        <TopNav
-          onSearchOpen={() => setSearchOpen(true)}
-          onNotifOpen={() => setNotifOpen(true)}
-        />
+        <TopNav onSearchOpen={() => setSearchOpen(true)} />
 
         {/* Mobile Sidebar (Sheet) — navigasi terpadu */}
         <MobileSidebar />
@@ -104,7 +99,7 @@ export default function AppShell() {
             <main
               id="main-content"
               tabIndex={-1}
-              className="flex-1 overflow-y-auto px-4 sm:px-5 lg:px-8 py-5 lg:py-8 pb-20 lg:pb-8"
+              className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-5 py-3 lg:py-4 pb-20 lg:pb-6"
             >
               <div className="max-w-[1600px] mx-auto w-full">
                 {/* Fix 2026-05-27: Removed AnimatePresence + motion.div wrapper.
@@ -122,7 +117,6 @@ export default function AppShell() {
         </div>
         
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <NotificationDrawer open={notifOpen} onClose={() => setNotifOpen(false)} />
         <Toaster position="top-right" />
       </div>
     </NavigationProvider>

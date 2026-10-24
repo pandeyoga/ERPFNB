@@ -162,7 +162,7 @@ export default function FileDropZone({
               <span>{(att.size_bytes / 1024).toFixed(1)} KB</span>
             )}
             {att.content_type && (
-              <span className="px-1.5 py-0 rounded-full bg-foreground/5 text-[10px]">
+              <span className="px-1.5 py-0 rounded-full bg-foreground/5 text-[11px]">
                 {att.content_type.split("/")[1]}
               </span>
             )}

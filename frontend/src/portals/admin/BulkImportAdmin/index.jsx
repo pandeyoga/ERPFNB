@@ -192,7 +192,7 @@ export default function BulkImport() {
 
       {/* Progress Steps */}
       <Card data-testid="bulk-import-steps">
-        <CardContent className="pt-6">
+        <CardContent className="pt-4">
           <div className="flex items-center justify-between gap-1 overflow-x-auto">
             {STEP_LABELS.map((label, idx) => (
               <div key={idx} className="flex items-center shrink-0">

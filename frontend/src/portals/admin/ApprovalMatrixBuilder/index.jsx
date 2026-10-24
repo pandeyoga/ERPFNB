@@ -255,11 +255,11 @@ export default function ApprovalMatrixBuilder() {
                   <div className="text-xs text-muted-foreground">{et.value}</div>
                 </div>
                 {et.has_workflow ? (
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[11px]">
                     v{et.version}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px]">none</Badge>
+                  <Badge variant="outline" className="text-[11px]">none</Badge>
                 )}
               </button>
             ))}

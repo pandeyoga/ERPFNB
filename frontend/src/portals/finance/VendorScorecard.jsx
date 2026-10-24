@@ -219,14 +219,14 @@ export default function VendorScorecard() {
                           <div key={po.po_id} className="text-xs px-2 py-1.5 rounded bg-muted/30 flex items-center justify-between">
                             <div>
                               <div className="font-mono">{po.doc_no}</div>
-                              <div className="text-[10px] text-muted-foreground">{po.order_date}</div>
+                              <div className="text-[11px] text-muted-foreground">{po.order_date}</div>
                             </div>
                             <div className="text-right">
                               <div className="tabular-nums font-medium">{fmtRp(po.grand_total)}</div>
-                              <div className="text-[10px]">
-                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 h-4 text-[9px] px-1.5">on-time</Badge>}
-                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-0 h-4 text-[9px] px-1.5">late</Badge>}
-                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-[9px] px-1.5">no GR</Badge>}
+                              <div className="text-[11px]">
+                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 h-4 text-[11px] px-1.5">on-time</Badge>}
+                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-0 h-4 text-[11px] px-1.5">late</Badge>}
+                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-[11px] px-1.5">no GR</Badge>}
                               </div>
                             </div>
                           </div>
@@ -259,7 +259,7 @@ function SummaryCard({ icon: Icon, label, value, sub }) {
 function Metric({ label, value, suffix = "", big, highlight }) {
   return (
     <div className="rounded-lg bg-muted/20 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={cn(big ? "text-base font-bold" : "text-sm font-semibold", "tabular-nums", highlight)}>
         {value}{suffix}
       </div>

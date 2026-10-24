@@ -132,9 +132,9 @@ export default function PaymentRunList() {
               { key: "status", label: "Status",
                 render: (r) => (
                   <span className="inline-flex items-center gap-1">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_BADGE[r.status] || ""}`}>{r.status}</span>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_BADGE[r.status] || ""}`}>{r.status}</span>
                     {r.has_wht && (
-                      <span className="inline-flex px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                      <span className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-500/15 text-amber-700 dark:text-amber-400"
                         title="Mengandung payment dengan withholding tax">WHT</span>
                     )}
                   </span>
@@ -346,18 +346,18 @@ function CreateRunDialog({ onClose, onCreated }) {
                         <td className="px-3 py-2 font-mono">{p.doc_no}</td>
                         <td className="px-3 py-2">
                           <div>{p.payee_name || "-"}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase">{p.payee_type}</div>
+                          <div className="text-[11px] text-muted-foreground uppercase">{p.payee_type}</div>
                         </td>
                         <td className="px-3 py-2 max-w-[180px] truncate">{p.description}</td>
                         <td className="px-3 py-2 text-right tabular-nums font-semibold"
                           data-testid={`prn-pay-amount-${p.doc_no}`}>{fmtRp(p.amount)}</td>
                         <td className="px-3 py-2">
                           {p.wh_type && parseFloat(p.wh_amount || 0) > 0 ? (
-                            <span className="inline-flex px-1.5 py-0.5 rounded text-[9px] bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                            <span className="inline-flex px-1.5 py-0.5 rounded text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400"
                               title={`PPh WHT: ${fmtRp(p.wh_amount)}`}>
                               WHT {fmtRp(p.wh_amount)}
                             </span>
-                          ) : <span className="text-[10px] text-muted-foreground">—</span>}
+                          ) : <span className="text-[11px] text-muted-foreground">—</span>}
                         </td>
                       </tr>
                     ))}
@@ -440,7 +440,7 @@ function RunPaymentsDrilldown({ run }) {
 }
 
 function Th({ children, className = "" }) {
-  return <th className={`px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-muted-foreground ${className}`}>{children}</th>;
+  return <th className={`px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ${className}`}>{children}</th>;
 }
 function KpiTile({ label, value, tone = "neutral", testid }) {
   const cls = {

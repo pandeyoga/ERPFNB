@@ -36,7 +36,7 @@ function BudgetLines({ b }) {
           <div className="min-w-0 flex items-center gap-2">
             <span className="font-mono text-xs text-muted-foreground">{l.coa_code}</span>
             <span className="truncate">{l.coa_name}</span>
-            {l.category && <Badge variant="secondary" className="text-[10px]">{l.category}</Badge>}
+            {l.category && <Badge variant="secondary" className="text-[11px]">{l.category}</Badge>}
           </div>
           <span className="tabular-nums font-medium shrink-0">{formatCurrency(l.amount)}</span>
         </div>

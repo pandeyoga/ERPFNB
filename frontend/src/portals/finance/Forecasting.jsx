@@ -204,7 +204,7 @@ export default function Forecasting() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] }} />
                       <span className="text-sm font-semibold capitalize">{m}</span>
-                      {isActive && <Badge className="ml-auto bg-foreground text-background text-[10px] h-4">active</Badge>}
+                      {isActive && <Badge className="ml-auto bg-foreground text-background text-[11px] h-4">active</Badge>}
                     </div>
                     <div className="text-xl font-bold tabular-nums">{fmtRp(total)}</div>
                     <div className="text-[11px] text-muted-foreground mt-1">
@@ -457,7 +457,7 @@ function MonthlyBars({ history, forecast, color }) {
         const key = `${r.type}-${r.period}`;
         return (
           <div key={key} className="flex flex-col items-center gap-1.5 min-w-[60px]" data-testid={`month-bar-${key}`}>
-            <div className="text-[10px] tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}M</div>
+            <div className="text-[11px] tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}M</div>
             <div className="w-12 rounded-t-md transition-all"
               style={{
                 height: `${Math.max(4, h)}px`,
@@ -467,11 +467,11 @@ function MonthlyBars({ history, forecast, color }) {
                 ...(r.type === "forecast" ? { borderTop: `3px solid ${color}` } : {}),
               }}
             />
-            <div className={cn("text-[10px]", r.type === "forecast" ? "font-bold" : "text-muted-foreground")}>
+            <div className={cn("text-[11px]", r.type === "forecast" ? "font-bold" : "text-muted-foreground")}>
               {r.period.slice(2)}
             </div>
             {r.type === "forecast" && (
-              <span className="text-[9px] uppercase font-semibold tracking-wider"
+              <span className="text-[11px] uppercase font-semibold tracking-wider"
                 style={{ color }}>forecast</span>
             )}
           </div>

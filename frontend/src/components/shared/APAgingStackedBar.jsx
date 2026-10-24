@@ -21,7 +21,7 @@ export default function APAgingStackedBar({
   const total = grand_total || Object.values(buckets).reduce((a, b) => a + (b || 0), 0);
 
   return (
-    <div className="glass-card p-5" data-testid="ap-aging-widget">
+    <div className="glass-card p-4" data-testid="ap-aging-widget">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold">AP Aging</h3>
         <Link

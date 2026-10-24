@@ -52,7 +52,7 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
           <div>
             <h3 className="font-semibold text-sm inline-flex items-center gap-2">
               AI Variance Explainer
-              <Badge variant="secondary" className="text-[10px] gap-1">
+              <Badge variant="secondary" className="text-[11px] gap-1">
                 <Sparkles className="h-2.5 w-2.5" />
                 Beta
               </Badge>
@@ -117,12 +117,12 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
           {result.summary && (
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Ringkasan
                 </span>
                 {result.confidence != null && (
                   <Badge variant="secondary" className={cn(
-                    "text-[10px]",
+                    "text-[11px]",
                     result.confidence >= 0.7 ? "text-emerald-600" :
                     result.confidence >= 0.4 ? "text-amber-600" : "text-rose-600",
                   )}>
@@ -137,7 +137,7 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
           {/* Top drivers */}
           {result.top_drivers && result.top_drivers.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
                 Top Drivers ({result.top_drivers.length})
               </div>
               <div className="space-y-1.5">
@@ -166,7 +166,7 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
           {/* Recommended actions */}
           {result.recommended_actions && result.recommended_actions.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
                 Rekomendasi Tindak Lanjut
               </div>
               <ul className="space-y-1">

@@ -22,6 +22,7 @@ import {
   X,
   Inbox,
   RotateCw,
+  Compass,
 } from "lucide-react";
 import {
   Popover,
@@ -219,7 +220,7 @@ export default function HelpTourButton() {
           aria-label="Bantuan & Tour"
           data-testid="help-tour-button"
         >
-          <HelpCircle className="h-5 w-5" />
+          <HelpCircle className="h-4 w-4" />
           {pageSpecificIds.length > 0 && (
             <span className="help-tour-btn-badge" data-testid="help-tour-badge">
               {pageSpecificIds.length}
@@ -350,7 +351,7 @@ export default function HelpTourButton() {
 
         {/* Footer */}
         <div className="help-tour-popover-footer">
-          💡 <strong>Tips:</strong> Gunakan <kbd>↑</kbd> <kbd>↓</kbd>{" "}
+          <strong>Tips:</strong> Gunakan <kbd>↑</kbd> <kbd>↓</kbd>{" "}
           <kbd>Enter</kbd> untuk navigasi cepat.
         </div>
       </PopoverContent>
@@ -395,7 +396,7 @@ function TourOption({ tourId, isCompleted, isOutdated, isFocused, onStart }) {
       data-testid={`tour-option-${tourId}`}
       aria-label={`${meta.title} — ${statusLabel}`}
     >
-      <span className="help-tour-option-icon">{meta.icon}</span>
+      <span className="help-tour-option-icon" aria-hidden="true"><Compass className="h-4 w-4" /></span>
       <div className="help-tour-option-text">
         <p className="help-tour-option-title">{meta.title}</p>
         <p className="help-tour-option-desc">{meta.description}</p>

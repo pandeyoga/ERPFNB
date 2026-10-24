@@ -130,7 +130,7 @@ export default function BrandMixOverview() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                 <XAxis
                   dataKey="brand"
-                  tick={{ fontSize: 10 }}
+                  tick={{ fontSize: 11 }}
                   angle={-25}
                   textAnchor="end"
                   height={70}

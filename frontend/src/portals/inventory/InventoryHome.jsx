@@ -88,7 +88,7 @@ export default function InventoryHome() {
             {(lowStock.items || []).slice(0, 8).map((it) => (
               <div key={`${it.item_id}-${it.outlet_id}`}
                    className="glass-input rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
-                <span className={`text-[9px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border shrink-0 ${
+                <span className={`text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border shrink-0 ${
                   it.severity === "critical"
                     ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
                     : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
@@ -97,12 +97,12 @@ export default function InventoryHome() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{it.item_name}</div>
-                  <div className="text-[10px] text-muted-foreground truncate">
+                  <div className="text-[11px] text-muted-foreground truncate">
                     {it.outlet_name} · qty {fmtNumber(it.qty, 0)} / par {fmtNumber(it.par_level, 0)}
                   </div>
                 </div>
                 {it.suggested_reorder > 0 && (
-                  <span className="text-[10px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-300 shrink-0">
+                  <span className="text-[11px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-300 shrink-0">
                     +{it.suggested_reorder}
                   </span>
                 )}
@@ -144,7 +144,7 @@ export default function InventoryHome() {
                 <Package className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{it.name}</div>
-                  <div className="text-[10px] text-muted-foreground truncate">
+                  <div className="text-[11px] text-muted-foreground truncate">
                     {it.code} · {it.unit_default || "-"} · dari {it.created_from || "auto"}
                   </div>
                 </div>

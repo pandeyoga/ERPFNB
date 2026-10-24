@@ -214,11 +214,11 @@ export default function ReportsCatalog() {
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-sm">{report.name}</h3>
                       {report.status === "active" ? (
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[11px]">
                           Active
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-muted/20 text-muted-foreground border-border/40 text-[10px]">
+                        <Badge variant="outline" className="bg-muted/20 text-muted-foreground border-border/40 text-[11px]">
                           Coming Soon
                         </Badge>
                       )}

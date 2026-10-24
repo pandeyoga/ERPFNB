@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, ChevronRight, UserX, UserCheck } from "lucide-react";
+import { Search, ChevronRight, UserX, UserCheck, Users } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 
 const TIER_BADGE = {
@@ -22,7 +23,7 @@ const TIER_BADGE = {
   gold: "bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200",
 };
 
-export default function LoyaltyAdminCustomers() {
+export default function LoyaltyAdminCustomers({ embedded = false }) {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -82,7 +83,14 @@ export default function LoyaltyAdminCustomers() {
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total]);
 
   return (
-    <div className="space-y-4" data-testid="admin-loyalty-customers">
+    <div className="space-y-3" data-testid="admin-loyalty-customers">
+      {!embedded && (
+        <PageHeader
+          icon={Users}
+          title="Customers"
+          subtitle="Daftar member loyalty: saldo poin, tier, dan status."
+        />
+      )}
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[240px]">
@@ -91,12 +99,13 @@ export default function LoyaltyAdminCustomers() {
             placeholder="Cari nama, email, atau telepon…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10"
+            className="pl-9"
+            aria-label="Cari customer"
             data-testid="loyalty-customers-search"
           />
         </div>
         <Select value={tier} onValueChange={setTier}>
-          <SelectTrigger className="w-[140px] h-10" data-testid="tier-filter">
+          <SelectTrigger className="w-[140px]" aria-label="Filter tier" data-testid="tier-filter">
             <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +116,7 @@ export default function LoyaltyAdminCustomers() {
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[140px] h-10" data-testid="status-filter">
+          <SelectTrigger className="w-[140px]" aria-label="Filter status" data-testid="status-filter">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -132,15 +141,15 @@ export default function LoyaltyAdminCustomers() {
             ]}
             rows={items}
             loading={loading}
-            empty={<div className="p-10 text-center text-sm text-muted-foreground" data-testid="customers-empty">Tidak ada customer ditemukan.</div>}
+            empty={<div className="p-8 text-center text-sm text-muted-foreground" data-testid="customers-empty">Tidak ada customer ditemukan.</div>}
             rowAction={(c) => (
               <div className="flex items-center justify-end gap-1 whitespace-nowrap">
-                <Button size="sm" variant="ghost" onClick={() => toggleActive(c)} title={c.is_active ? "Nonaktifkan" : "Aktifkan"} data-testid={`toggle-active-${c.id}`}>
+                <Button size="icon-sm" variant="ghost" onClick={() => toggleActive(c)} title={c.is_active ? "Nonaktifkan" : "Aktifkan"} aria-label={c.is_active ? "Nonaktifkan customer" : "Aktifkan customer"} data-testid={`toggle-active-${c.id}`}>
                   {c.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                 </Button>
-                <Link to={`/admin/loyalty/customers/${c.id}`}>
-                  <Button size="sm" variant="ghost" data-testid={`view-customer-${c.id}`}>Detail <ChevronRight className="h-4 w-4 ml-1" /></Button>
-                </Link>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to={`/admin/loyalty/customers/${c.id}`} data-testid={`view-customer-${c.id}`}>Detail <ChevronRight className="h-4 w-4" /></Link>
+                </Button>
               </div>
             )}
             rowTestIdPrefix="customer-row"

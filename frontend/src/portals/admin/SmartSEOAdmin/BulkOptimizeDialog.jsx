@@ -470,12 +470,12 @@ export default function BulkOptimizeDialog({
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="font-medium truncate">{p.page_name}</p>
-                            <p className="text-[10px] text-muted-foreground font-mono truncate">{p.path}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono truncate">{p.path}</p>
                           </div>
                         </div>
                         {s.message && (
                           <span className={cn(
-                            "text-[10px] truncate max-w-[180px] flex items-center gap-1",
+                            "text-[11px] truncate max-w-[180px] flex items-center gap-1",
                             s.status === STATUS.FAILED ? "text-red-500" :
                             s.status === STATUS.DONE
                               ? (s.aiPowered ? "text-violet-600 dark:text-violet-300 font-medium" : "text-emerald-600")

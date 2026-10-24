@@ -73,7 +73,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
               <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-1">
                 <Download className="h-3 w-3" /> Download Template
               </Button>
-              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed rounded-lg p-4 text-center">
                 <Upload className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
                 <input
                   type="file"

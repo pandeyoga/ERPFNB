@@ -343,7 +343,7 @@ export default function CashPosition() {
                   { key: "recorded_at", label: "Tanggal", sortable: true, primary: true,
                     render: (h) => <span className="text-xs">{fmtDateTime(h.recorded_at)}</span> },
                   { key: "source", label: "Source",
-                    render: (h) => <Badge variant="outline" className="text-[10px]">{h.source}</Badge> },
+                    render: (h) => <Badge variant="outline" className="text-[11px]">{h.source}</Badge> },
                   { key: "balance", label: "Saldo", numeric: true, sortable: true,
                     render: (h) => <span className="font-mono">{fmtRp(h.balance)}</span> },
                   { key: "delta", label: "Delta", numeric: true,

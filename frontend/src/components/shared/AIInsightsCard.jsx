@@ -26,14 +26,14 @@ export default function AIInsightsCard() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="glass-card p-5 relative overflow-hidden" data-testid="ai-insights-card">
+    <div className="glass-card p-4 relative overflow-hidden" data-testid="ai-insights-card">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-xl grad-aurora flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <h3 className="font-semibold">AI Insights</h3>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground uppercase tracking-wider">
+          <span className="text-[11px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground uppercase tracking-wider">
             Beta
           </span>
         </div>

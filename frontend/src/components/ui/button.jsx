@@ -20,11 +20,15 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // Ukuran tombol standar (design_guidelines → component_sizing_specs.buttons):
+      // default = aksi halaman/toolbar, sm = aksi di dalam kartu/baris tabel,
+      // icon / icon-sm = tombol ikon. Hindari override h-*/rounded-full per halaman.
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        default: "h-9 px-3.5 py-2",
+        sm: "h-8 rounded-md px-3 text-[13px]",
+        lg: "h-10 rounded-md px-5",
         icon: "h-9 w-9",
+        "icon-sm": "h-8 w-8",
       },
     },
     defaultVariants: {

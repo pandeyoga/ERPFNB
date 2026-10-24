@@ -172,7 +172,7 @@ export default function PRConsolidation() {
                         <div className="text-xs text-muted-foreground mt-0.5">
                           {outletMap[p.outlet_id]?.name || p.outlet_id} • {p.lines?.length || 0} items • {fmtRp(total)}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">{fmtDate(p.request_date || p.created_at)}</div>
+                        <div className="text-[11px] text-muted-foreground">{fmtDate(p.request_date || p.created_at)}</div>
                       </div>
                     </button>
                   );
@@ -210,7 +210,7 @@ export default function PRConsolidation() {
                     render: (c) => <span className="font-semibold">{fmtRp(c.total_cost)}</span> },
                   { key: "sources", label: "Sumber",
                     render: (c) => (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground">
                         {c.sources.slice(0, 3).map((s) => s.pr_doc).join(", ")}
                         {c.sources.length > 3 && ` +${c.sources.length - 3}`}
                       </span>

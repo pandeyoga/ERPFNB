@@ -59,7 +59,7 @@ function StageBreakdown({ stage }) {
   const maxVal = Math.max(...items.map((i) => i.period), 1);
   return (
     <div className="space-y-1.5" data-testid={`breakdown-${stage.label}`}>
-      <div className="grid grid-cols-12 gap-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
+      <div className="grid grid-cols-12 gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
         <span className="col-span-5">Akun</span>
         <span className="col-span-3 text-right">Period</span>
         <span className="col-span-2 text-right">Compare</span>
@@ -112,7 +112,7 @@ export default function ProfitWalk() {
       key: "label", label: "Stage", primary: true,
       render: (s) => (
         <span className="inline-flex items-center gap-2">
-          <Badge variant="outline" className={cn("text-[10px] capitalize border", KIND_BADGE[s.kind])}>{s.kind}</Badge>
+          <Badge variant="outline" className={cn("text-[11px] capitalize border", KIND_BADGE[s.kind])}>{s.kind}</Badge>
           <span className="font-medium">{s.label}</span>
         </span>
       ),

@@ -193,7 +193,7 @@ export default function KanbanWorkboard() {
           </div>
           <div className="flex flex-wrap items-end gap-2" data-testid="wb-filters">
             <div>
-              <label className="text-[10px] uppercase font-semibold text-muted-foreground" htmlFor="wb-outlet">Outlet</label>
+              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-outlet">Outlet</label>
               <SimpleSelect
                 value={outletId}
                 onValueChange={setOutletId}
@@ -204,7 +204,7 @@ export default function KanbanWorkboard() {
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-semibold text-muted-foreground" htmlFor="wb-vendor">Vendor</label>
+              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-vendor">Vendor</label>
               <SimpleSelect
                 value={vendorId}
                 onValueChange={setVendorId}
@@ -215,7 +215,7 @@ export default function KanbanWorkboard() {
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-semibold text-muted-foreground" htmlFor="wb-days">Periode</label>
+              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-days">Periode</label>
               <SimpleSelect
                 value={days}
                 onValueChange={(v) => setDays(Number(v))}
@@ -314,7 +314,7 @@ function KanbanColumn({ column, cards, count, dimmed }) {
         <div className="text-xs font-bold uppercase tracking-wide text-foreground/80 truncate">
           {column.label}
         </div>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0`}>
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0`}>
           {count}
         </span>
       </div>
@@ -379,10 +379,10 @@ function KanbanCard({ card, dragging = false }) {
           <span className="text-muted-foreground inline-flex items-center gap-1">
             <Calendar className="h-3 w-3" /> {fmtDate(card.date)}
           </span>
-          <StatusPill status={card.status} className="!text-[10px] !px-1.5 !py-0.5" />
+          <StatusPill status={card.status} className="!text-[11px] !px-1.5 !py-0.5" />
         </div>
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/30">
-          <span className="text-[10px] text-muted-foreground" data-testid={`wb-card-lines-${card.id}`}>
+          <span className="text-[11px] text-muted-foreground" data-testid={`wb-card-lines-${card.id}`}>
             {card.line_count} line{card.line_count > 1 ? "s" : ""}
           </span>
           {card.total > 0 && (

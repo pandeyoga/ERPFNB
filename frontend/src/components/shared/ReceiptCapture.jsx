@@ -175,7 +175,7 @@ export default function ReceiptCapture({
               <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1.5">
                 Receipt attached
                 {uploading && (
-                  <span className="text-[10px] text-muted-foreground italic">
+                  <span className="text-[11px] text-muted-foreground italic">
                     (mengunggah…)
                   </span>
                 )}
@@ -218,7 +218,7 @@ function UploadDropzone({ fileRef, onFile }) {
   return (
     <div
       className={cn(
-        "glass-card-hover border-2 border-dashed border-foreground/15 p-5 text-center cursor-pointer transition-colors",
+        "glass-card-hover border-2 border-dashed border-foreground/15 p-4 text-center cursor-pointer transition-colors",
         dragOver && "border-aurora-3 bg-aurora-3/5",
       )}
       onClick={() => fileRef.current?.click()}
@@ -279,7 +279,7 @@ function ExtractedSummary({ data, cacheHit }) {
         </span>
         <div className="flex items-center gap-1.5">
           {cacheHit && (
-            <Badge variant="secondary" className="text-[10px] gap-1 px-2">
+            <Badge variant="secondary" className="text-[11px] gap-1 px-2">
               <Zap className="h-3 w-3" /> cache
             </Badge>
           )}
@@ -311,7 +311,7 @@ function ExtractedSummary({ data, cacheHit }) {
           </ul>
         </div>
       )}
-      <p className="text-[10px] text-muted-foreground italic pt-1 border-t border-white/10">
+      <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-white/10">
         Periksa hasil. Anda dapat mengubah field manual sebelum simpan.
       </p>
     </div>

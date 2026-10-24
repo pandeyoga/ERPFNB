@@ -80,9 +80,9 @@ export default function NotificationDrawer({ open, onClose }) {
             <div className="px-5 py-4 flex items-center justify-between border-b border-border/50">
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                <h2 className="font-semibold">Notifications</h2>
+                <h2 className="text-base font-semibold">Notifikasi</h2>
               </div>
-              <button onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center" aria-label="Close">
+              <button onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center" aria-label="Tutup" data-testid="notifications-close">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -91,8 +91,10 @@ export default function NotificationDrawer({ open, onClose }) {
                 <button
                   key={f.k}
                   onClick={() => setFilter(f.k)}
+                  data-testid={`notifications-filter-${f.k}`}
+                  aria-pressed={filter === f.k}
                   className={cn(
-                    "px-3 py-1.5 text-xs rounded-full font-medium transition-colors",
+                    "h-8 px-2.5 text-[13px] rounded-[calc(var(--radius)-4px)] font-medium transition-colors",
                     filter === f.k ? "pill-active" : "hover:bg-foreground/5",
                   )}
                 >
@@ -102,19 +104,20 @@ export default function NotificationDrawer({ open, onClose }) {
               <button
                 onClick={markAllRead}
                 className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                data-testid="notifications-mark-all-read"
               >
-                Mark all read
+                Tandai semua dibaca
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {loading && (
                 <div className="px-5 py-12 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Memuat…
                 </div>
               )}
               {!loading && items.length === 0 && (
-                <div className="px-5 py-16 flex flex-col items-center text-center text-muted-foreground">
-                  <Mail className="h-12 w-12 mb-3 opacity-30" />
+                <div className="px-5 py-10 flex flex-col items-center text-center text-muted-foreground">
+                  <Mail className="h-8 w-8 mb-2 opacity-30" />
                   <p className="text-sm">Belum ada notifikasi</p>
                 </div>
               )}

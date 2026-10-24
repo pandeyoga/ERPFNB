@@ -66,7 +66,7 @@ const Row = memo(function Row({
         data-testid={`${rowTestIdPrefix}-${id}`}
       >
         {columns.map((c, ci) => (
-          <td key={c.key} className={cn("px-4 py-3", alignClass(c), c.numeric && "tabular-nums font-medium", c.className)}>
+          <td key={c.key} className={cn("px-3 py-2", alignClass(c), c.numeric && "tabular-nums font-medium", c.className)}>
             {ci === 0 && expandable ? (
               <span className="flex items-center gap-2">
                 <ChevronRight
@@ -81,7 +81,7 @@ const Row = memo(function Row({
           </td>
         ))}
         {rowAction && (
-          <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
+          <td className="px-3 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
         )}
       </tr>
       {expandable && (
@@ -229,7 +229,7 @@ export default function DataTable({
                     key={c.key}
                     scope="col"
                     className={cn(
-                      "px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/60 bg-card/80",
+                      "px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground border-b border-border/60 bg-card/80",
                       stickyHeader && "sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-card/70",
                       alignClass(c), c.headerClassName,
                     )}
@@ -239,7 +239,9 @@ export default function DataTable({
                         <button
                           onClick={() => cycleSort(c.key)}
                           className={cn(
-                            "inline-flex items-center gap-1 hover:text-foreground transition-colors group/sort",
+                            // preflight me-reset text-transform pada <button> → set ulang agar
+                            // header yang bisa di-sort sama kapitalnya dengan header lain.
+                            "inline-flex items-center gap-1 uppercase tracking-[0.06em] font-semibold hover:text-foreground transition-colors group/sort",
                             c.numeric && "flex-row-reverse",
                             active && "text-foreground",
                           )}
@@ -260,7 +262,7 @@ export default function DataTable({
                   </th>
                 );
               })}
-              {rowAction && <th className="px-4 py-2.5 border-b border-border/60 bg-card/80" />}
+              {rowAction && <th className="px-3 py-2 border-b border-border/60 bg-card/80" />}
             </tr>
           </thead>
           <tbody>

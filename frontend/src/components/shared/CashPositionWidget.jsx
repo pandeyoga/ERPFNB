@@ -30,7 +30,7 @@ export default function CashPositionWidget({ to = "/finance/cash-position", show
     return () => { alive = false; };
   }, []);
 
-  if (loading) return <div className="glass-card p-5 animate-pulse h-40" />;
+  if (loading) return <div className="glass-card p-4 animate-pulse h-40" />;
   if (!position) return null;
 
   const health = HEALTH_PILL[position.health || "green"];
@@ -38,7 +38,7 @@ export default function CashPositionWidget({ to = "/finance/cash-position", show
   const types = position.by_type || {};
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="h-9 w-9 rounded-xl bg-aurora-1/15 text-aurora-1 flex items-center justify-center">
@@ -63,13 +63,13 @@ export default function CashPositionWidget({ to = "/finance/cash-position", show
       <div className="grid grid-cols-3 gap-2 text-center">
         {["bank", "petty_cash", "ewallet"].map((t) => (
           <div key={t} className="rounded-lg bg-muted/40 p-2">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
               {t === "petty_cash" ? "Petty" : t === "ewallet" ? "E-Wallet" : "Bank"}
             </div>
             <div className="text-xs font-bold mt-0.5">
               Rp {fmtNumber((types[t]?.total || 0) / 1_000_000, 1)} jt
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[11px] text-muted-foreground">
               {types[t]?.count || 0} akun
             </div>
           </div>

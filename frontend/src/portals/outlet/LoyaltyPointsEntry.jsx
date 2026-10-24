@@ -198,7 +198,7 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
             >
               <div>
                 <p className="text-xs text-muted-foreground">Estimasi poin</p>
-                <p className="font-['Cormorant_Garamond',serif] text-2xl font-semibold">
+                <p className="text-2xl font-semibold">
                   +{points.toLocaleString("id-ID")} <span className="text-sm font-normal text-muted-foreground">poin</span>
                 </p>
               </div>
@@ -277,7 +277,7 @@ function SuccessPhase({ result, onNext }) {
       </div>
 
       <p className="text-sm text-muted-foreground mb-1">Poin berhasil ditambahkan!</p>
-      <p className="font-['Cormorant_Garamond',serif] text-5xl font-semibold mb-1" style={{ color: "#7FAE7A" }} data-testid="cashier-success-points">
+      <p className="text-5xl font-semibold mb-1" style={{ color: "#7FAE7A" }} data-testid="cashier-success-points">
         +{result.points_awarded?.toLocaleString("id-ID")}
       </p>
       <p className="text-sm text-muted-foreground mb-6">poin</p>
@@ -396,7 +396,7 @@ export default function LoyaltyPointsEntry() {
     <div className="max-w-lg mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-['Cormorant_Garamond',serif] font-semibold">Input Poin Kasir</h1>
+        <h1 className="text-2xl font-semibold">Input Poin Kasir</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Input nomor HP pelanggan dan nominal transaksi untuk menambah poin loyalty.
         </p>

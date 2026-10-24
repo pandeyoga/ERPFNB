@@ -15,7 +15,6 @@ import PayrollList from "./hr/PayrollList";
 import ServiceChargeList from "./hr/ServiceChargeList";
 import VoucherList from "./hr/VoucherList";
 import LeaveRequests from "./hr/LeaveRequests";
-import ApprovalCenter from "./shared/ApprovalCenter";
 import JobApplications from "./hr/JobApplications";
 import JobListings from "./hr/JobListings";
 import CompensationHub from "./hr/CompensationHub";
@@ -39,7 +38,7 @@ export default function HRPortal() {
         {/* Leaves: any authenticated user may see/manage their OWN leaves; deep
             data access is server-enforced by _assert_can_view_employee_leave. */}
         <Route path="leaves" element={<LeaveRequests />} />
-        <Route path="approvals" element={<ApprovalCenter />} />
+        <Route path="approvals" element={<Navigate to="/my-approvals" replace />} />
         <Route path="job-applications" element={g(["hr.read", "hr.write"], <JobApplications />)} />
         <Route path="job-listings" element={g(["hr.read", "hr.write"], <JobListings />)} />
         <Route path="*" element={<Navigate to="/hr" replace />} />

@@ -31,7 +31,7 @@ export default function OutletScopeHeader() {
 
   if (!loaded) {
     return (
-      <div className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4">
+      <div className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3">
         <div className="skeleton h-4 w-32 rounded" />
       </div>
     );
@@ -42,14 +42,14 @@ export default function OutletScopeHeader() {
     const o = scopedOutlets[0];
     return (
       <div
-        className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-4"
+        className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-3"
         data-testid="outlet-scope-header"
       >
         <div className="h-8 w-8 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
           <Store className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             Outlet Aktif
           </div>
           <div className="text-sm font-semibold truncate">
@@ -71,7 +71,7 @@ export default function OutletScopeHeader() {
   if (scopedOutlets.length === 0) {
     return (
       <div
-        className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4 border-amber-500/30"
+        className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3 border-amber-500/30"
         data-testid="outlet-scope-header"
       >
         <div className="h-8 w-8 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
@@ -91,7 +91,7 @@ export default function OutletScopeHeader() {
 
   return (
     <div
-      className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4 flex-wrap"
+      className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3 flex-wrap"
       data-testid="outlet-scope-header"
     >
       <div className="flex items-center gap-2.5 flex-shrink-0">
@@ -103,7 +103,7 @@ export default function OutletScopeHeader() {
           )}
         </div>
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             Outlet Aktif
           </div>
           <div className="text-sm font-semibold truncate">
@@ -148,7 +148,7 @@ export default function OutletScopeHeader() {
                   {o.name}
                 </span>
                 {o.brand_name && (
-                  <span className="text-[10px] text-muted-foreground pl-5">
+                  <span className="text-[11px] text-muted-foreground pl-5">
                     {o.brand_name}
                   </span>
                 )}

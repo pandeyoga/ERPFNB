@@ -648,14 +648,14 @@ function BankReconDetail({ sessionId, onBack }) {
                         <div className="flex items-center gap-2 text-sm font-mono">
                           {c.doc_no}
                           <span className={cn(
-                            "text-[10px] px-1.5 py-0.5 rounded font-sans font-semibold",
+                            "text-[11px] px-1.5 py-0.5 rounded font-sans font-semibold",
                             c.target_type === "journal_entry"
                               ? "bg-violet-500/10 text-violet-600 dark:text-violet-400"
                               : "bg-blue-500/10 text-blue-600 dark:text-blue-400",
                           )}>
                             {c.target_type === "journal_entry" ? "JE" : "PAY"}
                           </span>
-                          {c.loose && <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded">loose</span>}
+                          {c.loose && <span className="text-[11px] px-1.5 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded">loose</span>}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {c.payee_name || c.description || c.target_type} · {fmtDate(c.date)} · <span className="tabular-nums">{fmtRp(c.amount)}</span>

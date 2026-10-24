@@ -27,7 +27,7 @@ export default function ApprovalsInboxButton() {
   return (
     <Link
       to="/my-approvals"
-      className="relative h-10 w-10 rounded-full glass-input flex items-center justify-center hover:bg-foreground/5 transition-colors"
+      className="relative h-9 w-9 rounded-full glass-input flex items-center justify-center hover:bg-foreground/5 transition-colors"
       aria-label="My Approvals"
       title="My Approvals"
       data-testid="open-my-approvals"

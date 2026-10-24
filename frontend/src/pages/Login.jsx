@@ -64,7 +64,7 @@ export default function Login() {
         {/* Header — minimal */}
         <div className="mb-6">
           <p
-            className="text-[10px] uppercase tracking-[0.25em] mb-3"
+            className="text-[11px] uppercase tracking-[0.25em] mb-3"
             style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace" }}
           >
             FnB Group ERP — Staff Portal
@@ -131,7 +131,7 @@ export default function Login() {
 
         {/* Demo accounts — collapsible */}
         <div className="mt-5 pt-5" style={{ borderTop: "1px solid rgba(28,21,16,0.07)" }}>
-          <p className="text-[10px] mb-2.5" style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace" }}>
+          <p className="text-[11px] mb-2.5" style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace" }}>
             DEMO — password: Demo@2026
           </p>
           <div className="flex flex-wrap gap-1.5">

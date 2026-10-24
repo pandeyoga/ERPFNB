@@ -195,8 +195,8 @@ export default function DigestSettings() {
                     <div className="text-sm font-semibold flex items-center gap-2">
                       {meta.label}
                       {s.enabled
-                        ? <Badge variant="default" className="text-[10px]">Active</Badge>
-                        : <Badge variant="outline" className="text-[10px]">Paused</Badge>}
+                        ? <Badge variant="default" className="text-[11px]">Active</Badge>
+                        : <Badge variant="outline" className="text-[11px]">Paused</Badge>}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Target: <span className="font-mono">{s.target}</span>

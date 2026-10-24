@@ -55,7 +55,7 @@ export default function VendorComparisonPanel({
 
   if (validIds.length === 0) {
     return (
-      <div className={`glass-card p-5 ${className}`}>
+      <div className={`glass-card p-4 ${className}`}>
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-4 w-4 text-foreground/70" />
           <h3 className="font-semibold text-sm">Vendor Comparison</h3>
@@ -69,7 +69,7 @@ export default function VendorComparisonPanel({
 
   if (loading) {
     return (
-      <div className={`glass-card p-5 ${className}`}>
+      <div className={`glass-card p-4 ${className}`}>
         <LoadingState rows={3} />
       </div>
     );
@@ -77,7 +77,7 @@ export default function VendorComparisonPanel({
 
   if (error) {
     return (
-      <div className={`glass-card p-5 ${className}`}>
+      <div className={`glass-card p-4 ${className}`}>
         <p className="text-sm text-red-600">{error}</p>
       </div>
     );
@@ -85,7 +85,7 @@ export default function VendorComparisonPanel({
 
   if (!data || data.items.length === 0) {
     return (
-      <div className={`glass-card p-5 ${className}`}>
+      <div className={`glass-card p-4 ${className}`}>
         <EmptyState
           icon={Award}
           title="Belum ada data vendor"
@@ -96,12 +96,12 @@ export default function VendorComparisonPanel({
   }
 
   return (
-    <div className={`glass-card p-5 ${className}`} data-testid="vendor-comparison-panel">
+    <div className={`glass-card p-4 ${className}`} data-testid="vendor-comparison-panel">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-foreground/70" />
           <h3 className="font-semibold text-sm">Vendor Comparison</h3>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             ({data.period_days}d, {data.items.length} item{data.items.length>1?"s":""})
           </span>
         </div>
@@ -148,7 +148,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] uppercase text-muted-foreground tracking-wide">Best price</div>
+          <div className="text-[11px] uppercase text-muted-foreground tracking-wide">Best price</div>
           <div className="text-sm font-bold tabular-nums">{fmtRp(item.best_price || 0)}</div>
         </div>
       </div>
@@ -200,7 +200,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
                   </div>
                 )}
                 {isCheapest && (
-                  <div className="text-[10px] uppercase tracking-wide text-emerald-700 dark:text-emerald-400 font-bold">Termurah</div>
+                  <div className="text-[11px] uppercase tracking-wide text-emerald-700 dark:text-emerald-400 font-bold">Termurah</div>
                 )}
               </div>
               <div className="flex flex-col gap-1 flex-shrink-0">
@@ -268,7 +268,7 @@ function HistoryBlock({ item, vendorId, onClose }) {
           { key: "date", label: "Tanggal", primary: true, render: (h) => fmtDate(h.date) },
           { key: "qty", label: "Qty", numeric: true },
           { key: "unit_cost", label: "Unit Cost", numeric: true, render: (h) => <span className="font-medium">{fmtRp(h.unit_cost)}</span> },
-          { key: "doc_no", label: "Doc", render: (h) => <span className="text-muted-foreground font-mono text-[10px]">{h.doc_no}</span> },
+          { key: "doc_no", label: "Doc", render: (h) => <span className="text-muted-foreground font-mono text-[11px]">{h.doc_no}</span> },
         ]}
       />
       <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-muted-foreground border-t border-border/30 pt-2">

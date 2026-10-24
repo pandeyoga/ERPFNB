@@ -42,7 +42,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("service_charge_pct", Number(e.target.value || 0))}
                   data-testid="sc-service-charge-pct"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">{(sc * 100).toFixed(2)}% dari penjualan</p>
+                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(sc * 100).toFixed(2)}% dari penjualan</p>
               </div>
               <div>
                 <Label className="text-xs">Potongan L&amp;B %</Label>
@@ -55,7 +55,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("lb_pct", Number(e.target.value || 0))}
                   data-testid="sc-lb-pct"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">{(lb * 100).toFixed(2)}% potongan loss/breakage</p>
+                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(lb * 100).toFixed(2)}% potongan loss/breakage</p>
               </div>
               <div>
                 <Label className="text-xs">Potongan L&amp;D %</Label>
@@ -68,7 +68,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("ld_pct", Number(e.target.value || 0))}
                   data-testid="sc-ld-pct"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">{(ld * 100).toFixed(2)}% potongan loss/damage</p>
+                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(ld * 100).toFixed(2)}% potongan loss/damage</p>
               </div>
             </div>
 

@@ -137,7 +137,7 @@ function TodayLog({ items, loading, onRefresh }) {
                 </div>
                 <div className="text-muted-foreground mt-0.5 truncate">{item.customer_name || "-"}</div>
                 {item.voucher_code && (
-                  <code className="mt-0.5 font-mono text-[10px] text-muted-foreground">{item.voucher_code}</code>
+                  <code className="mt-0.5 font-mono text-[11px] text-muted-foreground">{item.voucher_code}</code>
                 )}
               </div>
             ))}

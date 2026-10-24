@@ -238,16 +238,16 @@ export default function EndOfDayWorkflow() {
                 {/* Step icon + name + desc */}
                 <div className="flex-1 min-w-0 relative z-10 pointer-events-none">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Langkah {idx + 1}
                     </span>
                     {isDone && (
-                      <Badge variant="secondary" className="h-4 text-[9px] px-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                      <Badge variant="secondary" className="h-4 text-[11px] px-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
                         Selesai
                       </Badge>
                     )}
                     {isLocked && (
-                      <Badge variant="secondary" className="h-4 text-[9px] px-1.5">
+                      <Badge variant="secondary" className="h-4 text-[11px] px-1.5">
                         Belum dimulai
                       </Badge>
                     )}

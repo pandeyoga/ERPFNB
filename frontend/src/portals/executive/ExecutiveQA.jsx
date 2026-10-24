@@ -166,7 +166,7 @@ function Bubble({ role, content, warning, sources, latency }) {
             <strong>Sources:</strong> {sources.slice(0, 3).map((s) => s.label || s.id).join(", ")}
           </div>
         )}
-        {latency && <div className="text-[10px] opacity-60 mt-1">{latency}ms</div>}
+        {latency && <div className="text-[11px] opacity-60 mt-1">{latency}ms</div>}
       </div>
       {isUser && (
         <div className="h-8 w-8 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">

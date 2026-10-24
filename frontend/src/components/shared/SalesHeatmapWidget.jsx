@@ -51,7 +51,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
 
   if (loading || !data) {
     return (
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center gap-2 mb-3">
           <Activity className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">Sales Heatmap</h3>
@@ -65,14 +65,14 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
 
   if (!matrix?.length) {
     return (
-      <div className="glass-card p-5" data-testid="sales-heatmap-widget">
+      <div className="glass-card p-4" data-testid="sales-heatmap-widget">
         <p className="py-8 text-center text-sm text-muted-foreground">Belum ada data sales untuk periode ini.</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card p-5" data-testid="sales-heatmap-widget">
+    <div className="glass-card p-4" data-testid="sales-heatmap-widget">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-muted-foreground" />
@@ -128,7 +128,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
                       metric === "revenue" ? fmtRp(cell.revenue) : `${fmtNumber(cell.trx)} trx`
                     }`}
                   >
-                    <span className="font-semibold text-[10px] tabular-nums">
+                    <span className="font-semibold text-[11px] tabular-nums">
                       {metric === "revenue"
                         ? value >= 1_000_000
                           ? `${(value / 1_000_000).toFixed(1)}M`
@@ -146,9 +146,9 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
       </div>
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-        <span>🟢 Low</span>
-        <span>Peak activity pattern across weeks</span>
-        <span>🔴 High</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" /> Rendah</span>
+        <span>Pola aktivitas puncak lintas minggu</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden="true" /> Tinggi</span>
       </div>
     </div>
   );

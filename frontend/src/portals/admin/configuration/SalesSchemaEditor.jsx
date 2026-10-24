@@ -164,7 +164,7 @@ export default function SalesSchemaEditor(props) {
                     className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border ${pm.active !== false ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "border-border/50 bg-foreground/[0.03] text-muted-foreground"}`}
                     data-testid={`payment-toggle-${pm.code}`}
                   >
-                    <span className="font-mono text-[10px]">{pm.code}</span>
+                    <span className="font-mono text-[11px]">{pm.code}</span>
                     <span>{pm.name}</span>
                   </button>
                 ))}
@@ -218,7 +218,7 @@ export default function SalesSchemaEditor(props) {
                           }}
                           data-testid={`bucket-required-${i}`}
                         />
-                        <span className="text-[10px] text-muted-foreground">Wajib</span>
+                        <span className="text-[11px] text-muted-foreground">Wajib</span>
                       </div>
                       <Button
                         size="icon"

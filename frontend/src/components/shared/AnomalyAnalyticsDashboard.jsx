@@ -114,7 +114,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
       {/* Charts Row 1: Severity Distribution + Status Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Severity Pie Chart */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4">
           <h3 className="font-semibold mb-3 text-sm">Severity Distribution</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
@@ -138,7 +138,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
         </div>
 
         {/* Status Bar Chart */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-4">
           <h3 className="font-semibold mb-3 text-sm">Status Breakdown</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={data.statusData}>
@@ -153,10 +153,10 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
       </div>
 
       {/* Charts Row 2: Anomaly Types Breakdown */}
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm">Anomaly Types (Last {days} days)</h3>
-          <div className="flex items-center gap-1 text-[10px]">
+          <div className="flex items-center gap-1 text-[11px]">
             <span className="h-2 w-2 rounded-full bg-red-500" />
             <span className="mr-2">Severe</span>
             <span className="h-2 w-2 rounded-full bg-amber-500" />
@@ -167,7 +167,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
           <BarChart data={data.typeData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
             <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={150} />
+            <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={150} />
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar dataKey="severe" stackId="a" fill={SEVERITY_COLORS.severe} name="Severe" />
@@ -178,14 +178,14 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
 
       {/* Charts Row 3: Top Outlets by Anomaly Count */}
       {data.outletData.length > 0 && (
-        <div className="glass-card p-5">
+        <div className="glass-card p-4">
           <h3 className="font-semibold mb-3 text-sm">Top Outlets by Anomaly Count</h3>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.outletData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
               <XAxis
                 dataKey="outlet_name"
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 11 }}
                 angle={-20}
                 textAnchor="end"
                 height={80}

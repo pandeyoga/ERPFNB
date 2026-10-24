@@ -17,9 +17,9 @@ function Tile({ label, value, sub, icon: Icon, tone = "text-foreground" }) {
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</div>
+        <div className="text-[11px] text-muted-foreground uppercase tracking-wide truncate">{label}</div>
         <div className="text-sm font-bold leading-tight truncate">{value}</div>
-        {sub && <div className="text-[10px] text-muted-foreground truncate">{sub}</div>}
+        {sub && <div className="text-[11px] text-muted-foreground truncate">{sub}</div>}
       </div>
     </div>
   );
@@ -87,7 +87,7 @@ export default function KpiSnapshotStrip() {
         type="button"
         onClick={load}
         disabled={refreshing}
-        className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto"
+        className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto"
         data-testid="kpi-strip-refresh"
       >
         <RefreshCw className={cn("h-3 w-3", refreshing && "animate-spin")} />

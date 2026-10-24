@@ -61,7 +61,7 @@ export default function TelegramTestPanel({ onReload }) {
         </span>
         <div>
           <h3 className="font-semibold text-sm">Test Telegram</h3>
-          <p className="text-[10px] text-muted-foreground">Panggil getMe & setup webhook</p>
+          <p className="text-[11px] text-muted-foreground">Panggil getMe & setup webhook</p>
         </div>
       </div>
 
@@ -107,12 +107,12 @@ export default function TelegramTestPanel({ onReload }) {
         </div>
 
         {result && (
-          <pre className="mt-2 p-2 rounded bg-muted text-[10px] overflow-x-auto max-h-40">
+          <pre className="mt-2 p-2 rounded bg-muted text-[11px] overflow-x-auto max-h-40">
             {JSON.stringify(result, null, 2)}
           </pre>
         )}
 
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground">
           💡 Cara dapat token: chat <a className="underline" href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a> → /newbot
         </p>
       </div>

@@ -340,33 +340,33 @@ export default function PODetail() {
                 <div key={i} className="rounded-lg border border-border/50 p-3 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <div className="font-medium">{log.subject}</div>
-                    <span className="text-muted-foreground text-[10px]">{fmtDate(log.sent_at)}</span>
+                    <span className="text-muted-foreground text-[11px]">{fmtDate(log.sent_at)}</span>
                   </div>
                   <div className="text-muted-foreground mt-1">
                     → {(log.to || []).join(", ")}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    <span className={`text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border ${statusStyle}`}>
+                    <span className={`text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border ${statusStyle}`}>
                       {status}
                     </span>
                     {log.provider && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground">
                         via <span className="font-medium">{log.provider}</span>
                       </span>
                     )}
                     {log.pdf_attached && (
-                      <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
+                      <span className="text-[11px] text-muted-foreground inline-flex items-center gap-0.5">
                         📎 PDF
                       </span>
                     )}
                     {log.provider_message_id && (
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="text-[11px] text-muted-foreground font-mono">
                         id: {String(log.provider_message_id).slice(0, 12)}…
                       </span>
                     )}
                   </div>
                   {log.error && (
-                    <div className="text-[10px] text-rose-600 dark:text-rose-400 mt-1 italic break-all">
+                    <div className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 italic break-all">
                       Error: {log.error}
                     </div>
                   )}

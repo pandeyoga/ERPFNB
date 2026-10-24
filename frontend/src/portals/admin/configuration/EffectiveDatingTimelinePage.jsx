@@ -167,7 +167,7 @@ function TimelineAxis({ axis }) {
     <div className="relative" aria-hidden>
       <div className="grid pl-44 mb-1" style={{ gridTemplateColumns: `repeat(${axis.length}, 1fr)` }}>
         {axis.map((m) => (
-          <div key={monthKey(m)} className="text-[10px] text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
+          <div key={monthKey(m)} className="text-[11px] text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
             {m.toLocaleDateString("id-ID", { month: "short", year: "2-digit" })}
           </div>
         ))}
@@ -191,7 +191,7 @@ function TimelineRow({ ruleType, items, axis }) {
       <div className="flex items-center gap-3">
         <div className="w-44 shrink-0">
           <p className="text-sm font-medium">{RULE_LABELS[ruleType] || ruleType}</p>
-          <p className="text-[10px] text-muted-foreground">{items.length} versi</p>
+          <p className="text-[11px] text-muted-foreground">{items.length} versi</p>
         </div>
         <div className="flex-1 relative h-12 rounded-md bg-foreground/[0.02] border border-border/30 overflow-hidden">
           <div

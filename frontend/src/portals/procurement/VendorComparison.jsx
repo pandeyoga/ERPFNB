@@ -274,7 +274,7 @@ function ScorecardGrid({ scorecard: s }) {
                 <span className="text-[11px] uppercase tracking-wide font-semibold">{t.label}</span>
               </div>
               <div className="text-2xl font-extrabold tabular-nums">{t.value}</div>
-              <div className="text-[10px] mt-0.5 opacity-70">{t.hint}</div>
+              <div className="text-[11px] mt-0.5 opacity-70">{t.hint}</div>
             </div>
           );
         })}
@@ -292,7 +292,7 @@ function ScorecardGrid({ scorecard: s }) {
 function Field({ label, value }) {
   return (
     <div className="rounded-lg border border-border/40 p-2.5">
-      <div className="text-[10px] uppercase text-muted-foreground tracking-wide">{label}</div>
+      <div className="text-[11px] uppercase text-muted-foreground tracking-wide">{label}</div>
       <div className="font-semibold tabular-nums mt-0.5">{value}</div>
     </div>
   );

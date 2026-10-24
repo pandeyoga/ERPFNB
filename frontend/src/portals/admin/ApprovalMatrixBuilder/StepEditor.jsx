@@ -260,7 +260,7 @@ function PreviewResult({ result, usersById, rolesById }) {
                   <Badge variant="outline" className="font-mono">Step {i + 1}</Badge>
                   <Icon className="h-4 w-4" style={{ color: MODE_META[s.match_mode]?.color }} />
                   <span className="font-medium">{s.label}</span>
-                  <Badge variant="outline" className="text-[10px]">{s.match_mode}</Badge>
+                  <Badge variant="outline" className="text-[11px]">{s.match_mode}</Badge>
                 </div>
                 <Badge variant="outline" className={s.approvers_count > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}>
                   {s.approvers_count} approver{s.approvers_count !== 1 ? "s" : ""}
@@ -310,12 +310,12 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
             {(tier.condition_outlet_ids?.length > 0 || tier.condition_brand_ids?.length > 0) && (
               <div className="text-xs text-muted-foreground flex flex-wrap gap-1 mt-1">
                 {tier.condition_outlet_ids?.map((id) => (
-                  <Badge key={id} variant="outline" className="text-[10px]">
+                  <Badge key={id} variant="outline" className="text-[11px]">
                     Outlet: {outletsById[id]?.name || id.slice(0, 8)}
                   </Badge>
                 ))}
                 {tier.condition_brand_ids?.map((id) => (
-                  <Badge key={id} variant="outline" className="text-[10px]">
+                  <Badge key={id} variant="outline" className="text-[11px]">
                     Brand: {brandsById[id]?.name || id.slice(0, 8)}
                   </Badge>
                 ))}
@@ -336,7 +336,7 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">{step.match_mode}</span>
                       </div>
                       <div className="text-sm font-medium mt-0.5">{step.label || `(no label)`}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
                         {step.match_mode === "user" && `${step.any_of_user_ids?.length || 0} user`}
                         {step.match_mode === "role" && `${step.any_of_role_ids?.length || 0} role`}
                         {step.match_mode === "permission" && `${step.any_of_perms?.length || 0} perm`}

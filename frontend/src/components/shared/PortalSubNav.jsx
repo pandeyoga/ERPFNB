@@ -36,7 +36,7 @@ export default function PortalSubNav({ basePath, items, layoutId = "portal-subna
               {Icon && <Icon className="h-3.5 w-3.5" />}
               {it.label}
               {it.badge != null && it.badge > 0 && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-foreground text-background font-bold">
+                <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-foreground text-background font-bold">
                   {it.badge}
                 </span>
               )}

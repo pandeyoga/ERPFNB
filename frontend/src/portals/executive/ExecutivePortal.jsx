@@ -7,7 +7,7 @@
  *   /executive/brand/:id   → BrandDrilldown
  *   /executive/outlet/:id  → OutletDrilldown
  *   /executive/budget-approvals → BudgetApprovals
- *   /executive/approvals   → ApprovalCenter (Tier-3 / high amount only)
+ *   /executive/approvals   → redirect ke /my-approvals (Pusat Persetujuan, App.js)
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`.
  * Budget approvals + budget increase requests are gated by `executive.budget.approve`
@@ -32,11 +32,8 @@ import AnomalyDetection from "./AnomalyDetection";
 import OutletBudgetAllocation from "./OutletBudgetAllocation";
 import OutletBudgetMonitor from "./OutletBudgetMonitor";
 import BudgetIncreaseRequests from "./BudgetIncreaseRequests";
-import ApprovalCenter from "../shared/ApprovalCenter";
 import ComingSoonPage from "@/components/shared/ComingSoonPage";
 
-// Executive only sees high-tier approvals (>= Rp 50jt) across all entity types.
-const EXEC_MIN_AMOUNT = 50_000_000;
 
 export default function ExecutivePortal() {
   const { user } = useAuth();
@@ -68,16 +65,6 @@ export default function ExecutivePortal() {
       {/* Phase 2g — unified Performance Analytics hub (Brand Mix + Profit Walk + Period Compare) */}
       <Route path="analytics-hub" element={<ExecutiveAnalyticsHub />} />
 
-      <Route
-        path="approvals"
-        element={
-          <ApprovalCenter
-            minAmount={EXEC_MIN_AMOUNT}
-            title="Executive Approval Center"
-            subtitle="Approval bernilai tinggi yang menunggu keputusan eksekutif"
-          />
-        }
-      />
       <Route path="*" element={<Navigate to="/executive" replace />} />
       </Routes>
     </div>

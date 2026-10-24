@@ -105,7 +105,7 @@ export default function LoyaltyLogin() {
               <div className="font-['Cormorant_Garamond'] text-2xl tracking-[0.22em] uppercase font-semibold text-[#F0EAE0]">
                 FNB GROUP
               </div>
-              <div className="text-[#C9A876] text-[10px] tracking-[0.3em] uppercase font-medium mt-0.5">
+              <div className="text-[#C9A876] text-[11px] tracking-[0.3em] uppercase font-medium mt-0.5">
                 REWARDS PROGRAM
               </div>
             </Link>
@@ -164,7 +164,7 @@ export default function LoyaltyLogin() {
           </div>
 
           {/* Bottom footnote */}
-          <div className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(240,234,224,0.25)" }}>
+          <div className="text-[11px] tracking-widest uppercase" style={{ color: "rgba(240,234,224,0.25)" }}>
             FnB Group &copy; {new Date().getFullYear()}
           </div>
         </div>
@@ -181,7 +181,7 @@ export default function LoyaltyLogin() {
             <div className="font-['Cormorant_Garamond'] text-2xl tracking-[0.22em] uppercase font-semibold" style={{ color: "#F0EAE0" }}>
               FNB GROUP
             </div>
-            <div className="text-[10px] tracking-[0.3em] uppercase mt-0.5" style={{ color: "#C9A876" }}>REWARDS</div>
+            <div className="text-[11px] tracking-[0.3em] uppercase mt-0.5" style={{ color: "#C9A876" }}>REWARDS</div>
           </Link>
         </div>
 
@@ -395,7 +395,7 @@ export default function LoyaltyLogin() {
           <div className="mt-2 text-center">
             <Link
               to="/login"
-              className="text-[10px] hover:opacity-60 transition-opacity"
+              className="text-[11px] hover:opacity-60 transition-opacity"
               style={{ color: "rgba(240,234,224,0.18)" }}
               data-testid="loyalty-login-staff-access-link"
             >

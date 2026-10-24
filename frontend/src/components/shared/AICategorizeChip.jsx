@@ -119,11 +119,11 @@ export default function AICategorizeChip({
       <span className="font-semibold tabular-nums">{suggestion.gl_code}</span>
       <span className="text-foreground/80 truncate max-w-[160px]">{suggestion.gl_name}</span>
       {suggestion.cost_center_outlet_name && (
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[11px] text-muted-foreground">
           · {suggestion.cost_center_outlet_name}
         </span>
       )}
-      <span className={`text-[10px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border ${confColorClass}`}>
+      <span className={`text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border ${confColorClass}`}>
         {confPct}%
       </span>
       <button

@@ -68,7 +68,7 @@ export default function OutletScopePicker({
                   {o.name}
                 </span>
                 {o.brand_name && (
-                  <span className="text-[10px] text-muted-foreground pl-5">{o.brand_name}</span>
+                  <span className="text-[11px] text-muted-foreground pl-5">{o.brand_name}</span>
                 )}
               </span>
             </SelectItem>

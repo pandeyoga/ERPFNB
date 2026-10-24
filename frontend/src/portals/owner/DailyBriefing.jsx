@@ -103,7 +103,7 @@ function OutletCard({ outlet, kind = "top" }) {
     >
       <div className="flex items-start justify-between mb-3">
         <Badge variant="secondary" className={cn(
-          "uppercase tracking-wider text-[10px] font-bold",
+          "uppercase tracking-wider text-[11px] font-bold",
           isTop ? "bg-emerald-200 text-emerald-900" : "bg-rose-200 text-rose-900"
         )}>
           {isTop ? "Top Performer" : "Perlu Perhatian"}

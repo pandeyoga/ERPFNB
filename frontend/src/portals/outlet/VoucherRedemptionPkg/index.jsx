@@ -192,7 +192,7 @@ export default function VoucherRedemption() {
           <div className="space-y-4">
             {/* Manual code entry */}
             <Card>
-              <CardContent className="p-5">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Ticket className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">Masukkan Kode Voucher</span>
@@ -229,7 +229,7 @@ export default function VoucherRedemption() {
 
             {/* Customer search */}
             <Card>
-              <CardContent className="p-5">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <PhoneCall className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">Cari Customer</span>
@@ -320,7 +320,7 @@ export default function VoucherRedemption() {
             <Card className={`overflow-hidden border-2 ${
               verifyResult.valid ? "border-emerald-200" : "border-red-200"
             }`}>
-              <CardContent className="p-5">
+              <CardContent className="p-4">
                 {/* Code + QR placeholder */}
                 <div className="flex items-start justify-between gap-4 mb-5">
                   <div>
@@ -460,7 +460,7 @@ export default function VoucherRedemption() {
           <div className="space-y-4">
             <Card className="border-2 border-emerald-200 overflow-hidden">
               <div className="h-2 bg-gradient-to-r from-emerald-400 to-teal-400" />
-              <CardContent className="p-6">
+              <CardContent className="pt-4">
                 <div className="text-center mb-5">
                   <div className="h-16 w-16 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center mb-3">
                     <CheckCircle2 className="h-8 w-8 text-emerald-600" />

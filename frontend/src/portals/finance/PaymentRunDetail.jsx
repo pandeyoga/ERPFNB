@@ -222,7 +222,7 @@ export default function PaymentRunDetail() {
                   return (
                     <span className="font-mono text-xs">
                       {p.doc_no}
-                      {hasWht && <span className="ml-1 px-1 rounded text-[9px] bg-amber-500/15 text-amber-700">WHT</span>}
+                      {hasWht && <span className="ml-1 px-1 rounded text-[11px] bg-amber-500/15 text-amber-700">WHT</span>}
                     </span>
                   );
                 } },
@@ -230,7 +230,7 @@ export default function PaymentRunDetail() {
                 render: (p) => (
                   <div>
                     <div className="font-medium">{p.payee_name || "-"}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">{p.payee_type}</div>
+                    <div className="text-[11px] text-muted-foreground uppercase">{p.payee_type}</div>
                   </div>
                 ) },
               { key: "description", label: "Keterangan",
@@ -244,7 +244,7 @@ export default function PaymentRunDetail() {
                 } },
               { key: "status", label: "Status",
                 render: (p) => (
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium
                     ${p.status === "paid" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
                       : p.status === "approved" ? "bg-sky-500/15 text-sky-700"
                       : "bg-muted text-muted-foreground"}`}
