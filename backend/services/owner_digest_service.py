@@ -103,10 +103,10 @@ async def build_digest_payload(user: dict | None = None) -> dict:
 
     # 1) Yesterday revenue per outlet
     sales_pipeline = [
-        {"$match": {"sales_date": yesterday.isoformat(), "status": "validated"}},
+        {"$match": {"sales_date": yesterday.isoformat(), "status": "validated", "deleted_at": None}},
         {"$group": {"_id": "$outlet_id",
                      "revenue": {"$sum": "$grand_total"},
-                     "transactions": {"$sum": "$transactions_count"}}},
+                     "transactions": {"$sum": "$transaction_count"}}},  # field daily_sales = transaction_count
     ]
     yesterday_rows = await db.daily_sales.aggregate(sales_pipeline).to_list(100)
     yesterday_total = sum(float(r["revenue"] or 0) for r in yesterday_rows)

@@ -79,13 +79,13 @@ export default function JournalDetail() {
       render: (ln) => <span className={cn(ln.dr ? "font-semibold" : "text-muted-foreground")}>{ln.dr ? fmtRp(ln.dr) : "—"}</span> },
     { key: "cr", label: "Kredit", numeric: true,
       render: (ln) => <span className={cn(ln.cr ? "font-semibold" : "text-muted-foreground")}>{ln.cr ? fmtRp(ln.cr) : "—"}</span> },
-    { key: "dim", label: "Dim",
+    { key: "dim", label: "Dimensi",
       render: (ln) => (
         <span className="text-xs text-muted-foreground">
-          {ln.dim_outlet && <span className="mr-2">outlet: {ln.dim_outlet.slice(0, 8)}</span>}
-          {ln.dim_brand && <span className="mr-2">brand: {ln.dim_brand.slice(0, 8)}</span>}
-          {ln.dim_vendor && <span className="mr-2">vendor: {ln.dim_vendor.slice(0, 8)}</span>}
-          {ln.dim_employee && <span>emp: {ln.dim_employee.slice(0, 8)}</span>}
+          {ln.dim_outlet && <span className="mr-2">Outlet: {ln.dim_outlet_name || ln.dim_outlet.slice(0, 8)}</span>}
+          {ln.dim_brand && <span className="mr-2">Brand: {ln.dim_brand_name || ln.dim_brand.slice(0, 8)}</span>}
+          {ln.dim_vendor && <span className="mr-2">Vendor: {ln.dim_vendor_name || ln.dim_vendor.slice(0, 8)}</span>}
+          {ln.dim_employee && <span>Karyawan: {ln.dim_employee_name || ln.dim_employee.slice(0, 8)}</span>}
         </span>
       ) },
   ];

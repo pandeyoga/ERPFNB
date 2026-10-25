@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
-import StatusPill from "@/components/shared/StatusPill";
+import StatusPill, { statusLabel } from "@/components/shared/StatusPill";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
 } from "@/components/ui/dialog";
@@ -270,7 +270,8 @@ export default function MarketListPage() {
     } finally { setExporting(false); }
   };
 
-  const pendingCount = items.filter(i => i.ml_status === "pending_review").length;
+  // dari API: seluruh hasil filter (dulu hanya baris di halaman aktif)
+  const pendingCount = meta.pending_review_count ?? items.filter(i => i.ml_status === "pending_review").length;
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="market-list-page">
@@ -304,7 +305,7 @@ export default function MarketListPage() {
         <CompactStatCard size="sm" label="Total item" value={meta.total || 0} icon={Package} color="aurora-1" testId="market-list-stat-total" />
         <CompactStatCard
           size="sm"
-          label="Pending review"
+          label={statusLabel("pending_review")}
           value={pendingCount}
           tone={pendingCount > 0 ? "warning" : "default"}
           icon={Clock}
@@ -387,7 +388,7 @@ export default function MarketListPage() {
               <SelectContent>
                 <SelectItem value="all">Semua status</SelectItem>
                 <SelectItem value="active">Aktif</SelectItem>
-                <SelectItem value="pending_review">Pending review</SelectItem>
+                <SelectItem value="pending_review">{statusLabel("pending_review")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filters.brand} onValueChange={v => { setFilters(f => ({ ...f, brand: v === "all" ? "" : v })); setPage(1); }}>

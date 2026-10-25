@@ -53,6 +53,7 @@ export default function ReservationList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({}); // dari API: seluruh hasil filter, bukan halaman aktif
   const PER_PAGE = 20;
 
   const [filters, setFilters] = useState({ status: "", search: "", date_from: "", date_to: "" });
@@ -84,6 +85,7 @@ export default function ReservationList() {
         const { items, meta } = res.data.data;
         setReservations(items || []);
         setTotal(meta?.total || 0);
+        setStatusCounts(meta?.status_counts || {});
         setTotalPages(Math.ceil((meta?.total || 0) / PER_PAGE));
       }
     } catch { toast.error("Gagal memuat reservasi"); }
@@ -159,10 +161,10 @@ export default function ReservationList() {
   };
 
   // ── Quick stats ──
-  const pendingCount    = reservations.filter(r => r.status === "pending").length;
-  const waitlistCount   = reservations.filter(r => r.status === "waitlist").length;
-  const confirmedCount  = reservations.filter(r => r.status === "confirmed").length;
-  const rescheduledCount = reservations.filter(r => r.status === "rescheduled").length;
+  const pendingCount    = statusCounts.pending ?? 0;
+  const waitlistCount   = statusCounts.waitlist ?? 0;
+  const confirmedCount  = statusCounts.confirmed ?? 0;
+  const rescheduledCount = statusCounts.rescheduled ?? 0;
   const todayCount      = reservations.filter(r => r.reservation_date === today).length;
 
   return (

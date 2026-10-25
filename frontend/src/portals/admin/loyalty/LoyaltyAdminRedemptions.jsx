@@ -81,15 +81,18 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
   const [confirmAction, setConfirmAction] = useState(null); // { redemption, newStatus }
   const [statusUpdating, setStatusUpdating] = useState(false);
 
-  const load = useCallback(async (pg = page, sf = statusFilter, sq = search) => {
+  // Satu sumber pemuatan: efek di bawah bereaksi pada page/status/pencarian (debounce).
+  // Dulu handler juga memanggil load() manual sehingga setiap klik memuat data dua kali.
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
         limit: PAGE_SIZE,
-        skip: pg * PAGE_SIZE,
+        skip: page * PAGE_SIZE,
       };
-      if (sf && sf !== "all") params.status = sf;
-      if (sq.trim()) params.search = sq.trim();
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       const res = await api.get("/admin/loyalty/redemptions", { params });
       setData(res.data || { items: [], total: 0, limit: PAGE_SIZE, skip: 0 });
     } catch {
@@ -97,7 +100,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, debouncedSearch]);
 
   useEffect(() => {
     load();
@@ -106,17 +109,15 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => {
+      setDebouncedSearch(search);
       setPage(0);
-      load(0, statusFilter, search);
     }, 400);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   function handleStatusChange(val) {
     setStatusFilter(val);
     setPage(0);
-    load(0, val, search);
   }
 
   async function doStatusUpdate() {
@@ -285,7 +286,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 size="icon-sm"
                 variant="outline"
                 aria-label="Halaman sebelumnya"
-                onClick={() => { setPage(p => p - 1); load(page - 1, statusFilter, search); }}
+                onClick={() => setPage(p => p - 1)}
                 disabled={page === 0}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
@@ -294,7 +295,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 size="icon-sm"
                 variant="outline"
                 aria-label="Halaman berikutnya"
-                onClick={() => { setPage(p => p + 1); load(page + 1, statusFilter, search); }}
+                onClick={() => setPage(p => p + 1)}
                 disabled={page >= totalPages - 1}
               >
                 <ChevronRight className="h-3.5 w-3.5" />

@@ -15,6 +15,7 @@ import {
 import html2canvas from "html2canvas";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import jsPDF from "jspdf";
+import { toast } from "sonner";
 import {
   useBrands,
   useOutlets,
@@ -141,20 +142,24 @@ export default function ExecutiveHome() {
     setExporting(true);
     try {
       const node = exportRef.current;
-      const canvas = await html2canvas(node, {
-        backgroundColor: getComputedStyle(document.documentElement)
-          .getPropertyValue("--background") || "#fff",
-        scale: 2,
-        useCORS: true,
-        windowWidth: node.scrollWidth,
-      });
+      // `--background` is a raw HSL token ("240 20% 98%"), not a CSS colour — html2canvas threw
+      // "Error parsing CSS component value" and the export silently produced nothing.
+      const bg = getComputedStyle(document.body).backgroundColor || "#ffffff";
+      const canvas = await html2canvas(node, { backgroundColor: bg, scale: 2, useCORS: true, windowWidth: node.scrollWidth });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      const fname = `executive-dashboard-${periodMeta.period || "period"}.pdf`;
-      pdf.save(fname);
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgH = (canvas.height * pageW) / canvas.width;
+      // tall dashboards span several A4 pages instead of being cut after the first
+      pdf.addImage(imgData, "PNG", 0, 0, pageW, imgH);
+      for (let left = imgH - pageH; left > 0; left -= pageH) {
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, left - imgH, pageW, imgH);
+      }
+      pdf.save(`sales-analytics-${periodMeta.period || "period"}.pdf`);
+    } catch (e) {
+      toast.error("Gagal membuat PDF. Coba lagi atau gunakan cetak browser.");
     } finally {
       setExporting(false);
     }

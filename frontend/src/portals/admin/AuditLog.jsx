@@ -78,7 +78,9 @@ export default function AuditLog({ embedded = false } = {}) {
         <DataTable
           columns={[
             { key: "timestamp", label: "Waktu", primary: true, sortable: true, render: (e) => (<div className="text-xs whitespace-nowrap"><div>{fmtDateTime(e.timestamp)}</div><div className="text-muted-foreground">{fmtRelative(e.timestamp)}</div></div>) },
-            { key: "user_id", label: "User", render: (e) => <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.user_id || ""}>{(e.user_id || "—").slice(0, 8)}…</span> },
+            { key: "user_id", label: "User", render: (e) => e.user_name
+                ? <span className="text-sm font-medium" title={e.user_id}>{e.user_name}</span>
+                : <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.user_id || ""}>{e.user_id ? `${e.user_id.slice(0, 8)}…` : "Sistem"}</span> },
             { key: "entity_type", label: "Entitas", sortable: true, render: (e) => <span className="text-xs">{e.entity_type}</span> },
             { key: "action", label: "Aksi", sortable: true, render: (e) => <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", ACTION_COLORS[e.action] || "bg-foreground/10")}>{e.action}</span> },
             { key: "entity_id", label: "ID", render: (e) => <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.entity_id || ""}>{(e.entity_id || "—").slice(0, 8)}…</span> },

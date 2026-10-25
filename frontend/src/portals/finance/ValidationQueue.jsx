@@ -12,6 +12,8 @@ import {
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import PageHeader from "@/components/shared/PageHeader";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
+import StatusPill from "@/components/shared/StatusPill";
 import { fmtRp, fmtDate, fmtRelative } from "@/lib/format";
 import { toast } from "sonner";
 import { confirmDialog } from "@/components/shared/confirmDialog";
@@ -20,6 +22,9 @@ export default function ValidationQueue() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  // Default = yang benar-benar menunggu; tanpa filter API mengembalikan juga yang sudah
+  // divalidasi/ditolak (dulu tampil "303 menunggu" lengkap dengan tombol Validasi).
+  const [status, setStatus] = useState("submitted");
   const [meta, setMeta] = useState({ total: 0, per_page: 50 });
   const [reject, setReject] = useState(null);
   const [reason, setReason] = useState("");
@@ -28,14 +33,14 @@ export default function ValidationQueue() {
   async function load() {
     setLoading(true);
     try {
-      const res = await api.get("/finance/validation-queue", { params: { page, per_page: 50 } });
+      const res = await api.get("/finance/validation-queue", { params: { page, per_page: 50, status } });
       setItems(unwrap(res) || []);
       setMeta(res.data?.meta || {});
     } catch (e) {
       toast.error("Gagal memuat antrian validasi");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, [page]);
+  useEffect(() => { load(); }, [page, status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function validate(ds) {
     if (actingId) return; // RC-12/POS-03: one in-flight action at a time (no double-posting)
@@ -77,13 +82,25 @@ export default function ValidationQueue() {
           icon={ClipboardCheck}
           title="Sales Validation"
           subtitle="Daily sales yang sudah di-submit outlet. Validasi untuk membuat jurnal otomatis, atau tolak agar outlet memperbaiki."
-          actions={
+          actions={status === "submitted" && (
             <span className="inline-flex items-center h-8 px-3 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-semibold tabular-nums" data-testid="vq-pending-count">
               {meta.total || 0} menunggu
             </span>
-          }
+          )}
         />
       </div>
+
+      <SegmentedFilter
+        value={status}
+        onChange={(v) => { setStatus(v); setPage(1); }}
+        ariaLabel="Status validasi"
+        testId="vq-status-filter"
+        options={[
+          { value: "submitted", label: "Menunggu validasi", testId: "vq-status-submitted" },
+          { value: "validated", label: "Tervalidasi", testId: "vq-status-validated" },
+          { value: "rejected", label: "Ditolak", testId: "vq-status-rejected" },
+        ]}
+      />
 
       <div data-testid="vq-table-card" className="glass-card overflow-hidden">
         <DataTable
@@ -91,7 +108,9 @@ export default function ValidationQueue() {
           keyField="id"
           loading={loading}
           rowTestIdPrefix="vq-row"
-          empty={<div className="p-6"><EmptyState icon={ClipboardCheck} title="Inbox kosong" description="Tidak ada daily sales yang menunggu validasi." /></div>}
+          empty={<div className="p-6"><EmptyState icon={ClipboardCheck}
+            title={status === "submitted" ? "Inbox kosong" : "Belum ada data"}
+            description={status === "submitted" ? "Tidak ada daily sales yang menunggu validasi." : "Tidak ada daily sales dengan status ini."} /></div>}
           columns={[
             { key: "sales_date", label: "Tanggal", sortable: true, primary: true,
               render: (ds) => <span className="font-medium">{fmtDate(ds.sales_date)}</span> },
@@ -107,7 +126,16 @@ export default function ValidationQueue() {
                 </span>
               ) },
           ]}
-          rowAction={(ds) => (
+          rowAction={(ds) => ds.status !== "submitted" ? (
+            <div className="inline-flex items-center gap-1.5">
+              <StatusPill status={ds.status} />
+              <Button asChild size="sm" variant="ghost">
+                <Link to={`/outlet/daily-sales/${ds.id}`} data-testid={`fin-vq-view-${ds.id}`}>
+                  <Eye className="h-3.5 w-3.5" /> Detail
+                </Link>
+              </Button>
+            </div>
+          ) : (
             <div className="inline-flex items-center gap-1.5">
               <Button asChild size="sm" variant="ghost">
                 <Link to={`/outlet/daily-sales/${ds.id}`} data-testid={`fin-vq-view-${ds.id}`}>

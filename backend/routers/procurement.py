@@ -214,6 +214,10 @@ async def cancel_po(id_: str, payload: dict = Body(...),
 async def list_grs(
     status: Optional[str] = None,
     outlet_id: Optional[str] = None,
+    vendor_id: Optional[str] = None,
+    date_from: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    date_to: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    search: Optional[str] = Query(None, max_length=60),
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("procurement.gr.create")),
 ):
@@ -225,7 +229,8 @@ async def list_grs(
         enforce_outlet_scope(user, outlet_id)
         outlet_ids = scoped_outlet_ids(user)
     items, meta = await procurement_service.list_grs(
-        status=status, outlet_id=outlet_id, outlet_ids=outlet_ids, page=page, per_page=per_page,
+        status=status, outlet_id=outlet_id, outlet_ids=outlet_ids, vendor_id=vendor_id,
+        date_from=date_from, date_to=date_to, search=search, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
 

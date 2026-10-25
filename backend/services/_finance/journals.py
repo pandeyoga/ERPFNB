@@ -28,6 +28,24 @@ async def _enrich_journal(je: dict) -> dict:
     return je
 
 
+_DIMS = (("dim_outlet", "outlets", "name"), ("dim_brand", "brands", "name"),
+         ("dim_vendor", "vendors", "name"), ("dim_employee", "employees", "full_name"))
+
+
+async def _enrich_dimensions(je: dict) -> dict:
+    """Detail view: add `<dim>_name` next to each dimension id (UI showed raw UUID fragments)."""
+    db = get_db()
+    for key, coll, field in _DIMS:
+        ids = {ln.get(key) for ln in je.get("lines", []) if ln.get(key)}
+        if not ids:
+            continue
+        names = {d["id"]: d.get(field) or d.get("name") or "" async for d in db[coll].find({"id": {"$in": list(ids)}}, {"id": 1, field: 1, "name": 1})}
+        for ln in je.get("lines", []):
+            if ln.get(key):
+                ln[f"{key}_name"] = names.get(ln[key], "")
+    return je
+
+
 async def list_journals(
     *,
     period: Optional[str] = None,
@@ -85,6 +103,7 @@ async def get_journal(je_id: str) -> dict:
         raise NotFoundError("Journal entry tidak ditemukan")
     d = serialize(je)
     await _enrich_journal(d)
+    await _enrich_dimensions(d)
     return d
 
 

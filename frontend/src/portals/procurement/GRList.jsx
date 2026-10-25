@@ -1,11 +1,18 @@
-/** Goods Receipt — daftar GR yang sudah di-posting (stok + jurnal AP otomatis). */
+/** Goods Receipt — daftar GR yang sudah di-posting (stok + jurnal AP otomatis).
+ *  Filter: outlet, vendor, rentang tanggal terima, cari no. GR / invoice. */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, PackageOpen, FileText } from "lucide-react";
+import { Plus, PackageOpen, FileText, Search } from "lucide-react";
 import { usePaginatedList } from "@/hooks/useListQuery";
+import { useDebounce } from "@/hooks/useDebounce";
 import { unwrap, fetchAll } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import PageHeader from "@/components/shared/PageHeader";
+import SimpleSelect from "@/components/shared/SimpleSelect";
+import OutletScopePicker from "@/components/shared/OutletScopePicker";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import useOutletScope from "@/hooks/useOutletScope";
 import StatusPill from "@/components/shared/StatusPill";
@@ -14,11 +21,31 @@ import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtDate } from "@/lib/format";
 
 export default function GRList() {
-  const { allOutlets } = useOutletScope();
+  const { user } = useAuth();
+  const canSeeJournal = permitted(user, "finance.journal_entry.read");
+  const { allOutlets, outletId, setOutletId, scopedOutlets, isFullAccess } = useOutletScope();
   const [vendors, setVendors] = useState([]);
+  const [vendorId, setVendorId] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search.trim(), 350);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading: loading } = usePaginatedList("/procurement/grs", {}, page, 20);
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const filters = useMemo(() => {
+    const f = {};
+    if (outletId) f.outlet_id = outletId;
+    if (vendorId) f.vendor_id = vendorId;
+    if (dateFrom) f.date_from = dateFrom;
+    if (dateTo) f.date_to = dateTo;
+    if (debouncedSearch) f.search = debouncedSearch;
+    return f;
+  }, [outletId, vendorId, dateFrom, dateTo, debouncedSearch]);
+  const hasFilter = Object.keys(filters).length > 0;
+
+  const { data, isLoading: loading } = usePaginatedList("/procurement/grs", filters, page, 20);
   const items = data?.data || [];
   const meta = data?.meta || { total: 0, per_page: 20 };
 
@@ -47,10 +74,19 @@ export default function GRList() {
     { key: "grand_total", label: "Grand Total", numeric: true, sortable: true,
       render: (gr) => <span className="font-semibold" data-testid={`gr-total-${gr.id}`}>{fmtRp(gr.grand_total || 0)}</span> },
     { key: "status", label: "Status", render: (gr) => <StatusPill status={gr.status} /> },
-    { key: "je", label: "Jurnal", render: (gr) => gr.journal_entry_id ? (
-      <span className="text-xs inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400" title="Jurnal AP sudah terbentuk" data-testid={`gr-je-${gr.id}`}>
-        <FileText className="h-3.5 w-3.5" /> JE
-      </span>) : dash },
+    { key: "je", label: "Jurnal", render: (gr) => {
+      if (!gr.journal_entry_id) return dash;
+      const cls = "text-xs inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400";
+      return canSeeJournal ? (
+        <Link to={`/finance/journals/${gr.journal_entry_id}`} className={`${cls} hover:underline`} title="Buka jurnal AP" data-testid={`gr-je-${gr.id}`}>
+          <FileText className="h-3.5 w-3.5" /> JE
+        </Link>
+      ) : (
+        <span className={cls} title="Jurnal AP sudah terbentuk" data-testid={`gr-je-${gr.id}`}>
+          <FileText className="h-3.5 w-3.5" /> JE
+        </span>
+      );
+    } },
   ];
 
   return (
@@ -70,6 +106,51 @@ export default function GRList() {
         }
       />
 
+      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="gr-filters-card">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Cari no. GR atau invoice…"
+            aria-label="Cari GR"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="glass-input pl-9"
+            data-testid="gr-filter-search"
+          />
+        </div>
+        <OutletScopePicker
+          value={outletId}
+          onChange={(id) => { setOutletId(id); setPage(1); }}
+          outlets={scopedOutlets}
+          isFullAccess={isFullAccess}
+          data-testid="gr-filter-outlet"
+        />
+        <SimpleSelect
+          value={vendorId}
+          onValueChange={(v) => { setVendorId(v); setPage(1); }}
+          options={[{ value: "", label: "Semua vendor" }, ...vendors.map(v => ({ value: v.id, label: v.name }))]}
+          placeholder="Semua vendor"
+          ariaLabel="Filter vendor"
+          className="glass-input w-[200px]"
+          testId="gr-filter-vendor"
+        />
+        <div className="flex items-center gap-1.5">
+          <Input type="date" value={dateFrom} max={dateTo || undefined}
+            onChange={e => { setDateFrom(e.target.value); setPage(1); }}
+            aria-label="Tanggal terima dari" className="glass-input w-[150px]" data-testid="gr-filter-date-from" />
+          <span className="text-xs text-muted-foreground">s/d</span>
+          <Input type="date" value={dateTo} min={dateFrom || undefined}
+            onChange={e => { setDateTo(e.target.value); setPage(1); }}
+            aria-label="Tanggal terima sampai" className="glass-input w-[150px]" data-testid="gr-filter-date-to" />
+        </div>
+        {hasFilter && (
+          <Button variant="ghost" size="sm" data-testid="gr-filter-reset"
+            onClick={() => { setSearch(""); setOutletId(""); setVendorId(""); setDateFrom(""); setDateTo(""); setPage(1); }}>
+            Reset
+          </Button>
+        )}
+      </div>
+
       <div className="glass-card overflow-hidden" data-testid="gr-table-card">
         <DataTable
           columns={columns}
@@ -80,10 +161,15 @@ export default function GRList() {
           defaultSort={{ key: "receive_date", dir: "desc" }}
           empty={
             <div data-testid="gr-empty">
+              {hasFilter ? (
+                <EmptyState icon={PackageOpen} title="Tidak ada GR yang cocok"
+                  description="Ubah atau reset filter untuk melihat GR lain." />
+              ) : (
               <EmptyState icon={PackageOpen} title="Belum ada GR"
                 description="Posting GR setelah barang diterima dari vendor."
                 action={<Button asChild data-testid="gr-empty-new-btn"><Link to="/procurement/gr/new"><Plus /> Posting GR</Link></Button>}
               />
+              )}
             </div>
           }
         />

@@ -1,4 +1,5 @@
 """Procurement portal services: PR, PO, GR."""
+import re
 import uuid
 from core.clock import period_now as _biz_period, today_str as _biz_today  # SSOT-11: WIB business date
 from datetime import datetime, timezone
@@ -324,7 +325,8 @@ async def cancel_po(id_: str, *, user: dict, reason: str) -> dict:
 
 async def list_grs(
     *, status: Optional[str] = None, outlet_id: Optional[str] = None,
-    outlet_ids: Optional[list[str]] = None,
+    outlet_ids: Optional[list[str]] = None, vendor_id: Optional[str] = None,
+    date_from: Optional[str] = None, date_to: Optional[str] = None, search: Optional[str] = None,
     page: int = 1, per_page: int = 20,
 ):
     db = get_db()
@@ -335,6 +337,13 @@ async def list_grs(
         q["outlet_id"] = outlet_id
     elif outlet_ids is not None:
         q["outlet_id"] = {"$in": outlet_ids}
+    if vendor_id:
+        q["vendor_id"] = vendor_id
+    if date_from or date_to:
+        q["receive_date"] = {**({"$gte": date_from} if date_from else {}), **({"$lte": date_to} if date_to else {})}
+    if search:
+        rx = {"$regex": re.escape(search), "$options": "i"}
+        q["$or"] = [{"doc_no": rx}, {"invoice_no": rx}]
     skip = (page - 1) * per_page
     items = await db.goods_receipts.find(q).sort([("created_at", -1)]).skip(skip).limit(per_page).to_list(per_page)
     total = await db.goods_receipts.count_documents(q)

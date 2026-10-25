@@ -344,7 +344,12 @@ async def list_audit_log(
     skip = (page - 1) * per_page
     items = await db.audit_log.find(query).sort("timestamp", -1).skip(skip).limit(per_page).to_list(per_page)
     total = await db.audit_log.count_documents(query)
-    return ok_envelope([serialize(d) for d in items], {"page": page, "per_page": per_page, "total": total})
+    # Activity log showed only an 8-char user id; resolve names for the page in one query.
+    uids = list({d.get("user_id") for d in items if d.get("user_id")})
+    names = {u["id"]: u.get("full_name") or u.get("email") or ""
+             async for u in db.users.find({"id": {"$in": uids}}, {"id": 1, "full_name": 1, "email": 1})}
+    rows = [{**serialize(d), "user_name": names.get(d.get("user_id"), "")} for d in items]
+    return ok_envelope(rows, {"page": page, "per_page": per_page, "total": total})
 
 
 # ---------- BUSINESS RULES — APPROVAL WORKFLOWS + SELF-SERVICE CONFIG ----------

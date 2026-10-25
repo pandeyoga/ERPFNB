@@ -1,7 +1,6 @@
 """Finance home dashboard and sales validation queue."""
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 from typing import Optional
 
 from core.db import get_db, serialize
@@ -42,12 +41,15 @@ async def sales_validation_queue(
 
 
 async def finance_home() -> dict:
-    """Finance dashboard summary."""
+    """Finance dashboard summary (Finance › Overview KPI tiles)."""
+    from core.clock import period_now
     db = get_db()
-    today = date.today().isoformat()
-    period = today[:7]
+    period = period_now()  # SSOT-11: WIB business period, not the server's UTC date
 
     pending_sales = await db.daily_sales.count_documents({"deleted_at": None, "status": "submitted"})
+    rejected_sales = await db.daily_sales.count_documents({"deleted_at": None, "status": "rejected"})
+    je_this_period = await db.journal_entries.count_documents({"deleted_at": None, "period": period})
+    je_total = await db.journal_entries.count_documents({"deleted_at": None})
     period_from_service_start = f"{period}-01"
     revenue_agg = await db.daily_sales.aggregate([
         {"$match": {"deleted_at": None, "status": "validated", "sales_date": {"$gte": period_from_service_start}}},
@@ -69,6 +71,12 @@ async def finance_home() -> dict:
     return {
         "period": period,
         "pending_sales_validation": pending_sales,
+        # UI-DATA-04: Finance Overview reads these keys — they were never returned, so the
+        # tiles always showed 0 while the validation queue held hundreds of daily sales.
+        "submitted_validations": pending_sales,
+        "rejected_count": rejected_sales,
+        "je_this_period": je_this_period,
+        "je_total": je_total,
         "revenue_mtd": round(revenue_mtd, 2),
         "ap_overdue_90p": round(ap_overdue_total, 2),
         "ar_outstanding": round(outstanding_ar, 2),

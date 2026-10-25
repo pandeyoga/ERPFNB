@@ -250,9 +250,12 @@ async def cashflow(
 @router.get("/validation-queue")
 async def validation_queue(
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
+    status: Optional[str] = Query(None, pattern="^(submitted|validated|rejected)$",
+                                  description="Kosong = semua; UI memakai 'submitted' (yang menunggu)"),
+    period: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
     user: dict = Depends(require_perm("finance.sales.validate")),
 ):
-    items, meta = await finance_service.sales_validation_queue(page=page, per_page=per_page)
+    items, meta = await finance_service.sales_validation_queue(page=page, per_page=per_page, status=status, period=period)
     return ok_envelope(items, meta)
 
 

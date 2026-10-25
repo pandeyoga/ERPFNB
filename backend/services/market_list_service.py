@@ -281,6 +281,9 @@ async def get_market_list(
     skip = (page - 1) * per_page
     items = await db.items.find(item_q).sort([("name", 1)]).skip(skip).limit(per_page).to_list(per_page)
     total = await db.items.count_documents(item_q)
+    # "Pending review" tile: count across the filtered set, not just the current page
+    pending_q = {**item_q, "ml_status": "pending_review"}
+    pending_review_count = await db.items.count_documents(pending_q) if ml_status in (None, "", "pending_review") else 0
 
     # Enrich with reference prices and category names
     item_ids = [item["id"] for item in items]
@@ -325,7 +328,8 @@ async def get_market_list(
         d["ml_status"] = item.get("ml_status", "active")
         enriched.append(d)
 
-    return enriched, {"page": page, "per_page": per_page, "total": total, "quarter_id": quarter_id}
+    return enriched, {"page": page, "per_page": per_page, "total": total, "quarter_id": quarter_id,
+                      "pending_review_count": pending_review_count}
 
 
 async def approve_pending_item(
