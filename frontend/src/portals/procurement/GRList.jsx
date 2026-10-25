@@ -159,6 +159,41 @@ export default function GRList() {
           loading={loading}
           rowTestIdPrefix="gr-row"
           defaultSort={{ key: "receive_date", dir: "desc" }}
+          renderExpanded={(gr) => (
+            <div className="space-y-2 text-sm" data-testid={`gr-detail-${gr.id}`}>
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                {gr.po_id && <span>PO: <Link to={`/procurement/po/${gr.po_id}`} className="text-foreground hover:underline" data-testid={`gr-po-link-${gr.id}`}>Lihat PO</Link></span>}
+                {gr.invoice_date && <span>Tgl invoice: <span className="text-foreground">{fmtDate(gr.invoice_date)}</span></span>}
+                {gr.payment_terms_days != null && <span>Termin: <span className="text-foreground">{gr.payment_terms_days} hari</span></span>}
+                {gr.notes && <span>Catatan: <span className="text-foreground">{gr.notes}</span></span>}
+              </div>
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground">
+                  <tr className="border-b border-border/50">
+                    <th className="text-left font-medium py-1.5">Item</th>
+                    <th className="text-right font-medium py-1.5">Dipesan</th>
+                    <th className="text-right font-medium py-1.5">Diterima</th>
+                    <th className="text-right font-medium py-1.5">Harga</th>
+                    <th className="text-right font-medium py-1.5">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="tabular-nums">
+                  {(gr.lines || []).map((ln, i) => (
+                    <tr key={i} className="border-b border-border/30 last:border-0">
+                      <td className="py-1.5">
+                        {ln.item_name || "—"}
+                        {ln.condition_note && <span className="block text-muted-foreground">{ln.condition_note}</span>}
+                      </td>
+                      <td className="text-right py-1.5">{ln.qty_ordered ?? "—"} {ln.unit}</td>
+                      <td className={`text-right py-1.5 ${ln.qty_variance ? "text-amber-700 dark:text-amber-400 font-medium" : ""}`}>{ln.qty_received} {ln.unit}</td>
+                      <td className="text-right py-1.5">{fmtRp(ln.invoice_unit_cost ?? ln.unit_cost ?? 0)}</td>
+                      <td className="text-right py-1.5 font-medium">{fmtRp(ln.total_cost || 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           empty={
             <div data-testid="gr-empty">
               {hasFilter ? (

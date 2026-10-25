@@ -20,6 +20,7 @@ import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import StockBalanceMatrix from "./StockBalanceMatrix";
 import useOutletScope from "@/hooks/useOutletScope";
+import { useDebounce } from "@/hooks/useDebounce";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 
 function readView() {
@@ -70,6 +71,7 @@ function StockBalanceList() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const search = useDebounce(q.trim(), 350);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ total: 0, per_page: 100 });
 
@@ -83,6 +85,7 @@ function StockBalanceList() {
     try {
       const params = { page, per_page: 100 };
       if (outletId) params.outlet_id = outletId;
+      if (search) params.search = search;
       const res = await api.get("/inventory/balance", { params });
       setRows(unwrap(res) || []);
       setMeta(res.data?.meta || {});
@@ -90,16 +93,8 @@ function StockBalanceList() {
       toast.error("Gagal memuat stock balance");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, [page, outletId]); // eslint-disable-line
-
-  const filtered = useMemo(() => {
-    if (!q) return rows;
-    const s = q.toLowerCase();
-    return rows.filter(r =>
-      (r.item_name || "").toLowerCase().includes(s) ||
-      (r.item_id || "").toLowerCase().includes(s),
-    );
-  }, [q, rows]);
+  useEffect(() => { load(); }, [page, outletId, search]); // eslint-disable-line
+  useEffect(() => { setPage(1); }, [search]);
 
   const perPage = meta.per_page || 100;
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / perPage));
@@ -145,7 +140,7 @@ function StockBalanceList() {
               render: r => fmtRp(r.total_value || 0) },
             { key: "last_movement_at", label: "Last Move", render: r => <span className="text-xs text-muted-foreground">{r.last_movement_at || "—"}</span> },
           ]}
-          rows={filtered.map(r => ({ ...r, _key: `${r.item_id}-${r.outlet_id}` }))}
+          rows={rows.map(r => ({ ...r, _key: `${r.item_id}-${r.outlet_id}` }))}
           keyField="_key"
           loading={loading}
           rowTestIdPrefix="bal-row"
@@ -156,7 +151,7 @@ function StockBalanceList() {
         {/* Sebelumnya tidak ada pager: hanya 100 baris pertama yang bisa dilihat. */}
         {totalPages > 1 && (
           <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="bal-pagination">
-            <span>Total: {meta.total}{q ? " · pencarian hanya pada halaman ini" : ""}</span>
+            <span>Total: {meta.total}</span>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="bal-prev">Sebelumnya</Button>
               <span className="tabular-nums">{page}/{totalPages}</span>

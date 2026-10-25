@@ -1,4 +1,5 @@
 """Inventory portal services: balance, movements, transfer, adjustment, opname."""
+import re
 import uuid
 from core.clock import period_now as _biz_period, today_str as _biz_today  # SSOT-11: WIB business date
 from datetime import datetime, timezone
@@ -83,7 +84,7 @@ async def _assert_can_decrement(db, outlet_id: str, needs: list) -> None:
 
 async def stock_balance(
     *, outlet_id: Optional[str] = None, item_id: Optional[str] = None,
-    outlet_ids: Optional[list[str]] = None,
+    outlet_ids: Optional[list[str]] = None, search: Optional[str] = None,
     page: int = 1, per_page: int = 100,
 ) -> tuple[list[dict], dict]:
     """Aggregate signed qty per (item, outlet) from inventory_movements."""
@@ -135,15 +136,38 @@ async def stock_balance(
             "unit": item_info["unit"],        # Enriched from master items
             "last_unit_cost": last_unit_cost,
         })
-    # Manual pagination
+    if search:
+        s = search.strip().lower()
+        rows = [r for r in rows if s in r["item_name"].lower()]
+    # Manual pagination (search applied above, before paging)
     total = len(rows)
     skip = (page - 1) * per_page
     return rows[skip:skip + per_page], {"page": page, "per_page": per_page, "total": total}
 
 
+# Pergerakan keluar/pemakaian (Usage Log outlet): tipe ini, atau qty negatif apa pun tipenya.
+USAGE_MOVEMENT_TYPES = ("issue", "sale", "wastage", "transfer_out", "opname_diff")
+
+
+async def _usage_summary(db, base_q: dict) -> dict:
+    """KPI Usage Log atas seluruh hasil (bukan hanya halaman): jumlah, nilai, waste, per tipe."""
+    value = {"$abs": {"$ifNull": ["$total_value", {"$ifNull": ["$total_cost", 0]}]}}
+    rows = await db.inventory_movements.aggregate([
+        {"$match": base_q},
+        {"$group": {"_id": "$movement_type", "count": {"$sum": 1}, "value": {"$sum": value}}},
+    ]).to_list(50)
+    return {
+        "count": sum(r["count"] for r in rows),
+        "usage_value": round(sum(r["value"] for r in rows), 2),
+        "waste_value": round(sum(r["value"] for r in rows if r["_id"] == "wastage"), 2),
+        "type_counts": {r["_id"]: r["count"] for r in rows if r["_id"]},
+    }
+
+
 async def list_movements(
     *, outlet_ids: Optional[list[str]] = None, item_id: Optional[str] = None,
     movement_type: Optional[str] = None, date_from: Optional[str] = None,
+    usage_only: bool = False, search: Optional[str] = None,
     page: int = 1, per_page: int = 50,
 ):
     db = get_db()
@@ -152,10 +176,16 @@ async def list_movements(
         q["outlet_id"] = {"$in": outlet_ids}
     if item_id:
         q["item_id"] = item_id
-    if movement_type:
-        q["movement_type"] = movement_type
     if date_from:
         q["movement_date"] = {"$gte": date_from}
+    if usage_only:
+        q["$or"] = [{"movement_type": {"$in": list(USAGE_MOVEMENT_TYPES)}}, {"qty": {"$lt": 0}}]
+    summary = await _usage_summary(db, dict(q)) if usage_only else None
+    if movement_type:
+        q["movement_type"] = movement_type
+    if search and not item_id:
+        rx = {"$regex": re.escape(search.strip()), "$options": "i"}
+        q["item_id"] = {"$in": [i["id"] async for i in db.items.find({"name": rx}, {"id": 1})]}
     skip = (page - 1) * per_page
     items = await db.inventory_movements.find(q).sort([("movement_date", -1), ("created_at", -1)]).skip(skip).limit(per_page).to_list(per_page)
     total = await db.inventory_movements.count_documents(q)
@@ -172,7 +202,10 @@ async def list_movements(
         rec["unit"] = it.get("unit", rec.get("unit", "pcs"))
         rec["outlet_name"] = outlets_map.get(d.get("outlet_id"), "(Unknown Outlet)")
         out.append(rec)
-    return out, {"page": page, "per_page": per_page, "total": total}
+    meta = {"page": page, "per_page": per_page, "total": total}
+    if summary is not None:
+        meta["summary"] = summary
+    return out, meta
 
 
 async def valuation(*, outlet_id: Optional[str] = None, outlet_ids: Optional[list[str]] = None) -> dict:

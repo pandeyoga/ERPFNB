@@ -32,7 +32,9 @@ export default function DailySalesList({ embedded = false }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
+  // Di langkah End of Day fokusnya sales hari ini; halaman penuh menampilkan 14 hari terakhir.
   const [dateFrom, setDateFrom] = useState(() => {
+    if (embedded) return todayJakartaISO();
     const d = new Date();
     d.setDate(d.getDate() - 14);
     return d.toISOString().slice(0, 10);

@@ -12,10 +12,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { fmtDate } from "@/lib/format";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useOutletScopeCtx } from "../OutletScopeContext";
 
-// Consumption / outflow movement types (negative qty = stock leaving).
+// Consumption / outflow movement types (negative qty = stock leaving) — urutan tab filter.
+// Server (usage_only=true) memakai definisi yang sama: tipe ini atau qty negatif.
 const USAGE_TYPES = ["issue", "sale", "wastage", "transfer_out", "opname_diff"];
+const PER_PAGE = 25;
 const TYPE_LABEL = {
   issue: "Pemakaian", sale: "Terjual", wastage: "Waste/Rusak",
   transfer_out: "Transfer Keluar", opname_diff: "Selisih Opname", adjustment: "Penyesuaian",
@@ -32,7 +35,10 @@ export default function UsageLog() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const search = useDebounce(q.trim(), 350);
   const [typeFilter, setTypeFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, summary: null });
 
   const outletMap = useMemo(
     () => Object.fromEntries(scopedOutlets.map((o) => [o.id, o])), [scopedOutlets]);
@@ -41,12 +47,15 @@ export default function UsageLog() {
   async function load() {
     setLoading(true);
     try {
-      const params = { per_page: 200 };
+      // Only outflow/consumption movements (this is a USAGE log, not receipts) — difilter &
+      // dipaginasi di server; meta.summary berisi KPI atas seluruh hasil.
+      const params = { usage_only: true, page, per_page: PER_PAGE };
       if (outletId) params.outlet_id = outletId;
+      if (typeFilter !== "all") params.movement_type = typeFilter;
+      if (search) params.search = search;
       const res = await api.get("/inventory/movements", { params });
-      const all = (unwrap(res) || []).map((r) => ({ ...r, _rk: r.id }));
-      // Only outflow/consumption movements (this is a USAGE log, not receipts).
-      setRows(all.filter((r) => USAGE_TYPES.includes(r.movement_type) || Number(r.qty) < 0));
+      setRows((unwrap(res) || []).map((r) => ({ ...r, _rk: r.id })));
+      setMeta(res.data?.meta || { total: 0, summary: null });
     } catch (e) {
       toast.error("Gagal memuat usage log");
     } finally {
@@ -54,32 +63,25 @@ export default function UsageLog() {
     }
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [outletId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [outletId, typeFilter, search, page]);
+  useEffect(() => { setPage(1); }, [outletId, typeFilter, search]);
 
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    return rows.filter((r) => {
-      if (typeFilter !== "all" && r.movement_type !== typeFilter) return false;
-      if (term && !(r.item_name || "").toLowerCase().includes(term)) return false;
-      return true;
-    });
-  }, [rows, q, typeFilter]);
-
-  const totals = useMemo(() => {
-    const usageVal = rows.reduce((s, r) => s + Math.abs(Number(r.total_cost || r.total_value) || 0), 0);
-    const wasteVal = rows.filter((r) => r.movement_type === "wastage")
-      .reduce((s, r) => s + Math.abs(Number(r.total_cost || r.total_value) || 0), 0);
-    return { usageVal, wasteVal, count: rows.length };
-  }, [rows]);
+  const summary = meta.summary || {};
+  const totals = {
+    usageVal: summary.usage_value || 0,
+    wasteVal: summary.waste_value || 0,
+    count: summary.count || 0,
+  };
+  const totalPages = Math.max(1, Math.ceil((meta.total || 0) / PER_PAGE));
 
   // Semua tipe yang benar-benar ada di data (mis. "adjustment" dengan qty negatif) harus
   // punya filter — sebelumnya hanya USAGE_TYPES sehingga baris "Penyesuaian" tidak bisa difilter.
   const availTypes = useMemo(() => {
-    const present = new Set(rows.map((r) => r.movement_type).filter(Boolean));
+    const present = new Set(Object.keys(summary.type_counts || {}));
     const ordered = USAGE_TYPES.filter((t) => present.has(t));
     const extra = [...present].filter((t) => !USAGE_TYPES.includes(t));
     return ["all", ...ordered, ...extra];
-  }, [rows]);
+  }, [summary.type_counts]);
 
   const columns = [
     { key: "movement_date", label: "Tanggal", primary: true,
@@ -141,7 +143,7 @@ export default function UsageLog() {
       <div className="glass-card">
         <DataTable
           columns={columns}
-          rows={filtered}
+          rows={rows}
           keyField="_rk"
           loading={loading}
           empty={<EmptyState icon={ClipboardList}
@@ -149,6 +151,16 @@ export default function UsageLog() {
             description="Log pemakaian muncul otomatis dari penjualan, transfer keluar, dan pencatatan waste." />}
           rowTestIdPrefix="usage-row"
         />
+        {totalPages > 1 && (
+          <div className="px-4 py-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="usage-pagination">
+            <span className="tabular-nums">Total: {meta.total}</span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="usage-prev">Sebelumnya</Button>
+              <span className="tabular-nums" data-testid="usage-page-info">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="usage-next">Berikutnya</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

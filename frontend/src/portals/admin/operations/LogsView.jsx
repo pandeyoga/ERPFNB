@@ -5,6 +5,7 @@ import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 import ErrorState from "@/components/shared/ErrorState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
@@ -29,13 +30,18 @@ export default function LogsView() {
   const [stats, setStats] = useState(null);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ total: 0, per_page: 50, total_pages: 1 });
+  // Filter teks di-debounce: API dipanggil setelah user berhenti mengetik, bukan per huruf.
+  const requestId = useDebounce(filters.request_id.trim(), 400);
+  const routeContains = useDebounce(filters.route_contains.trim(), 400);
+  const userId = useDebounce(filters.user_id.trim(), 400);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const params = { page, per_page: 50 };
-      Object.entries(filters).forEach(([k, v]) => { if (v) params[k] = v; });
+      Object.entries({ level: filters.level, request_id: requestId, route_contains: routeContains, user_id: userId })
+        .forEach(([k, v]) => { if (v) params[k] = v; });
       const [r, s] = await Promise.all([
         api.get("/admin/logs/recent", { params }),
         api.get("/admin/logs/stats"),
@@ -53,7 +59,7 @@ export default function LogsView() {
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
+  }, [filters.level, requestId, routeContains, userId, page]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -106,7 +112,12 @@ export default function LogsView() {
         <Input className="glass-input max-w-[200px]" placeholder="User ID" aria-label="Filter user ID"
                 value={filters.user_id} onChange={(e) => updateFilters({ ...filters, user_id: e.target.value })}
                 data-testid="logs-filter-user" />
-        <Button onClick={load} className="ml-auto" data-testid="logs-apply">Terapkan</Button>
+        {Object.values(filters).some(Boolean) && (
+          <Button variant="ghost" size="sm" className="ml-auto" data-testid="logs-filter-reset"
+                  onClick={() => updateFilters({ level: "", request_id: "", route_contains: "", user_id: "" })}>
+            Reset filter
+          </Button>
+        )}
       </div>
 
       {error && <ErrorState message={error} onRetry={load} />}

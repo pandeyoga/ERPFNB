@@ -12,12 +12,13 @@ router = APIRouter(prefix="/api/inventory", tags=["inventory"])
 @router.get("/balance")
 async def stock_balance(
     outlet_id: Optional[str] = None, item_id: Optional[str] = None,
+    search: Optional[str] = Query(None, max_length=60),
     page: int = Query(1, ge=1), per_page: int = Query(100, ge=1, le=500),
     user: dict = Depends(require_perm("inventory.balance.read")),
 ):
     scope = resolve_outlet_filter(user, outlet_id)  # SEC: no cross-outlet stock reads
     items, meta = await inventory_service.stock_balance(
-        outlet_ids=scope, item_id=item_id, page=page, per_page=per_page,
+        outlet_ids=scope, item_id=item_id, search=search, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
 
@@ -26,13 +27,15 @@ async def stock_balance(
 async def list_mov(
     outlet_id: Optional[str] = None, item_id: Optional[str] = None,
     movement_type: Optional[str] = None, date_from: Optional[str] = None,
+    usage_only: bool = Query(False, description="Hanya pemakaian/keluar + meta.summary (Usage Log)"),
+    search: Optional[str] = Query(None, max_length=60, description="Cari nama item"),
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
     user: dict = Depends(require_perm("inventory.movement.read")),
 ):
     outlet_ids = resolve_outlet_filter(user, outlet_id)  # requested outlet must be in scope
     items, meta = await inventory_service.list_movements(
         outlet_ids=outlet_ids, item_id=item_id, movement_type=movement_type,
-        date_from=date_from, page=page, per_page=per_page,
+        date_from=date_from, usage_only=usage_only, search=search, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
 

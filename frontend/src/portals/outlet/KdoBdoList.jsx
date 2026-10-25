@@ -24,6 +24,17 @@ import { toast } from "sonner";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 import { cn } from "@/lib/utils";
 
+/** Opsi filter status daftar KDO/BDO/FDO (dipakai juga oleh FdoPage). */
+export const DAILY_ORDER_STATUS_OPTIONS = [
+  { value: "", label: "Semua status" },
+  { value: "draft", label: "Draft" },
+  { value: "submitted", label: "Diajukan" },
+  { value: "awaiting_approval", label: "Menunggu Approval" },
+  { value: "approved", label: "Disetujui" },
+  { value: "rejected", label: "Ditolak" },
+  { value: "converted", label: "Dikonversi" },
+];
+
 const META_BY_KIND = {
   kdo: {
     title: "KDO — Kitchen Daily Order",
@@ -94,15 +105,7 @@ export default function KdoBdoList({ kind = "kdo" }) {
             <SimpleSelect
               value={status}
               onValueChange={(v) => { setStatus(v); setPage(1); }}
-              options={[
-                { value: "", label: "Semua status" },
-                { value: "draft", label: "Draft" },
-                { value: "submitted", label: "Diajukan" },
-                { value: "awaiting_approval", label: "Menunggu Approval" },
-                { value: "approved", label: "Disetujui" },
-                { value: "rejected", label: "Ditolak" },
-                { value: "converted", label: "Dikonversi" },
-              ]}
+              options={DAILY_ORDER_STATUS_OPTIONS}
               placeholder="Semua status"
               className="glass-input w-full"
               ariaLabel="Filter status"

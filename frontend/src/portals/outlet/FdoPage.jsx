@@ -16,6 +16,8 @@ import {
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
+import SimpleSelect from "@/components/shared/SimpleSelect";
+import { DAILY_ORDER_STATUS_OPTIONS } from "./KdoBdoList";
 import { Label } from "../../components/ui/label";
 import {
   Plus, Trash2, Search, Star, ChevronLeft, ChevronRight,
@@ -34,6 +36,7 @@ export default function FdoPage() {
   const [fdoList, setFdoList] = useState([]);
   const [meta, setMeta] = useState({ total: 0 });
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [lines, setLines] = useState([]);
@@ -56,11 +59,12 @@ export default function FdoPage() {
     try {
       const params = new URLSearchParams({ page, per_page: 20 });
       if (selectedOutlet) params.set("outlet_id", selectedOutlet);
+      if (status) params.set("status", status);
       const res = await api.get(`/outlet/fdo?${params}`);
       setFdoList(res.data.data || []);
       setMeta(res.data.meta || {});
     } finally { setLoading(false); }
-  }, [selectedOutlet, page]);
+  }, [selectedOutlet, page, status]);
 
   const fetchFavorites = useCallback(async () => {
     if (!selectedOutlet) { setFavorites([]); return; }
@@ -194,6 +198,17 @@ export default function FdoPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <div className="w-full sm:w-48">
+            <SimpleSelect
+              value={status}
+              onValueChange={(v) => { setStatus(v); setPage(1); }}
+              options={DAILY_ORDER_STATUS_OPTIONS}
+              placeholder="Semua status"
+              className="glass-input w-full"
+              ariaLabel="Filter status"
+              testId="fdo-status"
+            />
+          </div>
           <Button variant="outline" size="icon" onClick={fetchFdoList} aria-label="Muat ulang daftar FDO" title="Muat ulang" data-testid="fdo-refresh"><RefreshCw className="h-4 w-4" /></Button>
           <Button onClick={() => setShowForm(true)} data-testid="fdo-create-btn">
             <Plus className="h-4 w-4" /> FDO Baru
@@ -239,7 +254,7 @@ export default function FdoPage() {
               <div data-testid="fdo-list-empty">
                 <EmptyState
                   icon={Utensils}
-                  title="Belum ada FDO"
+                  title={status ? "Tidak ada FDO dengan status ini" : "Belum ada FDO"}
                   description="Buat FDO untuk mengajukan kebutuhan floor/service harian ke purchasing."
                   action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>FDO Baru</Button>}
                 />

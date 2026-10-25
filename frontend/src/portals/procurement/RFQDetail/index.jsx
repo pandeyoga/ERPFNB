@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft, Plus, Send, CheckCircle2, X, RefreshCw,
-  Trophy, Clock, FileCheck, AlertCircle, FileSearch,
+  Trophy, Clock, FileCheck, AlertCircle, FileSearch, Search,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import api from "@/lib/api";
+import api, { fetchAll, unwrap } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 import StatusPill from "@/components/shared/StatusPill";
@@ -30,6 +30,7 @@ import StatusPill from "@/components/shared/StatusPill";
 export function RFQForm() {
   const navigate = useNavigate();
   const [vendors, setVendors] = useState([]);
+  const [vendorQuery, setVendorQuery] = useState("");
   const [items, setItems] = useState([]);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -41,9 +42,14 @@ export function RFQForm() {
   const [lines, setLines] = useState([{ item_name: "", qty: 1, uom: "pcs", est_unit_price: 0 }]);
 
   useEffect(() => {
-    api.get("/master/vendors").then(r => setVendors(r.data.data?.items || r.data.data || []));
+    // Semua vendor aktif (bukan hanya halaman pertama) — dipilih lewat pencarian di bawah.
+    fetchAll("/master/vendors", { active: true }).then(r => setVendors(unwrap(r) || [])).catch(() => {});
     api.get("/master/items").then(r => setItems(r.data.data?.items || r.data.data || []));
   }, []);
+
+  const vq = vendorQuery.trim().toLowerCase();
+  const shownVendors = vendors.filter(v =>
+    form.vendor_ids.includes(v.id) || !vq || `${v.name} ${v.code || ""}`.toLowerCase().includes(vq));
 
   const addLine = () => setLines(l => [...l, { item_name: "", qty: 1, uom: "pcs", est_unit_price: 0 }]);
   const removeLine = (i) => setLines(l => l.filter((_, idx) => idx !== i));
@@ -108,9 +114,23 @@ export function RFQForm() {
             <Badge variant="outline" data-testid="rfq-form-vendor-count">{form.vendor_ids.length} dipilih</Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2" data-testid="rfq-form-vendor-list">
-            {vendors.slice(0, 20).map(v => (
+        <CardContent className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={vendorQuery}
+              onChange={e => setVendorQuery(e.target.value)}
+              placeholder={`Cari dari ${vendors.length} vendor…`}
+              aria-label="Cari vendor"
+              className="glass-input pl-9"
+              data-testid="rfq-form-vendor-search"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1" data-testid="rfq-form-vendor-list">
+            {shownVendors.length === 0 && (
+              <p className="col-span-2 text-sm text-muted-foreground py-2">Tidak ada vendor yang cocok.</p>
+            )}
+            {shownVendors.map(v => (
               <button
                 key={v.id}
                 type="button"

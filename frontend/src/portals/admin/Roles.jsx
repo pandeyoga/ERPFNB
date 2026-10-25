@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, ShieldCheck, Shield } from "lucide-react";
+import { Plus, Edit2, Trash2, ShieldCheck, Shield, Eye } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,13 @@ export default function Roles({ embedded = false } = {}) {
                     <h3 className="text-sm md:text-base font-semibold truncate">{r.name}</h3>
                   </div>
                   {/* Aksi selalu terlihat (sebelumnya hanya muncul saat hover) */}
+                  {r.is_system && (
+                    <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)} className="-mt-1 -mr-1"
+                            title="Lihat permission" aria-label={`Lihat permission role ${r.name}`}
+                            data-testid={`role-view-${r.id}`}>
+                      <Eye className="!h-3.5 !w-3.5" />
+                    </Button>
+                  )}
                   {!r.is_system && (
                     <div className="flex gap-1 -mt-1 -mr-1">
                       <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)}
@@ -130,6 +137,9 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
 
   if (!editing) return null;
   const isNew = !editing.id;
+  // Role sistem dikelola seed/kode — dialog dibuka sebagai mode lihat (baca-saja).
+  const readOnly = !!editing.is_system;
+  const hasWildcard = (form.permissions || []).includes("*");
 
   const submit = async () => {
     setSaving(true);
@@ -148,8 +158,9 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
     }
   };
 
-  // Group perms
-  const grouped = perms.reduce((acc, p) => {
+  // Group perms (mode lihat: hanya permission yang dimiliki role)
+  const shownPerms = readOnly ? perms.filter(p => hasWildcard || (form.permissions || []).includes(p.code)) : perms;
+  const grouped = shownPerms.reduce((acc, p) => {
     (acc[p.category] = acc[p.category] || []).push(p);
     return acc;
   }, {});
@@ -158,8 +169,13 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
     <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="glass-card max-w-2xl" data-testid="role-form-dialog">
         <DialogHeader>
-          <DialogTitle>{isNew ? "Role Baru" : "Edit Role"}</DialogTitle>
+          <DialogTitle>{isNew ? "Role Baru" : readOnly ? `Role ${editing.name}` : "Edit Role"}</DialogTitle>
         </DialogHeader>
+        {readOnly && (
+          <p className="text-xs text-muted-foreground -mt-1" data-testid="role-form-readonly-note">
+            Role sistem tidak dapat diubah. Buat role baru jika butuh kombinasi permission lain.
+          </p>
+        )}
         <div className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Kode *" htmlFor="role-form-code">
@@ -169,17 +185,19 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                      data-testid="role-form-code" />
             </Field>
             <Field label="Nama *" htmlFor="role-form-name">
-              <Input id="role-form-name" value={form.name || ""} onChange={e => setForm({...form, name: e.target.value})}
+              <Input id="role-form-name" value={form.name || ""} disabled={readOnly} onChange={e => setForm({...form, name: e.target.value})}
                      className="glass-input" placeholder="Nama role"
                      data-testid="role-form-name" />
             </Field>
           </div>
           <Field label="Deskripsi" htmlFor="role-form-description">
-            <Textarea id="role-form-description" value={form.description || ""} onChange={e => setForm({...form, description: e.target.value})}
+            <Textarea id="role-form-description" value={form.description || ""} disabled={readOnly} onChange={e => setForm({...form, description: e.target.value})}
                       className="glass-input min-h-[60px]"
                       data-testid="role-form-description" />
           </Field>
-          <Field label={`Permissions (${(form.permissions || []).length} dipilih)`}>
+          <Field label={readOnly
+            ? (hasWildcard ? "Permissions (semua — *)" : `Permissions (${(form.permissions || []).length})`)
+            : `Permissions (${(form.permissions || []).length} dipilih)`}>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs text-muted-foreground">Permission menggunakan format dot-notation. User punya akses jika memiliki salah satu role yang berisi permission.</span>
               <InlineHelp id="rbac-permission" size="xs" placement="right" />
@@ -189,7 +207,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                 <div key={cat} data-testid={`role-form-perm-group-${cat}`}>
                   <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5 flex items-center justify-between">
                     <span>{cat}</span>
-                    <button
+                    {!readOnly && <button
                       type="button"
                       className="text-aurora text-[11px] font-medium normal-case tracking-normal hover:underline"
                       onClick={() => {
@@ -201,13 +219,14 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                         setForm({...form, permissions: Array.from(next)});
                       }}
                       data-testid={`role-form-perm-toggle-all-${cat}`}
-                    >Pilih/lepas semua</button>
+                    >Pilih/lepas semua</button>}
                   </div>
                   <div className="space-y-1">
                     {list.map(p => (
-                      <label key={p.code} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <label key={p.code} className={`flex items-center gap-2 text-xs ${readOnly ? "" : "cursor-pointer"}`}>
                         <Checkbox
-                          checked={(form.permissions || []).includes(p.code)}
+                          disabled={readOnly}
+                          checked={hasWildcard || (form.permissions || []).includes(p.code)}
                           onCheckedChange={(c) => {
                             const next = new Set(form.permissions || []);
                             if (c) next.add(p.code); else next.delete(p.code);
@@ -226,10 +245,12 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
           </Field>
         </div>
         <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 px-5 py-3 border-t border-border/50 bg-background/95 backdrop-blur-sm">
-          <Button variant="outline" onClick={onClose} data-testid="role-form-cancel">Batal</Button>
-          <Button onClick={submit} disabled={saving} data-testid="role-form-save">
-            {saving ? "Menyimpan…" : "Simpan"}
-          </Button>
+          <Button variant="outline" onClick={onClose} data-testid="role-form-cancel">{readOnly ? "Tutup" : "Batal"}</Button>
+          {!readOnly && (
+            <Button onClick={submit} disabled={saving} data-testid="role-form-save">
+              {saving ? "Menyimpan…" : "Simpan"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

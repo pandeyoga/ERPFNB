@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { FileSearch, Plus, RefreshCw, Search, Filter, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from "@/components/shared/DataTable";
 import PageHeader from "@/components/shared/PageHeader";
@@ -26,12 +27,13 @@ export default function RFQList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const debouncedSearch = useDebounce(search.trim(), 350);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = { per_page: 30 };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (statusFilter !== "all") params.status = statusFilter;
       const res = await api.get("/rfq", { params });
       if (res.data.success) {
@@ -43,7 +45,7 @@ export default function RFQList() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
 
   useEffect(() => { load(); }, [load]);
 
