@@ -61,11 +61,12 @@ export default function CMSScheduleFields({ form, onChange, currentStatus }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Publish At */}
         <div>
-          <Label className="text-xs text-muted-foreground flex items-center gap-1">
+          <Label htmlFor="cms-publish-at" className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" /> Publish Otomatis (opsional)
           </Label>
           <div className="flex gap-1 mt-1">
             <Input
+              id="cms-publish-at"
               type="datetime-local"
               value={toLocalInput(form.publish_at)}
               onChange={(e) => onChange("publish_at", parseToISO(e.target.value))}
@@ -76,7 +77,7 @@ export default function CMSScheduleFields({ form, onChange, currentStatus }) {
               <Button
                 variant="ghost" size="icon" className="h-9 w-9 shrink-0"
                 onClick={() => onChange("publish_at", null)}
-                title="Hapus jadwal"
+                title="Hapus jadwal" aria-label="Hapus jadwal publish"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -89,11 +90,12 @@ export default function CMSScheduleFields({ form, onChange, currentStatus }) {
 
         {/* Unpublish At */}
         <div>
-          <Label className="text-xs text-muted-foreground flex items-center gap-1">
+          <Label htmlFor="cms-unpublish-at" className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" /> Unpublish Otomatis (opsional)
           </Label>
           <div className="flex gap-1 mt-1">
             <Input
+              id="cms-unpublish-at"
               type="datetime-local"
               value={toLocalInput(form.unpublish_at)}
               onChange={(e) => onChange("unpublish_at", parseToISO(e.target.value))}
@@ -104,7 +106,7 @@ export default function CMSScheduleFields({ form, onChange, currentStatus }) {
               <Button
                 variant="ghost" size="icon" className="h-9 w-9 shrink-0"
                 onClick={() => onChange("unpublish_at", null)}
-                title="Hapus jadwal"
+                title="Hapus jadwal" aria-label="Hapus jadwal unpublish"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>

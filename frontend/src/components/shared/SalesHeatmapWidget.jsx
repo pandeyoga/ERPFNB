@@ -2,13 +2,14 @@
  * Phase 4B: Sales Heatmap Widget
  * Displays day-of-week × week matrix for F&B peak pattern analysis
  */
-import { useState, useEffect, useMemo } from "react";
-import { Calendar, TrendingUp, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Activity } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { toast } from "sonner";
 
 export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
@@ -78,28 +79,15 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
           <Activity className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">Sales Pattern — {data.period}</h3>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setMetric("revenue")}
-            className={cn(
-              "px-2.5 py-1 rounded-full text-xs transition-colors",
-              metric === "revenue" ? "bg-foreground/10 font-semibold" : "hover:bg-foreground/5"
-            )}
-            data-testid="heatmap-metric-revenue"
-          >
-            Revenue
-          </button>
-          <button
-            onClick={() => setMetric("trx")}
-            className={cn(
-              "px-2.5 py-1 rounded-full text-xs transition-colors",
-              metric === "trx" ? "bg-foreground/10 font-semibold" : "hover:bg-foreground/5"
-            )}
-            data-testid="heatmap-metric-trx"
-          >
-            Trx
-          </button>
-        </div>
+        <SegmentedFilter
+          value={metric}
+          onChange={setMetric}
+          ariaLabel="Metrik heatmap"
+          options={[
+            { value: "revenue", label: "Revenue", testId: "heatmap-metric-revenue" },
+            { value: "trx", label: "Transaksi", testId: "heatmap-metric-trx" },
+          ]}
+        />
       </div>
 
       <div className="overflow-x-auto">

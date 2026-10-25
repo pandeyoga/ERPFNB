@@ -71,6 +71,9 @@ async def legacy_seed_field_names() -> dict:
         r = await db.reservations.update_many(
             {old: {"$exists": True}, new: {"$exists": False}}, {"$rename": {old: new}})
         n = max(n, r.modified_count)
+    for field, default in (("deposit_status", "none"), ("deposit_amount", 0)):
+        r = await db.reservations.update_many({field: {"$exists": False}}, {"$set": {field: default}})
+        n = max(n, r.modified_count)
     p = await db.purchase_requests.update_many({"status": "converted_to_po"}, {"$set": {"status": "converted"}})
     # anomaly detectors emit severe/mild; old seeds wrote high/medium/low (filters & counters saw 0)
     a = 0

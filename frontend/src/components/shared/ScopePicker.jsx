@@ -5,14 +5,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Globe2, Building2, Store, Loader2 } from "lucide-react";
-import api, { unwrap } from "@/lib/api";
-import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
-import { fetchAll } from "@/lib/api";
+import { fetchAll, unwrap } from "@/lib/api";
 const TYPES = [
   { value: "group", label: "Group", icon: Globe2 },
   { value: "brand", label: "Brand", icon: Building2 },
@@ -101,34 +100,16 @@ export default function ScopePicker({ className, onChange }) {
       data-testid="config-scope-picker"
     >
       <span className="text-xs uppercase tracking-wide text-muted-foreground mr-1">Scope</span>
-      <div
-        className="inline-flex items-center gap-1 rounded-full bg-foreground/[0.04] p-1"
-        data-testid="config-scope-type-toggle"
-        role="radiogroup"
-      >
-        {TYPES.map((t) => {
+      <SegmentedFilter
+        value={scopeType}
+        onChange={setType}
+        ariaLabel="Scope"
+        testId="config-scope-type-toggle"
+        options={TYPES.map((t) => {
           const Icon = t.icon;
-          const active = scopeType === t.value;
-          return (
-            <button
-              key={t.value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => setType(t.value)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
-                "transition-colors",
-                active ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-              data-testid={`config-scope-type-${t.value}`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {t.label}
-            </button>
-          );
+          return { value: t.value, label: <><Icon /> {t.label}</>, testId: `config-scope-type-${t.value}` };
         })}
-      </div>
+      />
 
       {scopeType !== "group" && (
         <div className="min-w-[220px]">

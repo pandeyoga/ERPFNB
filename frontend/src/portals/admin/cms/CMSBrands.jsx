@@ -32,7 +32,7 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import CMSBrandPreview from "./CMSBrandPreview";
 import CMSWorkflow, { WorkflowBadge } from "./CMSWorkflow";
 import BrandInstagramPosts from "./BrandInstagramPosts";
-import SegmentedFilter from "./SegmentedFilter";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import EmptyState from "@/components/shared/EmptyState";
 
 const EMPTY_FORM = {
@@ -419,7 +419,7 @@ export default function CMSBrands() {
                          onChange={e => setForm(f=>({...f,color:e.target.value}))}
                          aria-label="Pilih warna brand"
                          className="h-9 w-12 rounded border cursor-pointer" />
-                  <Input value={form.color} onChange={e => setForm(f=>({...f,color:e.target.value}))} className="flex-1" />
+                  <Input value={form.color} onChange={e => setForm(f=>({...f,color:e.target.value}))} className="flex-1" aria-label="Kode warna brand (hex)" placeholder="#C8A96E" />
                 </div>
               </div>
               <div className="space-y-1">

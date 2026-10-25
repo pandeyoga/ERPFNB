@@ -8,6 +8,7 @@ import api, { unwrap } from "@/lib/api";
 import { fmtRp, fmtRelative } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
 const RANGES = [
   { v: 7, l: "7d" },
@@ -52,16 +53,12 @@ export default function ForecastGuardWidget() {
             <p className="text-[11px] text-muted-foreground">Pengeluaran yang melewati forecast — last {days}d</p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          {RANGES.map(r => (
-            <button key={r.v} onClick={() => setDays(r.v)}
-              className={cn("px-3 py-1 rounded-full text-xs transition-colors",
-                days === r.v ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground")}
-              data-testid={`fg-widget-range-${r.v}`}>
-              {r.l}
-            </button>
-          ))}
-        </div>
+        <SegmentedFilter
+          value={days}
+          onChange={(v) => setDays(Number(v))}
+          ariaLabel="Rentang hari"
+          options={RANGES.map(r => ({ value: r.v, label: r.l, testId: `fg-widget-range-${r.v}` }))}
+        />
       </div>
 
       {loading && <div className="h-32 skeleton rounded-xl" />}

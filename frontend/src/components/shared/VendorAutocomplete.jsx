@@ -47,7 +47,7 @@ export default function VendorAutocomplete({
         placeholder={placeholder}
         className="glass-input"
         id={id}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel || (id ? undefined : "Cari vendor")}
         autoComplete="off"
         data-testid={dataTestId}
       />

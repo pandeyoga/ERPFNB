@@ -79,7 +79,7 @@ export default function ItemAutocomplete({
         placeholder={placeholder}
         className="glass-input"
         id={id}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel || (id ? undefined : "Cari item")}
         autoComplete="off"
         data-testid={dataTestId}
       />

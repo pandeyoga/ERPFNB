@@ -42,7 +42,7 @@ import CashPositionWidget from "@/components/shared/CashPositionWidget";
 import DashboardPresetSelector from "@/components/shared/DashboardPresetSelector";
 import CollapsibleSection from "@/components/shared/CollapsibleSection";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 
@@ -360,13 +360,12 @@ export default function ExecutiveHome() {
             <div className="glass-card p-4 lg:col-span-2">
               <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                 <h3 className="text-sm md:text-base font-semibold">Sales Trend</h3>
-                <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-                  <TabsList aria-label="Rentang hari">
-                    {RANGES.map(r => (
-                      <TabsTrigger key={r.v} value={String(r.v)} data-testid={`exec-range-${r.v}`}>{r.l}</TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
+                <SegmentedFilter
+                  value={days}
+                  onChange={(v) => setDays(Number(v))}
+                  ariaLabel="Rentang hari"
+                  options={RANGES.map(r => ({ value: r.v, label: r.l, testId: `exec-range-${r.v}` }))}
+                />
               </div>
               {loadingT ? (
                 <div className="h-40 skeleton rounded-xl" />

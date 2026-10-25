@@ -32,7 +32,7 @@ import CMSScheduleFields from "@/components/shared/CMSScheduleFields";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import CMSNewsPreview from "./CMSNewsPreview";
 import CMSWorkflow, { WorkflowBadge } from "./CMSWorkflow";
-import SegmentedFilter from "./SegmentedFilter";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import EmptyState from "@/components/shared/EmptyState";
 
 const CATEGORIES = ["Opening", "Events", "Award", "Story", "Announcement", "Promo"];

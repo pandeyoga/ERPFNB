@@ -110,9 +110,10 @@ async def finance_deposit_summary(
     pipeline = [
         {"$match": q},
         {"$group": {
-            "_id": {"outlet_id": "$outlet_id", "deposit_status": "$deposit_status"},
+            # legacy rows may lack deposit fields → bucket them as "none"
+            "_id": {"outlet_id": "$outlet_id", "deposit_status": {"$ifNull": ["$deposit_status", "none"]}},
             "count": {"$sum": 1},
-            "total_deposit": {"$sum": "$deposit_amount"},
+            "total_deposit": {"$sum": {"$ifNull": ["$deposit_amount", 0]}},
         }},
     ]
     rows = await db.reservations.aggregate(pipeline).to_list(100)

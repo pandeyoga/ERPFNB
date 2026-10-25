@@ -3,10 +3,11 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, ShieldCheck, ChevronRight, Zap, RefreshCw } from "lucide-react";
+import { AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { fmtRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
 const RANGES = [
   { v: 7, l: "7d" },
@@ -61,16 +62,12 @@ export default function AnomalyOverviewWidget() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          {RANGES.map(r => (
-            <button key={r.v} onClick={() => setDays(r.v)}
-              className={cn("px-3 py-1 rounded-full text-xs transition-colors",
-                days === r.v ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground")}
-              data-testid={`anomaly-widget-range-${r.v}`}>
-              {r.l}
-            </button>
-          ))}
-        </div>
+        <SegmentedFilter
+          value={days}
+          onChange={(v) => setDays(Number(v))}
+          ariaLabel="Rentang hari"
+          options={RANGES.map(r => ({ value: r.v, label: r.l, testId: `anomaly-widget-range-${r.v}` }))}
+        />
       </div>
 
       {loading && <div className="h-32 skeleton rounded-xl" />}

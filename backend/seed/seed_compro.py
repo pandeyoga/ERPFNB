@@ -500,6 +500,7 @@ async def seed_reservations(db):
             "loyalty_id": user.get("id") if user else None,
             "reservation_date": res_date, "reservation_time": random.choice(TIMES),
             "pax": random.randint(2, 12),
+            "deposit_amount": 0, "deposit_status": "none",
             "occasion": random.choice(OCCASIONS),
             "notes": random.choice(["Tolong siapkan kue ulang tahun", "Meja dekat jendela",
                                     "Vegetarian menu needed", "", "No pork please"]),

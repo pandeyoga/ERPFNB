@@ -118,7 +118,7 @@ export default function OpnameSession() {
   }, [sess]);
 
   const backButton = (
-    <Button variant="ghost" onClick={() => navigate("/inventory/opname")} data-testid="opn-sess-back">
+    <Button variant="ghost" size="sm" className="-ml-2 mb-1" onClick={() => navigate("/inventory/opname")} data-testid="opn-sess-back">
       <ArrowLeft /> Kembali ke Stock Opname
     </Button>
   );

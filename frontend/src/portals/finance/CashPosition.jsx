@@ -22,7 +22,7 @@ import { GlassTooltip } from "@/components/shared/charts/chartKit";
 import UpdateBalanceModal from "@/components/shared/UpdateBalanceModal";
 import CashCsvUploader from "@/components/shared/CashCsvUploader";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -285,13 +285,13 @@ export default function CashPosition({ embedded = false }) {
               Asumsi: AP outflow per due-date + flat daily burn dari rata-rata 30 hari.
             </p>
           </div>
-          <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-            <TabsList data-testid="cash-projection-days" aria-label="Horizon proyeksi">
-              {[30, 60, 90].map((d) => (
-                <TabsTrigger key={d} value={String(d)} data-testid={`cash-days-${d}`}>{d} hari</TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <SegmentedFilter
+            value={days}
+            onChange={(v) => setDays(Number(v))}
+            ariaLabel="Horizon proyeksi"
+            testId="cash-projection-days"
+            options={[30, 60, 90].map((d) => ({ value: d, label: `${d} hari`, testId: `cash-days-${d}` }))}
+          />
         </div>
         {projection?.series?.length ? (
           <div style={{ height: 260 }} data-testid="cash-projection-chart">

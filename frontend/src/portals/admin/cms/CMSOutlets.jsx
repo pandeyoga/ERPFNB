@@ -25,7 +25,7 @@ import api from "@/lib/api";
 import ImageUpload from "@/components/shared/ImageUpload";
 import CMSScheduleFields from "@/components/shared/CMSScheduleFields";
 import EmptyState from "@/components/shared/EmptyState";
-import SegmentedFilter from "./SegmentedFilter";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
 const ALL_FEATURES = [
   "Dine In", "Takeaway", "Delivery", "Bar", "Coworking",

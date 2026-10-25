@@ -9,7 +9,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { GlassTooltip, axisProps, gridProps } from "@/components/shared/charts/chartKit";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
-import SegmentedFilter from "./SegmentedFilter";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import api from "@/lib/api";
 import { toast } from "sonner";
 

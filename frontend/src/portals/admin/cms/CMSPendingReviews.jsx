@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import EmptyState from "@/components/shared/EmptyState";
-import SegmentedFilter from "./SegmentedFilter";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import api from "@/lib/api";
