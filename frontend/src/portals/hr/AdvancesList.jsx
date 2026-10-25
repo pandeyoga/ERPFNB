@@ -170,8 +170,8 @@ export default function AdvancesList({ embedded = false }) {
               <SelectItem value="all">Semua status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="awaiting_approval">Menunggu Approval</SelectItem>
-              <SelectItem value="repaying">Repaying</SelectItem>
-              <SelectItem value="settled">Settled</SelectItem>
+              <SelectItem value="repaying">Cicilan Berjalan</SelectItem>
+              <SelectItem value="settled">Lunas</SelectItem>
               <SelectItem value="rejected">Ditolak</SelectItem>
             </SelectContent>
           </Select>

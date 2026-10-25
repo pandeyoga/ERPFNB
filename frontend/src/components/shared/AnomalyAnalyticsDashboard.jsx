@@ -40,7 +40,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
       ];
 
       const statusData = [
-        { name: "Open", value: summary.counts.open },
+        { name: "Terbuka", value: summary.counts.open },
         { name: "Resolved", value: summary.counts.resolved },
       ];
 

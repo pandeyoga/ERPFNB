@@ -376,7 +376,7 @@ export default function CRMAnalytics({ embedded = false }) {
                     render: (r) => <span className="font-medium">{r.label}</span> },
                   { key: "active_prev", label: "Active Prev", numeric: true, sortable: true },
                   { key: "retained", label: "Retained", numeric: true, sortable: true },
-                  { key: "new", label: "New", numeric: true, sortable: true,
+                  { key: "new", label: "Baru", numeric: true, sortable: true,
                     render: (r) => <span className="text-blue-600">+{r.new}</span> },
                   { key: "retention_rate", label: "Retention", numeric: true, sortable: true,
                     render: (r) => (

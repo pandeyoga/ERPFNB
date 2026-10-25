@@ -140,7 +140,7 @@ const hrJobApplicationsTour = {
     {
       target: "[data-testid='status-filter']",
       title: "Pipeline Rekrutmen",
-      content: "Filter status lamaran:\n\n\u2022 **New** — baru masuk\n\u2022 **Reviewed** — sudah dibaca HR\n\u2022 **Interview** — dijadwalkan interview\n\u2022 **Hired** — diterima\n\u2022 **Rejected** — ditolak",
+      content: "Filter status lamaran:\n\n\u2022 **New** — baru masuk\n\u2022 **Reviewed** — sudah dibaca HR\n\u2022 **Interview** — dijadwalkan interview\n\u2022 **Hired** — diterima\n\u2022 **Ditolak** — ditolak",
       placement: "bottom",
     },
     {

@@ -26,9 +26,9 @@ import { useOutletScopeCtx } from "../OutletScopeContext";
 // Label tab filter = label kamus StatusPill (satu kamus status untuk seluruh aplikasi).
 const STATUS_META = {
   draft: { label: "Draft" },
-  sent: { label: "Sent" },
-  received: { label: "Received" },
-  cancelled: { label: "Cancelled" },
+  sent: { label: "Terkirim" },
+  received: { label: "Diterima" },
+  cancelled: { label: "Dibatalkan" },
 };
 
 export default function StockTransfers() {

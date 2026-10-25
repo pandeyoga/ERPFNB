@@ -97,11 +97,11 @@ export default function KdoBdoList({ kind = "kdo" }) {
               options={[
                 { value: "", label: "Semua status" },
                 { value: "draft", label: "Draft" },
-                { value: "submitted", label: "Submitted" },
+                { value: "submitted", label: "Diajukan" },
                 { value: "awaiting_approval", label: "Menunggu Approval" },
-                { value: "approved", label: "Approved" },
-                { value: "rejected", label: "Rejected" },
-                { value: "converted", label: "Converted" },
+                { value: "approved", label: "Disetujui" },
+                { value: "rejected", label: "Ditolak" },
+                { value: "converted", label: "Dikonversi" },
               ]}
               placeholder="Semua status"
               className="glass-input w-full"

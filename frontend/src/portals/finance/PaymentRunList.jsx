@@ -29,9 +29,9 @@ import StatusPill from "@/components/shared/StatusPill";
 const STATUS_TABS = [
   { key: "all", label: "Semua" },
   { key: "draft", label: "Draft" },
-  { key: "confirmed", label: "Confirmed" },
+  { key: "confirmed", label: "Dikonfirmasi" },
   { key: "posted", label: "Posted" },
-  { key: "cancelled", label: "Cancelled" },
+  { key: "cancelled", label: "Dibatalkan" },
 ];
 
 export default function PaymentRunList({ embedded = false }) {

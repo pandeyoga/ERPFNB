@@ -20,9 +20,9 @@ import { useOutletScopeCtx } from "./OutletScopeContext";
 const STATUS_TABS = [
   { key: "",          label: "Semua" },
   { key: "draft",     label: "Draft" },
-  { key: "submitted", label: "Submitted" },
-  { key: "validated", label: "Validated" },
-  { key: "rejected",  label: "Rejected" },
+  { key: "submitted", label: "Diajukan" },
+  { key: "validated", label: "Tervalidasi" },
+  { key: "rejected",  label: "Ditolak" },
 ];
 
 export default function DailySalesList({ embedded = false }) {

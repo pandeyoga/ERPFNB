@@ -150,7 +150,7 @@ export default function IncentiveList({ embedded = false }) {
                 ) },
                 { key: "rule_type", label: "Rule Type", sortable: true, render: s => <span className="text-xs">{s.rule_type}</span> },
                 { key: "employees", label: "Employees", align: "center", sortable: true, sortAccessor: s => s.employee_ids?.length || 0, render: s => s.employee_ids?.length || 0 },
-                { key: "active", label: "Active", align: "center", render: s => <StatusPill status={s.active ? "active" : "disabled"} /> },
+                { key: "active", label: "Aktif", align: "center", render: s => <StatusPill status={s.active ? "active" : "disabled"} /> },
               ]}
               rows={schemes}
               loading={loading}

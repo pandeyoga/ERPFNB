@@ -19,10 +19,10 @@ import useExcelExport from "@/hooks/useExcelExport";
 const STATUS_TABS = [
   { key: "",          label: "Semua" },
   { key: "draft",     label: "Draft" },
-  { key: "submitted", label: "Submitted" },
-  { key: "approved",  label: "Approved" },
-  { key: "rejected",  label: "Rejected" },
-  { key: "converted", label: "Converted" },
+  { key: "submitted", label: "Diajukan" },
+  { key: "approved",  label: "Disetujui" },
+  { key: "rejected",  label: "Ditolak" },
+  { key: "converted", label: "Dikonversi" },
 ];
 
 const SOURCE_LABEL = { manual: "Manual", KDO: "KDO", BDO: "BDO" };

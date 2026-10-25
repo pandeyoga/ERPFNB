@@ -603,7 +603,7 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
             </div>
           </div>
           <div className="ml-auto text-right">
-            <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Redeemed</div>
+            <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Ditukar</div>
             <div className="font-medium">{(r.redemption_count || 0).toLocaleString()}</div>
           </div>
         </div>

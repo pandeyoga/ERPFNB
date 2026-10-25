@@ -15,7 +15,7 @@ export const inlineHelpRegistry = {
   },
   "finance-period-validation": {
     title: "Fase Validasi",
-    content: "Pastikan semua **daily sales** dari outlet sudah divalidasi sebelum melanjutkan ke fase berikutnya.\n\n• Status harus **Approved**\n• Tidak ada laporan yang **Rejected** atau **Pending**",
+    content: "Pastikan semua **daily sales** dari outlet sudah divalidasi sebelum melanjutkan ke fase berikutnya.\n\n• Status harus **Disetujui**\n• Tidak ada laporan yang **Ditolak** atau **Menunggu**",
   },
   "finance-period-anomaly": {
     title: "Cek Anomali",
@@ -35,15 +35,15 @@ export const inlineHelpRegistry = {
   },
   "period-status": {
     title: "Status Periode Akuntansi",
-    content: "• **Open** — bisa posting transaksi baru\n• **Locked** — tidak bisa posting; perlu unlock oleh Finance Manager\n• **Closed** — finalized; audit trail permanent\n\nLock periode setelah semua transaksi sebulan sudah divalidasi.",
+    content: "• **Terbuka** — bisa posting transaksi baru\n• **Dikunci** — tidak bisa posting; perlu unlock oleh Finance Manager\n• **Ditutup** — finalized; audit trail permanent\n\nLock periode setelah semua transaksi sebulan sudah divalidasi.",
   },
   "payment-status": {
     title: "Status Payment Request",
-    content: "• **Draft** — belum disubmit\n• **Pending** — menunggu approval\n• **Approved** — siap bayar\n• **Paid** — sudah dibayar, JE ter-post\n• **Rejected** — ditolak, perlu revisi",
+    content: "• **Draft** — belum disubmit\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap bayar\n• **Dibayar** — sudah dibayar, JE ter-post\n• **Ditolak** — ditolak, perlu revisi",
   },
   "payment-request-workflow": {
     title: "Workflow Payment Request",
-    content: "**Alur lengkap PR dari awal sampai paid:**\n\n1. **Draft** → Buat PR, isi detail items\n2. **Submit** → Kirim untuk approval\n3. **Approve/Reject** → Manager/GM review\n4. **Payment** → Finance eksekusi pembayaran\n5. **Paid** → Auto-post JE (Dr Expense, Cr Bank)",
+    content: "**Alur lengkap PR dari awal sampai paid:**\n\n1. **Draft** → Buat PR, isi detail items\n2. **Submit** → Kirim untuk approval\n3. **Approve/Reject** → Manager/GM review\n4. **Payment** → Finance eksekusi pembayaran\n5. **Dibayar** → Auto-post JE (Dr Expense, Cr Bank)",
   },
   "payment-request-period": {
     title: "Period Week",
@@ -85,15 +85,15 @@ export const inlineHelpRegistry = {
   },
   "pr-status-workflow": {
     title: "Status Workflow PR",
-    content: "**Alur lengkap Purchase Request:**\n\n1. **Draft** → PR dibuat, belum submit\n2. **Submitted** → Menunggu approval manager\n3. **Approved** → Siap dibuatkan PO\n4. **Rejected** → Ditolak, perlu revisi\n5. **Converted** → Sudah dibuatkan PO",
+    content: "**Alur lengkap Purchase Request:**\n\n1. **Draft** → PR dibuat, belum submit\n2. **Diajukan** → Menunggu approval manager\n3. **Disetujui** → Siap dibuatkan PO\n4. **Ditolak** → Ditolak, perlu revisi\n5. **Dikonversi** → Sudah dibuatkan PO",
   },
   "po-status": {
     title: "Status Purchase Order",
-    content: "• **Draft** — belum dikirim ke vendor\n• **Sent** — sudah dikirim\n• **Partial** — GR sebagian\n• **Received** — GR semua item\n• **Cancelled** — dibatalkan",
+    content: "• **Draft** — belum dikirim ke vendor\n• **Terkirim** — sudah dikirim\n• **Sebagian** — GR sebagian\n• **Diterima** — GR semua item\n• **Dibatalkan** — dibatalkan",
   },
   "po-status-workflow": {
     title: "Workflow PO ke GR",
-    content: "**Alur dari PO sampai GR:**\n\n1. **Draft** → Buat PO dari PR/manual\n2. **Sent** → Kirim ke vendor (email/print)\n3. **Partial** → Terima barang sebagian (GR partial)\n4. **Received** → Terima semua barang (GR complete)\n\nSetiap GR otomatis:\n• Update stok di inventory\n• Posting jurnal (Dr Expense/Inventory, Cr AP)",
+    content: "**Alur dari PO sampai GR:**\n\n1. **Draft** → Buat PO dari PR/manual\n2. **Terkirim** → Kirim ke vendor (email/print)\n3. **Sebagian** → Terima barang sebagian (GR partial)\n4. **Diterima** → Terima semua barang (GR complete)\n\nSetiap GR otomatis:\n• Update stok di inventory\n• Posting jurnal (Dr Expense/Inventory, Cr AP)",
   },
   "gr-je-link": {
     title: "Auto Journal pada GR",
@@ -143,7 +143,7 @@ export const inlineHelpRegistry = {
   },
   "transfer-status": {
     title: "Status Transfer Stok",
-    content: "• **Draft** — belum dikirim\n• **In Transit** — sudah dikirim, belum diterima\n• **Received** — diterima outlet tujuan, stok ter-update\n• **Cancelled** — dibatalkan\n\nStok berkurang di outlet asal saat status = **In Transit**.",
+    content: "• **Draft** — belum dikirim\n• **Dalam Perjalanan** — sudah dikirim, belum diterima\n• **Diterima** — diterima outlet tujuan, stok ter-update\n• **Dibatalkan** — dibatalkan\n\nStok berkurang di outlet asal saat status = **Dalam Perjalanan**.",
   },
 
   // ===================== OUTLET =====================
@@ -157,7 +157,7 @@ export const inlineHelpRegistry = {
   },
   "outlet-eod-sales": {
     title: "Tutup Sales",
-    content: "Pastikan semua transaksi penjualan hari ini sudah diinput:\n\n• Daily sales status **Submitted**\n• Semua channel tercatat (Dine-In, Takeaway, Delivery)\n• Total match dengan struk mesin EDC",
+    content: "Pastikan semua transaksi penjualan hari ini sudah diinput:\n\n• Daily sales status **Diajukan**\n• Semua channel tercatat (Dine-In, Takeaway, Delivery)\n• Total match dengan struk mesin EDC",
   },
   "outlet-eod-petty-cash": {
     title: "Rekonsiliasi Petty Cash",
@@ -177,7 +177,7 @@ export const inlineHelpRegistry = {
   },
   "reservation-status": {
     title: "Status Reservasi",
-    content: "• **Pending** — belum dikonfirmasi\n• **Confirmed** — sudah konfirmasi\n• **Waitlist** — penuh, masuk daftar tunggu\n• **Rescheduled** — dijadwal ulang\n• **Completed** — selesai, tamu hadir\n• **Cancelled/No-Show** — tidak hadir",
+    content: "• **Menunggu** — belum dikonfirmasi\n• **Dikonfirmasi** — sudah konfirmasi\n• **Waitlist** — penuh, masuk daftar tunggu\n• **Rescheduled** — dijadwal ulang\n• **Selesai** — selesai, tamu hadir\n• **Cancelled/No-Show** — tidak hadir",
   },
   "end-of-day-flow": {
     title: "Alur End-of-Day",

@@ -256,7 +256,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OUT-RL-06 | dialog:Batalkan/Jadwal Ulang/DP | form | P2 | Dialog alasan batal ad-hoc, Label tanpa htmlFor, Batal ghost, tombol indigo/emerald custom | Batal reservasi memakai promptDialog global. Jadwal Ulang/DP: htmlFor/id, Batal outline, tombol primary standar | Diperbaiki |
 | OUT-RL-01 | page | title | P3 | h1 bespoke 'Manajemen Reservasi' font-bold, wrapper p-6 | PageHeader 'Reservations' + 'Muat ulang'/'Buat Reservasi' | Diperbaiki |
 | OUT-RL-08 | page | density | P3 | Angka per status dihitung dari halaman yang tampil, sedangkan Total dari seluruh hasil | tidak diperbaiki: butuh agregasi per status dari backend | Terbuka |
-| OUT-RL-09 | page | language | P3 | Badge status reservasi masih komponen lokal (label Bahasa + ikon) | StatusPill sudah punya 'waitlist', tetapi halaman ini memakai label status Bahasa Indonesia yang sama dengan tab filternya; migrasi ke StatusPill (label Inggris) menunggu keputusan bahasa status reservasi. | Terbuka |
+| OUT-RL-09 | page | language | P3 | Badge status reservasi masih komponen lokal (label Bahasa + ikon) | Badge reservasi memakai StatusPill; label status Bahasa Indonesia sama dengan tab filter (UX-G-51). | Diperbaiki |
 
 ## `/outlet/reservations/new` — Buat Reservasi
 

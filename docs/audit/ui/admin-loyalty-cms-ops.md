@@ -30,7 +30,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | LOY-CUS-01 | page | title | P2 | Route mandiri tanpa judul halaman (<h1>), langsung kartu filter | Tambah prop embedded: saat route mandiri render PageHeader 'Customers'; saat di dalam hub tidak ada judul kedua | Diperbaiki |
 | LOY-CUS-02 | page | form | P2 | Input cari dan select Tier/Status memakai override h-10 dan tidak punya label | Override h-10 dihapus (h-9 default), ditambah aria-label 'Cari customer', 'Filter tier', 'Filter status' | Diperbaiki |
 | LOY-CUS-03 | page | a11y | P2 | Tombol ikon aktifkan/nonaktifkan customer tanpa aria-label; 'Detail' berupa <Link><Button> bersarang | Tombol jadi size icon-sm + aria-label; Detail memakai Button asChild + Link (testid view-customer-* dipindah ke anchor) | Diperbaiki |
-| LOY-CUS-04 | page | ia | P3 | Route ini duplikat tab Customers di /admin/loyalty | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| LOY-CUS-04 | page | ia | P3 | Route ini duplikat tab Customers di /admin/loyalty | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | LOY-CUS-05 | page | button | P3 | Tinggi tombol 20px berasal dari tombol sort header DataTable | Diselesaikan di komponen bersama — DataTable | Diperbaiki (komponen shared) |
 
 ## `/admin/loyalty/customers/:customerId` — Detail Customer (nama customer)
@@ -63,7 +63,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | LOY-RWD-03 | page | a11y | P2 | Tombol refresh, restock dan toggle aktif ikon-saja tanpa aria-label; override h-8/h-9/text-xs/px-2 | size icon/icon-sm + aria-label ('Muat ulang', 'Tambah stok', 'Nonaktifkan reward'); override dihapus; input cari/select diberi aria-label | Diperbaiki |
 | LOY-RWD-04 | dialog:Reward Baru / Edit | form | P2 | 4 field tanpa label terhubung; tab URL/Upload File berupa button custom; tombol hapus gambar ikon tanpa label | Label htmlFor+id di semua field (Poin diberi *), tab sumber gambar memakai Tabs terpadu (testid reward-image-tab-*), tombol X diberi aria-label 'Hapus gambar', dropzone diberi role=button + dukungan keyboard | Diperbaiki |
 | LOY-RWD-05 | dialog:Nonaktifkan Reward | button | P3 | Konfirmasi destruktif memakai override bg-red-600 | Pakai buttonVariants({variant:'destructive'}) | Diperbaiki |
-| LOY-RWD-06 | page | ia | P3 | Route duplikat tab Rewards catalog di hub | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| LOY-RWD-06 | page | ia | P3 | Route duplikat tab Rewards catalog di hub | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/admin/loyalty/redemptions` — Redemptions
 
@@ -250,7 +250,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ID | Area | Kategori | Sev | Temuan | Perbaikan | Status |
 |---|---|---|---|---|---|---|
 | OPS-RPS-01 | page | title | P2 | h1 bespoke text-2xl font-bold tracking-tight + wrapper p-6 (padding ganda); judul tampil juga saat di-embed di hub Monitoring (2 judul) | Prop embedded: route mandiri pakai PageHeader 'Report Schedules'; di hub hanya toolbar. Wrapper p-6/space-y-6 dihapus | Diperbaiki |
-| OPS-RPS-02 | page | ia | P2 | Duplikat dari /admin/operations/report-schedules (komponen sama, tanpa tab hub) | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| OPS-RPS-02 | page | ia | P2 | Duplikat dari /admin/operations/report-schedules (komponen sama, tanpa tab hub) | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | OPS-RPS-03 | page | a11y | P2 | Tombol refresh/edit/hapus ikon tanpa aria-label; switch aktif per kartu tanpa label | size icon/icon-sm + aria-label, switch diberi aria-label; empty state jadi EmptyState dengan aksi | Diperbaiki |
 | OPS-RPS-04 | dialog:Tambah Jadwal | form | P2 | 4 field tanpa label terhubung; switch 'Aktifkan jadwal' tidak terhubung | 7 label htmlFor/id + switch berlabel | Diperbaiki |
 | OPS-RPS-05 | tab:Riwayat Kirim (0) | tabs | P3 | TabsContent memakai override mt-4 | Override dihapus | Diperbaiki |
@@ -283,7 +283,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OPS-DM-02 | page | card | P2 | StatsBar lokal (bg-white rounded-xl border) | Diganti CompactStatCard (testid dm-stats/dm-stat-* tetap); StatsBar.jsx dihapus | Diperbaiki |
 | OPS-DM-03 | page | tabs | P2 | Tab Export/Import/Hapus berupa button segmented custom bg-gray-100; label campur bahasa | Tabs terpadu (testid dm-tabs/dm-tab-* tetap), label 'Ekspor data / Impor data / Hapus data' | Diperbaiki |
 | OPS-DM-04 | tab:Export | button | P2 | Tombol aksi utama raw <button> (Export/Import/Hapus), tombol preview ikon tanpa label, 9 checkbox tanpa label, kartu bg-white p-5; nama koleksi dan frasa konfirmasi memakai font-mono | <Button> (default/destructive, testid tetap), label 'Ekspor/Impor', preview icon-sm + aria-label, checkbox aria-label, glass-card p-4, input konfirmasi hapus berlabel; nama koleksi dan frasa konfirmasi pakai Inter font-medium tabular-nums | Diperbaiki |
-| OPS-DM-06 | page | ia | P2 | Duplikat dari /admin/operations/data-management | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| OPS-DM-06 | page | ia | P2 | Duplikat dari /admin/operations/data-management | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | OPS-DM-05 | tab:Export | card | P3 | Daftar 'Quick Export' masih raw <button>; warna text-gray-*/bg-gray-* tidak adaptif dark mode | tidak diperbaiki: butuh refactor visual lebih besar | Terbuka |
 
 ## `/admin/tour-analytics` — Tour Analytics
@@ -297,7 +297,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OPS-TA-01 | page | title | P2 | Hero glass-card p-6 dengan h2 font-bold (tanpa <h1>); judul ganda saat di-embed di hub | Prop embedded: route mandiri PageHeader 'Tour Analytics' (aksi periode + 'Muat ulang'); di hub hanya toolbar | Diperbaiki |
 | OPS-TA-02 | page | card | P2 | KpiCard dan MiniStat lokal (text-2xl font-bold) | Diganti CompactStatCard (grid-cols-2 md:grid-cols-5 gap-3; di dialog size sm); komponen lokal dihapus | Diperbaiki |
 | OPS-TA-03 | page | language | P2 | Emoji ikon tour (📊 dari tourMap) di tabel, kartu performer dan dialog; 'Last N days' bahasa Inggris | Diganti ikon lucide seragam; '{n} hari terakhir'. Emoji di tourMap butuh perubahan shared | Diperbaiki |
-| OPS-TA-04 | page | ia | P2 | Duplikat dari /admin/operations/tour-analytics | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| OPS-TA-04 | page | ia | P2 | Duplikat dari /admin/operations/tour-analytics | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/admin/operations/logs` — Monitoring — Logs
 

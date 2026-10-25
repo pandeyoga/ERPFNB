@@ -17,12 +17,12 @@ import { toast } from "sonner";
 const STATUS_TABS = [
   { key: "all", label: "Semua" },
   { key: "draft", label: "Draft" },
-  { key: "awaiting_approval", label: "Awaiting" },
-  { key: "submitted", label: "Submitted" },
-  { key: "approved", label: "Approved" },
-  { key: "paid", label: "Paid" },
-  { key: "rejected", label: "Rejected" },
-  { key: "cancelled", label: "Cancelled" },
+  { key: "awaiting_approval", label: "Menunggu Approval" },
+  { key: "submitted", label: "Diajukan" },
+  { key: "approved", label: "Disetujui" },
+  { key: "paid", label: "Dibayar" },
+  { key: "rejected", label: "Ditolak" },
+  { key: "cancelled", label: "Dibatalkan" },
 ];
 
 export default function PaymentList({ embedded = false }) {

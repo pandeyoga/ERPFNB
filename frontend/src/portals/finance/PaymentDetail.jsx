@@ -115,13 +115,13 @@ export default function PaymentDetail() {
 
           {doc.cancelled_at && (
             <div className="glass-card p-4 border-red-500/30 bg-red-500/5" data-testid="pay-cancelled-banner">
-              <div className="text-sm font-semibold text-red-700 dark:text-red-400">Cancelled</div>
+              <div className="text-sm font-semibold text-red-700 dark:text-red-400">Dibatalkan</div>
               <div className="text-xs mt-1">{doc.cancelled_reason}</div>
             </div>
           )}
           {doc.status === "rejected" && (
             <div className="glass-card p-4 border-red-500/30 bg-red-500/5" data-testid="pay-rejected-banner">
-              <div className="text-sm font-semibold text-red-700 dark:text-red-400">Rejected</div>
+              <div className="text-sm font-semibold text-red-700 dark:text-red-400">Ditolak</div>
               <div className="text-xs mt-1">{doc.rejected_reason}</div>
             </div>
           )}

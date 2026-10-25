@@ -122,8 +122,8 @@ export default function PRConsolidation() {
           value={filters.status}
           onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
           options={[
-            { value: "approved", label: "Approved" },
-            { value: "submitted", label: "Submitted" },
+            { value: "approved", label: "Disetujui" },
+            { value: "submitted", label: "Diajukan" },
             { value: "", label: "Semua status" },
           ]}
           placeholder="Semua status"

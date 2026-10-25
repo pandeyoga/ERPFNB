@@ -22,12 +22,12 @@ import useExcelExport from "@/hooks/useExcelExport";
 const STATUS_TABS = [
   { key: "",                  label: "Semua" },
   { key: "draft",             label: "Draft" },
-  { key: "awaiting_approval", label: "Awaiting approval" },
-  { key: "approved",          label: "Approved" },
-  { key: "sent",              label: "Sent" },
-  { key: "partial",           label: "Partial" },
-  { key: "received",          label: "Received" },
-  { key: "cancelled",         label: "Cancelled" },
+  { key: "awaiting_approval", label: "Menunggu Approval" },
+  { key: "approved",          label: "Disetujui" },
+  { key: "sent",              label: "Terkirim" },
+  { key: "partial",           label: "Sebagian" },
+  { key: "received",          label: "Diterima" },
+  { key: "cancelled",         label: "Dibatalkan" },
 ];
 
 export default function POList() {

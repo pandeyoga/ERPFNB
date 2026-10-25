@@ -429,7 +429,7 @@ const executiveBudgetIncreaseTour = {
     {
       target: "[data-testid='tab-pending']",
       title: "Menunggu Keputusan",
-      content: "Tab **Pending** berisi pengajuan baru. Tetapkan jumlah disetujui + catatan, lalu submit.",
+      content: "Tab **Menunggu** berisi pengajuan baru. Tetapkan jumlah disetujui + catatan, lalu submit.",
       placement: "bottom",
     },
     {

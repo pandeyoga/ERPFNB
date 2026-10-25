@@ -31,7 +31,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-USR-03 | page | a11y | P2 | Aksi baris (edit, reset password, nonaktifkan) berupa raw <button> ikon tanpa aria-label. | Diganti Button ghost icon-sm dengan aria-label dan title. | Diperbaiki |
 | ADM-USR-06 | dialog:User Baru | form | P2 | 6 field tanpa label terhubung (Label tanpa htmlFor), label uppercase, 'Phone' berbahasa Inggris, select dengan override h-10. | Ditambah htmlFor/id, label text-xs md:text-sm font-medium, 'Telepon', ariaLabel di select, tinggi h-9. Judul seksi diganti h3 text-sm semibold. | Diperbaiki |
 | ADM-USR-07 | dialog:User Baru | layout | P2 | Dialog panjang (override max-h 92vh) sehingga Simpan tidak terlihat tanpa scroll. Tombol Simpan memakai pill-active. | Override dihapus, footer Batal + Simpan dibuat sticky, pill-active dihapus, aria-pressed ditambah di tombol level akses. | Diperbaiki |
-| ADM-USR-09 | page | ia | P2 | Duplikat: /admin/users memakai komponen yang sama dengan tab 'All users' di /admin/user-management, dan nav matchPaths mengarah ke hub. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-USR-09 | page | ia | P2 | Duplikat: /admin/users memakai komponen yang sama dengan tab 'All users' di /admin/user-management, dan nav matchPaths mengarah ke hub. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | ADM-USR-04 | page | button | P3 | Pagination memakai raw button 'Prev/Next' rounded-full. | Diganti Button outline sm 'Sebelumnya/Berikutnya'. | Diperbaiki |
 | ADM-USR-05 | page | language | P3 | Kolom 'Last Login' berbahasa Inggris di tengah kolom berbahasa Indonesia. | Diganti 'Login Terakhir'. | Diperbaiki |
 | ADM-USR-08 | dialog:Reset Password | form | P3 | Label tidak terhubung. Tombol berlabel 'Reset' dan '…'. | Label dihubungkan dan diberi tanda wajib. Tombol jadi 'Reset Password', status simpan 'Menyimpan…'. | Diperbaiki |
@@ -50,7 +50,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-ROL-02 | page | a11y | P2 | 17 tombol ikon edit/hapus tanpa aria-label, tinggi h-7, hanya muncul saat hover. Role sistem menampilkan tombol edit yang disabled. | Diganti Button icon-sm yang selalu terlihat dengan aria-label. Role sistem tanpa tombol, ada keterangan di baris info. Tombol 'Role Baru' rounded-full pill-active jadi Button default. | Diperbaiki |
 | ADM-ROL-03 | dialog:Role Baru | form | P2 | Label tidak terhubung dan uppercase. Label 'Code' berbahasa Inggris, tombol 'Toggle all', kode permission memakai font-mono. | Field Kode dan Nama dibuat 2 kolom, label dihubungkan lewat htmlFor, 'Pilih/lepas semua', font Inter. | Diperbaiki |
 | ADM-ROL-04 | dialog:Role Baru | layout | P2 | Daftar permission panjang sehingga footer keluar layar. | Footer Batal + Simpan dibuat sticky, override max-h dan pill-active dihapus. | Diperbaiki |
-| ADM-ROL-06 | page | ia | P2 | Duplikat dengan tab 'Roles & permissions' di /admin/user-management. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-ROL-06 | page | ia | P2 | Duplikat dengan tab 'Roles & permissions' di /admin/user-management. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | ADM-ROL-05 | page | flow | P3 | Role sistem tidak bisa dibuka untuk melihat daftar permission-nya (tidak ada mode lihat). | Tidak diperbaiki: butuh mode baca-saja di RoleDialog. | Terbuka |
 | ADM-ROL-07 | page | typography | P3 | Kode role di kartu dan kode permission di dialog tampil sebagai teks biasa. | Memakai font-medium tabular-nums. | Diperbaiki |
 
@@ -265,7 +265,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | ADM-BLK-02 | page | card | P2 | Komponen lokal StatCard (text-3xl font-bold) dipakai untuk hasil pratinjau dan import. | Diganti CompactStatCard (testid preview-*/result-* tetap), file BulkImportAdmin/StatCard.jsx dihapus. | Diperbaiki |
 | ADM-BLK-03 | page | language | P2 | Label campur bahasa: 'Pilih Entity', 'Download Template', 'Upload & Preview', 'Commit Import', 'Unique key', 'Download Error CSV', toast 'Preview OK … invalid'. | Diganti 'Pilih entitas', 'Unduh template', 'Unggah & pratinjau', 'Konfirmasi import', 'Kunci unik', 'Unduh CSV Error', 'Jalankan Import', toast berbahasa Indonesia. | Diperbaiki |
-| ADM-BLK-06 | page | ia | P2 | Duplikat dengan tab 'Bulk Excel import' di /admin/setup (nav matchPaths ke hub). | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-BLK-06 | page | ia | P2 | Duplikat dengan tab 'Bulk Excel import' di /admin/setup (nav matchPaths ke hub). | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | ADM-BLK-01 | page | title | P3 | Judul berupa h1 custom text-2xl font-bold (weight 700). | Diganti PageHeader dengan 'Mulai Ulang' di actions. Mode embedded hanya menampilkan baris subtitle + aksi. | Diperbaiki |
 | ADM-BLK-04 | page | button | P3 | Tombol w-full raksasa. Footer menaruh Commit di kiri dan Batal di kanan. 'Lihat semua' berupa raw button. | Tombol ukuran default, footer Batal lalu 'Jalankan Import' rata kanan, Button variant link. | Diperbaiki |
 | ADM-BLK-05 | page | a11y | P3 | Dropzone file berupa div klik tanpa role dan tanpa dukungan keyboard. | Ditambah role=button, tabIndex, aria-label, dan Enter/Space. | Diperbaiki |
@@ -282,7 +282,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-NUM-02 | page | typography | P1 | Format nomor dan 'No. terakhir' perlu mengikuti konvensi kode/nomor dokumen. | Memakai Inter font-medium tabular-nums (bukan font-mono). | Diperbaiki |
 | ADM-NUM-01 | page | title | P2 | Rute mandiri tidak punya judul. | Ditambah PageHeader 'Number Series'. Mode embedded tanpa judul. | Diperbaiki |
 | ADM-NUM-03 | page | ia | P2 | Teks 'Edit format dan padding via Master Data' menunjuk fitur yang tidak ada (Master Data tidak punya entitas number series). | Teks diganti '(hanya-baca)'. UI edit memang belum tersedia. | Diperbaiki |
-| ADM-NUM-05 | page | ia | P2 | Duplikat dengan tab Number series di /admin/setup. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-NUM-05 | page | ia | P2 | Duplikat dengan tab Number series di /admin/setup. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | ADM-NUM-04 | page | density | P3 | Kartu p-4 dalam 3 kolom banyak ruang kosong. | Kartu jadi p-3, 4 kolom di xl. | Diperbaiki |
 
 ## `/admin/audit-log` — Audit Log
@@ -295,7 +295,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | ADM-AUD-01 | page | title | P2 | Rute mandiri tidak punya judul. | Ditambah PageHeader 'Audit Log'. Mode embedded tanpa judul. | Diperbaiki |
 | ADM-AUD-02 | page | form | P2 | 2 input filter tanpa label, tinggi h-10, tombol 'Refresh' pill-active, font-mono di ID, pagination raw. | Lihat ADM-UMH-04, ADM-UMH-05, ADM-UMH-07. | Diperbaiki |
-| ADM-AUD-03 | page | ia | P2 | Duplikat dengan tab 'Activity log' di /admin/user-management. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-AUD-03 | page | ia | P2 | Duplikat dengan tab 'Activity log' di /admin/user-management. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/admin/integrations` — Integrations
 
@@ -343,7 +343,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-TAX-01 | page | title | P2 | Judul 'Tax / Pajak' tidak sama dengan nama tab 'Tax Config'. Di hub, judul ini menjadi h1 kedua. | Diganti PageHeader 'Tax Config' dengan aksi 'Buka Finance → Pajak'. Mode embedded tanpa judul. | Diperbaiki |
 | ADM-TAX-02 | page | card | P2 | Kartu ad-hoc rounded-2xl border-2 p-5 bg-*-50 (gray-50 tidak mendukung dark mode). Banner info berisi label dev 'Sprint 1 — Compliance Indonesia 2026'. Kartu 'Konfigurasi Lengkap' menduplikasi isi banner. | Diganti glass-card p-4 dengan ring saat aktif. Banner dan kartu digabung menjadi satu banner ringkas, label dev dihapus. Testid tax-* tetap. | Diperbaiki |
 | ADM-TAX-03 | page | a11y | P2 | Toggle custom (button h-7 w-14) tanpa label. | Diganti Switch shadcn dengan aria-label dan label klik. Testid tax-toggle-* tetap. | Diperbaiki |
-| ADM-TAX-05 | page | ia | P2 | Duplikat dengan tab Tax config di /admin/setup. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| ADM-TAX-05 | page | ia | P2 | Duplikat dengan tab Tax config di /admin/setup. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | ADM-TAX-04 | page | language | P3 | Badge 'ON/OFF' dan toast 'Diaktifkan ✓'. | Badge jadi 'Aktif/Nonaktif' (status-active/disabled), toast tanpa simbol, ditambah 'Tarif N%'. | Diperbaiki |
 | ADM-TAX-04 | page | language | P3 | Badge status per jenis pajak memakai map lokal. | Diganti StatusPill (Active/Inactive). | Diperbaiki |
 

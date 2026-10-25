@@ -17,20 +17,20 @@ import { todayJakartaISO } from "@/lib/format";
 const PR_STATUSES = [
   { key: "", label: "Semua Status" },
   { key: "draft", label: "Draft" },
-  { key: "submitted", label: "Submitted" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
-  { key: "converted", label: "Converted" },
+  { key: "submitted", label: "Diajukan" },
+  { key: "approved", label: "Disetujui" },
+  { key: "rejected", label: "Ditolak" },
+  { key: "converted", label: "Dikonversi" },
 ];
 
 const PO_STATUSES = [
   { key: "", label: "Semua Status" },
   { key: "draft", label: "Draft" },
-  { key: "sent", label: "Sent" },
-  { key: "approved", label: "Approved" },
+  { key: "sent", label: "Terkirim" },
+  { key: "approved", label: "Disetujui" },
   { key: "partial", label: "Partial Received" },
-  { key: "received", label: "Received" },
-  { key: "cancelled", label: "Cancelled" },
+  { key: "received", label: "Diterima" },
+  { key: "cancelled", label: "Dibatalkan" },
 ];
 
 const LABEL = "text-xs font-medium text-muted-foreground";

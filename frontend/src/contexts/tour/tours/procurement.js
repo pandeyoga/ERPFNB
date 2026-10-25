@@ -91,7 +91,7 @@ const procurementPRListTour = {
     {
       target: "[data-testid='pr-status-tabs']",
       title: "Status PR",
-      content: "Status PR:\n\n• **Draft** — belum disubmit\n• **Pending** — menunggu approval\n• **Approved** — siap dibuatkan PO\n• **Rejected** — ditolak",
+      content: "Status PR:\n\n• **Draft** — belum disubmit\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap dibuatkan PO\n• **Ditolak** — ditolak",
       placement: "bottom",
     },
     {
@@ -132,7 +132,7 @@ const procurementPOListTour = {
     {
       target: "[data-testid='po-status-tabs']",
       title: "Status PO",
-      content: "Status PO:\n\n• **Draft** — belum dikirim\n• **Sent** — sudah dikirim ke vendor\n• **Partial** — GR sebagian item\n• **Received** — semua item sudah diterima",
+      content: "Status PO:\n\n• **Draft** — belum dikirim\n• **Terkirim** — sudah dikirim ke vendor\n• **Sebagian** — GR sebagian item\n• **Diterima** — semua item sudah diterima",
       placement: "bottom",
     },
     {

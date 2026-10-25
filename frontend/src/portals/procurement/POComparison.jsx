@@ -125,10 +125,10 @@ export default function POComparison() {
           options={[
             { value: "", label: "Semua status" },
             { value: "draft", label: "Draft" },
-            { value: "approved", label: "Approved" },
-            { value: "sent", label: "Sent" },
-            { value: "partial", label: "Partial" },
-            { value: "received", label: "Received" },
+            { value: "approved", label: "Disetujui" },
+            { value: "sent", label: "Terkirim" },
+            { value: "partial", label: "Sebagian" },
+            { value: "received", label: "Diterima" },
           ]}
           placeholder="Semua status"
           ariaLabel="Filter status"

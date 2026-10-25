@@ -121,7 +121,7 @@ export default function AnomalyDetection() {
         <SimpleSelect value={filters.status} onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))} className="w-[160px]" ariaLabel="Filter status" testId="anomaly-filter-status" placeholder="Semua Status"
           options={[
             { value: "", label: "Semua Status" },
-            { value: "open", label: "Open" },
+            { value: "open", label: "Terbuka" },
             { value: "acknowledged", label: "Acknowledged" },
             { value: "resolved", label: "Resolved" },
             { value: "dismissed", label: "Dismissed" },

@@ -33,8 +33,8 @@ import { fetchAll } from "@/lib/api";
 const STATUS_TABS = [
   { key: "",          label: "Semua" },
   { key: "submitted", label: "Menunggu Approval" },
-  { key: "approved",  label: "Approved" },
-  { key: "rejected",  label: "Rejected" },
+  { key: "approved",  label: "Disetujui" },
+  { key: "rejected",  label: "Ditolak" },
 ];
 
 export default function UrgentPurchaseList() {

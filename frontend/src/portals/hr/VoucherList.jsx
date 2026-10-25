@@ -94,9 +94,9 @@ export default function VoucherList({ embedded = false }) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua status</SelectItem>
-              <SelectItem value="issued">Issued</SelectItem>
-              <SelectItem value="redeemed">Redeemed</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="issued">Diterbitkan</SelectItem>
+              <SelectItem value="redeemed">Ditukar</SelectItem>
+              <SelectItem value="expired">Kedaluwarsa</SelectItem>
             </SelectContent>
           </Select>
           <div className="relative">
@@ -117,7 +117,7 @@ export default function VoucherList({ embedded = false }) {
             { key: "expire_date", label: "Expire", sortable: true, render: v => v.expire_date ? fmtDate(v.expire_date) : "—" },
             { key: "purpose", label: "Purpose", sortable: true, render: v => <span className="text-xs">{v.purpose}</span> },
             { key: "value", label: "Value", numeric: true, sortable: true, render: v => <span className="whitespace-nowrap">{fmtRp(v.value)}</span> },
-            { key: "redeemed_amount", label: "Redeemed", numeric: true, sortable: true, render: v => <span className="text-xs whitespace-nowrap">{v.status === "redeemed" ? fmtRp(v.redeemed_amount) : "—"}</span> },
+            { key: "redeemed_amount", label: "Ditukar", numeric: true, sortable: true, render: v => <span className="text-xs whitespace-nowrap">{v.status === "redeemed" ? fmtRp(v.redeemed_amount) : "—"}</span> },
             { key: "status", label: "Status", align: "center", sortable: true, render: v => <StatusPill status={v.status} /> },
           ]}
           rows={items}

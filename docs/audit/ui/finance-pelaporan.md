@@ -57,7 +57,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 
 | ID | Area | Kategori | Sev | Temuan | Perbaikan | Status |
 |---|---|---|---|---|---|---|
-| FIN-TXC-01 | page | ia | P2 | Duplikat: komponen yang sama dengan tab PPN–PPh 4(2) di /finance/tax (sidebar sudah memetakan ke Tax & Compliance) | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-TXC-01 | page | ia | P2 | Duplikat: komponen yang sama dengan tab PPN–PPh 4(2) di /finance/tax (sidebar sudah memetakan ke Tax & Compliance) | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | FIN-TXC-02 | page | title | P2 | Tidak ada <h1>; hero banner gelap dipakai sebagai judul | PageHeader 'Tax Center' (testid tax-center-header dipertahankan) | Diperbaiki |
 | FIN-TXC-03 | page | tabs | P2 | Tab PPN/PPh custom (border-b-0, warna colMap); ikon selalu Receipt karena bug t.Icon | Tabs unified + ikon per pajak + dot status aktif/nonaktif (sr-only teks); testid tax-center-tabs/tax-tab-* dipertahankan | Diperbaiki |
 | FIN-TXC-04 | page | card | P2 | Sama seperti FIN-TAX-04/05/06 (kartu bg-white p-6, toggle tanpa label) | Diperbaiki bersama komponen TaxCenterPkg | Diperbaiki |
@@ -72,7 +72,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | FIN-EFK-01 | page | title | P2 | Tidak ada <h1> (h2 text-2xl 'e-Faktur / Coretax Export') | PageHeader 'e-Faktur Export' saat standalone; tersembunyi saat embedded di hub | Diperbaiki |
 | FIN-EFK-02 | page | button | P2 | Dua tombol primer berdampingan; 'Generate Export' disabled tanpa penjelasan | Lihat FIN-TAX-07 (Preview outline, helper teks) | Diperbaiki |
-| FIN-EFK-03 | page | ia | P3 | Duplikat tab e-Faktur di /finance/tax | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-EFK-03 | page | ia | P3 | Duplikat tab e-Faktur di /finance/tax | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/ebupot` — e-Bupot PPh 23
 
@@ -85,7 +85,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-EBP-02 | tab:Preview Data | tabs | P2 | Hasil tombol Preview tersembunyi di tab lain ('Klik Preview di tab Export'); 3 sub-tab untuk alur linear | Sub-tab dihapus: ringkasan + tabel preview tampil langsung di bawah form, riwayat di kartu terpisah | Diperbaiki |
 | FIN-EBP-03 | tab:Preview Data | a11y | P2 | Tombol refresh ikon-saja tanpa aria-label | Button sm 'Muat ulang' berteks; Label Masa Pajak terhubung (htmlFor) | Diperbaiki |
 | FIN-EBP-01 | page | typography | P3 | h1 font-bold 700 bespoke + wrapper p-6 (padding ganda dengan shell) | PageHeader (semibold) + spacing standar | Diperbaiki |
-| FIN-EBP-04 | page | ia | P3 | Duplikat tab e-Bupot di /finance/tax | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-EBP-04 | page | ia | P3 | Duplikat tab e-Bupot di /finance/tax | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/assets` — Fixed Assets
 
@@ -144,7 +144,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-BVA-02 | page | card | P2 | Kartu kategori Card + Progress; 'Ringkasan P&L' card-in-card; kartu total text-2xl | CompactStatCard grid (sub 'Budget · Var %', tone sesuai varians), Ringkasan P&L jadi section h2 + grid tile, total jadi 3 CompactStatCard | Diperbaiki |
 | FIN-BVA-03 | page | form | P2 | Label filter tanpa htmlFor; 'Muat Data' tombol primer padahal filter auto-load; opsi Level Inggris 'COA Only/Category Only' | Label htmlFor, tombol outline 'Muat ulang', opsi 'COA + Kategori/COA saja/Kategori saja', placeholder outlet 'Semua outlet' | Diperbaiki |
 | FIN-BVA-04 | page | card | P3 | Empty state custom; warna varians text-gray-600 tanpa dark mode | EmptyState + aksi 'Buat Budget'; warna muted/dark-safe | Diperbaiki |
-| FIN-BVA-05 | page | ia | P3 | Duplikat tab Budget vs Actual di /finance/budget-hub | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-BVA-05 | page | ia | P3 | Duplikat tab Budget vs Actual di /finance/budget-hub | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/budget/manage` — Budget Management
 
@@ -161,7 +161,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-BMG-04 | dialog:Buat Budget | flow | P2 | Dialog Edit tidak memuat scope/outlet/brand → field Scope kosong dan budget tersimpan tanpa scope | openEdit kini mengisi scope, outlet_id, brand_id | Diperbaiki |
 | FIN-BMG-05 | dialog:Buat Budget | form | P2 | 3 field tanpa label (Catatan, cari COA, kategori/jumlah per baris); 'Amount (Rp)'; tombol ikon size icon 36px di baris tabel | Label htmlFor + *, aria-label per baris, 'Jumlah (Rp)', Button icon-sm, 'Submit' → 'Ajukan' | Diperbaiki |
 | FIN-BMG-06 | dialog:Import Excel | form | P2 | 2 field tanpa label; footer 'Tutup' ghost + 'Import' rounded-full; 'Upload/Download/Import' Inggris | Label htmlFor + *, footer 'Batal' outline + 'Impor', 'Unduh Template Excel', judul 'Impor Budget dari Excel' | Diperbaiki |
-| FIN-BMG-07 | page | ia | P3 | Duplikat tab Budget management di /finance/budget-hub | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-BMG-07 | page | ia | P3 | Duplikat tab Budget management di /finance/budget-hub | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/forecasting` — Forecasting
 
@@ -176,7 +176,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-FC-03 | page | language | P2 | Label/grade campur ('Months Ahead', 'History (days)', 'Excellent/Volatile', 'active', 'Per-Outlet Forecast Summary'); judul 'Method Comparison (3-month…)' hard-coded walau horizon 1/6 bulan | Teks Indonesia ('Horizon', 'Histori (hari)', 'Sangat akurat/Baik/Cukup/Volatil', 'aktif'), judul perbandingan memakai horizon terpilih | Diperbaiki |
 | FIN-FC-05 | page | layout | P2 | Segmented Method/Months bertumpuk (lihat FIN-BGH-04) | Diperbaiki (flex-wrap + segmented standar) | Diperbaiki |
 | FIN-FC-04 | page | form | P3 | Select target terpotong 'Sales (validated d…'; select & input tanpa nama aksesibel | Label target ringkas, ariaLabel/htmlFor | Diperbaiki |
-| FIN-FC-06 | page | ia | P3 | Duplikat tab Forecasting di /finance/budget-hub | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-FC-06 | page | ia | P3 | Duplikat tab Forecasting di /finance/budget-hub | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/anomalies` — Anomaly Feed
 
@@ -195,7 +195,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-ANM-07 | page | a11y | P2 | Tombol threshold ikon Filter (ikon salah) tanpa aria-label; baris anomali <li onClick> tidak bisa diakses keyboard; 2 input filter tanpa label | SlidersHorizontal + aria-label, Reload jadi icon button ber-aria-label; li role=button tabIndex + Enter/Space; Label htmlFor/ariaLabel | Diperbaiki |
 | FIN-ANM-08 | dialog:Threshold | tabs | P2 | Tab scope custom (bg-foreground, rounded-t); checkbox detektor di dalam header yang juga toggle expand (dua aksi satu klik); input h-8; 'modified' | Tabs unified; Checkbox + tombol expand terpisah (aria-expanded); input h-9 + htmlFor; 'diubah' | Diperbaiki |
 | FIN-ANM-09 | page | button | P3 | Tombol Resolve override bg-emerald; aksi header size sm | Default variant (satu primer di footer); aksi header size default | Diperbaiki |
-| FIN-ANM-10 | page | ia | P3 | Halaman sama dengan Period Closing Fase 2; dipertahankan karena deep-link ?id= dari notifikasi | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-ANM-10 | page | ia | P3 | Halaman sama dengan Period Closing Fase 2; dipertahankan karena deep-link ?id= dari notifikasi | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/finance/periods` — Periods
 
@@ -210,7 +210,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-PER-02 | page | language | P2 | Emoji 🔒/🔐 di kolom Locked/Closed; tombol 'Refresh/Close/Lock/Reopen' & toast Inggris | Ikon lucide Lock/CheckCircle2; 'Muat ulang/Tutup/Kunci/Buka kembali'; toast Indonesia | Diperbaiki |
 | FIN-PER-03 | page | button | P2 | Override rounded-full h-8/h-10; tombol Lock pill-active primer di setiap baris (12 tombol hitam); <Link> membungkus <Button> (a>button) | Button sm outline tanpa override, Button asChild untuk Wizard | Diperbaiki |
 | FIN-PER-04 | dialog:Reopen | form | P2 | Dialog alasan ad-hoc, label tanpa htmlFor | Diganti promptDialog (alasan wajib, multiline) | Diperbaiki |
-| FIN-PER-06 | page | ia | P2 | Duplikat: PeriodList sama persis dengan Period Closing Fase 1 (Review Periods) | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| FIN-PER-06 | page | ia | P2 | Duplikat: PeriodList sama persis dengan Period Closing Fase 1 (Review Periods) | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | FIN-PER-05 | page | card | P3 | Legenda status chip lokal (warna beda dari StatusPill di tabel) | Legenda memakai StatusPill | Diperbaiki |
 
 ## `/finance/period-closing` — Period Closing

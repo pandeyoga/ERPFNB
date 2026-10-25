@@ -115,10 +115,10 @@ export default function COABrowser() {
               render: (c) => c.is_postable
                 ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">Yes</span>
                 : <span className="text-[11px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground">Header</span> },
-            { key: "active", label: "Active",
+            { key: "active", label: "Aktif",
               render: (c) => c.active
-                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">Active</span>
-                : <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-400 font-medium">Inactive</span> },
+                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">Aktif</span>
+                : <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-400 font-medium">Nonaktif</span> },
           ]}
         />
       </div>

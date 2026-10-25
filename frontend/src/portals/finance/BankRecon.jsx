@@ -538,7 +538,7 @@ function BankReconDetail({ sessionId, onBack }) {
             <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3 text-xs text-amber-700 dark:text-amber-400 space-y-1">
               <p className="font-semibold">Yang akan terjadi:</p>
               <ul className="list-disc ml-4 space-y-0.5">
-                <li>Status session kembali ke <strong>Pending</strong></li>
+                <li>Status session kembali ke <strong>Menunggu</strong></li>
                 <li>Data match (baris yang sudah di-match) dipertahankan</li>
                 <li>Transaksi PAY/JE tidak lagi ditandai sebagai reconciled</li>
               </ul>

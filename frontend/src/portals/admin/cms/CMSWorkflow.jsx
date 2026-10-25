@@ -18,9 +18,9 @@ import api from "@/lib/api";
 
 const STATUS_CONFIG = {
   draft:          { label: "Draft",          color: "bg-gray-100 text-gray-700 border-gray-200",    icon: AlertCircle },
-  pending_review: { label: "Pending Review", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
-  approved:       { label: "Approved",       color: "bg-blue-100 text-blue-700 border-blue-200",    icon: CheckCircle2 },
-  rejected:       { label: "Rejected",       color: "bg-red-100 text-red-700 border-red-200",       icon: XCircle },
+  pending_review: { label: "Menunggu Review", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
+  approved:       { label: "Disetujui",       color: "bg-blue-100 text-blue-700 border-blue-200",    icon: CheckCircle2 },
+  rejected:       { label: "Ditolak",       color: "bg-red-100 text-red-700 border-red-200",       icon: XCircle },
   published:      { label: "Published",      color: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle2 },
 };
 

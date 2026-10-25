@@ -82,7 +82,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | INV-TRF-01 | page | title | P2 | Tidak ada <h1>; header berupa kartu h3. | PageHeader saat route mandiri. Wrapper trf-header-card dipertahankan. | Diperbaiki |
 | INV-TRF-02 | dialog:Transfer Baru | form | P2 | 4 field baris tanpa label. Select h-10, label uppercase, opsi '--'. Hapus baris berupa <button> mentah. Simpan menampilkan '…'. | Ditambah aria-label per field. Select h-9, label standar + '*', opsi 'Pilih outlet …'. Hapus baris jadi Button ghost icon 'Hapus baris'. Tombol 'Simpan draft'. | Diperbaiki |
-| INV-TRF-04 | page | ia | P2 | Route /inventory/transfers merender komponen yang sama dengan tab Transfer di hub (URL duplikat). | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| INV-TRF-04 | page | ia | P2 | Route /inventory/transfers merender komponen yang sama dengan tab Transfer di hub (URL duplikat). | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 | INV-TRF-03 | dialog:Transfer Baru | a11y | P3 | Field 'Cari item…' (ItemAutocomplete) tidak bisa diberi label. | Diselesaikan di komponen bersama — ItemAutocomplete menerima id/ariaLabel. | Diperbaiki (komponen shared) |
 
 ## `/inventory/transfers/:id` — Transfer <doc_no>
@@ -110,7 +110,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | INV-ADJ-01 | page | title | P2 | Tidak ada <h1>; kartu h3. Tombol 'Adjustment Baru' memakai h-10 rounded-full. | PageHeader saat route mandiri. Tombol standar. Testid dipertahankan. | Diperbaiki |
 | INV-ADJ-02 | dialog:Adjustment Baru | form | P2 | 5 field tanpa label. Select h-10, 'Reason' berbahasa Inggris, tombol 'Submit'. Hapus baris berupa <button> mentah. | Ditambah aria-label per field. Label standar + '*' ('Alasan'), select h-9, tombol 'Ajukan', Button ghost icon 'Hapus baris'. | Diperbaiki |
-| INV-ADJ-03 | page | ia | P2 | Route menduplikasi tab Adjustment di hub. | Route lama dipertahankan sebagai alias deep-link (tour/bookmark); sidebar & link internal mengarah ke hub. | Keputusan: dipertahankan (§8.1) |
+| INV-ADJ-03 | page | ia | P2 | Route menduplikasi tab Adjustment di hub. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
 
 ## `/inventory/opname` — Stock Opname
 

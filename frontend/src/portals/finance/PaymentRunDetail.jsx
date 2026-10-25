@@ -306,7 +306,7 @@ export default function PaymentRunDetail() {
             <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
               <div>
-                Aksi ini akan <strong>memposting Journal Entry</strong> dan menandai semua {run.payments?.length || 0} payment sebagai <strong>Paid</strong>. Tindakan ini <strong>tidak dapat dibatalkan</strong>.
+                Aksi ini akan <strong>memposting Journal Entry</strong> dan menandai semua {run.payments?.length || 0} payment sebagai <strong>Dibayar</strong>. Tindakan ini <strong>tidak dapat dibatalkan</strong>.
               </div>
             </div>
             <div className="bg-muted/40 rounded-lg p-4 text-sm space-y-1">

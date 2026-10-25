@@ -155,7 +155,7 @@ function ApVendorItems({ v }) {
         <th className="px-2 py-1">Invoice</th>
         <th className="px-2 py-1">Receive</th>
         <th className="px-2 py-1">Due</th>
-        <th className="px-2 py-1">Overdue</th>
+        <th className="px-2 py-1">Terlambat</th>
         <th className="px-2 py-1 text-right">Amount</th>
       </tr></thead>
       <tbody>

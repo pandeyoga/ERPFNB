@@ -249,7 +249,7 @@ const financePaymentsTour = {
     {
       target: "[data-testid='pay-status-tabs']",
       title: "Filter by Status",
-      content: "Tab status:\n\n• **Pending** — menunggu approval\n• **Approved** — siap dibayarkan\n• **Paid** — sudah dibayar\n• **Rejected** — ditolak, perlu revisi",
+      content: "Tab status:\n\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap dibayarkan\n• **Dibayar** — sudah dibayar\n• **Ditolak** — ditolak, perlu revisi",
       placement: "bottom",
     },
     {
@@ -319,7 +319,7 @@ const financeARInvoicesTour = {
     {
       target: "[data-testid='ar-kpi-strip']",
       title: "KPI AR",
-      content: "• **Total Invoices** — jumlah invoice aktif\n• **Outstanding** — total piutang belum dibayar\n• **Overdue** — piutang lewat jatuh tempo\n• **Paid MTD** — pembayaran diterima bulan ini",
+      content: "• **Total Invoices** — jumlah invoice aktif\n• **Outstanding** — total piutang belum dibayar\n• **Terlambat** — piutang lewat jatuh tempo\n• **Paid MTD** — pembayaran diterima bulan ini",
       placement: "bottom",
     },
     {
@@ -581,7 +581,7 @@ const financePeriodsLockingTour = {
     {
       target: "[data-testid='periods-table']",
       title: "Status Periode",
-      content: "Status periode:\n\n• **Open** — bisa posting transaksi\n• **Locked** — tidak bisa posting (kecuali override permission)\n• **Closed** — full lock untuk audit trail",
+      content: "Status periode:\n\n• **Terbuka** — bisa posting transaksi\n• **Dikunci** — tidak bisa posting (kecuali override permission)\n• **Ditutup** — full lock untuk audit trail",
       placement: "top",
     },
     {
@@ -610,7 +610,7 @@ const financePeriodClosingHubTour = {
     {
       target: "[data-testid='pc-phase-validation']",
       title: "Fase 1: Validasi",
-      content: "Validasi semua daily sales outlet belum ada yang pending/rejected. Semua harus **Approved** sebelum close.",
+      content: "Validasi semua daily sales outlet belum ada yang pending/rejected. Semua harus **Disetujui** sebelum close.",
       placement: "bottom",
     },
     {
