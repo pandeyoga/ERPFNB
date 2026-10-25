@@ -92,13 +92,13 @@ const pathToTours = {
   "/procurement/pr": ["procurement-pr-list"],
   "/procurement/po": ["procurement-po-list"],
   "/procurement/vendor-comparison": ["procurement-vendor-compare"],
+  "/procurement/vendor-comparison?tab=po": ["procurement-po-comparison"],
   "/procurement/gr": ["procurement-gr"],
   "/procurement/vendors": ["procurement-vendors"],
   "/procurement/vendor-scorecard": ["procurement-vendor-scorecard"],
   "/procurement/vendor-recommend": ["procurement-vendor-recommend"],
   "/procurement/rfq": ["procurement-rfq"],
   "/procurement/consolidation": ["procurement-consolidation"],
-  "/procurement/po-comparison": ["procurement-po-comparison"],
   "/procurement/price-intelligence": ["procurement-price-intelligence"],
   "/procurement/vendor-catalog": ["procurement-vendor-catalog"],
   // NOTE: `/{pr,po,gr,rfq}/new` form pages intentionally NOT mapped to their
@@ -180,7 +180,6 @@ const pathToTours = {
   "/owner": ["owner-home"],
   "/owner/cash": ["owner-cash"],
   "/owner/briefing": ["owner-briefing"],
-  "/owner/ai-assistant": ["owner-ai-assistant"],
   "/owner/digest-settings": ["owner-digest-settings"],
 
   // ==== HR portal ====
@@ -274,7 +273,7 @@ const tourMetadata = {
   "procurement-vendor-recommend": { title: "AI Vendor Recommendation", description: "AI merekomendasikan vendor terbaik" },
   "procurement-rfq": { title: "RFQ — Request for Quotation", description: "Kirim permintaan penawaran harga ke vendor" },
   "procurement-consolidation": { title: "PR Consolidation", description: "Gabungkan banyak PR jadi PO efisien per vendor" },
-  "procurement-po-comparison": { title: "PO Comparison", description: "Bandingkan PO antar vendor untuk penawaran terbaik" },
+  "procurement-po-comparison": { title: "PO Comparison", description: "Bandingkan beberapa PO berdampingan (Vendor Comparison › Per PO)" },
   "procurement-price-intelligence": { title: "Price Intelligence", description: "Pantau deviasi harga beli vs harga acuan pasar" },
   "procurement-vendor-catalog": { title: "Vendor Catalog", description: "Katalog item per vendor + riwayat harga" },
 
@@ -326,10 +325,10 @@ const tourMetadata = {
 
   // ==== Executive ====
   "executive-home": { title: "Sales Analytics", description: "KPI strip + drilldown + insights" },
-  "executive-owner-home": { title: "Dashboard Eksekutif", description: "Ringkasan owner: KPI, anomali, approvals, akses cepat" },
+  "executive-owner-home": { title: "Dashboard Eksekutif", description: "Ringkasan satu layar: KPI hari ini, pintasan, notifikasi" },
   "executive-outlet-drilldown": { title: "Detail Outlet", description: "KPI, P&L, inventory & staff per outlet" },
   "executive-brand-drilldown": { title: "Detail Brand", description: "KPI, cost structure, outlet & trend per brand" },
-  "executive-ai-qa": { title: "AI Q&A Assistant", description: "Tanya AI tentang performance bisnis" },
+  "executive-ai-qa": { title: "Executive Q&A", description: "Satu halaman tanya-jawab AI tentang performa bisnis" },
   "executive-anomaly": { title: "Anomaly Detection", description: "AI mendeteksi pola anomali di data bisnis dan keuangan" },
   "executive-brand-mix": { title: "Brand Mix Overview", description: "Analisis kontribusi dan performa masing-masing brand" },
   "executive-profit-walk": { title: "Profit Walk — Analisis Laba", description: "Waterfall chart kontribusi tiap komponen ke laba bersih" },
@@ -346,7 +345,6 @@ const tourMetadata = {
   "owner-cash": { title: "Cash Position", description: "Lihat posisi kas total group dan proyeksi ke depan" },
   "owner-approvals": { title: "My Approvals", description: "Setujui permintaan dari mobile" },
   "owner-briefing": { title: "AI Daily Briefing", description: "Ringkasan bisnis harian otomatis dengan AI analysis" },
-  "owner-ai-assistant": { title: "Business Q&A — AI Assistant", description: "Tanya apapun tentang bisnis dalam Bahasa Indonesia" },
   "owner-digest-settings": { title: "Pengaturan Daily Briefing", description: "Atur pengiriman ringkasan harian via Telegram & langganan" },
 
   // ==== HR ====

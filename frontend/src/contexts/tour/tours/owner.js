@@ -124,34 +124,6 @@ const ownerBriefingTour = {
   ],
 };
 
-// ─── Owner AI Assistant ───────────────────────────────────────────────────
-const ownerAIAssistantTour = {
-  name: "Business Q&A — AI Assistant",
-  description: "Tanya apapun tentang bisnis dalam Bahasa Indonesia.",
-  steps: [
-    {
-      target: "[data-testid='exec-qa']",
-      title: "Business Q&A",
-      content: "Tanya apapun tentang bisnis dalam **Bahasa Indonesia**. AI akan menjawab berdasarkan data real-time ERP.",
-      placement: "top",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='exec-qa-suggest-0']",
-      title: "Contoh Pertanyaan",
-      content: "\u2022 'Kemarin sales The Coffeeshop berapa?'\n\u2022 'Siapa karyawan dengan kasbon terbanyak?'\n\u2022 'Stok bahan baku mana yang kritis?'\n\u2022 'Profit bulan ini vs bulan lalu?'\n\u2022 'Berapa AP yang jatuh tempo minggu ini?'",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='exec-qa-input']",
-      title: "Mulai Bertanya",
-      content: "Ketik pertanyaan bisnis Anda. AI mendukung pertanyaan kontekstual (follow-up dari jawaban sebelumnya).",
-      placement: "top",
-      variant: "tip",
-    },
-  ],
-};
 
 // ─── Owner Digest Settings ────────────────────────────────────────────
 const ownerDigestSettingsTour = {
@@ -193,6 +165,5 @@ export {
   ownerCashPositionTour,
   ownerApprovalsTour,
   ownerBriefingTour,
-  ownerAIAssistantTour,
   ownerDigestSettingsTour,
 };

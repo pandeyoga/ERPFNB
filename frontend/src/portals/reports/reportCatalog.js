@@ -24,7 +24,7 @@ export const REPORT_CATEGORIES = [
         id: "daily-sales",
         name: "Daily Sales Summary",
         title: "Daily Sales Summary Report",
-        description: "Penjualan harian per outlet dan brand, lengkap dengan subtotal.",
+        description: "Penjualan harian per outlet dan brand — pratinjau di layar, lalu ekspor Excel lengkap dengan total.",
         icon: CalendarDays,
         route: "/reports/daily-sales",
       },

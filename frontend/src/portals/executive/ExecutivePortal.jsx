@@ -57,7 +57,7 @@ export default function ExecutivePortal() {
       <Route path="budget-increase-requests" element={g("executive.budget.approve", <BudgetIncreaseRequests />)} />
 
       {/* Real pages: AI Q&A, Anomaly Detection, Brand Mix overview */}
-      <Route path="ai-qa" element={<ExecutiveQA />} />
+      <Route path="ai-qa" element={g("ai.exec_qa.use", <ExecutiveQA />)} />
       <Route path="anomaly" element={<AnomalyDetection />} />
       <Route path="brand" element={<LegacyRedirect to="/executive/analytics-hub?tab=brand" />} />
       {/* Phase 2g — unified Performance Analytics hub (Brand Mix + Profit Walk + Period Compare) */}

@@ -189,21 +189,27 @@ const procurementGRTour = {
 // ─── Vendor Compare ──────────────────────────────────────────────
 const procurementVendorCompareTour = {
   name: "Bandingkan Vendor",
-  description: "Tool perbandingan vendor untuk pricing & performance.",
+  description: "Satu tempat perbandingan harga: per item lintas vendor atau per PO.",
   steps: [
     {
-      target: "body",
-      title: "Vendor Comparison Tool",
-      content: "Pilih **maksimal 10 item**, set periode, lalu sistem akan tampilkan:\n\n• **Matrix harga per vendor**\n• **Skor komposit** (harga 60% + recency 40%)\n• **Performance scorecard** (lead time, on-time, defect)",
+      target: "[data-testid='vendor-comparison-page']",
+      title: "Vendor Comparison",
+      content: "Satu tempat perbandingan harga:\n\n• **Per item** — pilih maksimal 10 item, lihat matrix harga per vendor & skor komposit (harga 60% + recency 40%)\n• **Per PO** — bandingkan hingga 4 PO berdampingan",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "body",
-      title: "Cara Pakai",
-      content: "1. Cari item yang ingin dibandingkan\n2. Pilih periode pembelian terakhir\n3. Klik **Bandingkan**\n4. Review matrix harga & skor vendor\n5. Klik **Pilih** untuk auto-apply vendor ke PO baru",
-      placement: "center",
+      target: "[data-testid='vc-search-section']",
+      title: "Pilih Item",
+      content: "1. Cari item yang ingin dibandingkan\n2. Atur periode pembelian di kanan atas\n3. Review matrix harga per vendor (klik ikon riwayat untuk histori harga)",
+      placement: "bottom",
+    },
+    {
+      target: "[data-testid='vc-scorecard-link']",
+      title: "Performa Vendor",
+      content: "Lead time, on-time delivery, defect, dan skor vendor ada di **Vendor Scorecard** — satu sumber untuk performa vendor.",
+      placement: "top",
       variant: "tip",
     },
   ],
@@ -369,20 +375,20 @@ const procurementConsolidationTour = {
 // ─── PO Comparison ────────────────────────────────────────────────────
 const procurementPOComparisonTour = {
   name: "PO Comparison",
-  description: "Bandingkan PO antar vendor untuk pilih penawaran terbaik.",
+  description: "Bandingkan beberapa PO berdampingan (tab Per PO di Vendor Comparison).",
   steps: [
     {
       target: "[data-testid='po-comparison-page']",
-      title: "PO Comparison",
-      content: "Bandingkan **Purchase Order** untuk item serupa antar vendor — temukan harga & term terbaik.",
+      title: "Perbandingan per PO",
+      content: "Pilih hingga **4 Purchase Order** untuk item serupa dan bandingkan harga & total berdampingan.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='po-cmp-table-card']",
-      title: "Tabel Perbandingan",
-      content: "Lihat harga, qty, dan total per vendor berdampingan. Baris **Totals** memudahkan keputusan cepat.",
+      target: "[data-testid='po-cmp-list-card']",
+      title: "Pilih PO",
+      content: "Filter vendor/status, lalu klik **Bandingkan** pada PO yang ingin dibandingkan. Tabel perbandingan muncul di bawah — sel hijau = harga terbaik per item.",
       placement: "top",
       variant: "tip",
     },

@@ -377,14 +377,14 @@ export default function OwnerCockpit() {
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
-              <MessageSquareText className="h-4 w-4 text-muted-foreground" /> Business Q&amp;A
+              <MessageSquareText className="h-4 w-4 text-muted-foreground" /> Executive Q&amp;A
             </h3>
           </div>
           <p className="text-xs text-muted-foreground mb-3">
             Tanya AI: "Cash aman gak?", "Outlet mana yang drop?", "Top vendor bulan ini?"
           </p>
           <Button variant="outline" size="sm" asChild data-testid="cockpit-open-ai-assistant">
-            <Link to="/owner/ai-assistant">Buka Business Q&amp;A <ArrowRight /></Link>
+            <Link to="/executive/ai-qa">Buka Executive Q&amp;A <ArrowRight /></Link>
           </Button>
         </div>
       </div>

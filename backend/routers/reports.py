@@ -10,6 +10,7 @@ Endpoints:
 - CRUD /api/reports/saved                         — saved report definitions
 
 Excel Exports (Phase 4.1):
+- GET  /api/reports/sales/daily-sales             — Daily Sales preview (JSON, same rows as Excel)
 - GET  /api/reports/sales/daily-sales.xlsx        — Daily Sales Summary Excel
 - GET  /api/reports/outlet/performance.xlsx       — Outlet Performance Excel
 - GET  /api/reports/outlet/fdo-history.xlsx       — FDO History Excel
@@ -201,6 +202,32 @@ async def delete_saved(saved_id: str,
 # ============================================================
 # EXCEL EXPORTS (Phase 4.1 — Sales & Outlet Reports)
 # ============================================================
+
+@router.get("/sales/daily-sales")
+async def daily_sales_preview(
+    date_from: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    date_to: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    outlet_ids: Optional[str] = None,
+    brand_ids: Optional[str] = None,
+    limit: int = Query(100, ge=1, le=500, description="Jumlah baris pratinjau; total dihitung atas semua baris"),
+    user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
+):
+    """Pratinjau Daily Sales di layar — baris & filter sama persis dengan daily-sales.xlsx."""
+    o_ids = [s.strip() for s in outlet_ids.split(",") if s.strip()] if outlet_ids else None
+    b_ids = [s.strip() for s in brand_ids.split(",") if s.strip()] if brand_ids else None
+    rows = await reports_service.daily_sales_rows(
+        date_from=date_from,
+        date_to=date_to,
+        outlet_ids=_scope_outlets(user, o_ids),
+        brand_ids=_scope_brands(user, b_ids),
+    )
+    return ok_envelope(rows[:limit], {
+        "total": len(rows),
+        "limit": limit,
+        "grand_total": round(sum(r["grand_total"] for r in rows), 2),
+        "transaction_count": sum(r["transaction_count"] for r in rows),
+    })
+
 
 @router.get("/sales/daily-sales.xlsx")
 async def daily_sales_excel(

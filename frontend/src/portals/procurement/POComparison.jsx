@@ -1,5 +1,6 @@
-/** Procurement → PO Comparison
- * Side-by-side comparison of multiple POs (or PR-vs-PO).
+/** Procurement → Vendor Comparison › tab "Per PO"
+ * Perbandingan beberapa PO berdampingan. Dirender `embedded` di VendorComparison;
+ * /procurement/po-comparison diarahkan ke /procurement/vendor-comparison?tab=po.
  */
 import { useEffect, useState } from "react";
 import { ShoppingCart, X, Plus } from "lucide-react";
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { fetchAll } from "@/lib/api";
-export default function POComparison() {
+export default function POComparison({ embedded = false }) {
   const [pos, setPos] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -102,11 +103,13 @@ export default function POComparison() {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="po-comparison-page">
-      <PageHeader
-        icon={ShoppingCart}
-        title="PO Comparison"
-        subtitle="Bandingkan harga per item di beberapa Purchase Order (maks. 4) secara berdampingan."
-      />
+      {!embedded && (
+        <PageHeader
+          icon={ShoppingCart}
+          title="PO Comparison"
+          subtitle="Bandingkan harga per item di beberapa Purchase Order (maks. 4) secara berdampingan."
+        />
+      )}
 
       {/* Filters + PO picker */}
       <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="po-cmp-filters">

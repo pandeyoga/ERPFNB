@@ -7,8 +7,9 @@
  *  - Persistent chat session via session_id
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Send, Sparkles, RotateCcw, Loader2, Wrench, ChevronDown, ChevronUp,
+  Send, Sparkles, RotateCcw, Loader2, Wrench, ChevronDown, ChevronUp, Maximize2,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -145,6 +146,12 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
               onClick={reset}
               data-testid="exec-qa-reset">
               <RotateCcw className="h-3 w-3" /> Sesi Baru
+            </Button>
+          )}
+          {collapsible && (
+            /* Panel ringkas = pintasan; percakapan panjang di halaman Executive Q&A (satu halaman Q&A). */
+            <Button size="sm" variant="ghost" asChild data-testid="exec-qa-open-page">
+              <Link to="/executive/ai-qa"><Maximize2 className="h-3 w-3" /> Halaman penuh</Link>
             </Button>
           )}
           {collapsible && (

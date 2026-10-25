@@ -18,6 +18,7 @@ from services.reports_analytics_service import (
     get_catalog,
 )
 from services.reports_excel_service import (
+    daily_sales_rows,
     generate_daily_sales_excel,
     generate_outlet_performance_excel,
     generate_fdo_history_excel,
@@ -46,6 +47,7 @@ __all__ = [
     "delete_saved",
     "get_catalog",
     # Excel exports
+    "daily_sales_rows",
     "generate_daily_sales_excel",
     "generate_outlet_performance_excel",
     "generate_fdo_history_excel",

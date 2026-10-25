@@ -2,7 +2,7 @@
  *  ?status=<key> / ?outlet_id=<id> di URL memilih filter awal. */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Plus, FileCheck, Eye, Download } from "lucide-react";
+import { Plus, FileCheck, Eye, Download, Scale } from "lucide-react";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,9 @@ export default function POList() {
               data-testid="po-export-xlsx"
             >
               <Download /> {downloading ? "Mengunduh…" : "Ekspor Excel"}
+            </Button>
+            <Button variant="outline" asChild data-testid="po-compare-link">
+              <Link to="/procurement/vendor-comparison?tab=po"><Scale /> Bandingkan PO</Link>
             </Button>
             <Button asChild data-testid="po-new">
               <Link to="/procurement/po/new"><Plus /> PO Baru</Link>

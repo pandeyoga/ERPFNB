@@ -288,8 +288,12 @@ export const inlineHelpRegistry = {
 
   // ===================== EXECUTIVE =====================
   "exec-kpi-overview": {
-    title: "Executive KPI Overview",
-    content: "KPI realtime untuk seluruh grup FnB Group:\n\n• **Sales Today** — total dari semua outlet hari ini\n• **MTD Revenue** — kumulatif bulan berjalan\n• **Gross Profit %** — margin kotor setelah COGS\n• **Inventory Value** — nilai stok terkini\n\nKlik angka untuk drill-down ke sumber data.",
+    title: "KPI Sales Analytics",
+    content: "KPI realtime untuk seluruh grup FnB Group (ikut filter brand/outlet):\n\n• **Sales Hari Ini / WTD / MTD** — daily sales tervalidasi\n• **Inventory Value** — nilai stok terkini\n• **AP Exposure** — hutang dagang outstanding\n• **Pending Validation** & **Opname Aktif** — pekerjaan yang belum selesai\n\nKlik kartu untuk drill-down ke sumber data.",
+  },
+  "exec-overview": {
+    title: "Executive Overview",
+    content: "Ringkasan satu layar untuk memulai hari:\n\n• **Revenue Hari Ini** dan **AP Exposure**\n• **Anomali Aktif** dan **Pending Approval** — klik untuk membuka daftar lengkap\n\nAnalisis lengkap (WTD/MTD, trend, top outlet) ada di **Sales Analytics**.",
   },
   "exec-live-mode": {
     title: "Live Mode",

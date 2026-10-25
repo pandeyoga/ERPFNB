@@ -7,6 +7,7 @@ Domain split:
 - reports_excel_finance_service    → journal ledger, trial balance, AP aging, P&L, report builder
 """
 from services.reports_excel_sales_service import (
+    daily_sales_rows,
     generate_daily_sales_excel,
     generate_outlet_performance_excel,
     generate_fdo_history_excel,
@@ -30,6 +31,7 @@ from services.reports_excel_finance_service import (
 )
 
 __all__ = [
+    "daily_sales_rows",
     "generate_daily_sales_excel",
     "generate_outlet_performance_excel",
     "generate_fdo_history_excel",

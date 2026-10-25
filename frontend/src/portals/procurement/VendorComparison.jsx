@@ -1,54 +1,93 @@
 /**
- * VendorComparison — Phase 9B standalone tool.
+ * VendorComparison — satu tempat perbandingan harga di Procurement (keputusan IA 25 Okt).
  *
- * Page for procurement managers to:
- *   1. Search & multi-select items
- *   2. Compare vendor pricing across selected items
- *   3. View vendor scorecard for a specific vendor (lead time, on-time%, defect, price stability)
+ * Tab (?tab=):
+ *   items (default) — harga per item lintas vendor (maks. 10 item) — izin procurement.view / vendor.read
+ *   po              — PO berdampingan (maks. 4), sebelumnya halaman /procurement/po-comparison — izin procurement.po
+ *
+ * Performa vendor (lead time, on-time, defect) ada di Procurement › Vendor Scorecard — halaman
+ * ini hanya menautkannya (sebelumnya ada panel scorecard duplikat, PRC-VC-06).
  */
 import { useEffect, useMemo, useState } from "react";
-import {
-  Search,
-  X,
-  Award,
-  Truck,
-  ShieldCheck,
-  TrendingUp as TrendUp,
-  Package,
-  RefreshCw,
-  Scale,
-  Check,
-} from "lucide-react";
-import api, { unwrap } from "@/lib/api";
+import { Link, useSearchParams } from "react-router-dom";
+import { Search, X, Package, Scale, Check, Award, ArrowRight, ShoppingCart } from "lucide-react";
+import { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import VendorComparisonPanel from "@/components/shared/VendorComparisonPanel";
 import PageHeader from "@/components/shared/PageHeader";
-import CompactStatCard from "@/components/shared/CompactStatCard";
-import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
+import { useVisibleTabs } from "@/lib/portalGate";
 import { toast } from "sonner";
-import { fetchAll } from "@/lib/api";
+import POComparison from "./POComparison";
+
+// perm = izin route lama tab tersebut (/procurement/po-comparison kini redirect ke ?tab=po)
+const TABS = [
+  { id: "items", label: "Per item (lintas vendor)", icon: Package, perm: ["procurement.view", "procurement.vendor.read"] },
+  { id: "po",    label: "Per PO",                   icon: ShoppingCart, perm: "procurement.po" },
+];
+
+const DAY_OPTIONS = [
+  { value: 30, label: "30 hari terakhir" },
+  { value: 90, label: "90 hari terakhir" },
+  { value: 180, label: "180 hari terakhir" },
+  { value: 365, label: "365 hari terakhir" },
+];
+
 export default function VendorComparison() {
+  const tabs = useVisibleTabs(TABS);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const active = tabs.find(t => t.id === searchParams.get("tab")) || tabs[0];
+  const [days, setDays] = useState(180);
+
+  return (
+    <div className="space-y-3 lg:space-y-4" data-testid="vendor-comparison-page">
+      <PageHeader
+        icon={Scale}
+        title="Vendor Comparison"
+        subtitle="Bandingkan harga per item lintas vendor, atau beberapa PO berdampingan."
+        actions={active.id === "items" ? (
+          <SimpleSelect
+            value={days}
+            onValueChange={(v) => setDays(Number(v))}
+            options={DAY_OPTIONS}
+            ariaLabel="Periode"
+            className="glass-input w-[170px]"
+            testId="vc-days"
+          />
+        ) : null}
+      />
+
+      <Tabs value={active.id} onValueChange={(id) => setSearchParams({ tab: id }, { replace: true })}>
+        {tabs.length > 1 && (
+          <TabsList aria-label="Jenis perbandingan" data-testid="vc-tabs">
+            {tabs.map(({ id, label, icon: Icon }) => (
+              <TabsTrigger key={id} value={id} data-testid={`vc-tab-${id}`}>
+                <Icon /> {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        )}
+        <TabsContent value={active.id} className="space-y-3 lg:space-y-4">
+          {active.id === "po" ? <POComparison embedded /> : <ItemComparison days={days} />}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+/** Tab "Per item": pilih hingga 10 item → matrix harga per vendor. */
+function ItemComparison({ days }) {
+
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [allItems, setAllItems] = useState([]);
-  const [vendors, setVendors] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState(null);
-  const [scorecard, setScorecard] = useState(null);
-  const [scorecardLoading, setScorecardLoading] = useState(false);
-  const [days, setDays] = useState(180);
 
   useEffect(() => {
-    Promise.all([
-      fetchAll("/master/items"),
-      fetchAll("/master/vendors"),
-    ]).then(([i, v]) => {
-      setAllItems(unwrap(i) || []);
-      setVendors(unwrap(v) || []);
-    }).catch(() => {});
+    fetchAll("/master/items").then(i => setAllItems(unwrap(i) || [])).catch(() => {});
   }, []);
 
   const filtered = useMemo(() => {
@@ -76,39 +115,8 @@ export default function VendorComparison() {
     setItems([]); setSearch("");
   }
 
-  async function loadScorecard(vid) {
-    setSelectedVendor(vid); setScorecardLoading(true);
-    try {
-      const res = await api.get(`/procurement/vendors/${vid}/scorecard`, { params: { days } });
-      setScorecard(unwrap(res));
-    } catch (e) {
-      toast.error("Gagal memuat scorecard vendor");
-    } finally { setScorecardLoading(false); }
-  }
-
   return (
-    <div className="space-y-3 lg:space-y-4" data-testid="vendor-comparison-page">
-      <PageHeader
-        icon={Scale}
-        title="Vendor Comparison"
-        subtitle="Bandingkan harga vendor untuk beberapa item sekaligus, lalu lihat scorecard performa vendor."
-        actions={
-          <SimpleSelect
-            value={days}
-            onValueChange={(v) => setDays(Number(v))}
-            options={[
-              { value: 30, label: "30 hari terakhir" },
-              { value: 90, label: "90 hari terakhir" },
-              { value: 180, label: "180 hari terakhir" },
-              { value: 365, label: "365 hari terakhir" },
-            ]}
-            ariaLabel="Periode"
-            className="glass-input w-[170px]"
-            testId="vc-days"
-          />
-        }
-      />
-
+    <>
       <div className="glass-card p-4" data-testid="vc-header-card">
         {/* Item search */}
         <div className="space-y-2" data-testid="vc-search-section">
@@ -179,109 +187,18 @@ export default function VendorComparison() {
         </div>
       ) : (
         <div data-testid="vc-comparison-panel">
-          <VendorComparisonPanel
-            itemIds={items.map(i => i.id)}
-            days={days}
-            onSelectVendor={(vid) => loadScorecard(vid)}
-          />
+          <VendorComparisonPanel itemIds={items.map(i => i.id)} days={days} />
         </div>
       )}
 
-      {/* Scorecard panel */}
-      {selectedVendor && (
-        <div className="glass-card p-4" data-testid="vc-scorecard">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <Award className="h-4 w-4 text-foreground/70 shrink-0" />
-              <h2 className="text-base md:text-lg font-semibold">
-                Scorecard performa vendor
-              </h2>
-              <span className="text-sm text-muted-foreground" data-testid="vc-scorecard-name">
-                · {vendors.find(v => v.id === selectedVendor)?.name || "—"}
-              </span>
-            </div>
-            <Button onClick={() => loadScorecard(selectedVendor)} size="sm"
-              variant="outline" disabled={scorecardLoading}
-              data-testid="vc-scorecard-refresh">
-              <RefreshCw className={scorecardLoading ? "animate-spin" : ""} />
-              Muat ulang
-            </Button>
-          </div>
-          {scorecardLoading ? (
-            <div data-testid="vc-scorecard-loading"><LoadingState rows={2} /></div>
-          ) : scorecard ? (
-            <ScorecardGrid scorecard={scorecard} />
-          ) : null}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const TONE_MAP = { green: "success", amber: "warning", red: "danger", muted: "default" };
-
-function ScorecardGrid({ scorecard: s }) {
-  const tiles = [
-    {
-      label: "Rata-rata lead time",
-      value: s.avg_lead_time_days != null ? `${s.avg_lead_time_days} hari` : "—",
-      icon: Truck,
-      tone: s.avg_lead_time_days == null ? "muted" :
-            s.avg_lead_time_days <= 3 ? "green" :
-            s.avg_lead_time_days <= 7 ? "amber" : "red",
-      hint: "Dari tanggal order sampai diterima",
-    },
-    {
-      label: "On-time delivery",
-      value: s.on_time_pct != null ? `${s.on_time_pct}%` : "—",
-      icon: ShieldCheck,
-      tone: s.on_time_pct == null ? "muted" :
-            s.on_time_pct >= 90 ? "green" :
-            s.on_time_pct >= 70 ? "amber" : "red",
-      hint: "Dibanding estimasi tiba di PO",
-    },
-    {
-      label: "Defect / selisih",
-      value: `${s.defect_rate_pct}%`,
-      icon: Award,
-      tone: s.defect_rate_pct <= 1 ? "green" :
-            s.defect_rate_pct <= 5 ? "amber" : "red",
-      hint: "Qty tidak diterima vs dipesan",
-    },
-    {
-      label: "Stabilitas harga",
-      value: s.price_stability_pct != null ? `${s.price_stability_pct}%` : "—",
-      icon: TrendUp,
-      tone: s.price_stability_pct == null ? "muted" :
-            s.price_stability_pct >= 90 ? "green" :
-            s.price_stability_pct >= 70 ? "amber" : "red",
-      hint: "Rendah = harga sering berubah",
-    },
-  ];
-
-  return (
-    <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="vc-scorecard-kpis">
-        {tiles.map(t => (
-          <CompactStatCard key={t.label} label={t.label} value={t.value} sub={t.hint}
-            icon={t.icon} tone={TONE_MAP[t.tone]} testIdPrefix="vc-score" />
-        ))}
-      </div>
-      <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-        <Field label="Jumlah PO" value={s.po_count} />
-        <Field label="Jumlah GR" value={s.gr_count} />
-        <Field label="Total qty dipesan" value={s.total_qty_ordered} />
-        <Field label="Total qty diterima" value={s.total_qty_received} />
+      {/* Performa vendor ada di Vendor Scorecard (satu sumber) — cukup tautan. */}
+      <div className="glass-card p-3 flex flex-wrap items-center gap-2 text-sm" data-testid="vc-scorecard-link-card">
+        <Award className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="text-muted-foreground">Lead time, on-time delivery, defect & skor vendor ada di</span>
+        <Button asChild variant="outline" size="sm" className="ml-auto" data-testid="vc-scorecard-link">
+          <Link to="/procurement/vendor-scorecard">Vendor Scorecard <ArrowRight /></Link>
+        </Button>
       </div>
     </>
-  );
-}
-
-function Field({ label, value }) {
-  return (
-    <div className="rounded-lg border border-border/40 p-2.5">
-      <div className="text-[11px] uppercase text-muted-foreground tracking-wide">{label}</div>
-      <div className="font-semibold tabular-nums mt-0.5">{value}</div>
-    </div>
   );
 }

@@ -131,7 +131,6 @@ import {
   ownerCashPositionTour,
   ownerApprovalsTour,
   ownerBriefingTour,
-  ownerAIAssistantTour,
   ownerDigestSettingsTour,
 } from './owner';
 import {
@@ -285,7 +284,6 @@ export const tourRegistry = {
   "owner-cash": ownerCashPositionTour,
   "owner-approvals": ownerApprovalsTour,
   "owner-briefing": ownerBriefingTour,
-  "owner-ai-assistant": ownerAIAssistantTour,
   "owner-digest-settings": ownerDigestSettingsTour,
 
   // ==== HR ====
@@ -369,13 +367,13 @@ export const TOUR_VERSIONS = {
   "procurement-pr-list": 2,
   "procurement-po-list": 2,
   "procurement-gr": 2,
-  "procurement-vendor-compare": 1,
+  "procurement-vendor-compare": 2,
   "procurement-vendors": 1,
   "procurement-vendor-scorecard": 1,
   "procurement-vendor-recommend": 1,
   "procurement-rfq": 1,
   "procurement-consolidation": 1,
-  "procurement-po-comparison": 1,
+  "procurement-po-comparison": 2,
   "procurement-price-intelligence": 1,
   "procurement-vendor-catalog": 1,
 
@@ -427,10 +425,10 @@ export const TOUR_VERSIONS = {
 
   // Executive
   "executive-home": 1,
-  "executive-owner-home": 1,
+  "executive-owner-home": 2,
   "executive-outlet-drilldown": 1,
   "executive-brand-drilldown": 1,
-  "executive-ai-qa": 1,
+  "executive-ai-qa": 2,
   "executive-anomaly": 1,
   "executive-brand-mix": 1,
   "executive-profit-walk": 1,
@@ -447,7 +445,6 @@ export const TOUR_VERSIONS = {
   "owner-cash": 1,
   "owner-approvals": 1,
   "owner-briefing": 1,
-  "owner-ai-assistant": 1,
   "owner-digest-settings": 1,
 
   // HR

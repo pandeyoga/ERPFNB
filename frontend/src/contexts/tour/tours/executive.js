@@ -54,12 +54,12 @@ const executiveHomeTour = {
 // now lives at /executive/analytics and keeps the `executive-home` tour.
 const executiveOwnerHomeTour = {
   name: "Dashboard Eksekutif",
-  description: "Ringkasan harian owner/GM: KPI, anomali, approvals, akses cepat.",
+  description: "Ringkasan harian owner/GM: KPI hari ini, pintasan eksekutif, notifikasi.",
   steps: [
     {
       target: "[data-testid='owner-home']",
       title: "Dashboard Eksekutif",
-      content: "**Ringkasan harian owner & GM** dalam satu layar: revenue, AP exposure, anomali, dan approval tertunda. Mulai hari dari sini.",
+      content: "**Ringkasan harian owner & GM** dalam satu layar: revenue hari ini, AP exposure, anomali, dan approval tertunda. Analisis lengkap ada di Sales Analytics.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
@@ -67,7 +67,7 @@ const executiveOwnerHomeTour = {
     {
       target: "[data-testid='owner-kpi-row']",
       title: "KPI Utama",
-      content: "**Revenue Hari Ini / Minggu / Bulan**, **AP Exposure**, **Anomali Aktif**, dan **Pending Approval**. Klik tiap kartu untuk drill-down ke sumbernya.",
+      content: "**Revenue Hari Ini**, **AP Exposure**, **Anomali Aktif**, dan **Pending Approval**. Klik tiap kartu untuk membuka detailnya (WTD/MTD & top outlet ada di Sales Analytics).",
       placement: "bottom",
     },
     {
@@ -79,8 +79,8 @@ const executiveOwnerHomeTour = {
     },
     {
       target: "[data-testid='owner-shortcuts']",
-      title: "Akses Cepat",
-      content: "Pintasan ke modul yang paling sering dipakai eksekutif — Analytics, Anomali, Approvals, Finance, Procurement, Inventory, dan lainnya.",
+      title: "Pintasan Eksekutif",
+      content: "Pintasan ke halaman eksekutif — Sales & Performance Analytics, Budget, Executive Q&A, dan Reservasi. Portal lain ada di sidebar.",
       placement: "top",
     },
     {
@@ -96,26 +96,26 @@ const executiveOwnerHomeTour = {
 // ─── Executive AI Q&A ─────────────────────────────────────────────────
 const executiveAIQATour = {
   name: "Executive AI Q&A",
-  description: "Tanya AI tentang performa bisnis dalam Bahasa Indonesia.",
+  description: "Satu halaman tanya-jawab AI tentang performa bisnis dalam Bahasa Indonesia.",
   steps: [
     {
       target: "[data-testid='executive-qa-page']",
       title: "AI Business Q&A",
-      content: "Tanya **pertanyaan bisnis** dalam Bahasa Indonesia dan AI akan menjawab berdasarkan data aktual ERP. Tidak perlu tahu cara query database.",
+      content: "Tanya **pertanyaan bisnis** dalam Bahasa Indonesia — lewat teks atau suara — dan AI menjawab dari data aktual ERP. Panel Asisten AI di Sales Analytics memakai percakapan yang sama.",
       placement: "top",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='qa-suggestion']",
+      target: "[data-testid='exec-qa-suggest-0']",
       title: "Contoh Pertanyaan",
-      content: "\u2022 'Sales The Coffeeshop bulan ini berapa?'\n\u2022 'Vendor mana yang paling sering terlambat?'\n\u2022 'Outlet mana yang paling profitable Q1?'\n\u2022 'Item apa yang paling banyak diorder?'",
+      content: "\u2022 'Sales The Coffeeshop bulan ini berapa?'\n\u2022 'Vendor mana yang paling sering terlambat?'\n\u2022 'Cash aman gak?'\n\u2022 'Berapa AP yang jatuh tempo minggu ini?'",
       placement: "bottom",
     },
     {
-      target: "[data-testid='qa-input']",
+      target: "[data-testid='exec-qa-input']",
       title: "AI Tool Calling",
-      content: "AI secara otomatis memilih **tool** yang tepat (sales, inventory, finance, procurement) dan mengambil data real-time dari sistem untuk menjawab.",
+      content: "AI memilih **tool** yang tepat (sales, inventory, finance, procurement) dan mengambil data real-time. Pertanyaan lanjutan memakai konteks jawaban sebelumnya.",
       placement: "top",
       variant: "tip",
     },

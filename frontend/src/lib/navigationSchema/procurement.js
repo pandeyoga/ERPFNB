@@ -32,7 +32,7 @@ export const procurementNav = {
       items: [
         { id: "po", name: "Purchase Orders", path: "/procurement/po" },
         { id: "kanban", name: "Procurement Kanban", path: "/procurement/kanban" },
-        { id: "comparison", name: "PO Comparison", path: "/procurement/po-comparison" },
+        { id: "comparison", name: "Vendor Comparison", path: "/procurement/vendor-comparison" },
       ],
     },
     {
@@ -48,9 +48,9 @@ export const procurementNav = {
       name: "Vendors",
       icon: Store,
       items: [
-        { id: "vendors", name: "Vendors", path: "/procurement/vendors", matchPaths: ["/procurement/vendor-scorecard", "/procurement/vendor-comparison", "/procurement/vendor-recommend", "/procurement/vendor-catalog"] },
-        // Vendor Scorecard · Comparison · AI Recommend · Item Catalog are pill-links
-        // inside /procurement/vendors (removed from sidebar to dedupe IA).
+        { id: "vendors", name: "Vendors", path: "/procurement/vendors", matchPaths: ["/procurement/vendor-scorecard", "/procurement/vendor-recommend", "/procurement/vendor-catalog"] },
+        // Vendor Scorecard · AI Recommend · Item Catalog are pill-links inside
+        // /procurement/vendors. Vendor Comparison (per item + per PO) ada di Orders.
       ],
     },
     {
