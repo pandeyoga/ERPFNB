@@ -32,7 +32,11 @@ export function buildCrumbs(pathname) {
   if (ctx.section && ctx.section.items.length > 1 && ctx.section.name !== item?.name) {
     crumbs.push({ label: ctx.section.name });
   }
-  if (item) {
+  if (item && ctx.portal && item.name === ctx.portal.name) {
+    // Item bernama sama dengan modulnya (Report Center › Report Center) tidak diulang;
+    // sub-halamannya (mis. /reports/daily-sales) → "Report Center › Detail".
+    if (pathname !== item.path) crumbs.push({ label: "Detail" });
+  } else if (item) {
     // Halaman detail (prefix) → "… › Purchase Requests › Detail"; sub-halaman hub (alias)
     // dan halaman persis → item adalah crumb terakhir.
     const isDetail = ctx.match === "prefix";

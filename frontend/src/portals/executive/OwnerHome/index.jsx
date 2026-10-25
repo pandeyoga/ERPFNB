@@ -217,7 +217,7 @@ export default function OwnerHome() {
           testIdPrefix="owner-kpi"
           label="Revenue Hari Ini"
           value={fmtRp(summary.sales_today || 0)}
-          sub="WTD/MTD di Sales Analytics"
+          sub="Daily sales tervalidasi"
           icon={TrendingUp}
           color="aurora-1"
           loading={loading}

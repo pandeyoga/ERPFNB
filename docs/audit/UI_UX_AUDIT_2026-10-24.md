@@ -110,7 +110,7 @@ Audit menyeluruh konsistensi antarmuka: **setiap halaman, tab, form, dan pop-up/
 
 Distribusi temuan review per kategori: title 182, form 131, card 94, button 94, ia 90, language 63, tabs 60, runtime 55, flow 53, a11y 52, typography 41, layout 37, density 14.
 Per severity: P1 66, P2 647, P3 253.
-Status: Diperbaiki 911, Diperbaiki (komponen shared) 32, Keputusan: dipertahankan (§8.1) 15, Terbuka 5, Tidak perlu perubahan 3.
+Status: Diperbaiki 916, Diperbaiki (komponen shared) 32, Keputusan: dipertahankan (§8.1) 15, Tidak perlu perubahan 3.
 
 ## 6. Metrik sebelum → sesudah
 
@@ -229,21 +229,16 @@ Setiap reviewer halaman hanya mengubah file di kelompoknya; perubahan pada kompo
 - **Angka & kode**: `font-mono` dipetakan ke Inter tabular-nums; monospace asli hanya untuk blok JSON/log/cron.
 - **Report Center vs Finance › Reports**: Report Center = katalog ekspor Excel lintas modul; Finance › Reports = analisis di layar.
 - **On-screen vs Excel** (Inventory Balance/Movements/Valuation, Vendor Scorecard, AP Aging): halaman on-screen punya tombol 'Ekspor Excel' ke laporan Report Center, dan laporan punya 'Lihat di layar' ke halaman on-screen (sesuai izin).
+- **Keputusan IA lanjutan** (pemilik produk, 25 Okt — semua rekomendasi disetujui): Executive Overview menjadi ringkasan satu layar; satu halaman Executive Q&A untuk seluruh aplikasi; perbandingan harga Procurement disatukan di Vendor Comparison (tab Per item / Per PO) dengan performa vendor hanya di Vendor Scorecard; laporan Daily Sales punya pratinjau di layar sebelum ekspor.
 - **Sub-tab di dalam tab hub** (Loyalty CRM analytics, Order Data, Report schedules, Payroll/Incentive): baris kedua adalah sub-tampilan satu tab, bukan navigasi setara — dipertahankan.
 
 ### 8.2 Di luar cakupan audit ini
 
 - Situs publik (`/`, `/brands`, `/menu`, `/reservation`, …) dan aplikasi member loyalty (`/loyalty/*`) — desain & tipografinya berbeda (brand publik, font serif). Hanya halaman yang menjadi pratinjau di CMS yang disentuh.
 
-### 8.3 Temuan yang masih terbuka — menunggu keputusan pemilik produk
+### 8.3 Temuan yang masih terbuka
 
-| Portal | Route | ID | Temuan | Alasan |
-|---|---|---|---|---|
-| Executive & Owner | `/executive` | EXE-OV-08 | Dashboard duplikat. KPI Revenue hari ini/WTD/MTD + AP Exposure dan daftar top outlet juga ada di /executive/analytics. Ringkasan approval + anomali juga ada di /owner. 'Akses Cepat' (16 tile) menduplikasi sidebar | Butuh keputusan. Rekomendasi: Executive Overview = ringkasan satu layar (KPI hari ini + pintasan); KPI WTD/MTD & top outlet cukup di Sales Analytics; approval/anomali cukup di Owner Cockpit. |
-| Executive & Owner | `/executive/ai-qa` | EXE-QA-03 | Ada 3 UI Q&A AI: halaman ini (/executive/qa), ConversationalQA di Sales Analytics, dan /owner/ai-assistant (/ai/exec-qa) | Butuh keputusan. Rekomendasi: satu halaman Q&A kanonis (/executive/qa); panel di Sales Analytics tetap sebagai pintasan ke endpoint yang sama; /owner/ai-assistant diarahkan ke halaman kanonis. |
-| Procurement | `/procurement/vendor-comparison` | PRC-VC-06 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | Butuh keputusan. Rekomendasi: Vendor Comparison fokus ke perbandingan harga per item; panel scorecard diganti tautan ke Procurement › Vendor Scorecard. |
-| Procurement | `/procurement/po-comparison` | PRC-POC-04 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | Butuh keputusan. Rekomendasi: jadikan PO Comparison tab 'Per PO' di Vendor Comparison (satu tempat perbandingan harga), RFQ tetap punya tab Perbandingan untuk penawaran. |
-| Inventory & Report Center | `/reports/daily-sales` | RPT-DS-05 | Tidak ada pratinjau di layar. | Permintaan fitur: pratinjau tabel di layar sebelum ekspor butuh endpoint JSON baru — di luar cakupan perbaikan UI. |
+_Tidak ada._
 
 ### 8.4 Catatan data & backend (bukan UI) dari reviewer
 

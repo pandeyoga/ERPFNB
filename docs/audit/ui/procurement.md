@@ -45,7 +45,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | PRC-VC-02 | page | button | P2 | Chip item <button> mentah text-xs, tombol 'Clear' h-6 text-[11px] rounded-full; teks 'selected', 'Selected:', 'Clear', 'Max 10 item'. | Button size sm outline/default + aria-pressed; 'dipilih', 'Dipilih:', 'Hapus semua', 'Maksimal 10 item'; tombol hapus chip punya aria-label nama item. | Diperbaiki |
 | PRC-VC-04 | form | form | P2 | Input cari item tanpa label terhubung dan override h-10. | Label htmlFor + id, tinggi default h-9. | Diperbaiki |
 | PRC-VC-05 | page | ia | P2 | Halaman tidak ada di sidebar (hanya via pill di Vendors/Overview) dan breadcrumb hanya 'Beranda › Procurement'. | Diperbaiki global oleh lead (breadcrumb/sidebar via matchPaths). | Diperbaiki |
-| PRC-VC-06 | page | ia | P2 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | Butuh keputusan. Rekomendasi: Vendor Comparison fokus ke perbandingan harga per item; panel scorecard diganti tautan ke Procurement › Vendor Scorecard. | Terbuka |
+| PRC-VC-06 | page | ia | P2 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | Vendor Comparison fokus ke perbandingan harga; panel scorecard duplikat diganti tautan ke Procurement › Vendor Scorecard. | Diperbaiki |
 | PRC-VC-03 | page | card | P3 | Tile scorecard lokal (rounded-xl p-4, text-2xl font-extrabold); kartu p-5/p-10. | CompactStatCard dengan tone success/warning/danger; kartu p-4; judul seksi h2 text-base md:text-lg. | Diperbaiki |
 
 ## `/procurement/vendor-recommend` — Vendor Recommendation
@@ -286,7 +286,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | PRC-POC-01 | page | layout | P2 | Select filter vendor/status full-width bertumpuk (2 baris 40px); ikon Filter dekoratif; wrapper max-w-7xl. | Select lebar tetap sebaris + ariaLabel; status 'Partial' ditambahkan. | Diperbaiki |
 | PRC-POC-02 | page | button | P2 | Setiap baris PO punya tombol primary 'Bandingkan' (banyak primary) dengan override rounded-full h-8 text-xs. | Button outline/secondary sm dengan aria-pressed. | Diperbaiki |
-| PRC-POC-04 | page | ia | P2 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | Butuh keputusan. Rekomendasi: jadikan PO Comparison tab 'Per PO' di Vendor Comparison (satu tempat perbandingan harga), RFQ tetap punya tab Perbandingan untuk penawaran. | Terbuka |
+| PRC-POC-04 | page | ia | P2 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | PO Comparison menjadi tab 'Per PO' di Vendor Comparison (izin per tab); /procurement/po-comparison diarahkan ke ?tab=po; menu Orders › Vendor Comparison; tombol 'Bandingkan PO' di daftar PO. | Diperbaiki |
 | PRC-POC-03 | page | language | P3 | 'items', 'Side-by-Side', 'Cell hijau … tsb'; vendor fallback UUID. | 'item', 'Perbandingan berdampingan', 'Sel hijau = harga terbaik …', fallback '—'. | Diperbaiki |
 
 ## `/procurement/vendors` — Vendors

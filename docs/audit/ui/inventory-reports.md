@@ -201,7 +201,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-DS-02 | form | button | P2 | Tombol full-width gradient emerald (30px) 'Download Excel Report'. | Diganti satu tombol primer 'Ekspor Excel' h-9 di footer kartu filter. | Diperbaiki |
 | RPT-DS-03 | form | form | P2 | Input tanggal tanpa label terhubung. Chip outlet/brand berupa <button> mentah. | Ditambah ReportField htmlFor (grid 1/2/4 kolom) dan ChipMultiSelect (aria-pressed, 'n dipilih', Reset). | Diperbaiki |
 | RPT-DS-04 | form | runtime | P2 | Error ekspor menampilkan 'Request failed…' (blob tidak dibaca). Toast Inggris. Tanpa validasi rentang. | useExcelExport mem-parse error blob. Toast Bahasa. Ditambah validRange. | Diperbaiki |
-| RPT-DS-05 | page | density | P3 | Tidak ada pratinjau di layar. | Permintaan fitur: pratinjau tabel di layar sebelum ekspor butuh endpoint JSON baru — di luar cakupan perbaikan UI. | Terbuka |
+| RPT-DS-05 | page | density | P3 | Tidak ada pratinjau di layar. | Pratinjau di layar (100 baris + total seluruh baris) dari endpoint baru /api/reports/sales/daily-sales yang memakai helper baris yang sama dengan file Excel; tes paritas total pratinjau = total Excel. | Diperbaiki |
 
 ## `/reports/outlet-performance` — Outlet Performance Report
 
