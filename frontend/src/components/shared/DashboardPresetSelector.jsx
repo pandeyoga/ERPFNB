@@ -55,25 +55,25 @@ export default function DashboardPresetSelector({ portal, activePreset, onSelect
   return (
     <TooltipProvider>
       <div
-        className="flex flex-wrap items-center gap-1.5 rounded-xl border border-border bg-muted/30 p-1.5"
+        className="inline-flex flex-wrap items-center gap-1.5 rounded-[calc(var(--radius)-2px)] border border-border/60 bg-white/35 dark:bg-white/5 p-1"
         data-testid="dashboard-preset-selector"
         role="group"
-        aria-label="Dashboard layout preset"
+        aria-label="Preset tampilan dashboard"
       >
-        <span className="px-2 text-xs font-medium text-muted-foreground hidden sm:block">Layout:</span>
+        <span className="px-2 text-xs font-medium text-muted-foreground hidden sm:block">Tampilan:</span>
         {presets.map((preset) => {
           const isActive = activePreset === preset.id;
           return (
             <Tooltip key={preset.id}>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isActive ? "default" : "ghost"}
+                  variant="ghost"
                   size="sm"
-                  className={`h-7 gap-1.5 text-xs transition-all ${
-                    isActive
-                      ? "shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                  className={`gap-1.5 px-2.5 ${
+                    isActive ? "pill-active hover:bg-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
+                  aria-label={preset.name}
+                  aria-pressed={isActive}
                   onClick={() => handleSelect(preset)}
                   disabled={saving}
                   data-testid={`preset-btn-${preset.id}`}

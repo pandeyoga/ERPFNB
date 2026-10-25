@@ -50,14 +50,14 @@ function ResetPwdDialog({ target, onClose }) {
           <DialogTitle>Reset Password</DialogTitle>
           <DialogDescription>Untuk: {target.full_name} ({target.email})</DialogDescription>
         </DialogHeader>
-        <Field label="Password Baru (min 8)">
-          <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)}
+        <Field label="Password Baru (min 8) *" htmlFor="reset-pwd-input">
+          <Input id="reset-pwd-input" type="password" value={pw} onChange={(e) => setPw(e.target.value)}
                  className="glass-input" autoFocus data-testid="reset-pwd-input" />
         </Field>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} data-testid="reset-pwd-cancel">Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="reset-pwd-save">
-            {saving ? "…" : "Reset"}
+          <Button onClick={submit} disabled={saving} data-testid="reset-pwd-save">
+            {saving ? "Menyimpan…" : "Reset Password"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -70,7 +70,7 @@ function Section({ title, children, badge }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+        <h3 className="text-sm font-semibold">{title}</h3>
         {badge}
       </div>
       {children}
@@ -78,10 +78,10 @@ function Section({ title, children, badge }) {
   );
 }
 
-function Field({ label, children, className }) {
+function Field({ label, children, className, htmlFor }) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label className="text-xs uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-xs md:text-sm font-medium">{label}</Label>
       {children}
     </div>
   );

@@ -67,7 +67,7 @@ function RescheduleDialog({ reservation, open, onClose, onSuccess }) {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-indigo-600" /> Jadwal Ulang Reservasi
+            <CalendarClock className="h-4 w-4 text-indigo-600" /> Jadwal Ulang Reservasi
           </DialogTitle>
           <DialogDescription>
             Ubah jadwal untuk <strong>{reservation?.customer_name}</strong>.
@@ -76,33 +76,33 @@ function RescheduleDialog({ reservation, open, onClose, onSuccess }) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Tanggal Baru *</Label>
-            <Input type="date" value={form.new_date}
+            <Label htmlFor="reschedule-date" className="text-xs md:text-sm font-medium">Tanggal baru *</Label>
+            <Input id="reschedule-date" type="date" value={form.new_date}
               onChange={e => setForm(f => ({ ...f, new_date: e.target.value }))}
               data-testid="reschedule-date-input" />
           </div>
           <div className="space-y-1">
-            <Label>Waktu Baru *</Label>
-            <Input type="time" value={form.new_time}
+            <Label htmlFor="reschedule-time" className="text-xs md:text-sm font-medium">Waktu baru *</Label>
+            <Input id="reschedule-time" type="time" value={form.new_time}
               onChange={e => setForm(f => ({ ...f, new_time: e.target.value }))}
               data-testid="reschedule-time-input" />
           </div>
           <div className="space-y-1">
-            <Label>Alasan Penjadwalan Ulang</Label>
-            <Input placeholder="Misal: permintaan tamu, outlet full, dll."
+            <Label htmlFor="reschedule-reason" className="text-xs md:text-sm font-medium">Alasan penjadwalan ulang</Label>
+            <Input id="reschedule-reason" placeholder="Misal: permintaan tamu, outlet full, dll."
               value={form.reason}
               onChange={e => setForm(f => ({ ...f, reason: e.target.value }))} />
           </div>
         </div>
         {/* History */}
         {reservation?.reschedule_history?.length > 0 && (
-          <div className="bg-indigo-50 rounded-lg p-3">
-            <p className="text-xs font-medium text-indigo-700 mb-1.5 flex items-center gap-1">
+          <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3">
+            <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1.5 flex items-center gap-1">
               <History className="h-3.5 w-3.5" /> Riwayat Penjadwalan Ulang
             </p>
             <div className="space-y-1">
               {reservation.reschedule_history.slice(-3).map((h, i) => (
-                <p key={i} className="text-xs text-indigo-600">
+                <p key={i} className="text-xs text-indigo-600 dark:text-indigo-300">
                   {fmtDate(h.changed_at)}: {h.old_date} {h.old_time} → {h.new_date} {h.new_time}
                   {h.reason && ` (${h.reason})`}
                 </p>
@@ -111,12 +111,10 @@ function RescheduleDialog({ reservation, open, onClose, onSuccess }) {
           </div>
         )}
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Batal</Button>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
           <Button onClick={handleSave} disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-700"
             data-testid="btn-confirm-reschedule">
-            {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            <CalendarClock className="h-4 w-4 mr-1.5" /> Jadwalkan Ulang
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarClock className="h-4 w-4" />} Jadwalkan Ulang
           </Button>
         </DialogFooter>
       </DialogContent>

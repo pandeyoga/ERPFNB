@@ -8,14 +8,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Crown, ArrowRight, TrendingUp, Wallet, ClipboardCheck,
+  BarChart3, ArrowRight, TrendingUp, Wallet, ClipboardCheck,
   Receipt, Building2, Layers, Activity, Pause, Play, FileText,
-  GitCompareArrows,
+  GitCompareArrows, X,
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import jsPDF from "jspdf";
-import api, { unwrap } from "@/lib/api";
 import {
   useBrands,
   useOutlets,
@@ -25,7 +24,8 @@ import {
   useAPAgingSummary,
   useDashboardPreset,
 } from "@/hooks/useExecutiveDashboard";
-import KpiCard from "@/components/shared/KpiCard";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import PageHeader from "@/components/shared/PageHeader";
 import AIInsightsCard from "@/components/shared/AIInsightsCard";
 import ConversationalQA from "@/components/shared/ConversationalQA";
 import SalesTrendChart from "@/components/shared/SalesTrendChart";
@@ -42,10 +42,9 @@ import CashPositionWidget from "@/components/shared/CashPositionWidget";
 import DashboardPresetSelector from "@/components/shared/DashboardPresetSelector";
 import CollapsibleSection from "@/components/shared/CollapsibleSection";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
-import { cn } from "@/lib/utils";
-import useOutletScope from "@/hooks/useOutletScope";
 
 const RANGES = [
   { v: 7, l: "7d" },
@@ -164,33 +163,45 @@ export default function ExecutiveHome() {
   if (!user) return null;
 
   return (
-    <div className="max-w-7xl mx-auto" ref={exportRef} data-testid="executive-home-page">
-      <div className="mb-6 flex items-start justify-between gap-3 flex-wrap" data-testid="executive-header">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl grad-aurora flex items-center justify-center">
-            <Crown className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight flex items-center gap-2">
-              Executive Dashboard
+    <div className="space-y-3 lg:space-y-4" ref={exportRef} data-testid="executive-home-page">
+      <div data-testid="executive-header">
+        <PageHeader
+          icon={BarChart3}
+          className="mb-0 md:mb-0"
+          title={
+            <span className="inline-flex items-center gap-2">
+              Sales Analytics
               <InlineHelp id="exec-kpi-overview" size="xs" placement="right" />
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Realtime KPI, trend &amp; AI insights untuk seluruh group.
-            </p>
-          </div>
-        </div>
+            </span>
+          }
+          subtitle="KPI realtime, trend & AI insights untuk seluruh group"
+          actions={
+            <>
+              <Button
+                variant={liveMode ? "default" : "outline"}
+                onClick={() => setLiveMode(!liveMode)}
+                aria-pressed={liveMode}
+                data-testid="exec-live-toggle"
+              >
+                {liveMode ? <Pause /> : <Play />}
+                {liveMode ? "Live aktif" : "Live mati"}
+                {liveMode && <Activity className="text-emerald-300 animate-pulse" />}
+              </Button>
+              <Button
+                onClick={exportPdf}
+                disabled={exporting}
+                data-testid="exec-export-pdf"
+              >
+                <FileText />
+                {exporting ? "Mengekspor…" : "Ekspor PDF"}
+              </Button>
+            </>
+          }
+        />
       </div>
 
-      {/* AI assistant — collapsible (default collapsed) so it doesn't dominate the dashboard */}
-      {(can("ai.chat.use") || can("ai.exec_qa.use")) && (
-        <div className="mb-5" data-testid="exec-ai-row">
-          <ConversationalQA collapsible showKpi={false} />
-        </div>
-      )}
-
       {/* Filter bar */}
-      <div className="mb-5 glass-card p-3 flex flex-wrap items-center gap-2" data-testid="exec-filterbar">
+      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="exec-filterbar">
         <PeriodPicker
           value={periodMeta.preset}
           onChange={setPeriodMeta}
@@ -220,112 +231,87 @@ export default function ExecutiveHome() {
           width={240}
         />
         {(brandIds.length > 0 || outletIds.length > 0) && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => { setBrandIds([]); setOutletIds([]); }}
-            className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-full hover:bg-foreground/5 inline-flex items-center gap-1"
             data-testid="exec-filters-clear"
           >
-            <span className="text-base leading-none">×</span> Reset filter
-          </button>
+            <X /> Reset filter
+          </Button>
         )}
         <div className="flex-1 min-w-0" />
-        <Link to="/executive/profit-walk">
-          <Button size="sm" variant="outline" className="rounded-full gap-1.5 h-9" data-testid="exec-link-profit-walk">
-            <TrendingUp className="h-3.5 w-3.5" /> Profit Walk
-          </Button>
-        </Link>
-        <Link to="/executive/period-compare">
-          <Button size="sm" variant="outline" className="rounded-full gap-1.5 h-9" data-testid="exec-link-period-compare">
-            <GitCompareArrows className="h-3.5 w-3.5" /> Period Compare
-          </Button>
-        </Link>
-        <Button
-          size="sm"
-          variant={liveMode ? "default" : "outline"}
-          className={cn(
-            "rounded-full gap-1.5 h-9",
-            liveMode && "pill-active",
-          )}
-          onClick={() => setLiveMode(!liveMode)}
-          data-testid="exec-live-toggle"
-        >
-          {liveMode ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {liveMode ? "Live" : "Live Off"}
-          {liveMode && <Activity className="h-3 w-3 text-emerald-300 animate-pulse" />}
+        <Button variant="outline" asChild data-testid="exec-link-profit-walk">
+          <Link to="/executive/analytics-hub?tab=profit-walk">
+            <TrendingUp /> Profit Walk
+          </Link>
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="glass-input rounded-full gap-1.5 h-9"
-          onClick={exportPdf}
-          disabled={exporting}
-          data-testid="exec-export-pdf"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          {exporting ? "Exporting…" : "Export PDF"}
+        <Button variant="outline" asChild data-testid="exec-link-period-compare">
+          <Link to="/executive/analytics-hub?tab=period-compare">
+            <GitCompareArrows /> Period Compare
+          </Link>
         </Button>
       </div>
       {lastRefresh && (
-        <div className="text-[11px] text-muted-foreground mb-3 -mt-2 px-1" data-testid="exec-last-refresh">
+        <div className="text-[11px] text-muted-foreground -mt-1 px-1" data-testid="exec-last-refresh">
           Refresh terakhir: {fmtDate(lastRefresh.toISOString(), "DD MMM YYYY HH:mm")} {liveMode && "(auto 60s)"}
         </div>
       )}
 
       {/* Phase F3 — Dashboard preset selector */}
-      <div className="mb-5">
-        <DashboardPresetSelector
-          portal="executive"
-          activePreset={activePreset}
-          onSelect={setActivePreset}
-        />
-      </div>
+      <DashboardPresetSelector
+        portal="executive"
+        activePreset={activePreset}
+        onSelect={setActivePreset}
+      />
 
       {loadingK && <LoadingState rows={4} />}
 
       {!loadingK && kpis && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5" data-testid="exec-kpi-strip-primary">
-            <KpiCard label="Sales Hari Ini" value={fmtRp(kpis.sales_today)}
-              hint="Validated only" icon={Receipt} color="aurora-1"
-              onClick={() => window.location.assign("/outlet/daily-sales")} />
-            <KpiCard label="Sales WTD" value={fmtRp(kpis.sales_wtd)}
-              hint={`Sejak ${kpis.week_start}`} icon={TrendingUp} color="aurora-2" />
-            <KpiCard label="Sales MTD" value={fmtRp(kpis.sales_mtd)}
-              hint={`Period ${kpis.period}`} icon={TrendingUp} color="aurora-4" />
-            <KpiCard label="Inventory Value" value={fmtRp(kpis.inventory_value)}
-              hint={`${fmtNumber(kpis.inventory_item_count)} item`} icon={Layers} color="aurora-5"
-              onClick={() => window.location.assign("/inventory/valuation")} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="exec-kpi-strip-primary">
+            <CompactStatCard testIdPrefix="kpi" label="Sales Hari Ini" value={fmtRp(kpis.sales_today)}
+              sub="Hanya yang tervalidasi" icon={Receipt} color="aurora-1"
+              onClick={() => navigate("/outlet/daily-sales")} />
+            <CompactStatCard testIdPrefix="kpi" label="Sales WTD" value={fmtRp(kpis.sales_wtd)}
+              sub={`Sejak ${kpis.week_start}`} icon={TrendingUp} color="aurora-2" />
+            <CompactStatCard testIdPrefix="kpi" label="Sales MTD" value={fmtRp(kpis.sales_mtd)}
+              sub={`Periode ${kpis.period}`} icon={TrendingUp} color="aurora-4" />
+            <CompactStatCard testIdPrefix="kpi" label="Inventory Value" value={fmtRp(kpis.inventory_value)}
+              sub={`${fmtNumber(kpis.inventory_item_count)} item`} icon={Layers} color="aurora-5"
+              onClick={() => navigate("/inventory/valuation")} />
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-            <KpiCard label="AP Exposure" value={fmtRp(kpis.ap_exposure)}
-              hint="Unpaid GR" icon={Wallet} color="aurora-6"
-              onClick={() => window.location.assign("/finance/ap-aging")} />
-            <KpiCard label="Pending Validation" value={kpis.pending_validations}
-              hint="Daily sales submitted" icon={ClipboardCheck} color="aurora-3"
-              onClick={() => window.location.assign("/finance/validation")} />
-            <KpiCard label="Opname Aktif" value={kpis.opname_pending}
-              hint="In progress" icon={Building2} color="aurora-1"
-              onClick={() => window.location.assign("/inventory/opname")} />
-            <Link to="/finance/profit-loss" className="glass-card-hover p-4 flex items-center gap-3" data-testid="exec-pl-link">
-              <div className="h-10 w-10 rounded-xl grad-aurora flex items-center justify-center text-white">
-                <ArrowRight className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-xs uppercase text-muted-foreground">Buka P&amp;L</div>
-                <div className="text-sm font-semibold">Period {kpis.period}</div>
-              </div>
-            </Link>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="exec-kpi-strip-secondary">
+            <CompactStatCard testIdPrefix="kpi" label="AP Exposure" value={fmtRp(kpis.ap_exposure)}
+              sub="Hutang belum dibayar" icon={Wallet} color="aurora-6"
+              onClick={() => navigate("/finance/ap-aging")} />
+            <CompactStatCard testIdPrefix="kpi" label="Pending Validation" value={fmtNumber(kpis.pending_validations)}
+              sub="Daily sales menunggu validasi" icon={ClipboardCheck} color="aurora-3"
+              onClick={() => navigate("/finance/validation")} />
+            <CompactStatCard testIdPrefix="kpi" label="Opname Aktif" value={fmtNumber(kpis.opname_pending)}
+              sub="Sedang berjalan" icon={Building2} color="aurora-1"
+              onClick={() => navigate("/inventory/opname")} />
+            <CompactStatCard testId="exec-pl-link" label="Buka P&L" value={`Periode ${kpis.period}`}
+              sub="Laporan laba rugi" icon={ArrowRight} color="aurora-2"
+              onClick={() => navigate("/finance/profit-loss")} />
           </div>
+
+          {/* AI assistant — collapsible (default collapsed) & placed below the KPIs so it doesn't dominate the dashboard */}
+          {(can("ai.chat.use") || can("ai.exec_qa.use")) && (
+            <div data-testid="exec-ai-row">
+              <ConversationalQA collapsible showKpi={false} />
+            </div>
+          )}
 
           {/* Brand Mix donut + AP Aging widget + Cash Position widget (priority above-the-fold) */}
           {(sections.brandMix || sections.cash || sections.apAging) && (
-          <CollapsibleSection id="exec_mid_row" title="Brand & Cash" icon={Layers} className="mb-5">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5" data-testid="exec-mid-row">
+          <CollapsibleSection id="exec_mid_row" title="Brand & Cash" icon={Layers}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4" data-testid="exec-mid-row">
             {sections.brandMix && (
-            <div className="glass-card p-5">
+            <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Brand Mix</h3>
+                <h3 className="text-sm md:text-base font-semibold">Brand Mix</h3>
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
                   Period {kpis.period}
                 </span>
@@ -345,7 +331,7 @@ export default function ExecutiveHome() {
               {can("finance.cash.read") ? (
                 <CashPositionWidget />
               ) : (
-                <div className="glass-card p-5 text-xs text-muted-foreground">Cash Position requires permission.</div>
+                <div className="glass-card p-4 text-xs text-muted-foreground">Butuh izin Cash Position (finance.cash.read).</div>
               )}
             </div>
             )}
@@ -368,21 +354,19 @@ export default function ExecutiveHome() {
 
           {/* Sales Trend + AI Insights */}
           {(sections.trend || sections.ai) && (
-          <CollapsibleSection id="exec_trend_row" title="Trend & AI Insights" icon={TrendingUp} className="mb-5">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5" data-testid="exec-trend-row">
+          <CollapsibleSection id="exec_trend_row" title="Trend & AI Insights" icon={TrendingUp}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4" data-testid="exec-trend-row">
             {sections.trend && (
-            <div className="glass-card p-5 lg:col-span-2">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Sales Trend</h3>
-                <div className="flex items-center gap-1">
-                  {RANGES.map(r => (
-                    <button key={r.v} onClick={() => setDays(r.v)}
-                      className={cn("px-3 py-1 rounded-full text-xs transition-colors",
-                        days === r.v ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground")}
-                      data-testid={`exec-range-${r.v}`}
-                    >{r.l}</button>
-                  ))}
-                </div>
+            <div className="glass-card p-4 lg:col-span-2">
+              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <h3 className="text-sm md:text-base font-semibold">Sales Trend</h3>
+                <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v))}>
+                  <TabsList aria-label="Rentang hari">
+                    {RANGES.map(r => (
+                      <TabsTrigger key={r.v} value={String(r.v)} data-testid={`exec-range-${r.v}`}>{r.l}</TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
               </div>
               {loadingT ? (
                 <div className="h-40 skeleton rounded-xl" />
@@ -392,7 +376,7 @@ export default function ExecutiveHome() {
               {trend && (
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-sm">
                   <span className="text-muted-foreground">Total {days} hari</span>
-                  <span className="font-bold tabular-nums">{fmtRp(trend.total)}</span>
+                  <span className="font-semibold tabular-nums">{fmtRp(trend.total)}</span>
                 </div>
               )}
             </div>
@@ -404,13 +388,13 @@ export default function ExecutiveHome() {
 
           {/* Forecast Guard + Anomaly Overview + Sales Heatmap (Phase 4B) */}
           {(sections.guard || sections.anomaly) && (
-          <CollapsibleSection id="exec_monitor_row" title="Monitoring" icon={Activity} className="mb-5">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5" data-testid="exec-monitor-row">
+          <CollapsibleSection id="exec_monitor_row" title="Monitoring" icon={Activity}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4" data-testid="exec-monitor-row">
               {sections.guard && <ForecastGuardWidget />}
               {sections.anomaly && <AnomalyOverviewWidget />}
             </div>
             {/* Phase 4B: Sales Heatmap Widget */}
-            <div className="mt-5">
+            <div className="mt-3 lg:mt-4">
               <SalesHeatmapWidget
                 period={periodMeta?.period}
                 brandIds={brandIds}
@@ -421,9 +405,9 @@ export default function ExecutiveHome() {
           )}
 
           {/* Top Outlets (Phase 4E: Enhanced table view) */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Top Outlets — Sales {kpis.period}</h3>
+              <h3 className="text-sm md:text-base font-semibold">Top Outlets — Sales {kpis.period}</h3>
               <Link to="/outlet/daily-sales" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
                 Lihat detail <ArrowRight className="h-3 w-3" />
               </Link>
@@ -444,7 +428,7 @@ export default function ExecutiveHome() {
                         <div className="text-xs text-muted-foreground">{o.days} hari</div>
                       </div>
                     ) },
-                    { key: "total", label: "Revenue", numeric: true, sortable: true, render: (o) => <span className="font-bold">{fmtRp(o.total)}</span> },
+                    { key: "total", label: "Revenue", numeric: true, sortable: true, render: (o) => <span className="font-semibold">{fmtRp(o.total)}</span> },
                     { key: "trx", label: "Trx", numeric: true, sortable: true, hideOnMobile: true, render: (o) => <span className="text-muted-foreground">{fmtNumber(o.trx)}</span> },
                     { key: "avgTicket", label: "Avg Ticket", numeric: true, sortable: true, hideOnMobile: true, render: (o) => fmtRp(o.avgTicket) },
                     { key: "pct", label: "Share %", numeric: true, sortable: true, render: (o) => <span className="font-semibold">{o.pct.toFixed(1)}%</span> },

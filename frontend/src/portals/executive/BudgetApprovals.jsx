@@ -5,14 +5,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/shared/DataTable";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import EmptyState from "@/components/shared/EmptyState";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
 import { logger } from "@/lib/logger";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
+import PageHeader from "@/components/shared/PageHeader";
 
 const totalBudgeted = (b) => (b.lines || []).reduce((s, l) => s + parseFloat(l.amount || 0), 0);
 
@@ -52,10 +51,6 @@ function BudgetLines({ b }) {
 export default function BudgetApprovals() {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rejectDialog, setRejectDialog] = useState(false);
-  const [rejectBudgetId, setRejectBudgetId] = useState(null);
-  const [rejectReason, setRejectReason] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -63,7 +58,7 @@ export default function BudgetApprovals() {
       const res = await api.get("/budget/budgets", { params: { approval_status: "submitted" } });
       if (res.data.success) setBudgets(res.data.data?.items || []);
     } catch (err) {
-      toast.error("Gagal memuat budget submissions");
+      toast.error("Gagal memuat pengajuan budget");
     } finally {
       setLoading(false);
     }
@@ -72,65 +67,62 @@ export default function BudgetApprovals() {
   useEffect(() => { load(); }, []);
 
   const handleApprove = async (budgetId) => {
-    if (!(await confirmDialog("Approve budget ini?"))) return;
+    if (!(await confirmDialog("Setujui budget ini?"))) return;
     try {
       await api.post(`/budget/budgets/${budgetId}/approve`);
-      toast.success("Budget berhasil di-approve");
+      toast.success("Budget disetujui");
       load();
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal approve budget");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menyetujui budget");
     }
   };
 
-  const openRejectDialog = (budgetId) => {
-    setRejectBudgetId(budgetId);
-    setRejectReason("");
-    setRejectDialog(true);
-  };
-
-  const handleReject = async () => {
-    if (!rejectReason.trim()) {
-      toast.error("Alasan penolakan wajib diisi");
-      return;
-    }
-    setSubmitting(true);
+  // Alasan penolakan via promptDialog global (pengganti dialog lokal).
+  const handleReject = async (budgetId) => {
+    const reason = await promptDialog({
+      title: "Tolak Budget",
+      description: "Berikan alasan penolakan. Budget akan dikembalikan ke status Draft.",
+      label: "Alasan penolakan",
+      placeholder: "Jelaskan alasan penolakan…",
+      multiline: true,
+      destructive: true,
+      confirmText: "Tolak Budget",
+    });
+    if (!reason) return;
     try {
-      await api.post(`/budget/budgets/${rejectBudgetId}/reject`, { reason: rejectReason });
+      await api.post(`/budget/budgets/${budgetId}/reject`, { reason });
       toast.success("Budget ditolak");
-      setRejectDialog(false);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal reject budget");
-    } finally {
-      setSubmitting(false);
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menolak budget");
     }
   };
 
   const handleLock = async (budgetId) => {
-    if (!(await confirmDialog("Lock budget ini? Budget yang terkunci tidak bisa diedit."))) return;
+    if (!(await confirmDialog("Kunci budget ini? Budget yang terkunci tidak bisa diedit."))) return;
     try {
       await api.post(`/budget/budgets/${budgetId}/lock`);
-      toast.success("Budget berhasil di-lock");
+      toast.success("Budget dikunci");
       load();
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal lock budget");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal mengunci budget");
     }
   };
 
   return (
-    <div className="space-y-6" data-testid="budget-approvals">
-      <div>
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          <Target className="h-6 w-6" /> Budget Approvals
-        </h2>
-        <p className="text-muted-foreground text-sm">Review dan approve budget yang disubmit oleh Finance</p>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="budget-approvals">
+      <PageHeader
+        icon={Target}
+        title="Budget Approvals"
+        subtitle="Tinjau dan setujui budget yang diajukan oleh Finance"
+        className="mb-0 md:mb-0"
+      />
 
       <Card data-testid="budget-approval-list">
         <CardHeader>
           <CardTitle>Budget Menunggu Approval</CardTitle>
           <CardDescription>
-            Daftar budget dengan status "Submitted" yang memerlukan review Executive. Klik baris untuk lihat rincian.
+            Budget berstatus "Submitted" yang memerlukan review Executive. Klik baris untuk melihat rincian.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -146,26 +138,25 @@ export default function BudgetApprovals() {
               { key: "period", label: "Periode", sortable: true, render: (b) => <Badge variant="outline">{b.period}</Badge> },
               { key: "scope", label: "Scope", sortable: true, render: (b) => <Badge variant="secondary">{b.scope}</Badge> },
               { key: "total", label: "Total", numeric: true, sortable: true, sortAccessor: (b) => totalBudgeted(b), render: (b) => formatCurrency(totalBudgeted(b)) },
-              { key: "submitted_by", label: "Submitted By", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.submitted_by || "-"}</span> },
-              { key: "submitted_at", label: "Submitted At", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.submitted_at ? new Date(b.submitted_at).toLocaleDateString("id-ID") : "-"}</span> },
+              { key: "submitted_by", label: "Diajukan oleh", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.submitted_by || "-"}</span> },
+              { key: "submitted_at", label: "Tgl diajukan", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.submitted_at ? new Date(b.submitted_at).toLocaleDateString("id-ID") : "-"}</span> },
             ]}
             rows={budgets}
             keyField="id"
             loading={loading}
             renderExpanded={(b) => <BudgetLines b={b} />}
             empty={
-              <div className="text-center py-12 text-muted-foreground" data-testid="budget-approvals-empty">
-                <Send className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                <p>Tidak ada budget yang menunggu approval</p>
+              <div data-testid="budget-approvals-empty">
+                <EmptyState icon={Send} title="Tidak ada budget yang menunggu approval" description="Budget yang diajukan Finance akan muncul di sini." />
               </div>
             }
             rowAction={(b) => (
               <div className="flex items-center justify-end gap-1">
-                <Button variant="default" size="sm" onClick={() => handleApprove(b.id)} data-testid={`approve-btn-${b.id}`} title="Approve">
-                  <Check className="h-4 w-4 mr-1" /> Approve
+                <Button variant="outline" size="sm" className="text-rose-600 hover:text-rose-700" onClick={() => handleReject(b.id)} data-testid={`reject-btn-${b.id}`}>
+                  <XCircle /> Tolak
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => openRejectDialog(b.id)} data-testid={`reject-btn-${b.id}`} title="Reject">
-                  <XCircle className="h-4 w-4 mr-1" /> Reject
+                <Button size="sm" onClick={() => handleApprove(b.id)} data-testid={`approve-btn-${b.id}`}>
+                  <Check /> Setujui
                 </Button>
               </div>
             )}
@@ -176,41 +167,6 @@ export default function BudgetApprovals() {
 
       {/* Approved budgets that can be locked */}
       <ApprovedBudgetsCard onLock={handleLock} />
-
-      {/* Reject Dialog */}
-      <Dialog open={rejectDialog} onOpenChange={setRejectDialog}>
-        <DialogContent data-testid="reject-dialog">
-          <DialogHeader>
-            <DialogTitle>Reject Budget</DialogTitle>
-            <DialogDescription>
-              Berikan alasan penolakan. Budget akan dikembalikan ke status Draft.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Alasan Penolakan *</Label>
-              <Textarea
-                value={rejectReason}
-                onChange={e => setRejectReason(e.target.value)}
-                placeholder="Jelaskan alasan penolakan..."
-                rows={4}
-                data-testid="reject-reason-input"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRejectDialog(false)}>Batal</Button>
-            <Button
-              variant="destructive"
-              onClick={handleReject}
-              disabled={submitting || !rejectReason.trim()}
-              data-testid="confirm-reject-btn"
-            >
-              {submitting ? "Menolak..." : "Reject Budget"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -241,7 +197,7 @@ function ApprovedBudgetsCard({ onLock }) {
     <Card data-testid="approved-budgets-card">
       <CardHeader>
         <CardTitle>Budget yang Sudah Disetujui</CardTitle>
-        <CardDescription>Budget yang sudah di-approve dan dapat di-lock. Klik baris untuk lihat rincian.</CardDescription>
+        <CardDescription>Budget yang sudah disetujui dan dapat dikunci. Klik baris untuk melihat rincian.</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <DataTable
@@ -256,14 +212,14 @@ function ApprovedBudgetsCard({ onLock }) {
             { key: "period", label: "Periode", sortable: true, render: (b) => <Badge variant="outline">{b.period}</Badge> },
             { key: "scope", label: "Scope", sortable: true, render: (b) => <Badge variant="secondary">{b.scope}</Badge> },
             { key: "total", label: "Total", numeric: true, sortable: true, sortAccessor: (b) => totalBudgeted(b), render: (b) => formatCurrency(totalBudgeted(b)) },
-            { key: "approved_at", label: "Approved At", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.approved_at ? new Date(b.approved_at).toLocaleDateString("id-ID") : "-"}</span> },
+            { key: "approved_at", label: "Tgl disetujui", sortable: true, hideOnMobile: true, render: (b) => <span className="text-sm text-muted-foreground">{b.approved_at ? new Date(b.approved_at).toLocaleDateString("id-ID") : "-"}</span> },
           ]}
           rows={budgets}
           keyField="id"
           renderExpanded={(b) => <BudgetLines b={b} />}
           rowAction={(b) => (
-            <Button variant="outline" size="sm" onClick={() => onLock(b.id)} data-testid={`lock-btn-${b.id}`} title="Lock budget (tidak bisa diedit)">
-              <Lock className="h-4 w-4 mr-1" /> Lock
+            <Button variant="outline" size="sm" onClick={() => onLock(b.id)} data-testid={`lock-btn-${b.id}`} title="Kunci budget (tidak bisa diedit lagi)">
+              <Lock /> Kunci
             </Button>
           )}
           rowTestIdPrefix="approved-row"

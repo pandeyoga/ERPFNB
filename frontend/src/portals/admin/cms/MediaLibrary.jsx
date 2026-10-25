@@ -2,12 +2,12 @@
  * Media Library Page
  * Browse, upload, and manage images in the CMS media library.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Upload, Search, Trash2, Copy, CheckCircle2, Loader2,
   Image as ImageIcon, RefreshCw, Grid2x2, List, Info,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +18,7 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import EmptyState from "@/components/shared/EmptyState";
 import api from "@/lib/api";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -50,10 +51,10 @@ function MediaCard({ item, onDelete, onCopy, viewMode }) {
           <p className="text-xs text-muted-foreground">{formatBytes(item.file_size)} · {item.content_type}</p>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onCopy(item.url)}>
+          <Button variant="ghost" size="icon-sm" aria-label="Salin URL media" title="Salin URL" onClick={() => onCopy(item.url)}>
             <Copy className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(item.id)}>
+          <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label="Hapus media" title="Hapus" onClick={() => onDelete(item.id)}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -75,19 +76,19 @@ function MediaCard({ item, onDelete, onCopy, viewMode }) {
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
         <Button
-          size="icon"
+          size="icon-sm"
           variant="secondary"
-          className="h-8 w-8"
-          aria-label="Copy URL media"
+         
+          aria-label="Salin URL media"
           onClick={() => onCopy(item.url)}
           data-testid={`copy-media-${item.id}`}
         >
           <Copy className="h-4 w-4" />
         </Button>
         <Button
-          size="icon"
+          size="icon-sm"
           variant="destructive"
-          className="h-8 w-8"
+         
           aria-label="Hapus media"
           onClick={() => onDelete(item.id)}
           data-testid={`delete-media-${item.id}`}
@@ -108,6 +109,7 @@ export default function MediaLibrary() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const fileInputRef = useRef(null);
   const [page, setPage] = useState(1);
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -181,44 +183,40 @@ export default function MediaLibrary() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-xl font-semibold">Media Library</h1>
-          <p className="text-sm text-muted-foreground">{total} file tersimpan</p>
-        </div>
+    <div className="space-y-3" data-testid="cms-media-page">
+      {/* Toolbar: ringkasan + aksi (judul sudah di PageHeader/tab CMS Studio) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">{total} file tersimpan</p>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
-            aria-label="Refresh media library"
+            aria-label="Muat ulang media library"
+            title="Muat ulang"
             onClick={() => load(page, search)}
             disabled={loading}
             data-testid="media-refresh-btn"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
-          <label>
-            <Button
-              asChild
-              disabled={uploading}
-              data-testid="media-upload-btn"
-            >
-              <span className="cursor-pointer">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
-                Upload
-              </span>
-            </Button>
-            <input
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              multiple
-              className="hidden"
-              onChange={handleUpload}
-              disabled={uploading}
-            />
-          </label>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            data-testid="media-upload-btn"
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Unggah
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            className="hidden"
+            onChange={handleUpload}
+            disabled={uploading}
+            aria-label="Pilih file media"
+          />
         </div>
       </div>
 
@@ -229,26 +227,29 @@ export default function MediaLibrary() {
           <Input
             className="pl-9"
             placeholder="Cari file..."
+            aria-label="Cari media"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             data-testid="media-search-input"
           />
         </div>
-        <div className="flex items-center gap-1 border border-border rounded-lg p-0.5">
+        <div className="flex items-center gap-1 border border-border rounded-lg p-0.5" role="group" aria-label="Mode tampilan">
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}
-            size="icon"
-            className="h-7 w-7"
+            size="icon-sm"
+           
             aria-label="Tampilan grid"
+            aria-pressed={viewMode === "grid"}
             onClick={() => setViewMode("grid")}
           >
             <Grid2x2 className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant={viewMode === "list" ? "default" : "ghost"}
-            size="icon"
-            className="h-7 w-7"
+            size="icon-sm"
+           
             aria-label="Tampilan list"
+            aria-pressed={viewMode === "list"}
             onClick={() => setViewMode("list")}
           >
             <List className="h-3.5 w-3.5" />
@@ -259,19 +260,21 @@ export default function MediaLibrary() {
       {/* Upload hint */}
       <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
         <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-        <span>Format didukung: JPEG, PNG, WebP · Maks. 5MB per file · Klik kanan gambar untuk salin URL-nya</span>
+        <span>Format didukung: JPEG, PNG, WebP · Maks. 5MB per file · Arahkan kursor ke gambar lalu klik ikon salin untuk menyalin URL-nya</span>
       </div>
 
       {/* Grid/List */}
       {loading && items.length === 0 ? (
-        <div className="flex items-center justify-center py-20">
+        <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <ImageIcon className="h-12 w-12 mb-3 opacity-30" />
-          <p className="text-sm">{search ? "Tidak ada media yang cocok" : "Belum ada media diupload"}</p>
-          {!search && <p className="text-xs mt-1">Klik 'Upload' untuk menambahkan gambar pertama</p>}
+        <div className="glass-card">
+          <EmptyState
+            icon={ImageIcon}
+            title={search ? "Tidak ada media yang cocok" : "Belum ada media diunggah"}
+            description={search ? "Ubah kata kunci pencarian." : "Klik Unggah untuk menambahkan gambar pertama."}
+          />
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -291,11 +294,11 @@ export default function MediaLibrary() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-            Prev
+            Sebelumnya
           </Button>
           <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
           <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
-            Next
+            Berikutnya
           </Button>
         </div>
       )}
@@ -311,7 +314,7 @@ export default function MediaLibrary() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>
               Hapus
             </AlertDialogAction>
           </AlertDialogFooter>

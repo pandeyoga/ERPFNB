@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { ScrollText, RefreshCw, Search, Filter } from "lucide-react";
+import { RefreshCw, Search, Filter } from "lucide-react";
 
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -70,18 +70,14 @@ export default function LogsView() {
   }));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <ScrollText className="h-5 w-5" /> Recent Logs
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Total: {stats?.total || 0} entries · By level: {Object.entries(stats?.recent_by_level || {}).map(([k, v]) => `${k}:${v}`).join(" · ") || "-"}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} data-testid="logs-refresh">
-          <RefreshCw className={`h-3.5 w-3.5 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
+    <div className="space-y-3">
+      {/* Toolbar (judul seksi = tab "Logs" di hub Monitoring) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">
+          Log request terbaru — total {stats?.total || 0} entri · per level: {Object.entries(stats?.recent_by_level || {}).map(([k, v]) => `${k}:${v}`).join(" · ") || "-"}
+        </p>
+        <Button variant="outline" onClick={load} disabled={loading} data-testid="logs-refresh">
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Muat ulang
         </Button>
       </div>
 
@@ -91,24 +87,26 @@ export default function LogsView() {
           <SimpleSelect
             value={filters.level}
             onValueChange={(v) => updateFilters({ ...filters, level: v })}
-            options={LEVELS.map((l) => ({ value: l, label: l || "All levels" }))}
+            options={LEVELS.map((l) => ({ value: l, label: l || "Semua level" }))}
             className="glass-input h-9 px-2 rounded-md"
+            ariaLabel="Filter level"
             testId="logs-filter-level"
           />
         </div>
-        <Input className="glass-input h-9 max-w-[260px]" placeholder="Request ID"
+        <Input className="glass-input max-w-[260px]" placeholder="Request ID" aria-label="Filter request ID"
                 value={filters.request_id} onChange={(e) => updateFilters({ ...filters, request_id: e.target.value })}
                 data-testid="logs-filter-rid" />
         <div className="relative max-w-[260px] flex-1">
           <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input className="glass-input h-9 pl-8" placeholder="Filter route (regex)"
+          <Input className="glass-input pl-8" placeholder="Filter route (regex)" aria-label="Filter route"
                   value={filters.route_contains}
                   onChange={(e) => updateFilters({ ...filters, route_contains: e.target.value })}
                   data-testid="logs-filter-route" />
         </div>
-        <Input className="glass-input h-9 max-w-[200px]" placeholder="User ID"
-                value={filters.user_id} onChange={(e) => updateFilters({ ...filters, user_id: e.target.value })} />
-        <Button size="sm" onClick={load} className="rounded-full ml-auto pill-active">Apply</Button>
+        <Input className="glass-input max-w-[200px]" placeholder="User ID" aria-label="Filter user ID"
+                value={filters.user_id} onChange={(e) => updateFilters({ ...filters, user_id: e.target.value })}
+                data-testid="logs-filter-user" />
+        <Button onClick={load} className="ml-auto" data-testid="logs-apply">Terapkan</Button>
       </div>
 
       {error && <ErrorState message={error} onRetry={load} />}
@@ -117,12 +115,12 @@ export default function LogsView() {
         <div className="max-h-[640px] overflow-auto">
           <DataTable
             columns={[
-              { key: "ts", label: "Timestamp", primary: true, sortable: true, render: (row) => <span className="font-mono text-xs whitespace-nowrap">{fmtDateTime(row.ts)}</span> },
+              { key: "ts", label: "Timestamp", primary: true, sortable: true, render: (row) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(row.ts)}</span> },
               { key: "level", label: "Level", sortable: true, render: (row) => { const lvl = row.level || "INFO"; return <span className={`px-2 py-0.5 rounded text-xs font-medium ${LEVEL_STYLES[lvl] || LEVEL_STYLES.INFO}`}>{lvl}</span>; } },
-              { key: "route", label: "Method/Route", render: (row) => <span className="font-mono text-xs">{row.method ? <><span className="text-muted-foreground">{row.method}</span> {row.route}</> : row.msg?.slice(0, 80)}</span> },
+              { key: "route", label: "Method/Route", render: (row) => <span className="text-xs font-medium tabular-nums break-all">{row.method ? <><span className="text-muted-foreground">{row.method}</span> {row.route}</> : row.msg?.slice(0, 80)}</span> },
               { key: "status_code", label: "Status", numeric: true, sortable: true, render: (row) => { const code = row.status_code; const cls = !code ? "" : code >= 500 ? "text-red-600 font-semibold" : code >= 400 ? "text-amber-600 font-semibold" : "text-emerald-600"; return <span className={cls}>{code || "-"}</span>; } },
               { key: "duration_ms", label: "ms", numeric: true, sortable: true, render: (row) => row.duration_ms?.toFixed(1) || "-" },
-              { key: "request_id", label: "Request ID", render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.request_id?.slice(0, 8) || "-"}</span> },
+              { key: "request_id", label: "Request ID", render: (row) => <span className="text-xs font-medium tabular-nums text-muted-foreground">{row.request_id?.slice(0, 8) || "-"}</span> },
             ]}
             rows={rows}
             keyField="__rid"
@@ -130,16 +128,16 @@ export default function LogsView() {
             renderExpanded={(row) => (
               <pre className="text-xs font-mono whitespace-pre-wrap break-all">{JSON.stringify(row, null, 2)}</pre>
             )}
-            empty={<EmptyState title="Belum ada log" hint="Coba ubah filter atau tunggu request masuk." />}
+            empty={<EmptyState title="Belum ada log" description="Coba ubah filter atau tunggu request masuk." />}
             rowTestIdPrefix="logs-row"
           />
         </div>
       </div>
 
       {meta.total_pages > 1 && (
-        <div className="flex items-center justify-between gap-2 mt-3">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-muted-foreground tabular-nums">
-            Total: {meta.total} entries · Page {page} / {meta.total_pages}
+            Total: {meta.total} entri · Halaman {page} / {meta.total_pages}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -147,7 +145,7 @@ export default function LogsView() {
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
               data-testid="logs-prev"
-            >Prev</Button>
+            >Sebelumnya</Button>
             <span className="text-xs text-muted-foreground tabular-nums" data-testid="logs-page-info">
               {page} / {meta.total_pages}
             </span>
@@ -156,7 +154,7 @@ export default function LogsView() {
               onClick={() => setPage(p => Math.min(meta.total_pages, p + 1))}
               disabled={page >= meta.total_pages || loading}
               data-testid="logs-next"
-            >Next</Button>
+            >Berikutnya</Button>
           </div>
         </div>
       )}

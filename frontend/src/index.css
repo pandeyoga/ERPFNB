@@ -191,6 +191,11 @@ a[href*="emergent.sh"],
   h1, h2, h3, h4 { overflow-wrap: break-word; }
 }
 
+/* font-mono = Inter + angka tabular (kode dokumen rata & mudah dipindai). */
+@layer utilities {
+  .font-mono { font-variant-numeric: tabular-nums; letter-spacing: 0; }
+}
+
 /* ============================================
    GLASSMORPHISM UTILITIES
    ============================================ */

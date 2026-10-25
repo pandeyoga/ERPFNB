@@ -361,7 +361,7 @@ export default function LoyaltyAdminCustomerDetail() {
                             {r.voucher_code && (
                               <>
                                 {" · "}
-                                <span className="font-mono">{r.voucher_code}</span>
+                                <span className="font-medium tabular-nums">{r.voucher_code}</span>
                               </>
                             )}
                           </div>

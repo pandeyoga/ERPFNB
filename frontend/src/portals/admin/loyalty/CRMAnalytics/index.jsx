@@ -5,17 +5,18 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   BarChart2, TrendingUp, Users, UserMinus, UserCheck, UserX, Crown,
-  RefreshCw, Loader2, Target, DollarSign, Activity, ShoppingBag, ChevronRight,
+  RefreshCw, Loader2, Target, DollarSign, Activity, ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GlassTooltip, ChartEmpty } from "@/components/shared/charts/chartKit";
+import { GlassTooltip, ChartEmpty, axisProps, gridProps } from "@/components/shared/charts/chartKit";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
@@ -32,12 +33,39 @@ function fmt(n) {
 
 function pct(n) { return `${n}%`; }
 
-const RETENTION_COLORS = ["#3B82F6", "#EF4444"];
+/** Legend seragam untuk semua chart di halaman ini (12px, ikon kecil). */
+const LEGEND_PROPS = { iconSize: 10, wrapperStyle: { fontSize: 12, paddingTop: 8 } };
+
+/** Sub-tab CRM analytics — label sentence case (RFM/CLV = singkatan). */
+const CRM_TABS = [
+  { value: "overview", label: "Overview" },
+  { value: "retention", label: "Retention" },
+  { value: "cohorts", label: "Cohorts" },
+  { value: "segments", label: "Segments" },
+  { value: "top-customers", label: "Top customers" },
+  { value: "rfm", label: "RFM" },
+  { value: "clv", label: "CLV" },
+];
+
+/** Segmented control (periode / urutan) — tampilan sama dengan Tabs terpadu. */
+function Segmented({ value, onChange, options, ariaLabel, testId }) {
+  return (
+    <Tabs value={String(value)} onValueChange={(v) => onChange(v)}>
+      <TabsList aria-label={ariaLabel} data-testid={testId}>
+        {options.map((o) => (
+          <TabsTrigger key={o.value} value={String(o.value)}>{o.label}</TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
+  );
+}
+
+const SEG_COLOR_TOKEN = { new: "aurora-3", active: "aurora-4", at_risk: "aurora-5", churned: "aurora-6" };
 
 // ─── Cohort Heatmap ─────────────────────────────────────────────────────────
 function CohortHeatmap({ data }) {
   if (!data?.cohorts?.length) return (
-    <div className="text-center py-12 text-muted-foreground text-sm">No cohort data available.</div>
+    <div className="text-center py-8 text-muted-foreground text-sm">Belum ada data cohort.</div>
   );
   const maxOffset = Math.max(...data.cohorts.map(c => Object.keys(c.retention).length));
   const cols = Array.from({ length: maxOffset }, (_, i) => i);
@@ -78,7 +106,7 @@ function CohortHeatmap({ data }) {
         ]}
       />
       <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
-        <span>Legend:</span>
+        <span>Keterangan:</span>
         {[["≥80%","bg-emerald-500"],["60–79%","bg-emerald-400"],["40–59%","bg-yellow-400"],["20–39%","bg-orange-400"],["<20%","bg-red-400"]].map(([lbl,cls])=>(
           <span key={lbl} className={`flex items-center gap-1`}><span className={`w-3 h-3 rounded-sm inline-block ${cls}`} />{lbl}</span>
         ))}
@@ -92,10 +120,10 @@ function RFMChart({ data }) {
   if (!data?.segments?.length) return <ChartEmpty message="Belum ada data RFM." />;
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Donut chart */}
         <div className="flex flex-col items-center">
-          <h5 className="text-sm font-semibold mb-2">Segment Distribution</h5>
+          <h3 className="text-sm md:text-base font-semibold mb-2">Segment Distribution</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie data={data.segments} dataKey="count" nameKey="segment" cx="50%" cy="50%"
@@ -104,13 +132,13 @@ function RFMChart({ data }) {
                 {data.segments.map((s, i) => <Cell key={i} fill={s.color} />)}
               </Pie>
               <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
-              <Legend />
+              <Legend {...LEGEND_PROPS} />
             </PieChart>
           </ResponsiveContainer>
         </div>
         {/* Segment table */}
         <div className="space-y-2">
-          <h5 className="text-sm font-semibold">Breakdown</h5>
+          <h3 className="text-sm md:text-base font-semibold">Breakdown</h3>
           {data.segments.map((s, i) => (
             <div key={i} className="flex items-center gap-3">
               <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
@@ -129,7 +157,7 @@ function RFMChart({ data }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function CRMAnalytics() {
+export default function CRMAnalytics({ embedded = false }) {
   const [loading, setLoading] = useState(true);
   const [retentionMonths, setRetentionMonths] = useState(12);
   const [trendMonths, setTrendMonths] = useState(12);
@@ -176,17 +204,17 @@ export default function CRMAnalytics() {
   );
 
   const kpi1 = overview ? [
-    { label: "Total Customers",     value: overview.total_customers?.toLocaleString(), icon: Users,       color: "bg-blue-50 text-blue-600" },
-    { label: "Active Rate",         value: pct(overview.active_rate),                   icon: UserCheck,   color: "bg-emerald-50 text-emerald-600" },
-    { label: "Churn Rate",          value: pct(overview.churn_rate),                    icon: UserX,       color: "bg-red-50 text-red-600" },
-    { label: "Avg Retention",       value: pct(retention?.avg_retention || 0),          icon: TrendingUp,  color: "bg-violet-50 text-violet-600" },
+    { label: "Total Customers",     value: overview.total_customers?.toLocaleString(), icon: Users,       color: "aurora-1" },
+    { label: "Active Rate",         value: pct(overview.active_rate),                   icon: UserCheck,   color: "aurora-4" },
+    { label: "Churn Rate",          value: pct(overview.churn_rate),                    icon: UserX,       color: "aurora-6" },
+    { label: "Avg Retention",       value: pct(retention?.avg_retention || 0),          icon: TrendingUp,  color: "aurora-2" },
   ] : [];
 
   const kpi2 = overview ? [
-    { label: "Avg CLV",             value: fmt(overview.avg_clv),                        icon: Crown,       color: "bg-amber-50 text-amber-600" },
-    { label: "Avg Order Value",     value: fmt(overview.avg_order_value),                icon: ShoppingBag, color: "bg-teal-50 text-teal-600" },
-    { label: "Repeat Purchase Rate",value: pct(overview.repeat_purchase_rate),           icon: Target,      color: "bg-pink-50 text-pink-600" },
-    { label: "Lifetime Revenue",    value: fmt(overview.total_lifetime_revenue),         icon: DollarSign,  color: "bg-green-50 text-green-600" },
+    { label: "Avg CLV",             value: fmt(overview.avg_clv),                        icon: Crown,       color: "aurora-5" },
+    { label: "Avg Order Value",     value: fmt(overview.avg_order_value),                icon: ShoppingBag, color: "aurora-3" },
+    { label: "Repeat Purchase Rate",value: pct(overview.repeat_purchase_rate),           icon: Target,      color: "aurora-2" },
+    { label: "Lifetime Revenue",    value: fmt(overview.total_lifetime_revenue),         icon: DollarSign,  color: "aurora-4" },
   ] : [];
 
   const tierOrder = ["bronze", "silver", "gold"];
@@ -196,107 +224,88 @@ export default function CRMAnalytics() {
     fill: TIER_COLORS[t],
   }));
 
-  const segmentColors = { new: "#3B82F6", active: "#10B981", at_risk: "#F59E0B", churned: "#EF4444" };
   const segmentItems = segments?.segments || [];
+  const rfmScores = rfm?.score_distribution
+    ? [...rfm.score_distribution].sort((a, b) => Number(a.score) - Number(b.score))
+    : null;
+
+  const refreshBtn = (
+    <Button variant="outline" onClick={load} disabled={loading} data-testid="crm-analytics-refresh">
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+      Muat ulang
+    </Button>
+  );
+  const intro = "Customer retention, cohorts, CLV, RFM dan analisis segmen.";
 
   return (
-    <div className="space-y-5" data-testid="crm-analytics">
+    <div className="space-y-3" data-testid="crm-analytics">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <BarChart2 className="h-5 w-5 text-violet-600" /> CRM Advanced Analytics
-          </h3>
-          <p className="text-sm text-muted-foreground">Customer retention, cohorts, CLV, RFM dan analisis segmen.</p>
+      {embedded ? (
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <p className="text-sm text-muted-foreground">{intro}</p>
+          {refreshBtn}
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Refresh
-        </Button>
-      </div>
+      ) : (
+        <PageHeader icon={BarChart2} title="CRM Analytics" subtitle={intro} actions={refreshBtn} />
+      )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-xl">
-          {["overview","retention","cohorts","segments","top-customers","rfm","clv"].map(t => (
-            <TabsTrigger key={t} value={t} className="capitalize text-xs rounded-lg">
-              {t.replace("-", " ")}
-            </TabsTrigger>
+        <TabsList data-testid="crm-analytics-tabs">
+          {CRM_TABS.map(t => (
+            <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
           ))}
         </TabsList>
 
         {/* ─── OVERVIEW ─────────────────────────────────────────── */}
-        <TabsContent value="overview" className="space-y-5 mt-4">
+        <TabsContent value="overview" className="space-y-3 lg:space-y-4">
           {/* KPI Row 1 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {kpi1.map((k, i) => {
-              const Icon = k.icon;
-              return (
-                <div key={i} className="border rounded-xl p-4 bg-white">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${k.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-2xl font-bold">{k.value}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{k.label}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {kpi1.map((k) => (
+              <CompactStatCard key={k.label} label={k.label} value={k.value} icon={k.icon} color={k.color} />
+            ))}
           </div>
 
           {/* Segment mini-cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {segmentItems.map(s => {
-              const Icon = SEG_ICONS[s.key] || Activity;
-              return (
-                <div key={s.key} className="border rounded-xl p-3 bg-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                       style={{ backgroundColor: s.color + "20", color: s.color }}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="font-bold">{s.count.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">{s.label}</div>
-                  </div>
-                </div>
-              );
-            })}
+            {segmentItems.map(s => (
+              <CompactStatCard
+                key={s.key}
+                size="sm"
+                label={s.label}
+                value={s.count.toLocaleString()}
+                icon={SEG_ICONS[s.key] || Activity}
+                color={SEG_COLOR_TOKEN[s.key] || "aurora-1"}
+              />
+            ))}
           </div>
 
           {/* KPI Row 2 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {kpi2.map((k, i) => {
-              const Icon = k.icon;
-              return (
-                <div key={i} className="border rounded-xl p-4 bg-white">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${k.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-2xl font-bold">{k.value}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{k.label}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {kpi2.map((k) => (
+              <CompactStatCard key={k.label} label={k.label} value={k.value} icon={k.icon} color={k.color} />
+            ))}
           </div>
 
           {/* Trend chart */}
           {trends?.timeline && (
-            <div className="border rounded-xl p-5 bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold text-sm">Monthly Acquisition &amp; Transactions</h4>
-                <div className="flex gap-1">
-                  {[6, 12].map(m => (
-                    <Button key={m} size="sm" variant={trendMonths === m ? "default" : "outline"} className="h-6 text-xs px-2"
-                            onClick={() => setTrendMonths(m)}>{m}M</Button>
-                  ))}
-                </div>
+            <div className="glass-card p-4">
+              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                <h3 className="text-sm md:text-base font-semibold">Monthly Acquisition &amp; Transactions</h3>
+                <Segmented
+                  value={trendMonths}
+                  onChange={(v) => setTrendMonths(Number(v))}
+                  options={[{ value: 6, label: "6M" }, { value: 12, label: "12M" }]}
+                  ariaLabel="Periode tren"
+                  testId="crm-trend-period"
+                />
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={trends.timeline} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="label" {...axisProps} />
+                  <YAxis yAxisId="left" {...axisProps} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
-                  <Legend />
+                  <Legend {...LEGEND_PROPS} />
                   <Bar yAxisId="left" dataKey="new_customers" name="New Customers" fill="#3B82F6" radius={[3,3,0,0]} />
                   <Bar yAxisId="left" dataKey="transactions" name="Transactions" fill="#8B5CF6" radius={[3,3,0,0]} />
                 </BarChart>
@@ -305,12 +314,12 @@ export default function CRMAnalytics() {
           )}
 
           {/* Tier distribution */}
-          <div className="border rounded-xl p-5 bg-white">
-            <h4 className="font-semibold text-sm mb-4">Loyalty Tier Distribution</h4>
+          <div className="glass-card p-4">
+            <h3 className="text-sm md:text-base font-semibold mb-3">Loyalty Tier Distribution</h3>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={tierDist} layout="vertical" margin={{ left: 20, right: 30 }}>
                 <XAxis type="number" hide />
-                <YAxis type="category" dataKey="tier" tick={{ fontSize: 12 }} width={55} />
+                <YAxis type="category" dataKey="tier" {...axisProps} width={55} />
                 <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
                 <Bar dataKey="count" radius={[0,4,4,0]}>
                   {tierDist.map((t, i) => <Cell key={i} fill={t.fill} />)}
@@ -321,37 +330,31 @@ export default function CRMAnalytics() {
         </TabsContent>
 
         {/* ─── RETENTION ────────────────────────────────────────── */}
-        <TabsContent value="retention" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="border rounded-xl px-4 py-3 bg-white text-center">
-                <div className="text-2xl font-bold text-emerald-600">{pct(retention?.avg_retention || 0)}</div>
-                <div className="text-xs text-muted-foreground">Avg Retention</div>
-              </div>
-              <div className="border rounded-xl px-4 py-3 bg-white text-center">
-                <div className="text-2xl font-bold text-red-500">{pct(retention?.avg_churn || 0)}</div>
-                <div className="text-xs text-muted-foreground">Avg Churn</div>
-              </div>
+        <TabsContent value="retention" className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="grid grid-cols-2 gap-3 w-full sm:w-auto sm:min-w-[360px]">
+              <CompactStatCard size="sm" label="Avg Retention" value={pct(retention?.avg_retention || 0)} icon={TrendingUp} color="aurora-4" tone="success" />
+              <CompactStatCard size="sm" label="Avg Churn" value={pct(retention?.avg_churn || 0)} icon={UserX} color="aurora-6" tone="danger" />
             </div>
-            <div className="flex gap-1">
-              {[3,6,12].map(m => (
-                <Button key={m} size="sm" variant={retentionMonths === m ? "default" : "outline"}
-                        className="h-7 text-xs px-2"
-                        onClick={() => setRetentionMonths(m)}>{m}M</Button>
-              ))}
-            </div>
+            <Segmented
+              value={retentionMonths}
+              onChange={(v) => setRetentionMonths(Number(v))}
+              options={[{ value: 3, label: "3M" }, { value: 6, label: "6M" }, { value: 12, label: "12M" }]}
+              ariaLabel="Periode retensi"
+              testId="crm-retention-period"
+            />
           </div>
 
           {retention?.monthly && (
-            <div className="border rounded-xl p-5 bg-white">
-              <h4 className="font-semibold text-sm mb-4">Monthly Retention vs Churn Rate</h4>
+            <div className="glass-card p-4">
+              <h3 className="text-sm md:text-base font-semibold mb-3">Monthly Retention vs Churn Rate</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={retention.monthly} margin={{ top: 5, right: 15, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 11 }} />
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="label" {...axisProps} />
+                  <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} {...axisProps} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => `${v}%`} />} />
-                  <Legend />
+                  <Legend {...LEGEND_PROPS} />
                   <Line type="monotone" dataKey="retention_rate" name="Retention Rate %" stroke="#10B981"
                         strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                   <Line type="monotone" dataKey="churn_rate" name="Churn Rate %" stroke="#EF4444"
@@ -363,7 +366,7 @@ export default function CRMAnalytics() {
 
           {/* Monthly table */}
           {retention?.monthly && (
-            <div className="border rounded-xl bg-white overflow-hidden">
+            <div className="glass-card overflow-hidden">
               <DataTable
                 rows={[...retention.monthly].reverse()}
                 keyField="label"
@@ -390,45 +393,38 @@ export default function CRMAnalytics() {
         </TabsContent>
 
         {/* ─── COHORTS ──────────────────────────────────────────── */}
-        <TabsContent value="cohorts" className="mt-4 space-y-4">
+        <TabsContent value="cohorts" className="space-y-3">
           <div>
-            <h4 className="font-semibold">Cohort Retention Analysis</h4>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h2 className="text-base md:text-lg font-semibold">Cohort Retention Analysis</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
               Persentase pelanggan dari setiap cohort yang tetap aktif di bulan berikutnya.
               M+0 = bulan pertama, M+1 = bulan kedua, dst.
             </p>
           </div>
-          <div className="border rounded-xl p-5 bg-white overflow-x-auto">
+          <div className="glass-card p-4 overflow-x-auto">
             <CohortHeatmap data={cohorts} />
           </div>
         </TabsContent>
 
         {/* ─── SEGMENTS ─────────────────────────────────────────── */}
-        <TabsContent value="segments" className="mt-4 space-y-4">
+        <TabsContent value="segments" className="space-y-3">
           {segments && (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {segments.segments.map(s => {
-                  const Icon = SEG_ICONS[s.key] || Activity;
-                  return (
-                    <div key={s.key} className="border rounded-xl p-4 bg-white">
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
-                           style={{ backgroundColor: s.color + "20", color: s.color }}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="text-2xl font-bold">{s.count.toLocaleString()}</div>
-                      <div className="text-sm font-medium">{s.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{s.desc}</div>
-                      <Badge className="mt-2 text-xs" style={{ backgroundColor: s.color + "20", color: s.color }}>
-                        {s.pct}%
-                      </Badge>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {segments.segments.map(s => (
+                  <CompactStatCard
+                    key={s.key}
+                    label={s.label}
+                    value={s.count.toLocaleString()}
+                    sub={`${s.pct}% · ${s.desc}`}
+                    icon={SEG_ICONS[s.key] || Activity}
+                    color={SEG_COLOR_TOKEN[s.key] || "aurora-1"}
+                  />
+                ))}
               </div>
               {/* Stacked bar chart */}
-              <div className="border rounded-xl p-5 bg-white">
-                <h4 className="font-semibold text-sm mb-4">Segment Share</h4>
+              <div className="glass-card p-4">
+                <h3 className="text-sm md:text-base font-semibold mb-3">Segment Share</h3>
                 <div className="flex h-10 rounded-full overflow-hidden">
                   {segments.segments.map(s => (
                     <div key={s.key} className="h-full transition-all" title={`${s.label}: ${s.pct}%`}
@@ -450,19 +446,25 @@ export default function CRMAnalytics() {
         </TabsContent>
 
         {/* ─── TOP CUSTOMERS ────────────────────────────────────── */}
-        <TabsContent value="top-customers" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Top Customers</h4>
-            <div className="flex gap-2">
-              {["total_spend","visit_count","lifetime_points"].map(f => (
-                <Button key={f} size="sm" variant={sortBy === f ? "default" : "outline"} className="h-7 text-xs px-2"
-                        onClick={() => setSortBy(f)}>
-                  {f === "total_spend" ? "Spend" : f === "visit_count" ? "Visits" : "Points"}
-                </Button>
-              ))}
+        <TabsContent value="top-customers" className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="text-base md:text-lg font-semibold">Top Customers</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs md:text-sm text-muted-foreground">Urutkan</span>
+              <Segmented
+                value={sortBy}
+                onChange={setSortBy}
+                options={[
+                  { value: "total_spend", label: "Spend" },
+                  { value: "visit_count", label: "Visits" },
+                  { value: "lifetime_points", label: "Points" },
+                ]}
+                ariaLabel="Urutkan top customers"
+                testId="crm-top-sort"
+              />
             </div>
           </div>
-          <div className="border rounded-xl bg-white overflow-hidden">
+          <div className="glass-card overflow-hidden">
             <DataTable
               rows={topCustomers.map((c, i) => ({ ...c, _rank: i + 1, _key: c.id || i }))}
               keyField="_key"
@@ -491,7 +493,7 @@ export default function CRMAnalytics() {
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                   }`}>
-                    {c.is_active ? "Active" : "Inactive"}
+                    {c.is_active ? "Aktif" : "Nonaktif"}
                   </span>
                 ) },
               ]}
@@ -500,23 +502,24 @@ export default function CRMAnalytics() {
         </TabsContent>
 
         {/* ─── RFM ──────────────────────────────────────────────── */}
-        <TabsContent value="rfm" className="mt-4 space-y-4">
+        <TabsContent value="rfm" className="space-y-3">
           <div>
-            <h4 className="font-semibold">RFM Segmentation</h4>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h2 className="text-base md:text-lg font-semibold">RFM Segmentation</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
               Segmentasi berdasarkan Recency (kapan terakhir beli), Frequency (seberapa sering), Monetary (berapa banyak dibelanjakan).
             </p>
           </div>
-          <div className="border rounded-xl p-5 bg-white">
+          <div className="glass-card p-4">
             <RFMChart data={rfm} />
           </div>
-          {rfm?.score_distribution && (
-            <div className="border rounded-xl p-5 bg-white">
-              <h4 className="font-semibold text-sm mb-4">RFM Score Distribution (3–15)</h4>
+          {rfmScores && (
+            <div className="glass-card p-4">
+              <h3 className="text-sm md:text-base font-semibold mb-3">RFM Score Distribution (3–15)</h3>
               <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={rfm.score_distribution} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <XAxis dataKey="score" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
+                <BarChart data={rfmScores} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="score" {...axisProps} />
+                  <YAxis {...axisProps} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
                   <Bar dataKey="count" fill="#8B5CF6" radius={[3,3,0,0]} />
                 </BarChart>
@@ -526,21 +529,21 @@ export default function CRMAnalytics() {
         </TabsContent>
 
         {/* ─── CLV ──────────────────────────────────────────────── */}
-        <TabsContent value="clv" className="mt-4 space-y-4">
+        <TabsContent value="clv" className="space-y-3">
           <div>
-            <h4 className="font-semibold">Customer Lifetime Value</h4>
-            <p className="text-sm text-muted-foreground mt-1">Perbandingan CLV rata-rata per tier loyalty dan distribusi spending.</p>
+            <h2 className="text-base md:text-lg font-semibold">Customer Lifetime Value</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Perbandingan CLV rata-rata per tier loyalty dan distribusi spending.</p>
           </div>
           {clv?.by_tier && (
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-3">
               {["bronze","silver","gold"].map(tier => {
                 const t = clv.by_tier.find(x => x.tier === tier);
                 if (!t) return null;
                 return (
-                  <div key={tier} className="border rounded-xl p-4 bg-white">
+                  <div key={tier} className="glass-card p-4" data-testid={`clv-tier-${tier}`}>
                     <div className="flex items-center gap-2 mb-3">
                       <Crown className="h-4 w-4" style={{ color: TIER_COLORS[tier] }} />
-                      <span className="font-semibold capitalize">{tier}</span>
+                      <h3 className="text-sm md:text-base font-semibold capitalize">{tier}</h3>
                       <span className="text-xs text-muted-foreground ml-auto">{t.customer_count} customers</span>
                     </div>
                     <div className="space-y-2">
@@ -563,15 +566,15 @@ export default function CRMAnalytics() {
             </div>
           )}
           {clv?.by_tier && (
-            <div className="border rounded-xl p-5 bg-white">
-              <h4 className="font-semibold text-sm mb-4">Average CLV by Tier</h4>
+            <div className="glass-card p-4">
+              <h3 className="text-sm md:text-base font-semibold mb-3">Average CLV by Tier</h3>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={clv.by_tier.map(t=>({...t, tier: t.tier.charAt(0).toUpperCase()+t.tier.slice(1)}))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="tier" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v/1000000).toFixed(1)}jt`} />
-                  <Tooltip formatter={v => [fmt(v), "Avg Spend"]} />
-                  <Bar dataKey="avg_spend" radius={[4,4,0,0]}>
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="tier" {...axisProps} />
+                  <YAxis {...axisProps} tickFormatter={v => `${(v/1000000).toFixed(1)}jt`} />
+                  <Tooltip content={<GlassTooltip valueFormatter={(v) => fmt(v)} />} />
+                  <Bar dataKey="avg_spend" name="Avg Spend" radius={[4,4,0,0]}>
                     {clv.by_tier.map((t, i) => <Cell key={i} fill={TIER_COLORS[t.tier] || "#6B7280"} />)}
                   </Bar>
                 </BarChart>
@@ -579,13 +582,13 @@ export default function CRMAnalytics() {
             </div>
           )}
           {clv?.histogram && clv.histogram.length > 0 && (
-            <div className="border rounded-xl p-5 bg-white">
-              <h4 className="font-semibold text-sm mb-4">Spending Distribution</h4>
+            <div className="glass-card p-4">
+              <h3 className="text-sm md:text-base font-semibold mb-3">Spending Distribution</h3>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={clv.histogram}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="range" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="range" {...axisProps} />
+                  <YAxis {...axisProps} />
                   <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
                   <Bar dataKey="count" fill="#6366F1" radius={[3,3,0,0]} />
                 </BarChart>

@@ -1,22 +1,23 @@
 /** Budget vs Actual — v0.3.5 Enhanced (Multi-scope) */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Target, TrendingUp, TrendingDown, Settings2 } from "lucide-react";
+import { Target, TrendingUp, TrendingDown, Settings2, RefreshCw, BarChart3 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
 import { logger } from "@/lib/logger";
 
-export default function BudgetVsActual() {
+export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   const navigate = useNavigate();
   const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
   const [scope, setScope] = useState("outlet");
@@ -63,44 +64,58 @@ export default function BudgetVsActual() {
   const getVarianceColor = (pct, category) => {
     if (pct === null || pct === undefined) return "text-muted-foreground";
     // For revenue, negative variance is bad (under-budget)
-    if (category === "REV") return pct < -5 ? "text-red-600" : pct > 5 ? "text-green-600" : "text-gray-600";
+    if (category === "REV") return pct < -5 ? "text-red-600 dark:text-red-400" : pct > 5 ? "text-green-600 dark:text-green-400" : "text-muted-foreground";
     // For expenses, positive variance is bad (over-budget)
-    return pct > 10 ? "text-red-600" : pct < -10 ? "text-green-600" : "text-gray-600";
+    return pct > 10 ? "text-red-600 dark:text-red-400" : pct < -10 ? "text-green-600 dark:text-green-400" : "text-muted-foreground";
   };
 
   const hasBudgets = data && (data.category_rollup?.length > 0 || data.coa_level?.some(r => r.budget > 0));
 
+  // Di dalam hub → pindah tab; standalone → buka hub pada tab Budget management.
+  const goManage = () => (onSwitchTab ? onSwitchTab("manage") : navigate("/finance/budget-hub?tab=manage"));
+
+  const varianceTone = (pct, category) => {
+    const cls = getVarianceColor(pct, category);
+    if (cls.includes("red")) return "danger";
+    if (cls.includes("green")) return "success";
+    return "default";
+  };
+  const fmtVar = (pct) => (pct === null || pct === undefined ? null : `${pct > 0 ? "+" : ""}${(pct || 0).toFixed(1)}%`);
+  const catSub = (cat) => [`Budget: ${formatCurrency(cat.budget)}`, fmtVar(cat.variance_pct)].filter(Boolean).join(" · ");
+
   return (
-    <div className="space-y-6" data-testid="budget-vs-actual">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <Target className="h-6 w-6" /> Budget vs Actual
-          </h2>
-          <p className="text-muted-foreground text-sm">Perbandingan budget vs realisasi per periode</p>
-        </div>
-        <Button variant="outline" onClick={() => navigate("/finance/budget/manage")} data-testid="manage-budgets-btn">
-          <Settings2 className="h-4 w-4 mr-2" /> Kelola Budget
-        </Button>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="budget-vs-actual">
+      {!embedded && (
+        <PageHeader
+          icon={Target}
+          title="Budget vs Actual"
+          subtitle="Perbandingan budget vs realisasi per periode"
+          className="mb-0 md:mb-0"
+          actions={(
+            <Button variant="outline" onClick={goManage} data-testid="manage-budgets-btn">
+              <Settings2 /> Kelola Budget
+            </Button>
+          )}
+        />
+      )}
 
       <Card>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="space-y-2">
-              <Label>Periode</Label>
-              <Input type="month" value={period} onChange={e => setPeriod(e.target.value)}
+        <CardContent className="p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+            <div className="space-y-1">
+              <Label htmlFor="bva-period">Periode</Label>
+              <Input id="bva-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
                 data-testid="period-input" />
             </div>
-            
-            <div className="space-y-2">
-              <Label>Scope</Label>
+
+            <div className="space-y-1">
+              <Label htmlFor="bva-scope">Scope</Label>
               <Select value={scope} onValueChange={v => {
                 setScope(v);
                 setOutletId("");
                 setBrandId("");
               }}>
-                <SelectTrigger data-testid="scope-select">
+                <SelectTrigger id="bva-scope" data-testid="scope-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -112,11 +127,11 @@ export default function BudgetVsActual() {
             </div>
 
             {scope === "outlet" && (
-              <div className="space-y-2">
-                <Label>Outlet</Label>
+              <div className="space-y-1">
+                <Label htmlFor="bva-outlet">Outlet</Label>
                 <Select value={outletId} onValueChange={setOutletId}>
-                  <SelectTrigger data-testid="outlet-select">
-                    <SelectValue placeholder="Pilih Outlet" />
+                  <SelectTrigger id="bva-outlet" data-testid="outlet-select">
+                    <SelectValue placeholder="Semua outlet" />
                   </SelectTrigger>
                   <SelectContent>
                     {outlets.map(o => (
@@ -128,11 +143,11 @@ export default function BudgetVsActual() {
             )}
 
             {scope === "brand" && (
-              <div className="space-y-2">
-                <Label>Brand</Label>
+              <div className="space-y-1">
+                <Label htmlFor="bva-brand">Brand</Label>
                 <Select value={brandId} onValueChange={setBrandId}>
-                  <SelectTrigger data-testid="brand-select">
-                    <SelectValue placeholder="Pilih Brand" />
+                  <SelectTrigger id="bva-brand" data-testid="brand-select">
+                    <SelectValue placeholder="Semua brand" />
                   </SelectTrigger>
                   <SelectContent>
                     {brands.map(b => (
@@ -143,23 +158,24 @@ export default function BudgetVsActual() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label>Level</Label>
+            <div className="space-y-1">
+              <Label htmlFor="bva-level">Level</Label>
               <Select value={level} onValueChange={setLevel}>
-                <SelectTrigger data-testid="level-select">
+                <SelectTrigger id="bva-level" data-testid="level-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="both">COA + Category</SelectItem>
-                  <SelectItem value="coa">COA Only</SelectItem>
-                  <SelectItem value="category">Category Only</SelectItem>
+                  <SelectItem value="both">COA + Kategori</SelectItem>
+                  <SelectItem value="coa">COA saja</SelectItem>
+                  <SelectItem value="category">Kategori saja</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex items-end">
-              <Button onClick={loadData} disabled={loading} data-testid="load-data-btn" className="w-full">
-                {loading ? "Loading..." : "Muat Data"}
+              <Button variant="outline" onClick={loadData} disabled={loading} data-testid="load-data-btn" className="w-full">
+                <RefreshCw className={loading ? "animate-spin" : undefined} />
+                {loading ? "Memuat…" : "Muat ulang"}
               </Button>
             </div>
           </div>
@@ -168,12 +184,13 @@ export default function BudgetVsActual() {
 
       {data && !hasBudgets && (
         <Card className="border-dashed">
-          <CardContent className="pt-6 text-center">
-            <Target className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">Belum ada budget untuk periode <strong>{period}</strong>.</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate("/finance/budget/manage")}>
-              Buat Budget
-            </Button>
+          <CardContent className="p-0">
+            <EmptyState
+              icon={Target}
+              title={`Belum ada budget untuk periode ${period}`}
+              description="Buat budget per COA terlebih dahulu agar realisasi dapat dibandingkan."
+              action={<Button variant="outline" size="sm" onClick={goManage} data-testid="bva-create-budget-btn">Buat Budget</Button>}
+            />
           </CardContent>
         </Card>
       )}
@@ -182,54 +199,41 @@ export default function BudgetVsActual() {
         <>
           {/* Category Summary */}
           {(level === "both" || level === "category") && (data.category_rollup || []).length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="category-summary">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="category-summary">
               {(data.category_rollup || []).filter(cat => !cat.derived).map((cat) => (
-                <Card key={cat.category}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{cat.name || cat.category}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className="text-xl font-bold">{formatCurrency(cat.actual)}</div>
-                    <div className="text-sm text-muted-foreground">Budget: {formatCurrency(cat.budget)}</div>
-                    {cat.variance_pct !== null && (
-                      <div className={`flex items-center gap-1 text-sm ${getVarianceColor(cat.variance_pct, cat.category)}`}>
-                        {cat.variance_pct > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                        <span>{cat.variance_pct > 0 ? "+" : ""}{(cat.variance_pct || 0).toFixed(1)}%</span>
-                      </div>
-                    )}
-                    {cat.budget > 0 && (
-                      <Progress value={Math.min((cat.actual / cat.budget) * 100, 100)} className="h-1.5" />
-                    )}
-                  </CardContent>
-                </Card>
+                <CompactStatCard
+                  key={cat.category}
+                  label={cat.name || cat.category}
+                  value={formatCurrency(cat.actual)}
+                  sub={catSub(cat)}
+                  icon={cat.variance_pct > 0 ? TrendingUp : TrendingDown}
+                  tone={varianceTone(cat.variance_pct, cat.category)}
+                  color="aurora-1"
+                  testId={`bva-cat-${String(cat.category).toLowerCase()}`}
+                />
               ))}
             </div>
           )}
 
           {/* Derived Categories Summary */}
           {(level === "both" || level === "category") && (data.category_rollup || []).some(c => c.derived) && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Ringkasan P&L</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(data.category_rollup || []).filter(cat => cat.derived).map((cat) => (
-                    <div key={cat.category} className="border rounded-lg p-4 space-y-2">
-                      <div className="text-sm font-medium text-muted-foreground">{cat.name || cat.category}</div>
-                      <div className="text-2xl font-bold">{formatCurrency(cat.actual)}</div>
-                      <div className="text-sm text-muted-foreground">Budget: {formatCurrency(cat.budget)}</div>
-                      {cat.variance_pct !== null && (
-                        <div className={`flex items-center gap-1 text-sm ${getVarianceColor(cat.variance_pct, cat.category)}`}>
-                          {cat.variance_pct > 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                          <span>{cat.variance_pct > 0 ? "+" : ""}{(cat.variance_pct || 0).toFixed(1)}%</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <section className="space-y-2" data-testid="bva-pl-summary">
+              <h2 className="text-base md:text-lg font-semibold">Ringkasan P&amp;L</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {(data.category_rollup || []).filter(cat => cat.derived).map((cat) => (
+                  <CompactStatCard
+                    key={cat.category}
+                    label={cat.name || cat.category}
+                    value={formatCurrency(cat.actual)}
+                    sub={catSub(cat)}
+                    icon={cat.variance_pct > 0 ? TrendingUp : TrendingDown}
+                    tone={varianceTone(cat.variance_pct, cat.category)}
+                    color="aurora-2"
+                    testId={`bva-derived-${String(cat.category).toLowerCase()}`}
+                  />
+                ))}
+              </div>
+            </section>
           )}
 
           {/* COA Detail */}
@@ -239,7 +243,7 @@ export default function BudgetVsActual() {
                 <CardTitle>Detail per COA</CardTitle>
                 <CardDescription>Perbandingan detail per akun</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
               <DataTable
                 rows={data.coa_level || []}
                 keyField="coa_id"
@@ -248,10 +252,10 @@ export default function BudgetVsActual() {
                 columns={[
                   { key: "coa_code", label: "COA", sortable: true, primary: true,
                     render: (row) => (
-                      <div>
-                        <div className="font-medium">{row.coa_code}</div>
-                        <div className="text-xs text-muted-foreground">{row.coa_name}</div>
-                        <Badge variant="outline" className="text-xs mt-0.5">{row.category}</Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium tabular-nums">{row.coa_code}</span>
+                        <span className="text-xs text-muted-foreground">{row.coa_name}</span>
+                        <Badge variant="outline" className="text-[11px]">{row.category}</Badge>
                       </div>
                     ) },
                   { key: "budget", label: "Budget", numeric: true, sortable: true,
@@ -273,26 +277,16 @@ export default function BudgetVsActual() {
           )}
 
           {/* Totals */}
-          <Card>
-            <CardContent className="pt-4">
-              <div className="grid grid-cols-3 gap-8 text-sm">
-                <div>
-                  <div className="text-muted-foreground">Total Budget</div>
-                  <div className="text-2xl font-bold">{formatCurrency(data.total_budget)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Total Actual</div>
-                  <div className="text-2xl font-bold">{formatCurrency(data.total_actual)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Variance</div>
-                  <div className={`text-2xl font-bold ${data.total_variance > 0 ? "text-red-600" : "text-green-600"}`}>
-                    {data.total_variance > 0 ? "+" : ""}{formatCurrency(data.total_variance)}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="bva-totals">
+            <CompactStatCard label="Total budget" value={formatCurrency(data.total_budget)} icon={Target} color="aurora-1" testId="bva-total-budget" />
+            <CompactStatCard label="Total actual" value={formatCurrency(data.total_actual)} icon={BarChart3} color="aurora-3" testId="bva-total-actual" />
+            <CompactStatCard label="Variance"
+              value={`${data.total_variance > 0 ? "+" : ""}${formatCurrency(data.total_variance)}`}
+              icon={data.total_variance > 0 ? TrendingUp : TrendingDown}
+              tone={data.total_variance > 0 ? "danger" : "success"}
+              color={data.total_variance > 0 ? "aurora-6" : "aurora-4"}
+              testId="bva-total-variance" />
+          </div>
         </>
       )}
     </div>

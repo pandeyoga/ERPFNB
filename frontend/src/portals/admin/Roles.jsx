@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, ShieldCheck } from "lucide-react";
+import { Plus, Edit2, Trash2, ShieldCheck, Shield } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
-export default function Roles() {
+export default function Roles({ embedded = false } = {}) {
   const [roles, setRoles] = useState([]);
   const [perms, setPerms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,40 +34,55 @@ export default function Roles() {
   }
   useEffect(() => { load(); }, []);
 
+  const newButton = (
+    <Button onClick={() => setEditing({})} data-testid="roles-new">
+      <Plus /> Tambah Role
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="roles-page">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{roles.length} role aktif</p>
-        <Button onClick={() => setEditing({})} className="rounded-full pill-active gap-2" data-testid="roles-new">
-          <Plus className="h-4 w-4" /> Role Baru
-        </Button>
+    <div className="space-y-3" data-testid="roles-page">
+      {/* Halaman mandiri (/admin/roles) punya judul sendiri; di dalam hub "Users & Roles" judul dari hub */}
+      {!embedded && (
+        <PageHeader
+          icon={Shield}
+          title="Roles & Permissions"
+          subtitle="Role sistem & custom beserta permission-nya."
+          actions={newButton}
+        />
+      )}
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">{roles.length} role aktif · role sistem (label "System") tidak bisa diubah atau dihapus</p>
+        {embedded && newButton}
       </div>
       {loading ? <LoadingState rows={6} /> : (
         roles.length === 0 ? <EmptyState title="Belum ada role" /> : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="roles-grid">
             {roles.map((r) => (
-              <div key={r.id} className="glass-card p-4 group" data-testid={`role-card-${r.id}`}>
+              <div key={r.id} className="glass-card p-4" data-testid={`role-card-${r.id}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <ShieldCheck className="h-4 w-4 text-aurora" />
-                    <h3 className="font-semibold truncate">{r.name}</h3>
+                    <h3 className="text-sm md:text-base font-semibold truncate">{r.name}</h3>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => setEditing(r)} disabled={r.is_system}
-                            className="h-7 w-7 rounded-lg hover:bg-foreground/5 disabled:opacity-30 flex items-center justify-center"
-                            data-testid={`role-edit-${r.id}`}>
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    {!r.is_system && (
-                      <button onClick={() => deleteRole(r, load)}
-                              className="h-7 w-7 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center"
+                  {/* Aksi selalu terlihat (sebelumnya hanya muncul saat hover) */}
+                  {!r.is_system && (
+                    <div className="flex gap-1 -mt-1 -mr-1">
+                      <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)}
+                              title="Edit role" aria-label={`Edit role ${r.name}`}
+                              data-testid={`role-edit-${r.id}`}>
+                        <Edit2 className="!h-3.5 !w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon-sm" onClick={() => deleteRole(r, load)}
+                              className="hover:bg-destructive/10 hover:text-destructive"
+                              title="Hapus role" aria-label={`Hapus role ${r.name}`}
                               data-testid={`role-delete-${r.id}`}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
+                        <Trash2 className="!h-3.5 !w-3.5" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{r.code}</p>
+                <p className="text-xs font-medium tabular-nums text-muted-foreground mt-1">{r.code}</p>
                 {r.description && <p className="text-xs mt-2">{r.description}</p>}
                 <div className="mt-3 flex items-center gap-2 text-xs">
                   <span className="text-muted-foreground">{(r.permissions || []).length} permissions</span>
@@ -140,24 +156,26 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
 
   return (
     <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="role-form-dialog">
+      <DialogContent className="glass-card max-w-2xl" data-testid="role-form-dialog">
         <DialogHeader>
           <DialogTitle>{isNew ? "Role Baru" : "Edit Role"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <Field label="Code *">
-            <Input value={form.code || ""} disabled={!isNew}
-                   onChange={e => setForm({...form, code: e.target.value.toUpperCase().replace(/\s/g,"_")})}
-                   className="glass-input font-mono" placeholder="CUSTOM_ROLE"
-                   data-testid="role-form-code" />
-          </Field>
-          <Field label="Nama *">
-            <Input value={form.name || ""} onChange={e => setForm({...form, name: e.target.value})}
-                   className="glass-input" placeholder="Nama role"
-                   data-testid="role-form-name" />
-          </Field>
-          <Field label="Deskripsi">
-            <Textarea value={form.description || ""} onChange={e => setForm({...form, description: e.target.value})}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Kode *" htmlFor="role-form-code">
+              <Input id="role-form-code" value={form.code || ""} disabled={!isNew}
+                     onChange={e => setForm({...form, code: e.target.value.toUpperCase().replace(/\s/g,"_")})}
+                     className="glass-input" placeholder="CUSTOM_ROLE"
+                     data-testid="role-form-code" />
+            </Field>
+            <Field label="Nama *" htmlFor="role-form-name">
+              <Input id="role-form-name" value={form.name || ""} onChange={e => setForm({...form, name: e.target.value})}
+                     className="glass-input" placeholder="Nama role"
+                     data-testid="role-form-name" />
+            </Field>
+          </div>
+          <Field label="Deskripsi" htmlFor="role-form-description">
+            <Textarea id="role-form-description" value={form.description || ""} onChange={e => setForm({...form, description: e.target.value})}
                       className="glass-input min-h-[60px]"
                       data-testid="role-form-description" />
           </Field>
@@ -173,7 +191,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                     <span>{cat}</span>
                     <button
                       type="button"
-                      className="text-aurora text-[11px] hover:underline"
+                      className="text-aurora text-[11px] font-medium normal-case tracking-normal hover:underline"
                       onClick={() => {
                         const all = list.map(p => p.code);
                         const has = all.every(c => (form.permissions || []).includes(c));
@@ -183,7 +201,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                         setForm({...form, permissions: Array.from(next)});
                       }}
                       data-testid={`role-form-perm-toggle-all-${cat}`}
-                    >Toggle all</button>
+                    >Pilih/lepas semua</button>
                   </div>
                   <div className="space-y-1">
                     {list.map(p => (
@@ -197,7 +215,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                           }}
                           data-testid={`role-form-perm-${p.code}`}
                         />
-                        <code className="text-[11px] font-mono text-muted-foreground">{p.code}</code>
+                        <code className="text-[11px] font-sans font-medium tabular-nums text-muted-foreground">{p.code}</code>
                         <span>{p.label}</span>
                       </label>
                     ))}
@@ -207,10 +225,10 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
             </div>
           </Field>
         </div>
-        <DialogFooter>
+        <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 px-5 py-3 border-t border-border/50 bg-background/95 backdrop-blur-sm">
           <Button variant="outline" onClick={onClose} data-testid="role-form-cancel">Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="role-form-save">
-            {saving ? "…" : "Simpan"}
+          <Button onClick={submit} disabled={saving} data-testid="role-form-save">
+            {saving ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -218,10 +236,10 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
   );
 }
 
-function Field({ label, children }) {
+function Field({ label, children, htmlFor }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-xs md:text-sm font-medium">{label}</Label>
       {children}
     </div>
   );

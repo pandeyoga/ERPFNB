@@ -2,7 +2,7 @@
  * Side-by-side comparison of multiple POs (or PR-vs-PO).
  */
 import { useEffect, useState } from "react";
-import { ShoppingCart, Filter, X, Plus } from "lucide-react";
+import { ShoppingCart, X, Plus } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import PageHeader from "@/components/shared/PageHeader";
 import LoadingState from "@/components/shared/LoadingState";
@@ -33,7 +33,7 @@ export default function POComparison() {
       setPos(unwrap(pRes) || []);
       setVendors(unwrap(vRes) || []);
     } catch (e) {
-      toast.error("Gagal load data");
+      toast.error("Gagal memuat data PO");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [filters.vendor_id, filters.status]);
@@ -76,7 +76,7 @@ export default function POComparison() {
       label: (
         <div data-testid={`po-cmp-col-${po.id}`}>
           <div className="font-mono">{po.doc_no || po.id.slice(0, 8)}</div>
-          <div className="text-[11px] text-muted-foreground normal-case">{vendorMap[po.vendor_id]?.name || po.vendor_id}</div>
+          <div className="text-[11px] text-muted-foreground normal-case">{vendorMap[po.vendor_id]?.name || "—"}</div>
         </div>
       ),
       render: (row) => {
@@ -101,50 +101,52 @@ export default function POComparison() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4" data-testid="po-comparison-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="po-comparison-page">
       <PageHeader
         icon={ShoppingCart}
         title="PO Comparison"
-        subtitle="Bandingkan beberapa Purchase Order (max 4)"
+        subtitle="Bandingkan harga per item di beberapa Purchase Order (maks. 4) secara berdampingan."
       />
 
       {/* Filters + PO picker */}
-      <div className="glass-card p-3 flex flex-wrap gap-2 items-center">
-        <Filter className="h-4 w-4 text-muted-foreground" />
+      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="po-cmp-filters">
         <SimpleSelect
           value={filters.vendor_id}
           onValueChange={(v) => setFilters((f) => ({ ...f, vendor_id: v }))}
-          options={[{ value: "", label: "Semua Vendor" }, ...vendors.map((v) => ({ value: v.id, label: v.name }))]}
-          placeholder="Semua Vendor"
-          className="glass-input rounded-lg h-9 text-sm"
+          options={[{ value: "", label: "Semua vendor" }, ...vendors.map((v) => ({ value: v.id, label: v.name }))]}
+          placeholder="Semua vendor"
+          ariaLabel="Filter vendor"
+          className="glass-input w-[200px]"
           testId="po-cmp-filter-vendor"
         />
         <SimpleSelect
           value={filters.status}
           onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
           options={[
-            { value: "", label: "Semua Status" },
+            { value: "", label: "Semua status" },
             { value: "draft", label: "Draft" },
             { value: "approved", label: "Approved" },
             { value: "sent", label: "Sent" },
+            { value: "partial", label: "Partial" },
             { value: "received", label: "Received" },
           ]}
-          placeholder="Semua Status"
-          className="glass-input rounded-lg h-9 text-sm"
+          placeholder="Semua status"
+          ariaLabel="Filter status"
+          className="glass-input w-[160px]"
           testId="po-cmp-filter-status"
         />
-        <span className="text-xs text-muted-foreground ml-auto">{selected.length}/4 PO dipilih untuk dibandingkan</span>
+        <span className="text-xs text-muted-foreground ml-auto" data-testid="po-cmp-selected-count">{selected.length}/4 PO dipilih untuk dibandingkan</span>
       </div>
 
       {/* PO list */}
       <div className="glass-card overflow-hidden" data-testid="po-cmp-list-card">
         <div className="px-4 py-3 border-b border-border/50">
-          <h3 className="text-sm font-semibold">Pilih PO</h3>
+          <h3 className="text-sm md:text-base font-semibold">Pilih PO</h3>
         </div>
         {loading ? (
           <div className="p-4" data-testid="po-cmp-loading"><LoadingState rows={4} /></div>
         ) : pos.length === 0 ? (
-          <div data-testid="po-cmp-empty"><EmptyState icon={ShoppingCart} title="Tidak ada PO" /></div>
+          <div data-testid="po-cmp-empty"><EmptyState icon={ShoppingCart} title="Tidak ada PO" description="Ubah filter vendor atau status." /></div>
         ) : (
           <div className="max-h-[260px] overflow-y-auto divide-y divide-border/30" data-testid="po-cmp-list">
             {pos.map((po) => {
@@ -161,18 +163,18 @@ export default function POComparison() {
                       <StatusPill status={po.status} />
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {vendorMap[po.vendor_id]?.name || po.vendor_id} • {po.lines?.length || 0} items • {fmtRp(po.grand_total || 0)}
+                      {vendorMap[po.vendor_id]?.name || "—"} · {po.lines?.length || 0} item · {fmtRp(po.grand_total || 0)}
                     </div>
                     <div className="text-[11px] text-muted-foreground">{fmtDate(po.order_date || po.po_date || po.created_at)}</div>
                   </div>
                   <Button
                     onClick={() => isSelected ? removeFromCompare(po.id) : addToCompare(po)}
-                    variant={isSelected ? "outline" : "default"}
+                    variant={isSelected ? "secondary" : "outline"}
                     size="sm"
-                    className="rounded-full text-xs h-8"
+                    aria-pressed={isSelected}
                     data-testid={`po-cmp-add-${po.id}`}
                   >
-                    {isSelected ? <><X className="h-3 w-3 mr-1" /> Lepas</> : <><Plus className="h-3 w-3 mr-1" /> Bandingkan</>}
+                    {isSelected ? <><X /> Lepas</> : <><Plus /> Bandingkan</>}
                   </Button>
                 </div>
               );
@@ -185,7 +187,7 @@ export default function POComparison() {
       {selected.length > 0 && (
         <div className="glass-card overflow-hidden" data-testid="po-cmp-table-card">
           <div className="px-4 py-3 border-b border-border/50">
-            <h3 className="text-sm font-semibold">Perbandingan Side-by-Side</h3>
+            <h3 className="text-sm md:text-base font-semibold">Perbandingan berdampingan</h3>
           </div>
           <div data-testid="po-cmp-table-wrap">
             <DataTable
@@ -194,9 +196,9 @@ export default function POComparison() {
               columns={cmpColumns}
               stickyHeader={false}
               rowTestIdPrefix="po-cmp-row"
-              empty={<div className="p-6"><EmptyState icon={ShoppingCart} title="Tidak ada item" description="PO terpilih belum memiliki line item." /></div>}
+              empty={<EmptyState icon={ShoppingCart} title="Tidak ada item" description="PO terpilih belum memiliki item." />}
               footer={
-                <tr className="bg-foreground/5 font-bold" data-testid="po-cmp-totals-row">
+                <tr className="bg-foreground/5 font-semibold" data-testid="po-cmp-totals-row">
                   <td className="px-4 py-3">Grand Total</td>
                   {selected.map((po) => (
                     <td key={po.id} className="px-4 py-3 text-right tabular-nums" data-testid={`po-cmp-total-${po.id}`}>{fmtRp(po.grand_total || 0)}</td>
@@ -206,7 +208,7 @@ export default function POComparison() {
             />
           </div>
           <div className="px-4 py-2 border-t border-border/50 text-[11px] text-muted-foreground">
-            Cell hijau = harga terbaik untuk item tsb (di antara PO yang dibandingkan).
+            Sel hijau = harga terbaik untuk item tersebut di antara PO yang dibandingkan.
           </div>
         </div>
       )}

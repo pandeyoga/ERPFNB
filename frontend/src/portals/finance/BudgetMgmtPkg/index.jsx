@@ -1,13 +1,11 @@
 /** BudgetManagement/index.jsx — budget management orchestrator. */
 /** Budget Management — Sprint B + Sprint G (Excel import) */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { logger } from "@/lib/logger";
 import {
-  Target, Plus, Edit2, Trash2, Loader2, X, Search, ChevronRight,
-  Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, RefreshCw,
-  Send, Check, Lock, XCircle,
+  Target, Plus, Edit2, Trash2, Loader2, X, Search, ChevronRight, Upload, Send,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,17 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import PageHeader from "@/components/shared/PageHeader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
-import { EMPTY_FORM, CATEGORIES, APPROVAL_STATUS_LABELS } from "./constants";
+import { EMPTY_FORM, CATEGORIES, APPROVAL_STATUSES } from "./constants";
+import StatusPill, { statusLabel } from "@/components/shared/StatusPill";
 import BudgetImportDialog from "./BudgetImportDialog";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
-export default function BudgetManagement() {
+export default function BudgetManagement({ embedded = false }) {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterPeriod, setFilterPeriod] = useState("");
@@ -74,7 +73,7 @@ export default function BudgetManagement() {
       if (filterYear) params.year = filterYear;
       const res = await api.get("/budget/budgets", { params });
       if (res.data.success) setBudgets(res.data.data?.items || []);
-    } catch { toast.error("Gagal memuat budgets"); }
+    } catch { toast.error("Gagal memuat daftar budget"); }
     finally { setLoading(false); }
   }, [filterPeriod, filterScope, filterApprovalStatus, filterYear]);
 
@@ -128,6 +127,10 @@ export default function BudgetManagement() {
       name: budget.name,
       period: budget.period,
       notes: budget.notes || "",
+      // Bug fix: scope/outlet/brand ikut dimuat agar dialog Edit tidak menampilkan Scope kosong.
+      scope: budget.scope || "outlet",
+      outlet_id: budget.outlet_id || "",
+      brand_id: budget.brand_id || "",
       lines: (budget.lines || []).map(l => ({ ...l })),
     });
     setFormOpen(true);
@@ -162,55 +165,64 @@ export default function BudgetManagement() {
   }
 
   async function handleSubmitForApproval(id) {
-    if (!(await confirmDialog("Submit budget ini untuk approval?"))) return;
+    if (!(await confirmDialog("Ajukan budget ini untuk approval?"))) return;
     try {
       await api.post(`/budget/budgets/${id}/submit`);
-      toast.success("Budget berhasil disubmit untuk approval");
+      toast.success("Budget berhasil diajukan untuk approval");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal submit budget");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengajukan budget");
     }
   }
 
   const totalBudgeted = (b) => (b.lines || []).reduce((s, l) => s + parseFloat(l.amount || 0), 0);
 
+  const pageActions = (
+    <>
+      <Button variant="outline" onClick={() => setImportOpen(true)} data-testid="import-budget-btn">
+        <Upload /> Impor Excel
+      </Button>
+      <Button onClick={openCreate} data-testid="create-budget-btn">
+        <Plus /> Buat Budget
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-6" data-testid="budget-management">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <Target className="h-6 w-6" /> Manajemen Budget
-          </h2>
-          <p className="text-muted-foreground text-sm">Kelola budget per COA dan periode</p>
+    <div className="space-y-3 lg:space-y-4" data-testid="budget-management">
+      {embedded ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs md:text-sm text-muted-foreground">Kelola budget per COA dan periode, lalu ajukan untuk approval.</p>
+          <div className="flex flex-wrap gap-2">{pageActions}</div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setImportOpen(true)} data-testid="import-budget-btn">
-            <Upload className="h-4 w-4 mr-2" /> Import Excel
-          </Button>
-          <Button onClick={openCreate} data-testid="create-budget-btn">
-            <Plus className="h-4 w-4 mr-2" /> Buat Budget
-          </Button>
-        </div>
-      </div>
+      ) : (
+        <PageHeader
+          icon={Target}
+          title="Budget Management"
+          subtitle="Kelola budget per COA dan periode"
+          className="mb-0 md:mb-0"
+          actions={pageActions}
+        />
+      )}
 
       {/* Filter */}
       <Card>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>Filter Periode</Label>
-              <Input type="month" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)}
+        <CardContent className="p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="bm-filter-period">Periode</Label>
+              <Input id="bm-filter-period" type="month" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)}
                 data-testid="filter-period" />
             </div>
-            <div className="space-y-2">
-              <Label>Filter Year</Label>
-              <Input type="text" placeholder="YYYY" value={filterYear} onChange={e => setFilterYear(e.target.value)}
+            <div className="space-y-1">
+              <Label htmlFor="bm-filter-year">Tahun</Label>
+              <Input id="bm-filter-year" type="text" inputMode="numeric" placeholder="YYYY" value={filterYear} onChange={e => setFilterYear(e.target.value)}
                 data-testid="filter-year" />
             </div>
-            <div className="space-y-2">
-              <Label>Scope</Label>
+            <div className="space-y-1">
+              <Label htmlFor="bm-filter-scope">Scope</Label>
               <Select value={filterScope} onValueChange={setFilterScope}>
-                <SelectTrigger data-testid="filter-scope">
+                <SelectTrigger id="bm-filter-scope" data-testid="filter-scope">
                   <SelectValue placeholder="Semua Scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,32 +233,30 @@ export default function BudgetManagement() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Approval Status</Label>
+            <div className="space-y-1">
+              <Label htmlFor="bm-filter-status">Status approval</Label>
               <Select value={filterApprovalStatus} onValueChange={setFilterApprovalStatus}>
-                <SelectTrigger data-testid="filter-approval-status">
+                <SelectTrigger id="bm-filter-status" data-testid="filter-approval-status">
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="submitted">Menunggu Approval</SelectItem>
-                  <SelectItem value="approved">Disetujui</SelectItem>
-                  <SelectItem value="locked">Terkunci</SelectItem>
-                  <SelectItem value="rejected">Ditolak</SelectItem>
+                  {APPROVAL_STATUSES.map(st => (
+                    <SelectItem key={st} value={st}>{statusLabel(st)}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           {(filterPeriod || (filterScope && filterScope !== "all") || (filterApprovalStatus && filterApprovalStatus !== "all") || filterYear) && (
-            <div className="mt-3">
-              <Button variant="outline" size="sm" onClick={() => { 
-                setFilterPeriod(""); 
-                setFilterScope("all"); 
-                setFilterApprovalStatus("all"); 
-                setFilterYear(""); 
-              }}>
-                <X className="h-4 w-4 mr-1" /> Reset Filter
+            <div className="mt-2">
+              <Button variant="ghost" size="sm" onClick={() => {
+                setFilterPeriod("");
+                setFilterScope("all");
+                setFilterApprovalStatus("all");
+                setFilterYear("");
+              }} data-testid="budget-filter-reset">
+                <X /> Reset filter
               </Button>
             </div>
           )}
@@ -254,21 +264,24 @@ export default function BudgetManagement() {
       </Card>
 
       {/* Budget List */}
-      <Card data-testid="budget-list-card">
-        <CardContent className="pt-4">
+      <Card data-testid="budget-list-card" className="overflow-hidden">
+        <CardContent className="p-0">
           <DataTable
             rows={budgets}
             keyField="id"
             loading={loading}
             rowTestIdPrefix="budget-row"
             empty={(
-              <div className="text-center py-12 text-muted-foreground">
-                <Target className="mx-auto h-8 w-8 mb-2" />
-                <p>Belum ada budget.</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={openCreate}>
-                  Buat Budget Pertama
-                </Button>
-              </div>
+              <EmptyState
+                icon={Target}
+                title="Belum ada budget"
+                description="Buat budget per COA atau impor dari Excel untuk mulai membandingkan realisasi."
+                action={(
+                  <Button variant="outline" size="sm" onClick={openCreate} data-testid="create-first-budget-btn">
+                    Buat Budget Pertama
+                  </Button>
+                )}
+              />
             )}
             columns={[
               { key: "name", label: "Nama", primary: true, sortable: true,
@@ -284,16 +297,7 @@ export default function BudgetManagement() {
               { key: "scope", label: "Scope",
                 render: (b) => <Badge variant="secondary">{b.scope}</Badge> },
               { key: "approval_status", label: "Status",
-                render: (b) => {
-                  const statusInfo = APPROVAL_STATUS_LABELS[b.approval_status] || APPROVAL_STATUS_LABELS.draft;
-                  const StatusIcon = statusInfo.icon;
-                  return (
-                    <Badge variant={statusInfo.variant} className="flex items-center gap-1 w-fit">
-                      {StatusIcon && <StatusIcon className="h-3 w-3" />}
-                      {statusInfo.label}
-                    </Badge>
-                  );
-                } },
+                render: (b) => <StatusPill status={b.approval_status || "draft"} /> },
               { key: "line_count", label: "Jumlah Baris",
                 sortAccessor: (b) => (b.lines || []).length,
                 render: (b) => `${(b.lines || []).length} baris` },
@@ -308,19 +312,19 @@ export default function BudgetManagement() {
                 <div className="flex items-center justify-end gap-1">
                   {canSubmit && (
                     <Button variant="ghost" size="sm" onClick={() => handleSubmitForApproval(b.id)}
-                      data-testid="submit-budget-btn" title="Submit untuk approval">
-                      <Send className="h-4 w-4 mr-1" /> Submit
+                      data-testid="submit-budget-btn" title="Ajukan untuk approval">
+                      <Send /> Ajukan
                     </Button>
                   )}
                   {canEdit && (
-                    <Button variant="ghost" size="icon" aria-label="Edit budget" onClick={() => openEdit(b)} data-testid="edit-budget-btn">
-                      <Edit2 className="h-4 w-4" />
+                    <Button variant="ghost" size="icon-sm" aria-label="Edit budget" onClick={() => openEdit(b)} data-testid="edit-budget-btn">
+                      <Edit2 />
                     </Button>
                   )}
                   {canEdit && (
-                    <Button variant="ghost" size="icon" aria-label="Hapus budget" className="text-red-500" onClick={() => handleDelete(b.id)}
+                    <Button variant="ghost" size="icon-sm" aria-label="Hapus budget" className="text-red-500" onClick={() => handleDelete(b.id)}
                       data-testid="delete-budget-btn">
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 />
                     </Button>
                   )}
                 </div>
@@ -335,30 +339,30 @@ export default function BudgetManagement() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="budget-form-dialog">
+        <DialogContent className="max-w-3xl" data-testid="budget-form-dialog">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Budget" : "Buat Budget Baru"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2 md:col-span-1">
-                <Label>Nama Budget</Label>
-                <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          <div className="space-y-3 py-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="budget-name-input">Nama Budget</Label>
+                <Input id="budget-name-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder={`Budget ${form.period}`} data-testid="budget-name-input" />
               </div>
-              <div className="space-y-2">
-                <Label>Periode *</Label>
-                <Input type="month" value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}
+              <div className="space-y-1.5">
+                <Label htmlFor="budget-period-input">Periode <span className="text-destructive">*</span></Label>
+                <Input id="budget-period-input" type="month" value={form.period} onChange={e => setForm(f => ({ ...f, period: e.target.value }))}
                   data-testid="budget-period-input" />
               </div>
             </div>
 
             {/* Scope Selection */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Scope *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="budget-scope-select">Scope <span className="text-destructive">*</span></Label>
                 <Select value={form.scope} onValueChange={v => setForm(f => ({ ...f, scope: v, outlet_id: "", brand_id: "" }))}>
-                  <SelectTrigger data-testid="budget-scope-select">
+                  <SelectTrigger id="budget-scope-select" data-testid="budget-scope-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -370,10 +374,10 @@ export default function BudgetManagement() {
               </div>
               
               {form.scope === "outlet" && (
-                <div className="space-y-2">
-                  <Label>Outlet *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="budget-outlet-select">Outlet <span className="text-destructive">*</span></Label>
                   <Select value={form.outlet_id} onValueChange={v => setForm(f => ({ ...f, outlet_id: v }))}>
-                    <SelectTrigger data-testid="budget-outlet-select">
+                    <SelectTrigger id="budget-outlet-select" data-testid="budget-outlet-select">
                       <SelectValue placeholder="Pilih Outlet" />
                     </SelectTrigger>
                     <SelectContent>
@@ -386,10 +390,10 @@ export default function BudgetManagement() {
               )}
               
               {form.scope === "brand" && (
-                <div className="space-y-2">
-                  <Label>Brand *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="budget-brand-select">Brand <span className="text-destructive">*</span></Label>
                   <Select value={form.brand_id} onValueChange={v => setForm(f => ({ ...f, brand_id: v }))}>
-                    <SelectTrigger data-testid="budget-brand-select">
+                    <SelectTrigger id="budget-brand-select" data-testid="budget-brand-select">
                       <SelectValue placeholder="Pilih Brand" />
                     </SelectTrigger>
                     <SelectContent>
@@ -402,20 +406,21 @@ export default function BudgetManagement() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Catatan</Label>
-              <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                placeholder="Catatan..." rows={2} />
+            <div className="space-y-1.5">
+              <Label htmlFor="budget-notes-input">Catatan</Label>
+              <Textarea id="budget-notes-input" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Catatan…" rows={2} data-testid="budget-notes-input" />
             </div>
 
             {/* COA Search & Lines */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold">Baris Budget (COA)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="coa-search-input">Baris Budget (COA) <span className="text-destructive">*</span></Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Cari COA (kode atau nama)..."
+                    id="coa-search-input"
+                    placeholder="Cari COA (kode atau nama, min. 2 huruf)…"
                     value={coaSearch}
                     onChange={e => { setCoaSearch(e.target.value); searchCOA(e.target.value); }}
                     className="pl-9"
@@ -426,9 +431,10 @@ export default function BudgetManagement() {
               {coaResults.length > 0 && (
                 <div className="border rounded-md divide-y max-h-40 overflow-y-auto shadow-sm">
                   {coaResults.map(c => (
-                    <button key={c.id} onClick={() => addLine(c)}
-                      className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 text-sm">
-                      <span className="font-mono text-xs text-muted-foreground">{c.code}</span>
+                    <button key={c.id} type="button" onClick={() => addLine(c)}
+                      className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 text-sm"
+                      data-testid={`coa-result-${c.code}`}>
+                      <span className="text-xs font-medium tabular-nums text-muted-foreground">{c.code}</span>
                       <span>{c.name}</span>
                       <ChevronRight className="ml-auto h-3 w-3" />
                     </button>
@@ -447,14 +453,14 @@ export default function BudgetManagement() {
                     { key: "coa", label: "COA", primary: true,
                       render: (line) => (
                         <div>
-                          <div className="font-mono text-xs text-muted-foreground">{line.coa_code}</div>
+                          <div className="text-xs font-medium tabular-nums text-muted-foreground">{line.coa_code}</div>
                           <div className="text-sm">{line.coa_name}</div>
                         </div>
                       ) },
                     { key: "category", label: "Kategori",
                       render: (line) => (
                         <Select value={line.category} onValueChange={v => updateLine(line._idx, "category", v)}>
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-8 text-xs" aria-label={`Kategori ${line.coa_code}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -464,16 +470,16 @@ export default function BudgetManagement() {
                           </SelectContent>
                         </Select>
                       ) },
-                    { key: "amount", label: "Amount (Rp)", numeric: true,
+                    { key: "amount", label: "Jumlah (Rp)", numeric: true,
                       render: (line) => (
-                        <Input type="number" className="text-right tabular-nums h-8 w-32" value={line.amount}
+                        <Input type="number" aria-label={`Jumlah ${line.coa_code}`} className="text-right tabular-nums h-8 w-32" value={line.amount}
                           onChange={e => updateLine(line._idx, "amount", parseFloat(e.target.value) || 0)}
                           data-testid={`line-amount-${line._idx}`} />
                       ) },
                   ]}
                   rowAction={(line) => (
-                    <Button variant="ghost" size="icon" aria-label="Hapus baris" onClick={() => removeLine(line._idx)}>
-                      <X className="h-4 w-4" />
+                    <Button variant="ghost" size="icon-sm" aria-label="Hapus baris" onClick={() => removeLine(line._idx)}>
+                      <X />
                     </Button>
                   )}
                   footer={
@@ -492,7 +498,7 @@ export default function BudgetManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setFormOpen(false)}>Batal</Button>
             <Button onClick={handleSubmit} disabled={submitting} data-testid="confirm-save-budget">
-              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {submitting && <Loader2 className="animate-spin" />}
               {editing ? "Perbarui" : "Simpan"}
             </Button>
           </DialogFooter>

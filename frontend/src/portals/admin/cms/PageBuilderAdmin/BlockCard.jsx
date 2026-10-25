@@ -44,7 +44,7 @@ function BlockCard({ block, index, total, onChange, onDelete, onMoveUp, onMoveDo
   const Editor = BLOCK_EDITORS[block.type];
 
   return (
-    <div className="border rounded-xl overflow-hidden bg-white shadow-sm">
+    <div className="glass-card overflow-hidden shadow-sm">
       {/* Block header */}
       <div className="flex items-center gap-2 p-3 bg-muted/30 border-b cursor-pointer"
            onClick={() => setExpanded(v => !v)}>

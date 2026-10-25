@@ -1,6 +1,6 @@
 /** AP Aging report by vendor with bucket breakdown. */
-import { useEffect, useMemo, useState } from "react";
-import { Receipt, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Receipt, Download, Clock, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/button";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import useExcelExport from "@/hooks/useExcelExport";
 
-export default function APAging() {
+export default function APAging({ embedded = false }) {
   const [asOf, setAsOf] = useState(todayJakartaISO());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ export default function APAging() {
       const res = await api.get("/finance/ap-aging", { params: { as_of: asOf } });
       setData(unwrap(res));
     } catch (e) {
-      toast.error("Gagal load AP aging");
+      toast.error("Gagal memuat AP aging");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [asOf]);
@@ -46,41 +48,47 @@ export default function APAging() {
   }
 
   return (
-    <div className="space-y-4" data-testid="ap-aging-page">
-      <div className="glass-card p-4 flex flex-wrap items-end gap-3" data-testid="ap-toolbar">
+    <div className="space-y-3 lg:space-y-4" data-testid="ap-aging-page">
+      {!embedded && (
+        <PageHeader icon={Receipt} title="AP Aging"
+          subtitle="Hutang usaha (GR belum dibayar) per vendor, dikelompokkan per umur jatuh tempo." />
+      )}
+
+      <div className="glass-card p-3 flex flex-wrap items-end gap-3" data-testid="ap-toolbar">
         <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">As of</Label>
-          <Input type="date" value={asOf} onChange={e => setAsOf(e.target.value)}
-            className="glass-input mt-1 h-9" data-testid="ap-asof" />
+          <Label htmlFor="ap-asof" className="text-xs md:text-sm font-medium">Per tanggal</Label>
+          <Input id="ap-asof" type="date" value={asOf} onChange={e => setAsOf(e.target.value)}
+            className="glass-input mt-1" data-testid="ap-asof" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="rounded-full gap-2 h-10" data-testid="ap-export-csv">
-          <Download className="h-4 w-4" /> CSV
-        </Button>
-        <Button
-          onClick={() => exportXlsx("/finance/ap-aging/export/xlsx", `ap_aging_${asOf}.xlsx`, { as_of: asOf })}
-          disabled={downloading}
-          variant="outline"
-          className="rounded-full gap-2 h-10 ml-auto"
-          data-testid="ap-export-xlsx"
-        >
-          <Download className="h-4 w-4" />
-          {downloading ? "Mengunduh..." : "Export Excel"}
-        </Button>
+        <div className="flex items-center gap-1.5 h-9 text-sm text-muted-foreground">
+          <span>Bucket umur AP</span>
+          <InlineHelp id="ap-aging-buckets" placement="bottom-start" />
+        </div>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="ap-export-csv">
+            <Download className="h-4 w-4" /> Ekspor CSV
+          </Button>
+          <Button
+            onClick={() => exportXlsx("/finance/ap-aging/export/xlsx", `ap_aging_${asOf}.xlsx`, { as_of: asOf })}
+            disabled={downloading}
+            variant="outline"
+            data-testid="ap-export-xlsx"
+          >
+            <Download className="h-4 w-4" />
+            {downloading ? "Mengunduh..." : "Ekspor Excel"}
+          </Button>
+        </div>
       </div>
 
       {loading && <LoadingState rows={6} />}
       {!loading && data && (
         <>
-          <div className="glass-card p-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">AP Aging Buckets</span>
-            <InlineHelp id="ap-aging-buckets" placement="bottom-start" />
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3" data-testid="ap-buckets">
-            <BucketCard label="Current" value={data.buckets.current} accent="emerald" testid="ap-bucket-current" />
-            <BucketCard label="1-30 hari" value={data.buckets.d_30} accent="sky" testid="ap-bucket-d30" />
-            <BucketCard label="31-60 hari" value={data.buckets.d_60} accent="amber" testid="ap-bucket-d60" />
-            <BucketCard label="61-90 hari" value={data.buckets.d_90} accent="orange" testid="ap-bucket-d90" />
-            <BucketCard label="90+ hari" value={data.buckets.d_90p} accent="red" testid="ap-bucket-d90p" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="ap-buckets">
+            <BucketCard label="Current" value={data.buckets.current} tone="success" icon={CheckCircle2} color="aurora-4" testid="ap-bucket-current" />
+            <BucketCard label="1-30 hari" value={data.buckets.d_30} tone="info" icon={Clock} color="aurora-2" testid="ap-bucket-d30" />
+            <BucketCard label="31-60 hari" value={data.buckets.d_60} tone="warning" icon={Clock} color="aurora-5" testid="ap-bucket-d60" />
+            <BucketCard label="61-90 hari" value={data.buckets.d_90} tone="warning" icon={AlertCircle} color="aurora-5" testid="ap-bucket-d90" />
+            <BucketCard label="90+ hari" value={data.buckets.d_90p} tone="danger" icon={AlertTriangle} color="aurora-6" testid="ap-bucket-d90p" />
           </div>
 
           <div className="glass-card overflow-hidden" data-testid="ap-table-card">
@@ -124,12 +132,16 @@ export default function APAging() {
   );
 }
 
-function BucketCard({ label, value, accent, testid }) {
+function BucketCard({ label, value, tone, icon, color, testid }) {
   return (
-    <div className="glass-card p-4" data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`text-xl font-bold tabular-nums mt-1 text-${accent}-700 dark:text-${accent}-400`} data-testid={testid ? `${testid}-value` : undefined}>{fmtRp(value || 0)}</div>
-    </div>
+    <CompactStatCard
+      label={label}
+      icon={icon}
+      color={color}
+      tone={value ? tone : "default"}
+      testId={testid}
+      value={<span data-testid={testid ? `${testid}-value` : undefined}>{fmtRp(value || 0)}</span>}
+    />
   );
 }
 
@@ -149,7 +161,7 @@ function ApVendorItems({ v }) {
       <tbody>
         {items.map((it) => (
           <tr key={it.gr_id} className="border-t border-border/30" data-testid={`ap-item-${it.gr_id}`}>
-            <td className="px-2 py-1 font-mono">{it.doc_no || it.gr_id.slice(0, 8)}</td>
+            <td className="px-2 py-1 font-mono whitespace-nowrap">{it.doc_no || it.gr_id.slice(0, 8)}</td>
             <td className="px-2 py-1">{it.invoice_no || "—"}</td>
             <td className="px-2 py-1">{fmtDate(it.receive_date)}</td>
             <td className="px-2 py-1">{fmtDate(it.due_date)}</td>

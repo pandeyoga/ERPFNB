@@ -3,20 +3,20 @@
  * Features:
  * - Time-of-day greeting card with owner name
  * - Play/Pause voice button (Web Speech API id-ID)
- * - 4 highlight stat cards (Yesterday Sales / MTD / Cash / AP Due)
+ * - 4 highlight KPI cards (Yesterday Sales / MTD / Cash / AP Due) via shared KpiCard
  * - Top performer + Attention outlet visual cards
  * - Urgent actions list with quick-action buttons
  * - Outlet performance table (yesterday vs week-ago)
- * - Auto-refresh every 5 minutes
+ * - Auto-refresh every 10 minutes (only when tab visible)
  */
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { logger } from "@/lib/logger";
 import {
-  Sun, Coffee, Moon, Sunset, Volume2, VolumeX, Pause, Play,
+  Sun, Coffee, Moon, Sunset, Volume2, Pause,
   TrendingUp, TrendingDown, Wallet, AlertTriangle, Receipt,
   ArrowRight, RefreshCw, Sparkles, Trophy, AlertCircle, Package,
-  ChevronRight, Activity, Zap,
+  ChevronRight, Activity, Zap, BarChart3,
 } from "lucide-react";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import api, { unwrap } from "@/lib/api";
@@ -27,6 +27,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
+import KpiCard from "@/components/shared/KpiCard";
 
 const TIME_ICON = {
   pagi: Coffee,
@@ -36,57 +39,10 @@ const TIME_ICON = {
 };
 
 const SEVERITY_STYLES = {
-  high: "border-rose-300 bg-rose-50 text-rose-900",
-  medium: "border-amber-300 bg-amber-50 text-amber-900",
-  low: "border-blue-200 bg-blue-50 text-blue-900",
+  high: "border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-300",
+  medium: "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300",
+  low: "border-sky-500/30 bg-sky-500/10 text-sky-800 dark:text-sky-300",
 };
-
-function StatTile({ icon: Icon, label, value, sublabel, trend, accent, testid }) {
-  const positive = typeof trend === "number" && trend > 0;
-  const negative = typeof trend === "number" && trend < 0;
-  return (
-    <div
-      data-testid={testid}
-      className={cn(
-        "relative overflow-hidden rounded-2xl border bg-white/70 backdrop-blur-sm p-5 transition-all hover:shadow-lg hover:-translate-y-0.5",
-        accent === "emerald" && "border-emerald-200",
-        accent === "rose" && "border-rose-200",
-        accent === "amber" && "border-amber-200",
-        accent === "blue" && "border-blue-200",
-        accent === "indigo" && "border-indigo-200",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1">
-          <div className="text-xs uppercase tracking-wider text-slate-500 mb-1">{label}</div>
-          <div className="text-2xl font-semibold text-slate-900 leading-tight">{value}</div>
-          {sublabel && <div className="text-xs text-slate-500 mt-1">{sublabel}</div>}
-        </div>
-        <div className={cn(
-          "size-10 rounded-xl flex items-center justify-center shrink-0",
-          accent === "emerald" && "bg-emerald-100 text-emerald-700",
-          accent === "rose" && "bg-rose-100 text-rose-700",
-          accent === "amber" && "bg-amber-100 text-amber-700",
-          accent === "blue" && "bg-blue-100 text-blue-700",
-          accent === "indigo" && "bg-indigo-100 text-indigo-700",
-        )}>
-          <Icon className="size-5" />
-        </div>
-      </div>
-      {typeof trend === "number" && (
-        <div className={cn(
-          "absolute bottom-2 right-3 flex items-center gap-1 text-xs font-medium",
-          positive && "text-emerald-700",
-          negative && "text-rose-700",
-        )}>
-          {positive && <TrendingUp className="size-3" />}
-          {negative && <TrendingDown className="size-3" />}
-          {trend > 0 ? "+" : ""}{trend.toFixed(1)}%
-        </div>
-      )}
-    </div>
-  );
-}
 
 function OutletCard({ outlet, kind = "top" }) {
   if (!outlet) return null;
@@ -97,32 +53,34 @@ function OutletCard({ outlet, kind = "top" }) {
       to={`/executive/outlet/${outlet.outlet_id}`}
       data-testid={`outlet-card-${kind}`}
       className={cn(
-        "block rounded-2xl border p-5 transition-all hover:shadow-md hover:-translate-y-0.5",
-        isTop ? "bg-emerald-50 border-emerald-200 hover:border-emerald-400" : "bg-rose-50 border-rose-200 hover:border-rose-400"
+        "glass-card block p-4 border-l-4 transition-[box-shadow] hover:shadow-md",
+        isTop ? "border-l-emerald-500" : "border-l-rose-500"
       )}
     >
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between gap-2 mb-2">
         <Badge variant="secondary" className={cn(
-          "uppercase tracking-wider text-[11px] font-bold",
-          isTop ? "bg-emerald-200 text-emerald-900" : "bg-rose-200 text-rose-900"
+          "uppercase tracking-wider text-[11px] font-semibold",
+          isTop ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-rose-500/15 text-rose-700 dark:text-rose-300"
         )}>
           {isTop ? "Top Performer" : "Perlu Perhatian"}
         </Badge>
-        <Icon className={cn("size-5", isTop ? "text-emerald-700" : "text-rose-700")} />
+        <Icon className={cn("size-4", isTop ? "text-emerald-600" : "text-rose-600")} />
       </div>
-      <div className="text-lg font-semibold text-slate-900">{outlet.outlet_name}</div>
-      <div className="text-xl font-bold mt-1 text-slate-900">{fmtRp(outlet.revenue)}</div>
-      {typeof outlet.delta_pct === "number" && (
-        <div className={cn(
-          "inline-flex items-center gap-1 mt-2 text-sm font-medium",
-          outlet.delta_pct > 0 ? "text-emerald-700" : "text-rose-700"
-        )}>
-          {outlet.delta_pct > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-          {outlet.delta_pct > 0 ? "+" : ""}{outlet.delta_pct.toFixed(1)}% vs minggu lalu
-        </div>
-      )}
-      <div className="flex items-center text-xs text-slate-600 mt-3">
-        Drilldown <ChevronRight className="size-3 ml-1" />
+      <h3 className="text-sm md:text-base font-semibold">{outlet.outlet_name}</h3>
+      <div className="text-lg font-semibold tabular-nums mt-0.5">{fmtRp(outlet.revenue)}</div>
+      <div className="flex items-center justify-between gap-2 mt-1">
+        {typeof outlet.delta_pct === "number" ? (
+          <span className={cn(
+            "inline-flex items-center gap-1 text-xs font-medium",
+            outlet.delta_pct > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+          )}>
+            {outlet.delta_pct > 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+            {outlet.delta_pct > 0 ? "+" : ""}{outlet.delta_pct.toFixed(1)}% vs minggu lalu
+          </span>
+        ) : <span />}
+        <span className="inline-flex items-center text-xs text-muted-foreground">
+          Lihat detail <ChevronRight className="size-3 ml-0.5" />
+        </span>
       </div>
     </Link>
   );
@@ -140,20 +98,21 @@ function UrgentActionRow({ action }) {
       to={action.action_link}
       data-testid={`urgent-action-${action.type}`}
       className={cn(
-        "group flex items-center gap-4 rounded-xl border p-4 transition-all hover:shadow-md",
+        "group flex items-center gap-3 rounded-[calc(var(--radius)-2px)] border p-3 transition-[box-shadow] hover:shadow-md",
         SEVERITY_STYLES[action.severity] || SEVERITY_STYLES.medium
       )}
     >
-      <div className="size-10 rounded-lg bg-white/60 flex items-center justify-center shrink-0">
-        <Icon className="size-5" />
+      <div className="size-8 rounded-md bg-background/60 flex items-center justify-center shrink-0">
+        <Icon className="size-4" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold leading-tight">{action.title}</div>
-        <div className="text-xs opacity-80 mt-0.5 truncate">{action.description}</div>
+        {action.description && <div className="text-xs opacity-80 mt-0.5 truncate">{action.description}</div>}
       </div>
-      <Button variant="ghost" size="sm" className="shrink-0 group-hover:translate-x-0.5 transition-transform">
-        {action.action_label} <ArrowRight className="size-3 ml-1" />
-      </Button>
+      {/* Satu target klik (seluruh baris); label aksi bukan tombol terpisah */}
+      <span className="shrink-0 inline-flex items-center gap-1 text-[13px] font-medium group-hover:translate-x-0.5 transition-transform">
+        {action.action_label} <ArrowRight className="size-3.5" />
+      </span>
     </Link>
   );
 }
@@ -226,124 +185,129 @@ export default function DailyBriefing() {
     setSpeaking(false);
   }
 
+  const header = (actions) => (
+    <PageHeader
+      icon={Sparkles}
+      className="mb-0 md:mb-0"
+      title={
+        <span className="inline-flex items-center gap-2">
+          AI Daily Briefing
+          <InlineHelp id="owner-daily-briefing" size="xs" placement="right" />
+        </span>
+      }
+      subtitle={data ? `${fmtDate(data.today)} · Briefing harian${data.llm_used ? " · dibuat dengan AI" : ""}` : "Briefing harian untuk owner"}
+      actions={actions}
+    />
+  );
+
   if (loading) return (
-    <div className="space-y-6 pb-12" data-testid="daily-briefing-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-briefing-page">
+      {header(null)}
       <LoadingState />
     </div>
   );
-  if (!data) return <div className="p-6 text-slate-500">No briefing data</div>;
+  if (!data) return (
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-briefing-page">
+      {header(
+        <Button variant="outline" onClick={() => load(true)} data-testid="briefing-retry-btn">
+          <RefreshCw /> Muat ulang
+        </Button>
+      )}
+      <div className="glass-card">
+        <EmptyState icon={Sparkles} title="Briefing belum tersedia" description="Data briefing gagal dimuat. Coba muat ulang beberapa saat lagi." />
+      </div>
+    </div>
+  );
 
   const TimeIcon = TIME_ICON[data.time_of_day] || Sun;
   const h = data.highlights;
 
   return (
-    <div className="space-y-6 pb-12" data-testid="daily-briefing-page">
-      {/* HERO CARD: Greeting + Voice + Briefing text */}
-      <div
-        data-testid="briefing-hero"
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-amber-50 border border-indigo-100 p-6 md:p-8 shadow-sm"
-      >
-        {/* Decorative orb */}
-        <div className="absolute -right-20 -top-20 size-64 rounded-full bg-amber-200/30 blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 size-64 rounded-full bg-indigo-200/30 blur-3xl pointer-events-none" />
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-briefing-page">
+      {header(
+        <>
+          <Button
+            data-testid="briefing-voice-btn"
+            variant={speaking ? "default" : "outline"}
+            onClick={speaking ? stopVoice : playVoice}
+          >
+            {speaking ? <><Pause /> Berhenti</> : <><Volume2 /> Putar Suara</>}
+          </Button>
+          <Button
+            data-testid="briefing-refresh-btn"
+            variant="outline"
+            size="icon"
+            onClick={() => load(true)}
+            disabled={refreshing}
+            aria-label="Muat ulang briefing"
+            title="Muat ulang"
+          >
+            <RefreshCw className={cn(refreshing && "animate-spin")} />
+          </Button>
+        </>
+      )}
 
-        <div className="relative flex items-start justify-between gap-4 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-white/80 backdrop-blur flex items-center justify-center shadow-sm">
-              <TimeIcon className="size-6 text-amber-600" />
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                {data.greeting}
-                <InlineHelp id="owner-daily-briefing" size="xs" placement="right" />
-              </div>
-              <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
-                {fmtDate(data.today)} · Briefing Harian
-                {data.llm_used && (
-                  <span className="ml-2 inline-flex items-center gap-1 text-indigo-600">
-                    <Sparkles className="size-3" /> AI
-                  </span>
-                )}
-              </div>
-            </div>
+      {/* Greeting + briefing narrative (kompak, bukan hero banner) */}
+      <div data-testid="briefing-hero" className="glass-card p-4 grad-aurora-soft">
+        <div className="flex items-start gap-3">
+          <div className="size-9 rounded-[calc(var(--radius)-2px)] bg-background/70 flex items-center justify-center shrink-0">
+            <TimeIcon className="size-[18px] text-amber-600" />
           </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              data-testid="briefing-voice-btn"
-              variant={speaking ? "default" : "outline"}
-              size="sm"
-              onClick={speaking ? stopVoice : playVoice}
-              className="gap-2"
-            >
-              {speaking ? <><Pause className="size-4" /> Berhenti</> : <><Volume2 className="size-4" /> Putar Suara</>}
-            </Button>
-            <Button
-              data-testid="briefing-refresh-btn"
-              variant="ghost"
-              size="sm"
-              onClick={() => load(true)}
-              disabled={refreshing}
-            >
-              <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
-            </Button>
+          <div className="min-w-0">
+            <h2 className="text-base md:text-lg font-semibold">{data.greeting}</h2>
+            <p data-testid="briefing-text" className="text-sm md:text-base leading-relaxed text-foreground/90 mt-1 max-w-4xl">
+              {data.briefing_text}
+            </p>
           </div>
-        </div>
-
-        <div
-          data-testid="briefing-text"
-          className="relative text-base md:text-lg leading-relaxed text-slate-800 max-w-3xl"
-        >
-          {data.briefing_text}
         </div>
       </div>
 
-      {/* HIGHLIGHTS - 4 Stat Tiles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatTile
-          testid="stat-yesterday"
+      {/* HIGHLIGHTS - 4 KPI (dengan delta bila ada) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard
+          testId="stat-yesterday"
           icon={TrendingUp}
           label="Revenue Kemarin"
           value={fmtRp(h.yesterday_total)}
-          sublabel={fmtDate(data.yesterday)}
-          trend={h.yesterday_delta_pct}
-          accent={h.yesterday_delta_pct >= 0 ? "emerald" : "rose"}
+          delta={h.yesterday_delta_pct}
+          deltaLabel={fmtDate(data.yesterday)}
+          color="aurora-1"
         />
-        <StatTile
-          testid="stat-mtd"
+        <KpiCard
+          testId="stat-mtd"
           icon={Activity}
           label="Revenue MTD"
           value={fmtRp(h.mtd_revenue)}
-          sublabel="Month-to-date"
-          trend={h.mtd_delta_pct}
-          accent={h.mtd_delta_pct >= 0 ? "emerald" : "amber"}
+          delta={h.mtd_delta_pct}
+          deltaLabel="Month-to-date"
+          color="aurora-2"
         />
-        <StatTile
-          testid="stat-cash"
+        <KpiCard
+          testId="stat-cash"
           icon={Wallet}
           label="Cash Position"
           value={fmtRp(h.cash_total)}
-          sublabel="Bank + Petty Cash"
-          accent="indigo"
+          hint="Bank + petty cash"
+          color="aurora-3"
         />
-        <StatTile
-          testid="stat-ap"
+        <KpiCard
+          testId="stat-ap"
           icon={Receipt}
           label={`AP Jatuh Tempo (${h.ap_due_count})`}
           value={fmtRp(h.ap_due_total)}
-          sublabel="7 hari ke depan"
-          accent={h.ap_due_total > 100_000_000 ? "rose" : "amber"}
+          hint="7 hari ke depan"
+          color={h.ap_due_total > 100_000_000 ? "aurora-6" : "aurora-5"}
         />
       </div>
 
       {/* OUTLETS: Top + Attention */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
         <OutletCard outlet={h.top_outlet} kind="top" />
         {h.attention_outlet
           ? <OutletCard outlet={h.attention_outlet} kind="attention" />
           : (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 flex items-center justify-center text-sm text-slate-500" data-testid="no-attention-outlet">
-              <Trophy className="size-4 mr-2 text-emerald-600" /> Tidak ada outlet yang turun signifikan kemarin 🎉
+            <div className="glass-card p-4 flex items-center justify-center text-sm text-muted-foreground" data-testid="no-attention-outlet">
+              <Trophy className="size-4 mr-2 text-emerald-600" /> Tidak ada outlet yang turun signifikan kemarin.
             </div>
           )
         }
@@ -351,12 +315,10 @@ export default function DailyBriefing() {
 
       {/* URGENT ACTIONS */}
       {data.urgent_actions?.length > 0 && (
-        <section data-testid="urgent-actions-section" className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold tracking-tight text-slate-900">
-              ⚡ Tindakan Prioritas ({data.urgent_actions.length})
-            </h2>
-          </div>
+        <section data-testid="urgent-actions-section" className="space-y-2">
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <Zap className="size-4 text-amber-500" /> Tindakan Prioritas ({data.urgent_actions.length})
+          </h2>
           <div className="space-y-2">
             {data.urgent_actions.map((a, idx) => (
               <UrgentActionRow key={idx} action={a} />
@@ -367,31 +329,31 @@ export default function DailyBriefing() {
 
       {/* OUTLET PERFORMANCE TABLE */}
       {data.yesterday_by_outlet?.length > 0 && (
-        <section data-testid="outlet-performance-section" className="space-y-3">
-          <h2 className="text-base font-semibold tracking-tight text-slate-900">
-            📊 Performa Outlet Kemarin
+        <section data-testid="outlet-performance-section" className="space-y-2">
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <BarChart3 className="size-4 text-muted-foreground" /> Performa Outlet Kemarin
           </h2>
-          <div className="rounded-2xl border bg-white overflow-hidden">
+          <div className="glass-card overflow-hidden">
             <DataTable
               rows={data.yesterday_by_outlet.map((o, idx) => ({ ...o, _key: o.outlet_id || idx }))}
               keyField="_key"
               rowTestIdPrefix="briefing-outlet-row"
               columns={[
                 { key: "outlet_name", label: "Outlet", primary: true, render: (o) => (
-                  <Link to={`/executive/outlet/${o.outlet_id}`} className="font-medium text-slate-900 hover:text-indigo-600">
+                  <Link to={`/executive/outlet/${o.outlet_id}`} className="font-medium hover:text-primary hover:underline underline-offset-2">
                     {o.outlet_name}
                   </Link>
                 ) },
                 { key: "revenue", label: "Revenue", numeric: true, sortable: true, render: (o) => fmtRp(o.revenue) },
                 { key: "transactions", label: "Trx", numeric: true, hideOnMobile: true,
-                  render: (o) => <span className="text-slate-500">{o.transactions || "-"}</span> },
-                { key: "vs_week_ago", label: "vs Week-ago", numeric: true, hideOnMobile: true,
-                  render: (o) => <span className="text-slate-500">{fmtRp(o.vs_week_ago)}</span> },
+                  render: (o) => <span className="text-muted-foreground">{o.transactions || "-"}</span> },
+                { key: "vs_week_ago", label: "Minggu lalu", numeric: true, hideOnMobile: true,
+                  render: (o) => <span className="text-muted-foreground">{fmtRp(o.vs_week_ago)}</span> },
                 { key: "delta_pct", label: "Δ %", numeric: true, sortable: true, render: (o) => (
                   typeof o.delta_pct === "number" ? (
                     <span className={cn(
                       "inline-flex items-center gap-1 font-medium",
-                      o.delta_pct > 0 ? "text-emerald-700" : "text-rose-700"
+                      o.delta_pct > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
                     )}>
                       {o.delta_pct > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
                       {o.delta_pct > 0 ? "+" : ""}{o.delta_pct.toFixed(1)}%
@@ -405,9 +367,9 @@ export default function DailyBriefing() {
       )}
 
       {/* FOOTER */}
-      <div className="text-xs text-slate-400 text-center pt-2 flex items-center justify-center gap-2">
+      <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
         <Sparkles className="size-3" />
-        Briefing dihasilkan {data.llm_used ? "menggunakan Gemini AI" : "secara otomatis"} · Auto-refresh setiap 5 menit
+        Briefing dihasilkan {data.llm_used ? "menggunakan Gemini AI" : "secara otomatis"} · Muat ulang otomatis setiap 10 menit
       </div>
     </div>
   );

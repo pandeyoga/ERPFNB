@@ -1,10 +1,13 @@
 /** Payment Request (PAY) list page. */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Banknote, Plus, Search } from "lucide-react";
+import { Banknote, Plus, Search, FileEdit, Clock, CheckCircle2 } from "lucide-react";
 import api, { unwrapWithMeta } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
 import DataTable from "@/components/shared/DataTable";
@@ -12,7 +15,7 @@ import { fmtRp, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 
 const STATUS_TABS = [
-  { key: "all", label: "All" },
+  { key: "all", label: "Semua" },
   { key: "draft", label: "Draft" },
   { key: "awaiting_approval", label: "Awaiting" },
   { key: "submitted", label: "Submitted" },
@@ -22,7 +25,7 @@ const STATUS_TABS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
-export default function PaymentList() {
+export default function PaymentList({ embedded = false }) {
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState({ page: 1, per_page: 20, total: 0 });
   const [loading, setLoading] = useState(true);
@@ -61,43 +64,59 @@ export default function PaymentList() {
     // eslint-disable-next-line
   }, [search]);
 
+  const subtitle = "Pembayaran ke vendor, karyawan, dan pihak lain — draft, approval, sampai dibayar & dijurnal.";
+  const actions = (
+    <Button onClick={() => navigate("/finance/payments/new")} data-testid="pay-new-btn">
+      <Plus className="h-4 w-4" />Buat Payment
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="payment-list-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="payment-list-page">
+      {embedded ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        </div>
+      ) : (
+        <PageHeader icon={Banknote} title="Payments" subtitle={subtitle} actions={actions} />
+      )}
+
       {kpi && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="pay-kpi-strip">
-          <KpiTile label="Draft" value={kpi.draft} tone="neutral" testid="pay-kpi-draft" />
-          <KpiTile label="Awaiting approval" value={kpi.awaiting_approval} tone="amber" testid="pay-kpi-awaiting" />
-          <KpiTile label="Approved (ready to pay)" value={kpi.approved} tone="sky" testid="pay-kpi-approved" />
-          <KpiTile label={`Paid ${kpi.period}`} value={`${kpi.paid_this_month.count} · ${fmtRp(kpi.paid_this_month.amount)}`} tone="emerald" testid="pay-kpi-paid" />
+          <CompactStatCard label="Draft" icon={FileEdit} color="aurora-3" testId="pay-kpi-draft"
+            value={<span data-testid="pay-kpi-draft-value">{kpi.draft}</span>} />
+          <CompactStatCard label="Menunggu approval" icon={Clock} color="aurora-5" tone="warning" testId="pay-kpi-awaiting"
+            value={<span data-testid="pay-kpi-awaiting-value">{kpi.awaiting_approval}</span>} />
+          <CompactStatCard label="Approved (siap bayar)" icon={CheckCircle2} color="aurora-2" tone="info" testId="pay-kpi-approved"
+            value={<span data-testid="pay-kpi-approved-value">{kpi.approved}</span>} />
+          <CompactStatCard label={`Paid ${kpi.period}`} icon={Banknote} color="aurora-4" tone="success" testId="pay-kpi-paid"
+            value={<span data-testid="pay-kpi-paid-value">{fmtRp(kpi.paid_this_month.amount)}</span>}
+            sub={`${kpi.paid_this_month.count} payment`} />
         </div>
       )}
 
-      <div className="glass-card p-4 flex flex-wrap items-center gap-3" data-testid="pay-toolbar">
-        <div className="flex flex-wrap gap-1" role="tablist" data-testid="pay-status-tabs">
-          {STATUS_TABS.map(t => (
-            <button key={t.key}
-              role="tab" aria-selected={status === t.key}
-              data-testid={`pay-tab-${t.key}`}
-              className={`px-3 py-1.5 text-xs rounded-full transition ${status === t.key ? "bg-foreground text-background" : "hover:bg-foreground/10"}`}
-              onClick={() => setStatus(t.key)}>{t.label}</button>
-          ))}
-        </div>
+      <div className="glass-card p-3 flex flex-wrap items-center gap-3" data-testid="pay-toolbar">
+        <Tabs value={status} onValueChange={setStatus}>
+          <TabsList data-testid="pay-status-tabs" aria-label="Filter status payment">
+            {STATUS_TABS.map(t => (
+              <TabsTrigger key={t.key} value={t.key} data-testid={`pay-tab-${t.key}`}>{t.label}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
         <div className="relative ml-auto max-w-xs w-full">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Cari doc_no / payee / invoice..." value={search}
-                 onChange={e => setSearch(e.target.value)}
-                 className="glass-input pl-9 h-9" data-testid="pay-search" />
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Input placeholder="Cari doc no / payee / invoice..." value={search}
+                 onChange={e => setSearch(e.target.value)} aria-label="Cari payment"
+                 className="glass-input pl-9" data-testid="pay-search" />
         </div>
-        <Button onClick={() => navigate("/finance/payments/new")}
-          className="rounded-full gap-2 h-10 bg-foreground text-background hover:bg-foreground/90"
-          data-testid="pay-new-btn"><Plus className="h-4 w-4" />New Payment</Button>
       </div>
 
       <div className="glass-card overflow-hidden" data-testid="pay-table-card">
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true,
-              render: (p) => <span className="font-mono text-xs" data-testid={`pay-doc-no-${p.doc_no}`}>{p.doc_no}</span> },
+              render: (p) => <span className="font-mono text-xs whitespace-nowrap" data-testid={`pay-doc-no-${p.doc_no}`}>{p.doc_no}</span> },
             { key: "request_date", label: "Date", sortable: true, render: (p) => fmtDate(p.request_date) },
             { key: "payee", label: "Payee",
               render: (p) => (
@@ -119,14 +138,17 @@ export default function PaymentList() {
           defaultSort={{ key: "request_date", dir: "desc" }}
           renderExpanded={(p) => <PayBreakdown p={p} />}
           rowAction={(p) => (
-            <Link to={`/finance/payments/${p.id}`} className="text-xs text-primary hover:underline"
-              onClick={(e) => e.stopPropagation()}
-              data-testid={`pay-view-${p.doc_no}`}>View</Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={`/finance/payments/${p.id}`}
+                onClick={(e) => e.stopPropagation()}
+                data-testid={`pay-view-${p.doc_no}`}>Lihat detail</Link>
+            </Button>
           )}
           empty={
-            <EmptyState icon={Banknote} title="Belum ada Payment"
-              description="Klik 'New Payment' untuk bayar vendor/pegawai/lainnya."
-              actionLabel="Buat Payment" onAction={() => navigate("/finance/payments/new")}
+            <EmptyState icon={Banknote} title="Belum ada payment"
+              description="Klik 'Buat Payment' untuk membayar vendor, karyawan, atau pihak lain."
+              action={<Button size="sm" onClick={() => navigate("/finance/payments/new")} data-testid="pay-empty-create">
+                <Plus className="h-4 w-4" />Buat Payment</Button>}
               data-testid="pay-empty-state" />
           }
         />
@@ -177,18 +199,6 @@ function KV({ label, value }) {
     <div>
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="font-medium">{value}</div>
-    </div>
-  );
-}
-function KpiTile({ label, value, tone = "neutral", testid }) {
-  const cls = {
-    neutral: "", amber: "text-amber-700 dark:text-amber-400",
-    sky: "text-sky-700 dark:text-sky-400", emerald: "text-emerald-700 dark:text-emerald-400",
-  }[tone] || "";
-  return (
-    <div className="glass-card p-4" data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`text-xl font-bold tabular-nums mt-1 ${cls}`} data-testid={testid ? `${testid}-value` : undefined}>{value}</div>
     </div>
   );
 }

@@ -1,19 +1,19 @@
 /** TaxCenter/PPh21Calculator.jsx */
-import { useEffect, useState, useCallback } from "react";
-import { Receipt, ToggleLeft, ToggleRight, Calculator, ChevronDown, ChevronRight,
-         AlertTriangle, CheckCircle2, Info, RefreshCw, TrendingDown, FileDown } from "lucide-react";
+import { useState } from "react";
+import { Calculator, RefreshCw } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
-import { fmtRp, fmtDate } from "@/lib/format";
+import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import LoadingState from "@/components/shared/LoadingState";
 
-// ───── helpers ────────────────────────────────────────────────────────
+const PTKP_OPTIONS = [
+  "TK/0", "TK/1", "TK/2", "TK/3",
+  "K/0",  "K/1",  "K/2",  "K/3",
+  "K/I/0","K/I/1","K/I/2","K/I/3",
+];
 
 function PPh21Calculator() {
   const [monthly, setMonthly] = useState("");
@@ -21,14 +21,8 @@ function PPh21Calculator() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const PTKP_OPTIONS = [
-    "TK/0", "TK/1", "TK/2", "TK/3",
-    "K/0",  "K/1",  "K/2",  "K/3",
-    "K/I/0","K/I/1","K/I/2","K/I/3",
-  ];
-
   async function calculate() {
-    if (!monthly || isNaN(parseFloat(monthly))) return;
+    if (!monthly || isNaN(parseFloat(monthly))) { toast.error("Isi gaji bulanan terlebih dahulu"); return; }
     setLoading(true);
     try {
       const calcRes1 = await api.post("/tax/calculate", {
@@ -39,53 +33,53 @@ function PPh21Calculator() {
       });
       setResult(unwrap(calcRes1));
     } catch(e) {
-      toast.error("Gagal kalkulasi: " + (e.message || "Error"));
+      toast.error("Gagal menghitung: " + (e.message || "Kesalahan"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="rounded-xl border border-purple-200 bg-purple-50 p-4 space-y-4">
-      <h4 className="font-semibold text-purple-800 flex items-center gap-2">
-        <Calculator size={16} /> Kalkulator PPh 21 (Preview)
-      </h4>
-      <div className="grid grid-cols-2 gap-3">
+    <div className="glass-card p-4 space-y-3" data-testid="pph21-calculator">
+      <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
+        <Calculator className="h-4 w-4 text-violet-600 dark:text-violet-300" /> Kalkulator PPh 21 (Preview)
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-xs text-purple-700">Gaji Bulanan (Rp)</Label>
+          <Label htmlFor="pph21-calc-monthly" className="text-xs md:text-sm font-medium">Gaji Bulanan (Rp)</Label>
           <Input
+            id="pph21-calc-monthly"
             type="number" min="0" placeholder="5000000"
             value={monthly} onChange={e => setMonthly(e.target.value)}
-            className="border-purple-200"
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-purple-700">Status PTKP</Label>
+          <Label className="text-xs md:text-sm font-medium">Status PTKP</Label>
           <SimpleSelect
             value={ptkp} onValueChange={setPtkp}
-            className="w-full h-9 px-3 rounded-md border border-purple-200 text-sm bg-white"
+            ariaLabel="Status PTKP"
+            className="w-full"
             options={PTKP_OPTIONS.map(o => ({ value: o, label: o }))}
           />
         </div>
       </div>
-      <Button onClick={calculate} disabled={loading} size="sm" variant="outline"
-        className="border-purple-300 text-purple-700 hover:bg-purple-100">
-        {loading ? <RefreshCw size={14} className="animate-spin mr-1" /> : <Calculator size={14} className="mr-1" />}
+      <Button onClick={calculate} disabled={loading} size="sm" variant="outline" data-testid="pph21-calc-btn">
+        {loading ? <RefreshCw className="animate-spin" /> : <Calculator />}
         Hitung
       </Button>
       {result && (
-        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-purple-200">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pt-3 border-t border-border/50">
           {[
-            ["Annual Gross",   fmtRp(result.annual_gross)],
-            ["PTKP",           fmtRp(result.ptkp_annual)],
-            ["PKP (kena pajak)",fmtRp(result.annual_pkp)],
-            ["PPh 21 Tahunan", fmtRp(result.annual_tax)],
-            ["PPh 21/bulan",   fmtRp(result.monthly_tax)],
-            ["Effective Rate", `${result.effective_rate}%`],
+            ["Bruto tahunan",    fmtRp(result.annual_gross)],
+            ["PTKP",             fmtRp(result.ptkp_annual)],
+            ["PKP (kena pajak)", fmtRp(result.annual_pkp)],
+            ["PPh 21 tahunan",   fmtRp(result.annual_tax)],
+            ["PPh 21 / bulan",   fmtRp(result.monthly_tax)],
+            ["Tarif efektif",    `${result.effective_rate}%`],
           ].map(([k, v]) => (
             <div key={k} className="text-sm">
-              <span className="text-gray-500">{k}: </span>
-              <span className="font-semibold text-purple-800">{v}</span>
+              <div className="text-xs text-muted-foreground">{k}</div>
+              <div className="font-semibold tabular-nums">{v}</div>
             </div>
           ))}
         </div>
@@ -94,5 +88,4 @@ function PPh21Calculator() {
   );
 }
 
-// ───── PPh Calc Preview (PPh23/PPh42) ─────────────────────────────────────────
 export default PPh21Calculator;

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 // \u2500\u2500 Category config (mirrors backend) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 import { CATEGORY_ICONS, CATEGORY_COLORS, BADGE_COLORS } from "./constants";
@@ -86,8 +87,8 @@ function DeleteTab({ collections, onSuccess }) {
       </div>
 
       {/* Category selector */}
-      <div className="bg-white rounded-xl border p-5 space-y-4">
-        <h3 className="font-medium text-sm text-gray-800">Pilih Data yang Akan Dihapus</h3>
+      <div className="glass-card p-4 space-y-3">
+        <h3 className="text-sm md:text-base font-semibold">Pilih Data yang Akan Dihapus</h3>
 
         {/* Delete All option */}
         <label className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
@@ -151,24 +152,25 @@ function DeleteTab({ collections, onSuccess }) {
 
       {/* Summary & confirmation */}
       {selectedCategories.length > 0 && (
-        <div className="bg-white rounded-xl border p-5 space-y-4">
+        <div className="glass-card p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-sm text-gray-800">Konfirmasi Penghapusan</h3>
+            <h3 className="text-sm md:text-base font-semibold">Konfirmasi Penghapusan</h3>
             <span className="text-sm font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">
               {selectedDocs.toLocaleString("id-ID")} records akan dihapus
             </span>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">
+            <label htmlFor="delete-confirm-input" className="text-xs font-medium text-gray-600">
               Ketik <strong>{REQUIRED_PHRASE}</strong> untuk konfirmasi:
             </label>
             <input
+              id="delete-confirm-input"
               type="text"
               value={confirmPhrase}
               onChange={(e) => setConfirmPhrase(e.target.value)}
               placeholder={REQUIRED_PHRASE}
-              className={`w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 transition-all ${
+              className={`w-full border rounded-lg px-3 py-2 text-sm font-medium tabular-nums focus:outline-none focus:ring-2 transition-all ${
                 confirmPhrase === REQUIRED_PHRASE
                   ? "border-red-500 focus:ring-red-200 bg-red-50"
                   : "border-gray-300 focus:ring-gray-200"
@@ -187,10 +189,11 @@ function DeleteTab({ collections, onSuccess }) {
             </div>
           )}
 
-          <button
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             disabled={deleting || confirmPhrase !== REQUIRED_PHRASE}
-            className="w-full flex items-center justify-center gap-2 bg-red-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full"
             data-testid="delete-confirm-btn"
           >
             {deleting ? (
@@ -198,7 +201,7 @@ function DeleteTab({ collections, onSuccess }) {
             ) : (
               <><Trash2 className="w-4 h-4" /> Hapus {selectedDocs.toLocaleString("id-ID")} Records</>
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>

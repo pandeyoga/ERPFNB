@@ -13,6 +13,8 @@ import { Search, X, AlertTriangle, ArrowUpRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -45,7 +47,7 @@ function CellMovementsDialog({ open, onClose, itemName, outletName, itemId, outl
       params: { item_id: itemId, outlet_id: outletId, limit: 30 },
     })
       .then(r => setMoves(unwrap(r) || []))
-      .catch(() => toast.error("Gagal load movements"))
+      .catch(() => toast.error("Gagal memuat riwayat pergerakan"))
       .finally(() => setLoading(false));
   }, [open, itemId, outletId]);
 
@@ -150,7 +152,7 @@ export default function StockBalanceMatrix() {
       const res = await api.get("/inventory/balance-matrix", { params });
       setMatrix(unwrap(res) || { outlets: [], rows: [] });
     } catch (e) {
-      toast.error("Gagal load matrix");
+      toast.error("Gagal memuat matrix stok");
     } finally { setLoading(false); }
   }, [selectedOutlets, includeZero]);
 
@@ -211,62 +213,59 @@ export default function StockBalanceMatrix() {
   ], [matrix.outlets, openCell]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 lg:space-y-4">
       <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="matrix-toolbar">
-        <div className="min-w-[260px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet (multi-pilih)</Label>
+        <div className="min-w-[260px]" role="group" aria-labelledby="matrix-outlet-label">
+          <span id="matrix-outlet-label" className="text-xs md:text-sm font-medium">
+            Outlet <span className="font-normal text-muted-foreground">· {selectedOutlets.length > 0 ? `${selectedOutlets.length} dipilih` : "semua"}</span>
+          </span>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {outletList.map(o => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => toggleOutlet(o.id)}
-                className={`text-xs px-2.5 py-1 rounded-full border ${
-                  selectedOutlets.includes(o.id)
-                    ? "bg-foreground text-background border-foreground"
-                    : "bg-background hover:bg-foreground/5 border-border/60"
-                }`}
-                data-testid={`matrix-outlet-${o.id}`}
-              >
-                {o.name}
-              </button>
-            ))}
+            {outletList.map(o => {
+              const active = selectedOutlets.includes(o.id);
+              return (
+                <Button
+                  key={o.id}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  aria-pressed={active}
+                  onClick={() => toggleOutlet(o.id)}
+                  data-testid={`matrix-outlet-${o.id}`}
+                >
+                  {o.name}
+                </Button>
+              );
+            })}
             {selectedOutlets.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setSelectedOutlets([])}
-                className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-              >
-                <X className="h-3 w-3" /> Reset
-              </button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOutlets([])} data-testid="matrix-outlet-reset">
+                <X /> Reset
+              </Button>
             )}
           </div>
         </div>
         <div className="flex-1 min-w-[220px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Cari Item</Label>
+          <Label htmlFor="matrix-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
           <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama / kode…" className="glass-input pl-9 h-9"
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input id="matrix-search-input" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Cari nama / kode…" className="glass-input pl-9"
               data-testid="matrix-search" />
           </div>
         </div>
-        <div>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-            <input type="checkbox" checked={includeZero}
-              onChange={e => setIncludeZero(e.target.checked)}
-              data-testid="matrix-include-zero" />
-            <span>Tampilkan item qty=0</span>
-          </label>
+        <div className="flex items-center gap-2 h-9">
+          <Checkbox id="matrix-include-zero-cb" checked={includeZero}
+            onCheckedChange={(v) => setIncludeZero(v === true)}
+            data-testid="matrix-include-zero" />
+          <Label htmlFor="matrix-include-zero-cb" className="text-xs md:text-sm font-medium cursor-pointer">Tampilkan item qty = 0</Label>
         </div>
         {belowParCount > 0 && (
-          <Link to="/inventory/low-stock"
-            className="text-xs px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 inline-flex items-center gap-1.5"
-            data-testid="matrix-low-link">
-            <AlertTriangle className="h-3 w-3" />
-            {belowParCount} cell di bawah par
-            <ArrowUpRight className="h-3 w-3" />
-          </Link>
+          <Button asChild variant="outline" size="sm" className="text-rose-700 dark:text-rose-300 border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15">
+            <Link to="/inventory/low-stock" data-testid="matrix-low-link">
+              <AlertTriangle />
+              {belowParCount} sel di bawah par
+              <ArrowUpRight />
+            </Link>
+          </Button>
         )}
       </div>
 

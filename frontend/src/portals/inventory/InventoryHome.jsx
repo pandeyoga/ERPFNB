@@ -5,7 +5,9 @@ import {
   BarChart3, ArrowRight, AlertTriangle, ShoppingCart, Star, Clock,
 } from "lucide-react";
 import { useInventoryHome } from "@/hooks/useInventoryDashboard";
-import KpiCard from "@/components/shared/KpiCard";
+import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import OutletScopePicker from "@/components/shared/OutletScopePicker";
 import useOutletScope from "@/hooks/useOutletScope";
 import { fmtRp, fmtNumber, fmtRelative } from "@/lib/format";
@@ -13,7 +15,7 @@ import { fmtRp, fmtNumber, fmtRelative } from "@/lib/format";
 export default function InventoryHome() {
   const { outletId, setOutletId, scopedOutlets, isFullAccess } = useOutletScope();
   const { data, isLoading: loading } = useInventoryHome(outletId);
-  
+
   const val = data?.valuation || null;
   const recent = data?.recent || [];
   const pendingOpname = data?.pendingOpname || 0;
@@ -21,68 +23,67 @@ export default function InventoryHome() {
   const pendingMarket = data?.pendingMarket || { count: 0, items: [] };
 
   return (
-    <div className="space-y-6" data-testid="inventory-home-page">
-      <div className="glass-card p-6" data-testid="inventory-welcome">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold mb-1">Inventory Overview</h2>
-            <p className="text-sm text-muted-foreground">
-              Cek stok, lakukan transfer/adjustment, dan jalankan opname berkala. Setiap event posting akan menjaga akurasi inventory.
-            </p>
-          </div>
-          <OutletScopePicker
-            value={outletId}
-            onChange={(id) => setOutletId(id)}
-            outlets={scopedOutlets}
-            isFullAccess={isFullAccess}
-            data-testid="inventory-outlet-picker"
-          />
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="inventory-home-page">
+      <div data-testid="inventory-welcome">
+        <PageHeader
+          icon={Package}
+          title="Inventory Overview"
+          subtitle="Cek stok, lakukan transfer/adjustment, dan jalankan opname berkala agar stok sistem tetap akurat."
+          className="mb-0 md:mb-0"
+          actions={
+            <OutletScopePicker
+              value={outletId}
+              onChange={(id) => setOutletId(id)}
+              outlets={scopedOutlets}
+              isFullAccess={isFullAccess}
+              data-testid="inventory-outlet-picker"
+            />
+          }
+        />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="inventory-kpi-strip">
-        <KpiCard label="Total Inventory Value"
-          value={loading ? "…" : fmtRp(val?.total_value || 0)}
-          hint="Berdasarkan moving avg" icon={BarChart3} color="aurora-1" />
-        <KpiCard label="Item Count"
-          value={loading ? "…" : fmtNumber(val?.item_count || 0)}
-          hint="Item dengan qty > 0" icon={Layers} color="aurora-2" />
-        <KpiCard label="Low Stock"
-          value={loading ? "…" : (lowStock.total_below || 0)}
-          hint="Item di bawah par" icon={AlertTriangle} color="aurora-3" />
-        <KpiCard label="Opname Aktif"
-          value={loading ? "…" : pendingOpname}
-          hint="Sesi in_progress" icon={ClipboardCheck} color="aurora-5" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="inventory-kpi-strip">
+        <CompactStatCard label="Total Inventory Value"
+          value={fmtRp(val?.total_value || 0)} loading={loading}
+          sub="Berdasarkan moving average" icon={BarChart3} color="aurora-1" testId="inv-kpi-value" />
+        <CompactStatCard label="Item Count"
+          value={fmtNumber(val?.item_count || 0)} loading={loading}
+          sub="Item dengan qty > 0" icon={Layers} color="aurora-2" testId="inv-kpi-items" />
+        <CompactStatCard label="Low Stock"
+          value={lowStock.total_below || 0} loading={loading} tone={lowStock.total_below > 0 ? "danger" : "default"}
+          sub="Item di bawah par" icon={AlertTriangle} color="aurora-6" testId="inv-kpi-low-stock" />
+        <CompactStatCard label="Opname Aktif"
+          value={pendingOpname} loading={loading}
+          sub="Sesi in progress" icon={ClipboardCheck} color="aurora-5" testId="inv-kpi-opname" />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3" data-testid="inventory-quick-actions">
-        <ActionTile to="/inventory/balance" icon={Layers} label="Cek Stock" testId="inv-qa-balance" />
-        <ActionTile to="/inventory/low-stock" icon={AlertTriangle} label="Low Stock" testId="inv-qa-lowstock" />
-        <ActionTile to="/inventory/transfers" icon={Truck} label="Buat Transfer" testId="inv-qa-transfer" />
-        <ActionTile to="/inventory/adjustments" icon={Sliders} label="Adjustment" testId="inv-qa-adj" />
-        <ActionTile to="/inventory/opname" icon={ClipboardCheck} label="Mulai Opname" testId="inv-qa-opname" />
+      {/* Quick actions — tombol eksplisit (bukan kartu yang seluruhnya bisa diklik). */}
+      <div className="flex flex-wrap gap-2" data-testid="inventory-quick-actions">
+        <QuickAction to="/inventory/balance" icon={Layers} label="Cek stok" testId="inv-qa-balance" />
+        <QuickAction to="/inventory/low-stock" icon={AlertTriangle} label="Low stock" testId="inv-qa-lowstock" />
+        <QuickAction to="/inventory/movements-hub?type=transfers" icon={Truck} label="Transfer stok" testId="inv-qa-transfer" />
+        <QuickAction to="/inventory/movements-hub?type=adjustments" icon={Sliders} label="Adjustment stok" testId="inv-qa-adj" />
+        <QuickAction to="/inventory/opname" icon={ClipboardCheck} label="Mulai opname" testId="inv-qa-opname" />
       </div>
 
       {/* Phase 9C — Low Stock Widget */}
       {lowStock.total_below > 0 && (
-        <div className="glass-card p-5 border-l-4 border-rose-500" data-testid="low-stock-widget">
-          <div className="flex items-center justify-between mb-3">
+        <section className="glass-card p-4 border-l-4 border-rose-500" data-testid="low-stock-widget">
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
             <div>
-              <h3 className="font-semibold inline-flex items-center gap-2">
+              <h2 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-rose-600" />
-                Top {Math.min(8, lowStock.items.length)} Items Below Par
-              </h3>
+                Top {Math.min(8, lowStock.items.length)} item di bawah par
+              </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Total <b>{lowStock.total_below}</b> item di bawah par level di seluruh outlet.
               </p>
             </div>
-            <Link to="/inventory/low-stock"
-                  className="text-xs px-3 py-1.5 rounded-full bg-foreground text-background inline-flex items-center gap-1.5 hover:opacity-90"
-                  data-testid="low-stock-widget-cta">
-              <ShoppingCart className="h-3.5 w-3.5" />
-              Lihat & Buat PR
-              <ArrowRight className="h-3 w-3" />
-            </Link>
+            <Button asChild size="sm">
+              <Link to="/inventory/low-stock" data-testid="low-stock-widget-cta">
+                <ShoppingCart /> Lihat &amp; buat PR <ArrowRight />
+              </Link>
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {(lowStock.items || []).slice(0, 8).map((it) => (
@@ -109,34 +110,30 @@ export default function InventoryHome() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Audit-Phase B — Market List Pending Items Widget */}
       {pendingMarket.count > 0 && (
-        <div className="glass-card p-5 border-l-4 border-amber-500" data-testid="market-pending-widget">
-          <div className="flex items-center justify-between mb-3">
+        <section className="glass-card p-4 border-l-4 border-amber-500" data-testid="market-pending-widget">
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
             <div>
-              <h3 className="font-semibold inline-flex items-center gap-2">
+              <h2 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
                 <Clock className="h-4 w-4 text-amber-600" />
-                Market List Pending Review
-                <span className="text-xs font-bold rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">
+                Market Price List — menunggu review
+                <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300">
                   {pendingMarket.count}
                 </span>
-              </h3>
+              </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Item baru otomatis dibuat dari KDO/BDO/FDO menunggu review admin.
               </p>
             </div>
-            <Link
-              to="/inventory/market-list?ml_status=pending_review"
-              className="text-xs px-3 py-1.5 rounded-full bg-foreground text-background inline-flex items-center gap-1.5 hover:opacity-90"
-              data-testid="market-pending-cta"
-            >
-              <Star className="h-3.5 w-3.5" />
-              Review Now
-              <ArrowRight className="h-3 w-3" />
-            </Link>
+            <Button asChild size="sm">
+              <Link to="/inventory/market-list?ml_status=pending_review" data-testid="market-pending-cta">
+                <Star /> Tinjau sekarang <ArrowRight />
+              </Link>
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {(pendingMarket.items || []).slice(0, 4).map((it) => (
@@ -151,21 +148,21 @@ export default function InventoryHome() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="glass-card p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+        <section className="glass-card p-4" data-testid="inv-recent-movements">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold">Recent Movements</h3>
-            <Link to="/inventory/movements" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+            <h2 className="text-sm md:text-base font-semibold">Recent Movements</h2>
+            <Link to="/inventory/movements-hub?type=history" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1" data-testid="inv-recent-see-all">
               Lihat semua <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          {recent.length === 0 && <div className="text-sm text-muted-foreground italic">Belum ada movement.</div>}
+          {recent.length === 0 && <div className="text-sm text-muted-foreground">Belum ada pergerakan stok.</div>}
           <div className="space-y-1.5">
             {recent.map(m => (
-              <div key={m.id} className="glass-input rounded-xl px-3 py-2.5 flex items-center gap-3">
+              <div key={m.id} className="glass-input rounded-xl px-3 py-2 flex items-center gap-3">
                 <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{m.item_name || m.item_id}</div>
@@ -179,16 +176,21 @@ export default function InventoryHome() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="glass-card p-5">
-          <h3 className="font-semibold mb-3">Valuation per Outlet</h3>
+        <section className="glass-card p-4" data-testid="inv-valuation-by-outlet">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm md:text-base font-semibold">Valuation per Outlet</h2>
+            <Link to="/inventory/valuation" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1" data-testid="inv-valuation-see-all">
+              Lihat detail <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
           {loading || !val ? (
-            <div className="text-sm text-muted-foreground italic">Memuat…</div>
+            <div className="text-sm text-muted-foreground">Memuat…</div>
           ) : Object.entries(val.by_outlet || {}).length === 0 ? (
-            <div className="text-sm text-muted-foreground italic">Belum ada nilai inventory.</div>
+            <div className="text-sm text-muted-foreground">Belum ada nilai inventory.</div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {Object.entries(val.by_outlet).map(([oid, value]) => {
                 const o = scopedOutlets.find(x => x.id === oid);
                 return (
@@ -200,22 +202,18 @@ export default function InventoryHome() {
               })}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
 }
 
-function ActionTile({ to, icon: Icon, label, testId }) {
+function QuickAction({ to, icon: Icon, label, testId }) {
   return (
-    <Link to={to} className="glass-card-hover p-4 flex items-center gap-3" data-testid={testId}>
-      <div className="h-10 w-10 rounded-xl grad-aurora-soft flex items-center justify-center">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="flex-1">
-        <div className="text-sm font-semibold">{label}</div>
-      </div>
-      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-    </Link>
+    <Button asChild variant="outline">
+      <Link to={to} data-testid={testId}>
+        <Icon /> {label}
+      </Link>
+    </Button>
   );
 }

@@ -1,10 +1,11 @@
-/** GR (Goods Receipt) List + create. */
+/** Goods Receipt — daftar GR yang sudah di-posting (stok + jurnal AP otomatis). */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, PackageOpen, FileText } from "lucide-react";
 import { usePaginatedList } from "@/hooks/useListQuery";
-import api, { unwrap } from "@/lib/api";
+import { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/shared/PageHeader";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import useOutletScope from "@/hooks/useOutletScope";
 import StatusPill from "@/components/shared/StatusPill";
@@ -12,7 +13,6 @@ import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtDate } from "@/lib/format";
 
-import { fetchAll } from "@/lib/api";
 export default function GRList() {
   const { allOutlets } = useOutletScope();
   const [vendors, setVendors] = useState([]);
@@ -23,9 +23,10 @@ export default function GRList() {
   const meta = data?.meta || { total: 0, per_page: 20 };
 
   const outletMap = useMemo(
-    () => Object.fromEntries(allOutlets.map(o => [o.id, o])),
+    () => Object.fromEntries((allOutlets || []).map(o => [o.id, o])),
     [allOutlets],
   );
+  const vendorMap = useMemo(() => Object.fromEntries(vendors.map(v => [v.id, v])), [vendors]);
 
   useEffect(() => {
     fetchAll("/master/vendors")
@@ -33,39 +34,41 @@ export default function GRList() {
   }, []);
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
+  const dash = <span className="text-muted-foreground">—</span>;
 
   const columns = [
-    { key: "doc_no", label: "Doc No", primary: true, sortable: true, sortAccessor: (gr) => gr.doc_no || gr.id,
+    { key: "doc_no", label: "No. GR", primary: true, sortable: true, sortAccessor: (gr) => gr.doc_no || gr.id,
       render: (gr) => <span className="font-mono text-xs" data-testid={`gr-docno-${gr.id}`}>{gr.doc_no || gr.id.slice(0, 8)}</span> },
     { key: "receive_date", label: "Tanggal", sortable: true, render: (gr) => fmtDate(gr.receive_date) },
-    { key: "vendor", label: "Vendor", sortAccessor: (gr) => vendors.find(x => x.id === gr.vendor_id)?.name || gr.vendor_id,
-      render: (gr) => vendors.find(x => x.id === gr.vendor_id)?.name || gr.vendor_id },
-    { key: "outlet", label: "Outlet", render: (gr) => allOutlets.find(x => x.id === gr.outlet_id)?.name || gr.outlet_id },
-    { key: "invoice_no", label: "Invoice", render: (gr) => <span className="text-xs">{gr.invoice_no || "—"}</span> },
+    { key: "vendor", label: "Vendor", sortable: true, sortAccessor: (gr) => vendorMap[gr.vendor_id]?.name || "",
+      render: (gr) => vendorMap[gr.vendor_id]?.name || dash },
+    { key: "outlet", label: "Outlet", render: (gr) => outletMap[gr.outlet_id]?.name || dash },
+    { key: "invoice_no", label: "Invoice", render: (gr) => gr.invoice_no || dash },
     { key: "grand_total", label: "Grand Total", numeric: true, sortable: true,
       render: (gr) => <span className="font-semibold" data-testid={`gr-total-${gr.id}`}>{fmtRp(gr.grand_total || 0)}</span> },
     { key: "status", label: "Status", render: (gr) => <StatusPill status={gr.status} /> },
-    { key: "je", label: "", render: (gr) => gr.journal_entry_id ? (
-      <span className="text-[11px] flex items-center gap-1 text-emerald-700 dark:text-emerald-400" data-testid={`gr-je-${gr.id}`}>
-        <FileText className="h-3 w-3" /> JE
-      </span>) : null },
+    { key: "je", label: "Jurnal", render: (gr) => gr.journal_entry_id ? (
+      <span className="text-xs inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400" title="Jurnal AP sudah terbentuk" data-testid={`gr-je-${gr.id}`}>
+        <FileText className="h-3.5 w-3.5" /> JE
+      </span>) : dash },
   ];
 
   return (
-    <div className="space-y-4" data-testid="gr-list-page">
-      <div className="glass-card p-4 flex items-center justify-between" data-testid="gr-list-header">
-        <div>
-          <h3 className="font-semibold inline-flex items-center gap-2">
-            Goods Receipts <InlineHelp id="gr-je-link" placement="bottom-start" />
-          </h3>
-          <p className="text-xs text-muted-foreground">Posting GR akan otomatis menambah stok &amp; jurnal AP.</p>
-        </div>
-        <Link to="/procurement/gr/new">
-          <Button className="rounded-full pill-active gap-2 h-10" data-testid="gr-new">
-            <Plus className="h-4 w-4" /> Posting GR
-          </Button>
-        </Link>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="gr-list-page">
+      <PageHeader
+        icon={PackageOpen}
+        title="Goods Receipt"
+        subtitle="Posting GR akan otomatis menambah stok & membuat jurnal AP."
+        testId="gr-list-header"
+        actions={
+          <>
+            <InlineHelp id="gr-je-link" placement="bottom-end" />
+            <Button asChild data-testid="gr-new">
+              <Link to="/procurement/gr/new"><Plus /> Posting GR</Link>
+            </Button>
+          </>
+        }
+      />
 
       <div className="glass-card overflow-hidden" data-testid="gr-table-card">
         <DataTable
@@ -76,21 +79,21 @@ export default function GRList() {
           rowTestIdPrefix="gr-row"
           defaultSort={{ key: "receive_date", dir: "desc" }}
           empty={
-            <div className="py-2" data-testid="gr-empty">
+            <div data-testid="gr-empty">
               <EmptyState icon={PackageOpen} title="Belum ada GR"
                 description="Posting GR setelah barang diterima dari vendor."
-                action={<Link to="/procurement/gr/new"><Button className="pill-active rounded-full" data-testid="gr-empty-new-btn">Posting GR</Button></Link>}
+                action={<Button asChild data-testid="gr-empty-new-btn"><Link to="/procurement/gr/new"><Plus /> Posting GR</Link></Button>}
               />
             </div>
           }
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="gr-pagination">
+          <div className="px-4 py-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="gr-pagination">
             <span data-testid="gr-pagination-total">Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="gr-prev">Prev</button>
-              <span className="px-2 py-1" data-testid="gr-page-info">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="gr-next">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="gr-prev">Sebelumnya</Button>
+              <span className="tabular-nums" data-testid="gr-page-info">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="gr-next">Berikutnya</Button>
             </div>
           </div>
         )}

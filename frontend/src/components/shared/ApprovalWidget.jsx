@@ -57,14 +57,14 @@ export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" })
         <CardTitle className="text-sm font-semibold flex items-center justify-between">
           <span className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-primary" />
-            Pending Approval
+            Menunggu Persetujuan
             {total > 0 && (
               <Badge variant={urgent.length > 0 ? "destructive" : "default"} className="text-xs">
                 {total}
               </Badge>
             )}
           </span>
-          <Button variant="ghost" size="sm" className="text-xs h-7"
+          <Button variant="ghost" size="sm"
             onClick={() => navigate(approvalCenterPath)}
             data-testid="approval-widget-view-all">
             Lihat Semua <ChevronRight className="h-3 w-3 ml-1" />
@@ -74,7 +74,7 @@ export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" })
       <CardContent className="pt-0">
         {total === 0 ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            <CheckCircle className="h-8 w-8 mx-auto mb-1 text-green-500" />
+            <CheckCircle className="h-6 w-6 mx-auto mb-1 text-emerald-500" />
             Semua sudah ditangani
           </div>
         ) : (

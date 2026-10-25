@@ -416,7 +416,7 @@ export default function BulkOptimizeDialog({
                 onChange={e => setGlobalSeed(e.target.value)}
                 disabled={running}
                 placeholder="fnb bandung, kuliner premium..."
-                className="font-mono text-sm"
+                className="text-sm"
                 data-testid="bulk-global-seed"
               />
               <p className="text-[11px] text-muted-foreground">
@@ -470,7 +470,7 @@ export default function BulkOptimizeDialog({
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="font-medium truncate">{p.page_name}</p>
-                            <p className="text-[11px] text-muted-foreground font-mono truncate">{p.path}</p>
+                            <p className="text-[11px] text-muted-foreground font-medium tabular-nums truncate">{p.path}</p>
                           </div>
                         </div>
                         {s.message && (
@@ -540,7 +540,7 @@ export default function BulkOptimizeDialog({
                 data-testid="bulk-start-btn"
                 className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
               >
-                <Play className="w-4 h-4 mr-1.5" />
+                <Play className="w-4 h-4" />
                 Mulai Optimasi ({filteredPages.length})
               </Button>
             </>
@@ -557,7 +557,7 @@ export default function BulkOptimizeDialog({
                 onClick={handleCancel}
                 data-testid="bulk-stop-btn"
               >
-                <X className="w-4 h-4 mr-1.5" />
+                <X className="w-4 h-4" />
                 Hentikan
               </Button>
             </>
@@ -571,7 +571,7 @@ export default function BulkOptimizeDialog({
                   onClick={handleRetryFailed}
                   data-testid="bulk-retry-btn"
                 >
-                  <RotateCcw className="w-4 h-4 mr-1.5" />
+                  <RotateCcw className="w-4 h-4" />
                   Coba Lagi yang Gagal ({stats.failed})
                 </Button>
               )}
@@ -582,7 +582,7 @@ export default function BulkOptimizeDialog({
                 onClick={handleClose}
                 data-testid="bulk-done-btn"
               >
-                <Check className="w-4 h-4 mr-1.5" />
+                <Check className="w-4 h-4" />
                 Selesai
               </Button>
             </>

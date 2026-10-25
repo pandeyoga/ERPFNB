@@ -43,20 +43,20 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
   if (disabled) return null;
 
   return (
-    <div className="glass-card p-5 space-y-3" data-testid="ai-variance-panel">
+    <div className="glass-card p-4 space-y-3" data-testid="ai-variance-panel">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl grad-aurora-soft flex items-center justify-center">
+          <div className="h-9 w-9 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center">
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm inline-flex items-center gap-2">
+            <h2 className="font-semibold text-sm md:text-base inline-flex items-center gap-2">
               AI Variance Explainer
               <Badge variant="secondary" className="text-[11px] gap-1">
                 <Sparkles className="h-2.5 w-2.5" />
                 Beta
               </Badge>
-            </h3>
+            </h2>
             <p className="text-xs text-muted-foreground">
               Analisis cepat penyebab variance + rekomendasi tindak lanjut.
             </p>
@@ -66,7 +66,6 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
           <Button
             onClick={run}
             disabled={loading || !hasVariance}
-            className="rounded-full gap-2 pill-active"
             data-testid="ai-variance-run"
           >
             {loading ? (
@@ -88,11 +87,10 @@ function AIVariancePanel({ sessionId, hasVariance, disabled }) {
             disabled={loading}
             variant="outline"
             size="sm"
-            className="rounded-full gap-2"
             data-testid="ai-variance-rerun"
           >
             <RefreshCw className={cn("h-3 w-3", loading && "animate-spin")} />
-            Re-analisis
+            Analisis ulang
           </Button>
         )}
       </div>

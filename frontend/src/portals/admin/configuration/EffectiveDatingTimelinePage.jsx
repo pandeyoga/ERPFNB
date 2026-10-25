@@ -9,17 +9,18 @@ import { useScope } from "@/components/shared/ScopePicker";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { fmtDate } from "@/lib/format";
 import { RULE_LABELS, ruleStatus, effectiveText } from "./configHelpers";
 import { cn } from "@/lib/utils";
 
+// Semua jenis aturan yang punya tab di /admin/configuration (anomaly threshold sebelumnya tidak tampil).
 const RULE_TYPES = [
   "sales_input_schema",
   "petty_cash_policy",
   "service_charge_policy",
   "incentive_policy",
+  "anomaly_threshold_policy",
 ];
 
 function monthRange(now = new Date()) {
@@ -90,36 +91,31 @@ export default function EffectiveDatingTimelinePage() {
     return out;
   }, [rows]);
 
-  const totalOverlaps = rows.filter((r) => (r.overlaps_with || []).length > 0).length;
+  // Hitung bentrok hanya untuk jenis aturan yang ditampilkan di timeline (sebelumnya ikut menghitung
+  // rule_type lain dari API, mis. approval_workflow, sehingga angka peringatan tidak cocok dengan bar).
+  const visibleRows = rows.filter((r) => RULE_TYPES.includes(r.rule_type));
+  const totalOverlaps = visibleRows.filter((r) => (r.overlaps_with || []).length > 0).length;
 
   return (
-    <div className="space-y-4" data-testid="config-effective-dating-page">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-3" data-testid="config-effective-dating-page">
+      <div className="space-y-2">
         <div>
-          <h2 className="text-base font-semibold flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" /> Versi & Jadwal
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" /> Effective Dating
           </h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Lihat semua versi aturan beserta periode berlaku. Periode bentrok ditandai oranye.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            size="sm" className="rounded-full"
-            onClick={() => setFilter("all")}
-            data-testid="timeline-filter-all"
-          >Semua</Button>
-          {RULE_TYPES.map((rt) => (
-            <Button
-              key={rt}
-              variant={filter === rt ? "default" : "outline"}
-              size="sm" className="rounded-full"
-              onClick={() => setFilter(rt)}
-              data-testid={`timeline-filter-${rt}`}
-            >{RULE_LABELS[rt]}</Button>
-          ))}
-        </div>
+        {/* Filter jenis aturan — gaya tab standar (sebelumnya tombol pill rounded-full) */}
+        <Tabs value={filter} onValueChange={setFilter}>
+          <TabsList aria-label="Filter jenis aturan">
+            <TabsTrigger value="all" data-testid="timeline-filter-all">Semua</TabsTrigger>
+            {RULE_TYPES.map((rt) => (
+              <TabsTrigger key={rt} value={rt} data-testid={`timeline-filter-${rt}`}>{RULE_LABELS[rt]}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       {totalOverlaps > 0 && (
@@ -142,7 +138,7 @@ export default function EffectiveDatingTimelinePage() {
 
       {loading ? (
         <LoadingState rows={6} />
-      ) : rows.length === 0 ? (
+      ) : visibleRows.length === 0 ? (
         <div className="glass-card">
           <EmptyState
             icon={HistoryIcon}
@@ -228,7 +224,7 @@ function TimelineRow({ ruleType, items, axis }) {
                   <TooltipContent>
                     <div className="text-xs space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono">v{r.version}</span>
+                        <span className="font-semibold tabular-nums">v{r.version}</span>
                         <StatusPill status={status} />
                       </div>
                       <div className="font-medium">{r.name || ruleType}</div>

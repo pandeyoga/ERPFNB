@@ -1,18 +1,19 @@
 /**
- * FinanceReportsHub — Unified reports workspace.
- * 7 report tabs in one page: TB, P&L, BS, Cashflow, Comparatives, Builder, Pivot.
- * URL param: ?tab=trial-balance (default)
+ * FinanceReportsHub — Unified reports workspace ("Reports" di sidebar Finance).
+ * 8 tab laporan dalam satu halaman: TB, P&L, BS, Cashflow, Comparatives, Builder, Pivot, Procurement.
+ * URL param: ?tab=trial-balance (default). Halaman tab tidak merender judul sendiri —
+ * satu-satunya <h1> adalah PageHeader di sini.
  */
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   BarChart3, TrendingUp, Scale, Droplets, GitCompareArrows,
-  Wand2, Table2, ChevronRight, ShoppingCart,
+  Wand2, Table2, ShoppingCart, FileText,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 
-// Lazy-load heavy report components
 import TrialBalance from "./TrialBalance";
 import ProfitLoss from "./ProfitLoss";
 import BalanceSheet from "./BalanceSheet";
@@ -23,14 +24,14 @@ import PivotReport from "./PivotReport";
 import ProcurementReportsTab from "./ProcurementReportsTab";
 
 const TABS = [
-  { id: "trial-balance",       label: "Trial Balance",       icon: BarChart3,        short: "TB",   component: TrialBalance },
-  { id: "profit-loss",         label: "Profit & Loss",       icon: TrendingUp,       short: "P&L",  component: ProfitLoss },
-  { id: "balance-sheet",       label: "Balance Sheet",       icon: Scale,            short: "BS",   component: BalanceSheet },
-  { id: "cashflow",            label: "Cashflow",             icon: Droplets,         short: "CF",   component: CashflowReport },
-  { id: "comparatives",        label: "Period Compare",       icon: GitCompareArrows, short: "Comp", component: Comparatives },
-  { id: "report-builder",      label: "Custom Reports",       icon: Wand2,            short: "CB",   component: ReportBuilder },
-  { id: "pivot",               label: "Pivot Analysis",       icon: Table2,           short: "Pvt",  component: PivotReport },
-  { id: "procurement-reports", label: "Procurement Reports",  icon: ShoppingCart,     short: "Proc", component: ProcurementReportsTab },
+  { id: "trial-balance",       label: "Trial Balance",       icon: BarChart3,        component: TrialBalance },
+  { id: "profit-loss",         label: "Profit & Loss",       icon: TrendingUp,       component: ProfitLoss },
+  { id: "balance-sheet",       label: "Balance Sheet",       icon: Scale,            component: BalanceSheet },
+  { id: "cashflow",            label: "Cashflow",            icon: Droplets,         component: CashflowReport },
+  { id: "comparatives",        label: "Period compare",      icon: GitCompareArrows, component: Comparatives },
+  { id: "report-builder",      label: "Custom reports",      icon: Wand2,            component: ReportBuilder },
+  { id: "pivot",               label: "Pivot analysis",      icon: Table2,           component: PivotReport },
+  { id: "procurement-reports", label: "Procurement reports", icon: ShoppingCart,     component: ProcurementReportsTab },
 ];
 
 export default function FinanceReportsHub() {
@@ -48,56 +49,34 @@ export default function FinanceReportsHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || TABS[0].component;
+  const active = TABS.find(t => t.id === activeTab) || TABS[0];
+  const ActiveComponent = active.component;
 
   return (
-    <div className="space-y-0" data-testid="finance-reports-hub">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-bold">Financial Reports</h2>
-        <InlineHelp id="finance-reports-hub" size="xs" placement="right" />
-        <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-          <span className="text-muted-foreground/60">Reports</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium">{TABS.find(t => t.id === activeTab)?.label}</span>
-        </div>
-      </div>
+    <div data-testid="finance-reports-hub">
+      <PageHeader
+        icon={FileText}
+        title="Reports"
+        subtitle="Laporan keuangan, perbandingan periode, custom report, pivot, dan ekspor pengadaan"
+        actions={<InlineHelp id="finance-reports-hub" size="xs" placement="left" />}
+      />
 
-      {/* Tab bar */}
-      <div
-        className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-border/50 mb-5"
-        data-testid="reports-hub-tabs"
-        role="tablist"
-      >
-        {TABS.map(tab => {
-          const Icon = tab.icon;
-          const active = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={active}
-              data-testid={`reports-tab-${tab.id}`}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all whitespace-nowrap",
-                active
-                  ? "border-aurora text-aurora bg-aurora/5"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5",
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.short}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Active report content */}
-      <div data-testid="reports-hub-content" role="tabpanel">
-        <ActiveComponent />
-      </div>
+      <Tabs value={active.id} onValueChange={handleTabChange}>
+        <TabsList data-testid="reports-hub-tabs">
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.id} value={tab.id} data-testid={`reports-tab-${tab.id}`}>
+                <Icon />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+        <TabsContent value={active.id} data-testid="reports-hub-content">
+          <ActiveComponent />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

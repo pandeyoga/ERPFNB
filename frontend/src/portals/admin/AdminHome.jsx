@@ -1,10 +1,11 @@
 import {
-  Users as UsersIcon, Shield, Database, ScrollText,
+  Users as UsersIcon, Shield, Database, ScrollText, Settings as SettingsIcon,
   ArrowRight, Activity, Plug, BarChart3, FileSpreadsheet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdminHome } from "@/hooks/useAdminDashboard";
-import KpiCard from "@/components/shared/KpiCard";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtNumber } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 
@@ -12,12 +13,37 @@ const MASTER_TILES = [
   { entity: "items",            label: "Items",           col: "items" },
   { entity: "vendors",          label: "Vendors",         col: "vendors" },
   { entity: "employees",        label: "Employees",       col: "employees" },
-  { entity: "chart-of-accounts", label: "GL Accounts",   col: "chart_of_accounts" },
+  { entity: "chart-of-accounts", label: "Chart of Accounts", col: "chart_of_accounts" },
   { entity: "brands",           label: "Brands",          col: "brands" },
   { entity: "outlets",          label: "Outlets",         col: "outlets" },
   { entity: "categories",       label: "Categories",      col: "categories" },
   { entity: "payment-methods",  label: "Payment Methods", col: "payment_methods" },
 ];
+
+/** Satu gaya kartu tautan (ikon 36px, judul 14px, deskripsi 12px) untuk semua shortcut di halaman ini. */
+function LinkTile({ to, icon: Icon, iconClass, title, badge, desc, testId }) {
+  return (
+    <Link
+      to={to}
+      className="glass-card-hover p-3 flex items-center justify-between gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid={testId}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div className={`h-9 w-9 shrink-0 rounded-[calc(var(--radius)-2px)] flex items-center justify-center ${iconClass}`}>
+          <Icon className="h-[18px] w-[18px]" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold truncate">{title}</span>
+            {badge}
+          </div>
+          <div className="text-xs text-muted-foreground truncate">{desc}</div>
+        </div>
+      </div>
+      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+    </Link>
+  );
+}
 
 export default function AdminHome() {
   const { user } = useAuth();
@@ -28,170 +54,130 @@ export default function AdminHome() {
     p.startsWith("admin.user.") || p.startsWith("admin.audit_log") || p.startsWith("admin.role.")
   );
   const canBulkImport = isFullAdmin || perms.includes("admin.master_data.write");
+  const canSeeOps = isFullAdmin || perms.includes("system.metrics.read");
+  const canSeeIntegrations = isFullAdmin || perms.includes("system.settings.read");
 
   const { data: stats = {}, isLoading: loading } = useAdminHome(canViewUsers);
+  const firstName = user?.full_name?.split(" ")[0];
 
   return (
-    <div className="space-y-6" data-testid="admin-home-page">
-      {/* Welcome */}
-      <div className="glass-card p-6 lg:p-8" data-testid="admin-welcome">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="text-xl font-bold mb-1">Halo, {user?.full_name?.split(" ")[0]} 👋</h2>
-            <p className="text-sm text-muted-foreground">
-              Sistem FnB Group ERP siap melayani. Sprint D aktif — Bulk Import & Tax Settlement.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
-              • Online
-            </span>
-            <span>v0.3.0</span>
-          </div>
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="admin-home-page">
+      {/* Header — satu-satunya <h1>; status sistem dipindah dari kartu sambutan ke slot aksi */}
+      <div data-testid="admin-welcome">
+        <PageHeader
+          icon={SettingsIcon}
+          title="Admin Overview"
+          subtitle={`Halo${firstName ? `, ${firstName}` : ""} — kelola users, roles, master data, dan konfigurasi sistem.`}
+          actions={(
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+                Online
+              </span>
+              <span>v0.3.0</span>
+            </div>
+          )}
+        />
       </div>
 
       {/* Top KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="admin-kpi-strip">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="admin-kpi-strip">
         {canViewUsers && (
-          <KpiCard label="Users"     value={loading ? "…" : fmtNumber(stats.users || 0)}
-                    hint="Active users" icon={UsersIcon} color="aurora-1" />
+          <CompactStatCard label="Users" value={fmtNumber(stats.users || 0)} loading={loading}
+            sub="User aktif" icon={UsersIcon} color="aurora-1" testId="kpi-users" />
         )}
         {canViewUsers && (
-          <KpiCard label="Roles"     value={loading ? "…" : fmtNumber(stats.roles || 0)}
-                    hint="System & custom" icon={Shield} color="aurora-2" />
+          <CompactStatCard label="Roles" value={fmtNumber(stats.roles || 0)} loading={loading}
+            sub="System & custom" icon={Shield} color="aurora-2" testId="kpi-roles" />
         )}
         {canViewUsers && (
-          <KpiCard label="Audit Log" value={loading ? "…" : fmtNumber(stats.audit || 0)}
-                    hint="Recorded events" icon={ScrollText} color="aurora-3" />
+          <CompactStatCard label="Audit Log" value={fmtNumber(stats.audit || 0)} loading={loading}
+            sub="Event tercatat" icon={ScrollText} color="aurora-3" testId="kpi-audit-log" />
         )}
-        <KpiCard label="Master Records" value={loading ? "…" : fmtNumber(
-            MASTER_TILES.reduce((sum, t) => sum + (stats[t.entity] || 0), 0)
-          )} hint="All masters" icon={Database} color="aurora-4" />
+        <CompactStatCard label="Master Records" loading={loading}
+          value={fmtNumber(MASTER_TILES.reduce((sum, t) => sum + (stats[t.entity] || 0), 0))}
+          sub="Semua master data" icon={Database} color="aurora-4" testId="kpi-master-records" />
       </div>
 
-      {/* Bulk Import Feature Card */}
-      {canBulkImport && (
-        <div data-testid="admin-bulk-import-section">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            Import & Data
-          </h3>
-          <Link
-            to="/admin/bulk-import"
-            className="glass-card-hover p-5 flex items-center justify-between group block"
-            data-testid="tile-bulk-import"
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/15 to-cyan-500/15 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <FileSpreadsheet className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Bulk Excel Import</span>
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-400 text-xs font-medium">New</span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  Items · Vendors · Employees · COA · Customers — template + preview + upsert
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+      {/* Master tiles */}
+      <section className="space-y-2" data-testid="admin-master-tiles">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base md:text-lg font-semibold">Master Data</h2>
+          <Link to="/admin/master/items" className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline" data-testid="admin-master-see-all">
+            Lihat semua
           </Link>
         </div>
-      )}
-
-      {/* Master tiles */}
-      <div data-testid="admin-master-tiles">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-          Master Data
-        </h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {MASTER_TILES.map((t) => (
             <Link
               key={t.entity}
               to={`/admin/master/${t.entity}`}
-              className="glass-card-hover p-4 group"
+              className="block rounded-[var(--radius)] transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid={`tile-${t.entity}`}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">{t.label}</div>
-                  <div className="text-2xl font-bold mt-1 tabular-nums">
-                    {loading ? "…" : fmtNumber(stats[t.entity] || 0)}
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-              </div>
+              <CompactStatCard
+                label={t.label}
+                value={fmtNumber(stats[t.entity] || 0)}
+                loading={loading}
+                icon={ArrowRight}
+                color="aurora-1"
+                size="sm"
+                testId={`tile-${t.entity}-stat`}
+              />
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Operations link */}
-      {(user?.permissions?.includes("*") || user?.permissions?.includes("system.metrics.read")) && (
-        <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            System Operations
-          </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <Link
-              to="/admin/operations"
-              className="glass-card-hover p-5 flex items-center justify-between group"
-              data-testid="tile-operations"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl grad-aurora-soft flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-foreground" />
-                </div>
-                <div>
-                  <div className="font-semibold">Operations Console</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    Metrics · Logs · Scheduler · Archival · Rate Limits
-                  </div>
-                </div>
+      {/* Shortcuts: import + operasi sistem dalam satu grid kartu tautan yang seragam */}
+      {(canBulkImport || canSeeOps) && (
+        <section className="space-y-2">
+          <h2 className="text-base md:text-lg font-semibold">Import & System Operations</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {canBulkImport && (
+              <div data-testid="admin-bulk-import-section">
+                <LinkTile
+                  to="/admin/setup?tab=bulk-import"
+                  icon={FileSpreadsheet}
+                  iconClass="bg-blue-500/15 text-blue-600 dark:text-blue-400"
+                  title="Bulk Excel Import"
+                  badge={<span className="px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-400 text-[11px] font-medium">Baru</span>}
+                  desc="Items · Vendors · Employees · COA · Customers — template, pratinjau, upsert"
+                  testId="tile-bulk-import"
+                />
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-            </Link>
-            {(user?.permissions?.includes("*") || user?.permissions?.includes("system.settings.read")) && (
-              <Link
-                to="/admin/integrations"
-                className="glass-card-hover p-5 flex items-center justify-between group"
-                data-testid="tile-integrations"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl grad-aurora flex items-center justify-center text-white">
-                    <Plug className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Integrations Hub</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      Telegram · WhatsApp · Email · AI / LLM · Branding
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-              </Link>
             )}
-            <Link
-              to="/admin/tour-analytics"
-              className="glass-card-hover p-5 flex items-center justify-between group"
-              data-testid="tile-tour-analytics"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/15 flex items-center justify-center text-purple-600 dark:text-purple-300">
-                  <BarChart3 className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="font-semibold">Tour Analytics</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    Lacak penggunaan & efektivitas Help & Tour
-                  </div>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {canSeeOps && (
+              <LinkTile
+                to="/admin/operations"
+                icon={Activity}
+                iconClass="grad-aurora-soft text-foreground"
+                title="Operations Console"
+                desc="Metrics · Logs · Scheduler · Archival · Rate Limits"
+                testId="tile-operations"
+              />
+            )}
+            {canSeeOps && canSeeIntegrations && (
+              <LinkTile
+                to="/admin/integrations"
+                icon={Plug}
+                iconClass="grad-aurora text-white"
+                title="Integrations"
+                desc="Telegram · WhatsApp · Email · AI / LLM · Branding"
+                testId="tile-integrations"
+              />
+            )}
+            {canSeeOps && (
+              <LinkTile
+                to="/admin/tour-analytics"
+                icon={BarChart3}
+                iconClass="bg-purple-500/15 text-purple-600 dark:text-purple-300"
+                title="Tour Analytics"
+                desc="Lacak penggunaan & efektivitas Help & Tour"
+                testId="tile-tour-analytics"
+              />
+            )}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

@@ -15,7 +15,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import {
   Receipt, ChefHat, Banknote, ClipboardCheck, CheckCircle2,
-  ChevronRight, ChevronDown, ArrowRight, CircleDot, Circle,
+  ChevronRight, ChevronDown, ArrowRight, ArrowLeft, CircleDot, Circle, History,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,9 @@ import { Button } from "@/components/ui/button";
 import useOutletScope from "@/hooks/useOutletScope";
 import { Badge } from "@/components/ui/badge";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fmtDate } from "@/lib/format";
 import DailySalesList from "./DailySalesList";
 import KdoBdoList from "./KdoBdoList";
 import FdoPage from "./FdoPage";
@@ -37,7 +40,7 @@ const STEPS = [
     icon: Receipt,
     accent: "from-violet-500/20 to-violet-500/5",
     helpId: "outlet-eod-sales",
-    render: () => <DailySalesList />,
+    render: () => <DailySalesList embedded />,
   },
   {
     id: "orders",
@@ -55,7 +58,7 @@ const STEPS = [
     icon: Banknote,
     accent: "from-emerald-500/20 to-emerald-500/5",
     helpId: "outlet-eod-petty-cash",
-    render: () => <PettyCashList />,
+    render: () => <PettyCashList embedded />,
   },
   {
     id: "close",
@@ -64,7 +67,7 @@ const STEPS = [
     icon: ClipboardCheck,
     accent: "from-rose-500/20 to-rose-500/5",
     helpId: "outlet-eod-submit",
-    render: () => <DailyClose />,
+    render: () => <DailyClose embedded />,
   },
 ];
 
@@ -78,30 +81,18 @@ function DailyOrdersStep() {
   ];
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-1 -mb-px overflow-x-auto" role="tablist">
-        {TABS.map(t => {
-          const isActive = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "px-3 py-2 text-xs font-semibold rounded-full transition-colors",
-                isActive
-                  ? "bg-foreground text-background"
-                  : "bg-foreground/5 text-muted-foreground hover:text-foreground"
-              )}
-              data-testid={`eod-orders-${t.id}`}
-            >
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList aria-label="Station">
+          {TABS.map(t => (
+            <TabsTrigger key={t.id} value={t.id} data-testid={`eod-orders-${t.id}`}>
               {t.name}
-            </button>
-          );
-        })}
-      </div>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <div>
-        {tab === "fdo" ? <FdoPage /> : <KdoBdoList kind={tab} />}
+        {/* key: paksa remount saat ganti KDO↔BDO agar daftar dimuat ulang dari endpoint yang benar */}
+        {tab === "fdo" ? <FdoPage /> : <KdoBdoList key={tab} kind={tab} />}
       </div>
     </div>
   );
@@ -142,33 +133,29 @@ export default function EndOfDayWorkflow() {
   const allDone = STEPS.every(s => completed[s.id]);
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto" data-testid="end-of-day-workflow">
-      {/* Hub header */}
-      <div className="glass-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl grad-aurora flex items-center justify-center">
-              <ClipboardCheck className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold leading-tight flex items-center gap-2" data-testid="eod-title">
-                Tutup Hari (End-of-Day) <InlineHelp id="outlet-eod-workflow" placement="bottom-start" />
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Workflow operasional outlet hari {today} — 4 langkah continuous, tidak perlu pindah halaman.
-              </p>
-            </div>
-          </div>
-          {allDone && (
-            <Badge variant="secondary" className="gap-1.5 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Semua langkah selesai
-            </Badge>
-          )}
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="end-of-day-workflow">
+      <PageHeader
+        icon={History}
+        title="End of Day"
+        subtitle={`Tutup hari operasional outlet ${fmtDate(today)} — 4 langkah dalam satu halaman.`}
+        testId="eod-title"
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            {allDone && (
+              <Badge variant="secondary" className="gap-1.5 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Semua langkah selesai
+              </Badge>
+            )}
+            <InlineHelp id="outlet-eod-workflow" placement="bottom-end" />
+          </>
+        }
+      />
 
+      <div className="glass-card p-3" data-testid="eod-progress">
         {/* Progress bar */}
-        <div className="mt-5">
+        <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
               Progress
@@ -206,7 +193,7 @@ export default function EndOfDayWorkflow() {
               data-testid={`eod-step-${step.id}`}
             >
               {/* Step header */}
-              <div className="w-full flex items-center gap-4 p-4 hover:bg-foreground/3 transition-colors relative">
+              <div className="w-full flex items-center gap-3 p-3 sm:p-4 hover:bg-foreground/5 transition-colors relative">
                 <button
                   onClick={() => setActiveIdx(idx)}
                   className="absolute inset-0 w-full h-full z-0"
@@ -281,7 +268,7 @@ export default function EndOfDayWorkflow() {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 pt-2 border-t border-border/30">
-                      <div className="py-3">
+                      <div className="py-2">
                         {step.render()}
                       </div>
 
@@ -291,18 +278,15 @@ export default function EndOfDayWorkflow() {
                           variant="ghost"
                           onClick={goPrev}
                           disabled={activeIdx === 0}
-                          className="rounded-full"
                           data-testid={`eod-prev-${step.id}`}
                         >
-                          ← Sebelumnya
+                          <ArrowLeft className="h-4 w-4" /> Sebelumnya
                         </Button>
                         <div className="flex items-center gap-2">
                           {!isDone && (
                             <Button
                               variant="outline"
-                              size="sm"
                               onClick={() => markComplete(idx)}
-                              className="rounded-full gap-1.5"
                               data-testid={`eod-mark-done-${step.id}`}
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -312,7 +296,6 @@ export default function EndOfDayWorkflow() {
                           {idx < STEPS.length - 1 && (
                             <Button
                               onClick={goNext}
-                              className="rounded-full gap-2 pill-active"
                               data-testid={`eod-next-${step.id}`}
                             >
                               Lanjut
@@ -320,14 +303,15 @@ export default function EndOfDayWorkflow() {
                             </Button>
                           )}
                           {idx === STEPS.length - 1 && (
-                            <Link
-                              to="/outlet"
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium pill-active"
-                              data-testid={`eod-finish`}
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              Kembali ke Dashboard
-                            </Link>
+                            <Button asChild>
+                              <Link
+                                to="/outlet"
+                                data-testid={`eod-finish`}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                                Kembali ke Overview
+                              </Link>
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -341,7 +325,7 @@ export default function EndOfDayWorkflow() {
       </div>
 
       {/* Footer tip */}
-      <div className="glass-card p-3 text-xs text-muted-foreground flex items-center gap-2">
+      <div className="px-1 text-xs text-muted-foreground flex items-center gap-2">
         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
         Tip: progress disimpan otomatis di browser per tanggal. Aman tutup tab dan lanjut lagi nanti.
       </div>

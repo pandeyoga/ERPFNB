@@ -27,9 +27,6 @@ const STATUS_TABS = [
 
 const SOURCE_LABEL = { manual: "Manual", KDO: "KDO", BDO: "BDO" };
 
-/** Data lama menyimpan status `converted_to_po`; tampilkan sama dengan `converted`. */
-export const prStatusKey = (s) => (s === "converted_to_po" ? "converted" : s);
-
 export default function PRList() {
   const [searchParams] = useSearchParams();
   const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
@@ -129,7 +126,7 @@ export default function PRList() {
           columns={[
             {
               key: "doc_no", label: "No. PR", primary: true, sortable: true,
-              render: pr => <span className="font-medium tabular-nums">{pr.doc_no || pr.id.slice(0, 8)}</span>,
+              render: pr => <span className="font-mono text-xs">{pr.doc_no || pr.id.slice(0, 8)}</span>,
             },
             { key: "request_date", label: "Tanggal", sortable: true, render: pr => fmtDate(pr.request_date) },
             { key: "outlet", label: "Outlet", render: pr => outletMap[pr.outlet_id]?.name || pr.outlet_name || <span className="text-muted-foreground">—</span> },
@@ -138,7 +135,7 @@ export default function PRList() {
             {
               key: "status",
               label: <span className="inline-flex items-center gap-1.5">Status <InlineHelp id="pr-status-workflow" size="xs" placement="top" /></span>,
-              render: pr => <StatusPill status={prStatusKey(pr.status)} />,
+              render: pr => <StatusPill status={pr.status} />,
             },
           ]}
           rows={items}

@@ -4,7 +4,7 @@
  * Menyimpan override ke business_rules collection via /api/anomalies/thresholds
  */
 import { useEffect, useState, useCallback } from "react";
-import { Settings, Save, RotateCcw, ChevronRight, Info } from "lucide-react";
+import { Settings, Save, RotateCcw, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 import api, { unwrap } from "@/lib/api";
@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // ── Default thresholds (mirrors backend helpers.py DEFAULT_THRESHOLDS) ────────
 const DEFAULTS = {
@@ -80,9 +82,9 @@ const DETECTOR_META = [
 ];
 
 const SCOPE_TABS = [
-  { key: "group", label: "Group (Global)", desc: "Berlaku untuk semua outlet kecuali ada override lebih spesifik." },
-  { key: "brand", label: "Per Brand", desc: "Override khusus untuk satu brand." },
-  { key: "outlet", label: "Per Outlet", desc: "Override khusus untuk satu outlet." },
+  { key: "group", label: "Group (global)", desc: "Berlaku untuk semua outlet kecuali ada override lebih spesifik." },
+  { key: "brand", label: "Per brand", desc: "Override khusus untuk satu brand." },
+  { key: "outlet", label: "Per outlet", desc: "Override khusus untuk satu outlet." },
 ];
 
 export function ThresholdSettingsDialog({ onClose }) {
@@ -205,24 +207,21 @@ export function ThresholdSettingsDialog({ onClose }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Pengaturan Threshold Anomaly Detector
+            Pengaturan Threshold Deteksi Anomali
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {/* Scope Tabs */}
-          <div className="flex gap-1 border-b border-border/40 pb-1" role="tablist" data-testid="threshold-scope-tabs">
-            {SCOPE_TABS.map(t => (
-              <button key={t.key} role="tab" aria-selected={activeScope === t.key}
-                data-testid={`threshold-tab-${t.key}`}
-                className={`px-4 py-2 text-sm rounded-t-lg transition ${
-                  activeScope === t.key ? "bg-foreground text-background" : "hover:bg-foreground/10"
-                }`}
-                onClick={() => setActiveScope(t.key)}>
-                {t.label}
-              </button>
-            ))}
-          </div>
+        <div className="space-y-3 py-1">
+          {/* Scope Tabs — unified Tabs */}
+          <Tabs value={activeScope} onValueChange={setActiveScope}>
+            <TabsList data-testid="threshold-scope-tabs">
+              {SCOPE_TABS.map(t => (
+                <TabsTrigger key={t.key} value={t.key} data-testid={`threshold-tab-${t.key}`}>
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
           {/* Scope description + selector */}
           <div className="text-xs text-muted-foreground">
@@ -231,8 +230,9 @@ export function ThresholdSettingsDialog({ onClose }) {
 
           {activeScope !== "group" && (
             <div className="space-y-1.5">
-              <Label className="text-xs">{activeScope === "brand" ? "Pilih Brand" : "Pilih Outlet"}</Label>
+              <Label className="text-xs md:text-sm font-medium">{activeScope === "brand" ? "Pilih Brand" : "Pilih Outlet"}</Label>
               <SimpleSelect
+                ariaLabel={activeScope === "brand" ? "Pilih brand" : "Pilih outlet"}
                 value={selectedScopeId}
                 onValueChange={v => { setSelectedScopeId(v); setDraftData({}); }}
                 options={[{ value: "", label: `— Pilih ${activeScope === "brand" ? "brand" : "outlet"} —` }, ...scopeOptions.map(o => ({ value: o.id, label: o.name }))]}
@@ -299,13 +299,16 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
   return (
     <div className={`border rounded-lg overflow-hidden ${hasOverride ? "border-amber-400/40" : "border-border/40"}`}
       data-testid={`detector-card-${meta.key}`}>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-muted/20 cursor-pointer"
-        onClick={() => setExpanded(e => !e)}>
-        <input type="checkbox" checked={enabled}
-          onChange={e => { e.stopPropagation(); onToggle(e.target.checked); }}
-          className="h-4 w-4 accent-primary"
+      {/* Header — checkbox = aktif/nonaktif; tombol = buka/tutup detail (dua target klik terpisah) */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-muted/20">
+        <Checkbox checked={enabled}
+          onCheckedChange={v => onToggle(!!v)}
+          aria-label={`Aktifkan detektor ${meta.label}`}
           data-testid={`detector-toggle-${meta.key}`} />
+        <button type="button" className="flex-1 flex items-center gap-3 text-left"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(e => !e)}
+          data-testid={`detector-expand-${meta.key}`}>
         <div className="flex-1">
           <div className="font-semibold text-sm flex items-center gap-2">
             {meta.label}
@@ -318,27 +321,29 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
           <div className="text-xs text-muted-foreground">{meta.desc}</div>
         </div>
         <ChevronRight className={`h-4 w-4 transition-transform ${expanded ? "rotate-90" : ""}`} />
+        </button>
       </div>
 
       {/* Fields */}
       {expanded && (
-        <div className="p-4 grid grid-cols-2 gap-4">
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {meta.fields.map(field => {
             const isDirty = values[field.key] !== defaults[field.key];
             return (
               <div key={field.key} className="space-y-1">
                 <div className="flex items-center gap-1">
-                  <Label className="text-xs">{field.label}</Label>
+                  <Label htmlFor={`threshold-field-${meta.key}-${field.key}`} className="text-xs md:text-sm font-medium">{field.label}</Label>
                   {isDirty && (
-                    <span className="text-[11px] text-amber-600 px-1 rounded bg-amber-500/10">modified</span>
+                    <span className="text-[11px] text-amber-600 px-1 rounded bg-amber-500/10">diubah</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number" step={field.step} min={field.min}
+                    id={`threshold-field-${meta.key}-${field.key}`}
                     value={values[field.key] ?? defaults[field.key]}
                     onChange={e => onFieldChange(field.key, e.target.value)}
-                    className="glass-input h-8 text-sm"
+                    className="glass-input text-sm"
                     data-testid={`threshold-field-${meta.key}-${field.key}`}
                     disabled={!enabled}
                   />

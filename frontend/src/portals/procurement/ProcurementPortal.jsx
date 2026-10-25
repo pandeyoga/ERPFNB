@@ -2,7 +2,6 @@
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`. */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ClipboardList, ShoppingCart, Store, Award } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
 import ProcurementHome from "./ProcurementHome";
@@ -25,7 +24,6 @@ import PRConsolidation from "./PRConsolidation";
 import POComparison from "./POComparison";
 import AllVendors from "./AllVendors";
 import VendorScorecardList from "./VendorScorecardList";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
 
 export default function ProcurementPortal() {
   const { user } = useAuth();

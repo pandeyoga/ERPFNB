@@ -97,12 +97,12 @@ const hrAdvancesTour = {
 
 // ─── Leaves ────────────────────────────────────────────────────
 const hrLeavesTour = {
-  name: "Leave Management — Kelola Cuti",
+  name: "Leave Requests — Kelola Cuti",
   description: "Kelola cuti dan absensi karyawan dengan saldo otomatis.",
   steps: [
     {
       target: "[data-testid='leave-requests']",
-      title: "Leave Management",
+      title: "Leave Requests",
       content: "Kelola **cuti tahunan, sakit, dan khusus** semua karyawan. Saldo cuti otomatis dihitung dari tanggal bergabung.",
       placement: "top",
       disableBeacon: true,
@@ -126,7 +126,7 @@ const hrLeavesTour = {
 
 // ─── Job Applications ───────────────────────────────────────────────
 const hrJobApplicationsTour = {
-  name: "Job Applications — Lamaran Kerja",
+  name: "Job Applications",
   description: "Review lamaran kerja yang masuk dari website public.",
   steps: [
     {
@@ -155,7 +155,7 @@ const hrJobApplicationsTour = {
 
 // ─── Job Listings ───────────────────────────────────────────────────
 const hrJobListingsTour = {
-  name: "Job Listings — Kelola Lowongan",
+  name: "Job Listings",
   description: "Buat dan kelola lowongan kerja yang tampil di website public.",
   steps: [
     {

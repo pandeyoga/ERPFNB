@@ -12,13 +12,15 @@ import Sparkline from "@/components/shared/Sparkline";
  *    - series: number[]   → renders a sparkline (trend) bottom-right
  *    - deltaLabel: string → text after the delta chip (e.g. "vs LMTD")
  *    - subtle: bool       → smaller value (for secondary KPI strips)
+ *    - invertDelta: bool  → turun = baik (KPI beban/biaya): warna delta dibalik, ikon tetap ikut arah
  */
 export default function KpiCard({
   label, value, delta, hint, icon: Icon, onClick,
-  color = "aurora-1", testId, series, deltaLabel, subtle = false,
+  color = "aurora-1", testId, series, deltaLabel, subtle = false, invertDelta = false,
 }) {
   const hasDelta = delta != null && !isNaN(delta);
   const positive = hasDelta && Number(delta) >= 0;
+  const good = invertDelta ? !positive : positive;
   const computedTestId = testId || (label ? `kpi-${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}` : undefined);
 
   // Tanpa onClick dirender sebagai <div> (bukan tombol mati yang bisa di-tab).
@@ -64,7 +66,7 @@ export default function KpiCard({
             <span
               className={cn(
                 "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
-                positive
+                good
                   ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400"
                   : "bg-rose-500/12 text-rose-700 dark:text-rose-400",
               )}

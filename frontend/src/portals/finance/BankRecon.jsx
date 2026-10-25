@@ -1,7 +1,7 @@
 /** Bank Reconciliation wizard — list, upload, review-matches, commit. Sprint F v2: summary, bulk-accept, exception, CSV export. */
 import { useEffect, useRef, useState } from "react";
-import { FileSpreadsheet, Upload, CheckCircle2, X, RefreshCw, Check, Download, PlusCircle, ListChecks, ArrowLeft, AlertCircle, Zap, FileDown, RotateCcw, History, ChevronDown } from "lucide-react";
-import api, { unwrap, API_BASE } from "@/lib/api";
+import { FileSpreadsheet, Upload, CheckCircle2, X, RefreshCw, Check, PlusCircle, ListChecks, ArrowLeft, AlertCircle, Zap, FileDown, RotateCcw, History, ChevronDown, Landmark, Rows3, Banknote } from "lucide-react";
+import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,9 @@ import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import StatusPill from "@/components/shared/StatusPill";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
@@ -41,7 +44,7 @@ function historyActionSummary(entry) {
   }
 }
 
-export default function BankRecon() {
+export default function BankRecon({ embedded = false }) {
   const [view, setView] = useState("list"); // 'list' | 'detail'
   const [activeId, setActiveId] = useState(null);
 
@@ -49,12 +52,20 @@ export default function BankRecon() {
     setActiveId(id);
     setView("detail");
   }
-  return view === "list"
-    ? <BankReconList onOpen={openSession} />
-    : <BankReconDetail sessionId={activeId} onBack={() => { setActiveId(null); setView("list"); }} />;
+  if (view === "list") return <BankReconList onOpen={openSession} embedded={embedded} />;
+  return (
+    <div className="space-y-3 lg:space-y-4">
+      {/* Standalone: tetap satu <h1> di atas tampilan detail sesi (di hub, <h1> milik hub). */}
+      {!embedded && (
+        <PageHeader icon={Landmark} title="Bank Reconciliation"
+          subtitle="Review hasil auto-match per baris statement, lalu commit rekonsiliasi." />
+      )}
+      <BankReconDetail sessionId={activeId} onBack={() => { setActiveId(null); setView("list"); }} />
+    </div>
+  );
 }
 
-function BankReconList({ onOpen }) {
+function BankReconList({ onOpen, embedded = false }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [banks, setBanks] = useState([]);
@@ -81,7 +92,7 @@ function BankReconList({ onOpen }) {
 
   async function uploadFile() {
     const file = fileRef.current?.files?.[0];
-    if (!file || !bankId) { toast.error("File CSV + bank account wajib"); return; }
+    if (!file || !bankId) { toast.error("File CSV dan bank account wajib diisi"); return; }
     setUploading(true);
     const fd = new FormData();
     fd.append("bank_account_id", bankId);
@@ -93,7 +104,7 @@ function BankReconList({ onOpen }) {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const session = unwrap(res);
-      toast.success(`Uploaded: ${session.total_rows} rows, ${session.matched_count || 0} matched`);
+      toast.success(`Terunggah: ${session.total_rows} baris, ${session.matched_count || 0} cocok`);
       setShowUpload(false);
       await load();
       onOpen(session.id);
@@ -105,31 +116,32 @@ function BankReconList({ onOpen }) {
   const sessionColumns = [
     { key: "bank_account_name", label: "Bank", primary: true, render: (s) => s.bank_account_name || "-" },
     { key: "filename", label: "File", render: (s) => <span className="text-xs text-muted-foreground">{s.filename}</span> },
-    { key: "range", label: "Range", render: (s) => <span className="text-xs">{fmtDate(s.start_date)} — {fmtDate(s.end_date)}</span> },
-    { key: "total_rows", label: "Rows", numeric: true, sortable: true },
+    { key: "range", label: "Periode", render: (s) => <span className="text-xs whitespace-nowrap">{fmtDate(s.start_date)} — {fmtDate(s.end_date)}</span> },
+    { key: "total_rows", label: "Baris", numeric: true, sortable: true },
     { key: "matched_count", label: "Matched", numeric: true, render: (s) => `${s.matched_count || 0}/${s.total_rows}` },
     { key: "status", label: "Status", render: (s) => <StatusPill status={s.status} /> },
-    { key: "created_at", label: "Created", render: (s) => <span className="text-xs">{fmtDateTime(s.created_at)}</span> },
+    { key: "created_at", label: "Dibuat", sortable: true, render: (s) => <span className="text-xs whitespace-nowrap">{fmtDateTime(s.created_at)}</span> },
   ];
 
-  return (
-    <div className="space-y-4">
-      <div className="glass-card p-4 flex items-center justify-between">
-        <div>
-          <div className="text-lg font-semibold flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5 text-primary" /> Bank Reconciliation
-          </div>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            Upload bank statement CSV → auto-match ke Payment Request paid → commit reconciliation.
-          </div>
-        </div>
-        <Button onClick={() => setShowUpload(true)} className="rounded-full gap-2 bg-foreground text-background hover:bg-foreground/90"
-          data-testid="br-new-upload">
-          <PlusCircle className="h-4 w-4" /> Upload Statement
-        </Button>
-      </div>
+  const subtitle = "Unggah statement bank (CSV) → auto-match ke payment (PAY) & jurnal → commit rekonsiliasi.";
+  const actions = (
+    <Button onClick={() => setShowUpload(true)} data-testid="br-new-upload">
+      <PlusCircle className="h-4 w-4" /> Unggah Statement
+    </Button>
+  );
 
-      <div className="glass-card overflow-hidden">
+  return (
+    <div className="space-y-3 lg:space-y-4" data-testid="bank-recon-page">
+      {embedded ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        </div>
+      ) : (
+        <PageHeader icon={Landmark} title="Bank Reconciliation" subtitle={subtitle} actions={actions} />
+      )}
+
+      <div className="glass-card overflow-hidden" data-testid="br-session-table-card">
         <DataTable
           rows={sessions}
           columns={sessionColumns}
@@ -138,42 +150,42 @@ function BankReconList({ onOpen }) {
           rowTestIdPrefix="br-row"
           defaultSort={{ key: "created_at", dir: "desc" }}
           onRowClick={(s) => onOpen(s.id)}
-          empty={<div className="p-6"><EmptyState icon={FileSpreadsheet} title="Belum ada sesi rekonsiliasi"
-            description="Klik 'Upload Statement' untuk mulai."
-            actionLabel="Upload Statement" onAction={() => setShowUpload(true)} /></div>}
+          empty={<EmptyState icon={FileSpreadsheet} title="Belum ada sesi rekonsiliasi"
+            description="Unggah statement bank (CSV) untuk mulai mencocokkan transaksi."
+            action={<Button size="sm" onClick={() => setShowUpload(true)} data-testid="br-empty-upload">
+              <PlusCircle className="h-4 w-4" /> Unggah Statement</Button>} />}
         />
       </div>
 
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Upload Bank Statement (CSV)</DialogTitle></DialogHeader>
+        <DialogContent data-testid="br-upload-dialog">
+          <DialogHeader><DialogTitle>Unggah Bank Statement (CSV)</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Bank Account</Label>
+            <div><Label>Bank Account <span className="text-red-500">*</span></Label>
               <SimpleSelect value={bankId} onValueChange={setBankId}
                 options={[{ value: "", label: "Pilih..." }, ...banks.map(b => ({ value: b.id, label: `${b.bank} ${b.account_number} — ${b.name}` }))]}
-                placeholder="Pilih..."
-                className="glass-input h-10 mt-1 w-full rounded-md" testId="br-bank-select" />
+                placeholder="Pilih..." ariaLabel="Bank Account"
+                className="glass-input mt-1 w-full" testId="br-bank-select" />
             </div>
-            <div><Label>CSV File</Label>
-              <Input type="file" accept=".csv,.txt" ref={fileRef} className="mt-1" data-testid="br-file" />
+            <div><Label htmlFor="br-file">File CSV <span className="text-red-500">*</span></Label>
+              <Input id="br-file" type="file" accept=".csv,.txt" ref={fileRef} className="mt-1" data-testid="br-file" />
               <p className="text-[11px] text-muted-foreground mt-1">
                 Kolom yang dikenal: Date / Tanggal, Description / Keterangan, Amount / Debit+Credit, Reference (opsional).
                 Format tanggal: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Date tolerance (± hari)</Label>
-                <Input type="number" value={dateTol} onChange={e => setDateTol(Number(e.target.value || 3))} min={0} max={14} className="mt-1" data-testid="br-datetol" /></div>
-              <div><Label>Amount tolerance (± Rp)</Label>
-                <Input type="number" value={amtTol} onChange={e => setAmtTol(Number(e.target.value || 1000))} min={0} className="mt-1" data-testid="br-amttol" /></div>
+              <div><Label htmlFor="br-datetol">Toleransi tanggal (± hari)</Label>
+                <Input id="br-datetol" type="number" value={dateTol} onChange={e => setDateTol(Number(e.target.value || 3))} min={0} max={14} className="mt-1" data-testid="br-datetol" /></div>
+              <div><Label htmlFor="br-amttol">Toleransi nominal (± Rp)</Label>
+                <Input id="br-amttol" type="number" value={amtTol} onChange={e => setAmtTol(Number(e.target.value || 1000))} min={0} className="mt-1" data-testid="br-amttol" /></div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpload(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setShowUpload(false)} data-testid="br-upload-cancel">Batal</Button>
             <Button onClick={uploadFile} disabled={uploading}
-              className="bg-foreground text-background hover:bg-foreground/90 gap-2"
               data-testid="br-upload-confirm">
-              <Upload className="h-4 w-4" /> Upload & Auto-match
+              <Upload className="h-4 w-4" /> {uploading ? "Mengunggah..." : "Unggah & auto-match"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -321,7 +333,14 @@ function BankReconDetail({ sessionId, onBack }) {
   }
 
   if (loading) return <LoadingState rows={6} />;
-  if (!data) return null;
+  if (!data) return (
+    <div className="glass-card" data-testid="br-session-not-found">
+      <EmptyState icon={FileSpreadsheet} title="Sesi rekonsiliasi tidak ditemukan"
+        description="Sesi gagal dimuat atau sudah dihapus."
+        action={<Button variant="outline" size="sm" onClick={onBack} data-testid="br-notfound-back">
+          <ArrowLeft className="h-4 w-4" /> Kembali ke daftar sesi</Button>} />
+    </div>
+  );
 
   const matched = data.rows.filter(r => r.matched).length;
   const exceptional = data.rows.filter(r => r.exception).length;
@@ -330,8 +349,8 @@ function BankReconDetail({ sessionId, onBack }) {
   const isCommitted = data.status === "committed";
 
   const reconRowColumns = [
-    { key: "date", label: "Date", primary: true, render: (r) => <span className="text-xs whitespace-nowrap">{fmtDate(r.date)}</span> },
-    { key: "description", label: "Description", render: (r) => <span className="block max-w-[280px] truncate" title={r.description}>{r.description || "-"}</span> },
+    { key: "date", label: "Tanggal", primary: true, render: (r) => <span className="text-xs whitespace-nowrap">{fmtDate(r.date)}</span> },
+    { key: "description", label: "Keterangan", render: (r) => <span className="block max-w-[280px] truncate" title={r.description}>{r.description || "-"}</span> },
     { key: "amount", label: "Amount", numeric: true,
       render: (r) => <span className={cn(r.amount >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>{fmtRp(r.amount)}</span> },
     { key: "reference", label: "Ref", render: (r) => <span className="text-xs text-muted-foreground">{r.reference || "-"}</span> },
@@ -340,80 +359,74 @@ function BankReconDetail({ sessionId, onBack }) {
         ? <span className="inline-flex items-center gap-1 text-xs text-red-600"><AlertCircle className="h-3.5 w-3.5" />Exception{r.exception_note ? `: ${r.exception_note}` : ""}</span>
         : r.matched
           ? <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" />{r.match_target_doc_no || r.match_target_id?.slice(0, 8)} {r.match_type === "manual" ? "(manual)" : r.match_confidence ? `(${Math.round(r.match_confidence * 100)}%)` : ""}</span>
-          : <span className="text-xs text-amber-700 dark:text-amber-400">Unmatched</span>
+          : <span className="text-xs text-amber-700 dark:text-amber-400">Belum match</span>
     ) },
   ];
   const reconRowAction = (r) => (
-    <span className="space-x-1">
+    <span className="inline-flex items-center gap-1">
       {!isCommitted && !r.matched && !r.exception && (
         <Button size="sm" variant="outline" onClick={() => openMatch(r.id)} data-testid={`br-match-${r.id}`}>Match...</Button>
       )}
       {!isCommitted && !r.exception && !r.matched && (
-        <Button size="sm" variant="ghost" className="text-red-600" onClick={() => { setExceptionRowId(r.id); setExceptionNote(""); }} data-testid={`br-exception-${r.id}`}>
+        <Button size="icon-sm" variant="ghost" className="text-red-600" onClick={() => { setExceptionRowId(r.id); setExceptionNote(""); }}
+          aria-label="Tandai exception" title="Tandai exception" data-testid={`br-exception-${r.id}`}>
           <AlertCircle className="h-3.5 w-3.5" />
         </Button>
       )}
       {!isCommitted && r.matched && (
-        <Button size="sm" variant="ghost" onClick={() => unmatch(r.id)} data-testid={`br-unmatch-${r.id}`}><X className="h-3 w-3" /></Button>
+        <Button size="icon-sm" variant="ghost" onClick={() => unmatch(r.id)}
+          aria-label="Batalkan match" title="Batalkan match" data-testid={`br-unmatch-${r.id}`}><X className="h-3.5 w-3.5" /></Button>
       )}
     </span>
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" aria-label="Kembali" onClick={onBack} data-testid="br-back"><ArrowLeft className="h-4 w-4" /></Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <FileSpreadsheet className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">{data.filename}</h2>
+    <div className="space-y-3 lg:space-y-4" data-testid="br-detail">
+      <Button variant="ghost" size="sm" className="-ml-2" onClick={onBack} data-testid="br-back">
+        <ArrowLeft className="h-4 w-4" /> Kembali ke daftar sesi
+      </Button>
+      <div className="flex flex-wrap items-start gap-3" data-testid="br-detail-header">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <FileSpreadsheet className="h-5 w-5 text-primary shrink-0" />
+            <h2 className="text-base md:text-lg font-semibold truncate">{data.filename}</h2>
             <StatusPill status={data.status} />
           </div>
           <div className="text-xs text-muted-foreground mt-0.5">
             {data.bank_account_name} · {fmtDate(data.start_date)}–{fmtDate(data.end_date)}
           </div>
         </div>
-        {!isCommitted && (
-          <div className="flex gap-2 flex-wrap justify-end">
-            <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5" data-testid="br-export-csv">
-              <FileDown className="h-4 w-4" />CSV
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowBulkDialog(true)} className="gap-1.5" data-testid="br-bulk-accept">
-              <Zap className="h-4 w-4" />Bulk Accept
-            </Button>
-            <Button variant="outline" size="sm" onClick={rerun} disabled={acting} className="gap-1.5" data-testid="br-rerun">
-              <RefreshCw className={cn("h-4 w-4", acting && "animate-spin")} /> Re-run
-            </Button>
-            <Button size="sm" onClick={commit} disabled={acting || matched === 0} className="gap-1.5 bg-foreground text-background hover:bg-foreground/90" data-testid="br-commit">
-              <Check className="h-4 w-4" /> Commit
-            </Button>
-          </div>
-        )}
-        {isCommitted && (
-          <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5">
-            <FileDown className="h-4 w-4" />Export CSV
+        <div className="flex gap-2 flex-wrap justify-end">
+          <Button variant="outline" onClick={handleExportCSV} data-testid="br-export-csv">
+            <FileDown className="h-4 w-4" />Ekspor CSV
           </Button>
-        )}
-      </div>
-
-      {/* Sprint F v2: Enhanced KPI summary */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <KpiTile label="Total rows" value={total} />
-        <KpiTile label="Matched" value={`${matched} (${pct}%)`} tone="emerald" />
-        <KpiTile label="Unmatched" value={total - matched - exceptional} tone="amber" />
-        <KpiTile label="Exception" value={exceptional} tone="red" />
-        <KpiTile label="Total inflow" value={fmtRp(data.total_inflow)} tone="emerald" />
-      </div>
-
-      {/* Summary panel */}
-      {summary && (
-        <div className="glass-card p-3 flex flex-wrap gap-4 text-sm">
-          <span><strong>Match rate:</strong> {summary.match_pct}%</span>
-          <span><strong>Matched:</strong> {fmtRp(summary.matched_amount)}</span>
-          <span><strong>Unmatched:</strong> {fmtRp(summary.unmatched_amount)}</span>
-          {summary.exceptional_amount > 0 && <span className="text-red-600"><strong>Exception:</strong> {fmtRp(summary.exceptional_amount)}</span>}
+          {!isCommitted && (
+            <>
+              <Button variant="outline" onClick={() => setShowBulkDialog(true)} data-testid="br-bulk-accept">
+                <Zap className="h-4 w-4" />Terima massal
+              </Button>
+              <Button variant="outline" onClick={rerun} disabled={acting} data-testid="br-rerun">
+                <RefreshCw className={cn("h-4 w-4", acting && "animate-spin")} /> Jalankan ulang match
+              </Button>
+              <Button onClick={commit} disabled={acting || matched === 0} data-testid="br-commit">
+                <Check className="h-4 w-4" /> Commit
+              </Button>
+            </>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Sprint F v2: KPI summary (nominal dari /summary digabung sebagai sub-teks) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="br-kpi-strip">
+        <CompactStatCard label="Total baris" icon={Rows3} color="aurora-1" value={total} testId="br-kpi-total" />
+        <CompactStatCard label="Matched" icon={CheckCircle2} color="aurora-4" tone="success" value={`${matched} (${summary?.match_pct ?? pct}%)`}
+          sub={summary ? fmtRp(summary.matched_amount) : undefined} testId="br-kpi-matched" />
+        <CompactStatCard label="Belum match" icon={ListChecks} color="aurora-5" tone={total - matched - exceptional > 0 ? "warning" : "default"} value={total - matched - exceptional}
+          sub={summary ? fmtRp(summary.unmatched_amount) : undefined} testId="br-kpi-unmatched" />
+        <CompactStatCard label="Exception" icon={AlertCircle} color="aurora-6" tone={exceptional > 0 ? "danger" : "default"} value={exceptional}
+          sub={summary?.exceptional_amount > 0 ? fmtRp(summary.exceptional_amount) : undefined} testId="br-kpi-exception" />
+        <CompactStatCard label="Total inflow" icon={Banknote} color="aurora-2" value={fmtRp(data.total_inflow)} testId="br-kpi-inflow" />
+      </div>
 
       <div className="glass-card overflow-hidden">
         <DataTable
@@ -441,7 +454,7 @@ function BankReconDetail({ sessionId, onBack }) {
             </div>
             <Button
               size="sm" variant="outline"
-              className="gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/5 flex-shrink-0"
+              className="border-destructive/40 text-destructive hover:bg-destructive/5 flex-shrink-0"
               onClick={() => setShowReverseDialog(true)}
               data-testid="btn-reverse-commit"
             >
@@ -457,8 +470,10 @@ function BankReconDetail({ sessionId, onBack }) {
         <div className="glass-card overflow-hidden" data-testid="session-history-panel">
           {/* Collapsible header */}
           <button
+            type="button"
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-foreground/5 transition-colors"
             onClick={() => setHistoryOpen(o => !o)}
+            aria-expanded={historyOpen}
             data-testid="history-toggle"
           >
             <div className="flex items-center gap-2 text-sm font-semibold">
@@ -506,7 +521,8 @@ function BankReconDetail({ sessionId, onBack }) {
       )}
 
       {/* Reverse commit confirmation dialog */}
-      <Dialog open={showReverseDialog} onOpenChange={setShowReverseDialog}>        <DialogContent>
+      <Dialog open={showReverseDialog} onOpenChange={setShowReverseDialog}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-4 w-4 text-destructive" />
@@ -532,7 +548,7 @@ function BankReconDetail({ sessionId, onBack }) {
             </p>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowReverseDialog(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setShowReverseDialog(false)} data-testid="btn-cancel-reverse">Batal</Button>
             <Button
               variant="destructive"
               onClick={handleReverse}
@@ -547,8 +563,8 @@ function BankReconDetail({ sessionId, onBack }) {
 
       {/* Candidate picker */}
       <Dialog open={!!matchingRowId} onOpenChange={(o) => !o && setMatchingRowId(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Pilih Match Kandidat</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl" data-testid="br-candidate-dialog">
+          <DialogHeader><DialogTitle>Pilih kandidat match</DialogTitle></DialogHeader>
 
           {/* Type filter toggle */}
           {!loadingCands && candidates.length > 0 && (() => {
@@ -561,23 +577,15 @@ function BankReconDetail({ sessionId, onBack }) {
               { key: "payment_request",  label: "Pembayaran",   count: candidates.filter(c => c.target_type === "payment_request").length },
             ];
             return (
-              <div className="flex gap-1.5 pb-1" data-testid="candidate-type-filter">
-                {types.map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setCandidateFilter(t.key)}
-                    data-testid={`filter-${t.key}`}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-semibold transition-colors",
-                      candidateFilter === t.key
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80",
-                    )}
-                  >
-                    {t.label} <span className="opacity-60">({t.count})</span>
-                  </button>
-                ))}
-              </div>
+              <Tabs value={candidateFilter} onValueChange={setCandidateFilter}>
+                <TabsList data-testid="candidate-type-filter" aria-label="Filter tipe kandidat">
+                  {types.map(t => (
+                    <TabsTrigger key={t.key} value={t.key} data-testid={`filter-${t.key}`}>
+                      {t.label} <span className="opacity-60">({t.count})</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             );
           })()}
 
@@ -606,23 +614,26 @@ function BankReconDetail({ sessionId, onBack }) {
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
-                    <input
+                    <Input
                       type="text"
                       inputMode="numeric"
                       value={amountFilter}
                       onChange={e => setAmountFilter(e.target.value.replace(/[^\d]/g, ""))}
                       placeholder={rowAmt ? new Intl.NumberFormat("id-ID").format(Math.abs(rowAmt)) : "0"}
-                      className="glass-input rounded-lg w-full pl-8 pr-8 h-9 text-sm tabular-nums"
+                      aria-label="Filter nominal kandidat (± 10%)"
+                      className="glass-input pl-8 pr-9 tabular-nums"
                       data-testid="candidate-amount-filter"
                     />
                     {amountFilter && (
-                      <button
+                      <Button
+                        variant="ghost" size="icon-sm"
                         onClick={() => setAmountFilter("")}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label="Hapus filter nominal"
+                        className="absolute right-0.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         data-testid="clear-amount-filter"
                       >
                         <X className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {hasAmtFilter && (
@@ -645,10 +656,10 @@ function BankReconDetail({ sessionId, onBack }) {
                       className="w-full text-left p-3 rounded-lg border border-border/30 hover:bg-foreground/5 transition flex items-center gap-3"
                       data-testid="br-candidate">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 text-sm font-mono">
-                          {c.doc_no}
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-mono">{c.doc_no}</span>
                           <span className={cn(
-                            "text-[11px] px-1.5 py-0.5 rounded font-sans font-semibold",
+                            "text-[11px] px-1.5 py-0.5 rounded font-semibold",
                             c.target_type === "journal_entry"
                               ? "bg-violet-500/10 text-violet-600 dark:text-violet-400"
                               : "bg-blue-500/10 text-blue-600 dark:text-blue-400",
@@ -680,13 +691,13 @@ function BankReconDetail({ sessionId, onBack }) {
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">Baris ini tidak dapat di-match dengan transaksi yang ada. Tambahkan catatan untuk audit trail.</p>
             <div className="space-y-1">
-              <Label>Catatan exception</Label>
-              <Textarea rows={3} value={exceptionNote} onChange={e => setExceptionNote(e.target.value)} placeholder="Mis: Biaya bank otomatis, belum direkam di sistem..." />
+              <Label htmlFor="br-exception-note">Catatan exception</Label>
+              <Textarea id="br-exception-note" data-testid="br-exception-note" rows={3} value={exceptionNote} onChange={e => setExceptionNote(e.target.value)} placeholder="Mis: Biaya bank otomatis, belum direkam di sistem..." />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setExceptionRowId(null)}>Batal</Button>
-            <Button variant="destructive" onClick={handleMarkException}>Tandai Exception</Button>
+            <Button variant="outline" onClick={() => setExceptionRowId(null)} data-testid="br-exception-cancel">Batal</Button>
+            <Button variant="destructive" onClick={handleMarkException} data-testid="br-exception-confirm">Tandai Exception</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -694,36 +705,26 @@ function BankReconDetail({ sessionId, onBack }) {
       {/* Sprint F v2: Bulk auto-accept dialog */}
       <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Bulk Auto-Accept</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Terima massal (auto-accept)</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">Terima otomatis semua baris yang belum di-match jika confidence score &ge; threshold yang dipilih.</p>
             <div className="space-y-1">
-              <Label>Min. confidence score: {Math.round(bulkMinScore * 100)}%</Label>
-              <input type="range" min="0.5" max="1.0" step="0.05" value={bulkMinScore}
+              <Label htmlFor="br-bulk-score">Min. confidence score: {Math.round(bulkMinScore * 100)}%</Label>
+              <input id="br-bulk-score" data-testid="br-bulk-score" type="range" min="0.5" max="1.0" step="0.05" value={bulkMinScore}
                 onChange={e => setBulkMinScore(Number(e.target.value))}
                 className="w-full" />
               <div className="flex justify-between text-xs text-muted-foreground"><span>50% (lebih longgar)</span><span>100% (sangat ketat)</span></div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkDialog(false)}>Batal</Button>
-            <Button onClick={handleBulkAccept} disabled={acting} className="gap-1.5">
+            <Button variant="outline" onClick={() => setShowBulkDialog(false)} data-testid="br-bulk-cancel">Batal</Button>
+            <Button onClick={handleBulkAccept} disabled={acting} data-testid="br-bulk-confirm">
               {acting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-              Jalankan Bulk Accept
+              Jalankan terima massal
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function KpiTile({ label, value, tone = "neutral" }) {
-  const cls = { neutral: "", emerald: "text-emerald-700 dark:text-emerald-400", red: "text-red-700 dark:text-red-400", amber: "text-amber-700 dark:text-amber-400" }[tone] || "";
-  return (
-    <div className="glass-card p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={cn("text-lg font-bold tabular-nums mt-0.5", cls)}>{value}</div>
     </div>
   );
 }

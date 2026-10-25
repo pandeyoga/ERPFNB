@@ -4,7 +4,6 @@
  * Non-sensitive shell/hub/CRM pages remain open to anyone with `outlet.*`; sensitive
  * write flows (daily-close, daily-sales, KDO/BDO/FDO create, petty cash) are gated. */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Wand2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
 import OutletHome from "./OutletHome";
@@ -13,9 +12,6 @@ import DailySalesForm from "./DailySalesForm";
 import DailySalesDetail from "./DailySalesDetail";
 import PettyCashList from "./PettyCashList";
 import UrgentPurchaseList from "./UrgentPurchaseList";
-import KdoPage from "./KdoPage";
-import BdoPage from "./BdoPage";
-import FdoPage from "./FdoPage";
 import DailyOrdersHub from "./DailyOrdersHub";
 import DailyClose from "./DailyClose";
 import StockCheck from "./inventory/StockCheck";
@@ -28,7 +24,6 @@ import ReservationForm from "./ReservationForm";
 import CRMHub from "./CRMHub";
 import EndOfDayWorkflow from "./EndOfDayWorkflow";
 import OutletBudgetTracker from "./OutletBudgetTracker";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
 import { OutletScopeProvider } from "./OutletScopeContext";
 import OutletScopeHeader from "./OutletScopeHeader";
 
@@ -55,6 +50,8 @@ export default function OutletPortal() {
         <Route path="bdo" element={<Navigate to="/outlet/daily-orders?type=bdo" replace />} />
         <Route path="fdo" element={<Navigate to="/outlet/daily-orders?type=fdo" replace />} />
         <Route path="urgent-purchase" element={g("procurement.pr.create", <UrgentPurchaseList />)} />
+        {/* Deprecated: Daily Close = Langkah 4 di End of Day (komponen yang sama). Rute dipertahankan
+            untuk tautan lama; halaman menampilkan banner ke /outlet/end-of-day. */}
         <Route path="daily-close" element={g("outlet.daily_close.execute", <DailyClose />)} />
         <Route path="end-of-day" element={g("outlet.daily_close.execute", <EndOfDayWorkflow />)} />
         <Route path="opname" element={<Navigate to="/inventory/opname" replace />} />

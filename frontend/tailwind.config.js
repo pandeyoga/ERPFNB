@@ -7,6 +7,12 @@ module.exports = {
   ],
   theme: {
   	extend: {
+  		// Peran "mono" (kode dokumen PR/PO/JE, kode akun, nilai teknis) memakai Inter dengan
+  		// angka tabular — design_guidelines: Inter di semua tempat. `font-mono` di halaman
+  		// mana pun kini menghasilkan tampilan yang sama (lihat .font-mono di index.css).
+  		fontFamily: {
+  			mono: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

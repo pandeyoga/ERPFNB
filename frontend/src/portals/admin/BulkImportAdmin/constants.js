@@ -47,7 +47,7 @@ const ENTITY_COLORS = {
   customers: "from-rose-500/15 to-pink-500/15 text-rose-600",
 };
 
-const STEP_LABELS = ["Pilih Entity", "Download Template", "Upload & Preview", "Commit Import", "Selesai"];
+const STEP_LABELS = ["Pilih entitas", "Unduh template", "Unggah & pratinjau", "Konfirmasi import", "Selesai"];
 const MAX_ROWS = 1000;
 
 /** Export invalid rows as CSV string and trigger download */

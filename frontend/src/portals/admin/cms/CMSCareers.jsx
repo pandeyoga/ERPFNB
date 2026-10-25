@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import EmptyState from "@/components/shared/EmptyState";
 
 const DEPARTMENTS = [
   "All", "Operations", "Finance", "Marketing", "IT", "HR", "F&B", "Culinary", "Management", "Other",
@@ -149,17 +150,14 @@ export default function CMSCareers() {
   const activeCount = jobs.filter((j) => j.is_active).length;
 
   return (
-    <div className="space-y-5" data-testid="cms-careers">
-      {/* Header */}
+    <div className="space-y-3" data-testid="cms-careers">
+      {/* Toolbar: ringkasan + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-lg font-bold">Careers / Lowongan Kerja</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {total} lowongan total &mdash; {activeCount} aktif &mdash; tampil di halaman publik
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {total} lowongan total &mdash; {activeCount} aktif &mdash; tampil di halaman Careers publik
+        </p>
         <Button onClick={openCreate} data-testid="new-job-btn">
-          <Plus className="h-4 w-4 mr-2" /> Lowongan Baru
+          <Plus className="h-4 w-4" /> Lowongan Baru
         </Button>
       </div>
 
@@ -171,12 +169,13 @@ export default function CMSCareers() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari lowongan…"
-            className="pl-9 h-9"
+            className="pl-9"
+            aria-label="Cari lowongan"
             data-testid="jobs-search"
           />
         </div>
         <Select value={deptFilter} onValueChange={setDeptFilter}>
-          <SelectTrigger className="w-[160px] h-9" data-testid="dept-filter">
+          <SelectTrigger className="w-[180px]" aria-label="Filter departemen" data-testid="dept-filter">
             <SelectValue placeholder="Departemen" />
           </SelectTrigger>
           <SelectContent>
@@ -190,7 +189,7 @@ export default function CMSCareers() {
           <input type="checkbox" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} />
           Tampilkan nonaktif
         </label>
-        <Button variant="outline" size="sm" className="h-9" onClick={load}>
+        <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="jobs-refresh">
           <RefreshCw className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -202,9 +201,7 @@ export default function CMSCareers() {
         </div>
       ) : jobs.length === 0 ? (
         <Card>
-          <CardContent className="p-10 text-center text-sm text-muted-foreground">
-            Belum ada lowongan. Klik <span className="font-medium">Lowongan Baru</span> untuk membuat.
-          </CardContent>
+          <EmptyState icon={Briefcase} title="Belum ada lowongan" description="Klik Lowongan Baru untuk membuat lowongan pertama." />
         </Card>
       ) : (
         <div className="space-y-2">
@@ -221,7 +218,7 @@ export default function CMSCareers() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm">{job.title}</span>
+                      <h3 className="text-sm md:text-base font-semibold">{job.title}</h3>
                       <Badge
                         variant="outline"
                         className={`text-xs ${TYPE_COLORS[job.job_type] || ""}`}
@@ -268,27 +265,29 @@ export default function CMSCareers() {
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
-                      size="sm"
+                      size="icon-sm"
                       variant="ghost"
-                      className="h-7 px-2"
+                      aria-label={expandedId === job.id ? "Sembunyikan detail" : "Lihat detail"}
+                      aria-expanded={expandedId === job.id}
                       onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}
+                      data-testid={`expand-job-${job.id}`}
                     >
                       {expandedId === job.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 text-xs px-2"
                       onClick={() => openEdit(job)}
                       data-testid={`edit-job-${job.id}`}
                     >
-                      <Edit2 className="h-3 w-3 mr-1" /> Edit
+                      <Edit2 className="h-3 w-3" /> Edit
                     </Button>
                     <Button
-                      size="sm"
+                      size="icon-sm"
                       variant="outline"
-                      className="h-7 px-2"
                       onClick={() => setConfirmToggle(job)}
+                      title={job.is_active ? "Nonaktifkan" : "Aktifkan"}
+                      aria-label={job.is_active ? "Nonaktifkan lowongan" : "Aktifkan lowongan"}
                       data-testid={`toggle-job-${job.id}`}
                     >
                       {job.is_active ? <PowerOff className="h-3.5 w-3.5 text-red-500" /> : <Power className="h-3.5 w-3.5 text-emerald-500" />}
@@ -308,11 +307,11 @@ export default function CMSCareers() {
             <DialogTitle>{editing?.id ? "Edit Lowongan" : "Lowongan Baru"}</DialogTitle>
             <DialogDescription>Lowongan aktif akan tampil di halaman Careers publik.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <Label>Judul Posisi *</Label>
-                <Input
+                <Label htmlFor="job-form-judul-posisi">Judul Posisi *</Label>
+                <Input id="job-form-judul-posisi"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="mt-1.5"
@@ -321,9 +320,9 @@ export default function CMSCareers() {
                 />
               </div>
               <div>
-                <Label>Departemen *</Label>
+                <Label htmlFor="job-form-departemen">Departemen *</Label>
                 <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
-                  <SelectTrigger className="mt-1.5" data-testid="job-form-dept">
+                  <SelectTrigger id="job-form-departemen" className="mt-1.5" data-testid="job-form-dept">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -334,9 +333,9 @@ export default function CMSCareers() {
                 </Select>
               </div>
               <div>
-                <Label>Tipe Pekerjaan</Label>
+                <Label htmlFor="job-form-tipe-pekerjaan">Tipe Pekerjaan</Label>
                 <Select value={form.job_type} onValueChange={(v) => setForm({ ...form, job_type: v })}>
-                  <SelectTrigger className="mt-1.5" data-testid="job-form-type">
+                  <SelectTrigger id="job-form-tipe-pekerjaan" className="mt-1.5" data-testid="job-form-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -345,8 +344,8 @@ export default function CMSCareers() {
                 </Select>
               </div>
               <div>
-                <Label>Lokasi *</Label>
-                <Input
+                <Label htmlFor="job-form-lokasi">Lokasi *</Label>
+                <Input id="job-form-lokasi"
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                   className="mt-1.5"
@@ -355,8 +354,8 @@ export default function CMSCareers() {
                 />
               </div>
               <div>
-                <Label>Brand / Outlet</Label>
-                <Input
+                <Label htmlFor="job-form-brand-outlet">Brand / Outlet</Label>
+                <Input id="job-form-brand-outlet"
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   className="mt-1.5"
@@ -365,8 +364,8 @@ export default function CMSCareers() {
                 />
               </div>
               <div>
-                <Label>Email Lamaran</Label>
-                <Input
+                <Label htmlFor="job-form-email-lamaran">Email Lamaran</Label>
+                <Input id="job-form-email-lamaran"
                   type="email"
                   value={form.application_email}
                   onChange={(e) => setForm({ ...form, application_email: e.target.value })}
@@ -377,8 +376,8 @@ export default function CMSCareers() {
               </div>
             </div>
             <div>
-              <Label>Deskripsi Pekerjaan</Label>
-              <Textarea
+              <Label htmlFor="job-form-deskripsi-pekerjaan">Deskripsi Pekerjaan</Label>
+              <Textarea id="job-form-deskripsi-pekerjaan"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={4}
@@ -388,8 +387,8 @@ export default function CMSCareers() {
               />
             </div>
             <div>
-              <Label>Requirements / Kualifikasi</Label>
-              <Textarea
+              <Label htmlFor="job-form-requirements-kualifikasi">Requirements / Kualifikasi</Label>
+              <Textarea id="job-form-requirements-kualifikasi"
                 value={form.requirements}
                 onChange={(e) => setForm({ ...form, requirements: e.target.value })}
                 rows={4}
@@ -411,7 +410,7 @@ export default function CMSCareers() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>Batal</Button>
             <Button onClick={saveJob} disabled={saving} data-testid="save-job-btn">
-              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Menyimpan…</> : "Simpan"}
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" />Menyimpan…</> : "Simpan"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -434,7 +433,7 @@ export default function CMSCareers() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={doToggle}
-              className={confirmToggle?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
+              className={confirmToggle?.is_active ? buttonVariants({ variant: "destructive" }) : ""}
               data-testid="confirm-toggle-job-action"
             >
               {confirmToggle?.is_active ? "Nonaktifkan" : "Aktifkan"}

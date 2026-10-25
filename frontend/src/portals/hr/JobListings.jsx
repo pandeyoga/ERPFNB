@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
+import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
@@ -141,59 +142,59 @@ export default function JobListings() {
   const activeCount = jobs.filter((j) => j.is_active).length;
 
   return (
-    <div className="space-y-6" data-testid="job-listings-page">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Kelola Lowongan Kerja</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {activeCount} lowongan aktif ditampilkan di halaman karir publik
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-            <RefreshCw className={cn("h-4 w-4 mr-1.5", loading && "animate-spin")} />
-            Refresh
-          </Button>
-          <Button
-            onClick={() => navigate("/hr/job-applications")}
-            variant="outline"
-            size="sm"
-            data-testid="view-applications-btn"
-          >
-            <Users className="h-4 w-4 mr-1.5" />
-            Lihat Lamaran
-          </Button>
-          <Button onClick={openCreate} size="sm" className="pill-active" data-testid="create-job-btn">
-            <Plus className="h-4 w-4 mr-1.5" />
-            Tambah Lowongan
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="job-listings-page">
+      <PageHeader
+        icon={Briefcase}
+        title="Job Listings"
+        subtitle={`${activeCount} lowongan aktif ditampilkan di halaman karir publik`}
+        actions={
+          <>
+            <Button variant="outline" size="icon" onClick={load} disabled={loading}
+                    aria-label="Muat ulang" title="Muat ulang" data-testid="refresh-job-listings">
+              <RefreshCw className={cn(loading && "animate-spin")} />
+            </Button>
+            <Button
+              onClick={() => navigate("/hr/job-applications")}
+              variant="outline"
+              data-testid="view-applications-btn"
+            >
+              <Users />
+              Lihat Lamaran
+            </Button>
+            <Button onClick={openCreate} data-testid="create-job-btn">
+              <Plus />
+              Tambah Lowongan
+            </Button>
+          </>
+        }
+      />
 
       {/* Job Cards */}
       {loading ? (
         <LoadingState rows={4} />
       ) : jobs.length === 0 ? (
-        <EmptyState
-          icon={Briefcase}
-          title="Belum ada lowongan"
-          description="Klik 'Tambah Lowongan' untuk membuat lowongan baru."
-        />
+        <div className="glass-card">
+          <EmptyState
+            icon={Briefcase}
+            title="Belum ada lowongan"
+            description="Lowongan aktif akan tampil di halaman karir publik."
+            action={<Button size="sm" onClick={openCreate}><Plus /> Tambah Lowongan</Button>}
+          />
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 lg:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {jobs.map((job) => (
             <div
               key={job.id}
               className={cn(
-                "glass-card p-5 space-y-3 border-l-4 transition-opacity",
+                "glass-card p-4 flex flex-col gap-2.5 border-l-4 transition-opacity",
                 job.is_active ? "border-l-emerald-500" : "border-l-muted opacity-70"
               )}
               data-testid={`job-card-${job.id}`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold text-foreground leading-tight">{job.title}</h3>
+                <div className="min-w-0">
+                  <h3 className="text-sm md:text-base font-semibold text-foreground leading-tight">{job.title}</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">{job.brand}</p>
                 </div>
                 <div className={cn(
@@ -223,27 +224,27 @@ export default function JobListings() {
                 Dibuat: {job.created_at ? dayjs(job.created_at).format("DD MMM YYYY") : "-"}
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-1">
+              {/* Actions — dorong ke bawah supaya tombol sejajar antar kartu */}
+              <div className="flex gap-2 pt-1 mt-auto">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 h-8 text-xs"
+                  className="flex-1"
                   onClick={() => openEdit(job)}
                   data-testid={`edit-job-${job.id}`}
                 >
-                  <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+                  <Edit2 /> Ubah
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 h-8 text-xs"
+                  className="flex-1"
                   onClick={() => toggleActive(job)}
                   data-testid={`toggle-job-${job.id}`}
                 >
                   {job.is_active
-                    ? <><ToggleRight className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Nonaktifkan</>
-                    : <><ToggleLeft className="h-3.5 w-3.5 mr-1" /> Aktifkan</>
+                    ? <><ToggleRight className="text-emerald-600" /> Nonaktifkan</>
+                    : <><ToggleLeft /> Aktifkan</>
                   }
                 </Button>
               </div>
@@ -254,30 +255,30 @@ export default function JobListings() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="job-form-dialog">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "Edit Lowongan" : "Tambah Lowongan Baru"}</DialogTitle>
+        <DialogContent className="max-w-2xl flex flex-col gap-0 p-0 overflow-hidden" data-testid="job-form-dialog">
+          <DialogHeader className="px-5 pt-5 pb-3">
+            <DialogTitle>{editingId ? "Ubah Lowongan" : "Tambah Lowongan Baru"}</DialogTitle>
             <DialogDescription>
               Lowongan ini akan {form.is_active ? "langsung tampil" : "tersimpan tapi tidak tampil"} di halaman /careers
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 mt-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <Label className="text-xs font-medium text-muted-foreground">Judul Posisi *</Label>
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1">
+                <Label htmlFor="job-title">Judul Posisi *</Label>
                 <Input
+                  id="job-title"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  placeholder="e.g. Head Chef — The Coffeeshop"
-                  className="mt-1"
+                  placeholder="mis. Head Chef — The Coffeeshop"
                   data-testid="job-title-input"
                 />
               </div>
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground">Departemen *</Label>
+              <div className="space-y-1">
+                <Label htmlFor="job-dept">Departemen *</Label>
                 <Select value={form.department} onValueChange={(v) => setForm((f) => ({ ...f, department: v }))}>
-                  <SelectTrigger className="mt-1 text-sm" data-testid="job-dept-select">
+                  <SelectTrigger id="job-dept" data-testid="job-dept-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -285,10 +286,10 @@ export default function JobListings() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground">Tipe Pekerjaan</Label>
+              <div className="space-y-1">
+                <Label htmlFor="job-type">Tipe Pekerjaan</Label>
                 <Select value={form.job_type} onValueChange={(v) => setForm((f) => ({ ...f, job_type: v }))}>
-                  <SelectTrigger className="mt-1 text-sm" data-testid="job-type-select">
+                  <SelectTrigger id="job-type" data-testid="job-type-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -296,64 +297,67 @@ export default function JobListings() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground">Brand</Label>
+              <div className="space-y-1">
+                <Label htmlFor="job-brand">Brand</Label>
                 <Input
+                  id="job-brand"
                   value={form.brand}
                   onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))}
-                  placeholder="e.g. The Coffeeshop"
-                  className="mt-1"
+                  placeholder="mis. The Coffeeshop"
                   data-testid="job-brand-input"
                 />
               </div>
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground">Lokasi</Label>
+              <div className="space-y-1">
+                <Label htmlFor="job-location">Lokasi</Label>
                 <Input
+                  id="job-location"
                   value={form.location}
                   onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                  placeholder="e.g. Bandung Timur"
-                  className="mt-1"
+                  placeholder="mis. Bandung Timur"
                   data-testid="job-location-input"
                 />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-muted-foreground">Deskripsi Pekerjaan</Label>
+            <div className="space-y-1">
+              <Label htmlFor="job-description">Deskripsi Pekerjaan</Label>
               <Textarea
+                id="job-description"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="Jelaskan tanggung jawab utama posisi ini..."
-                rows={4}
-                className="mt-1 resize-none text-sm"
+                rows={3}
+                className="resize-y"
                 data-testid="job-description-input"
               />
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-muted-foreground">Persyaratan</Label>
+            <div className="space-y-1">
+              <Label htmlFor="job-requirements">Persyaratan</Label>
               <Textarea
+                id="job-requirements"
                 value={form.requirements}
                 onChange={(e) => setForm((f) => ({ ...f, requirements: e.target.value }))}
                 placeholder="Pendidikan, pengalaman, keahlian yang dibutuhkan..."
                 rows={3}
-                className="mt-1 resize-none text-sm"
+                className="resize-y"
                 data-testid="job-requirements-input"
               />
             </div>
 
-            <div>
-              <Label className="text-xs font-medium text-muted-foreground">Email Aplikasi</Label>
+            <div className="space-y-1">
+              <Label htmlFor="job-application-email">Email Lamaran</Label>
               <Input
+                id="job-application-email"
                 type="email"
                 value={form.application_email}
                 onChange={(e) => setForm((f) => ({ ...f, application_email: e.target.value }))}
                 placeholder="hr@fnbgroup.id"
-                className="mt-1"
+                data-testid="job-application-email-input"
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="job-active"
@@ -368,10 +372,10 @@ export default function JobListings() {
             </div>
           </div>
 
-          <DialogFooter className="gap-2 mt-4">
+          <DialogFooter className="px-5 py-3 border-t border-border/60">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="save-job-btn">
-              {saving ? "Menyimpan..." : editingId ? "Update Lowongan" : "Buat Lowongan"}
+              {saving ? "Menyimpan…" : editingId ? "Simpan Perubahan" : "Buat Lowongan"}
             </Button>
           </DialogFooter>
         </DialogContent>

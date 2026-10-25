@@ -222,7 +222,7 @@ function GalleryBlockEditor({ block, onChange }) {
         <div className="flex items-center justify-between">
           <Label className="text-xs">Images ({images.length})</Label>
           <Button type="button" size="sm" variant="outline" onClick={addImage}>
-            <Plus className="h-3 w-3 mr-1" /> Add Image
+            <Plus className="h-3 w-3" /> Add Image
           </Button>
         </div>
         
@@ -316,7 +316,7 @@ function MenuShowcaseBlockEditor({ block, onChange }) {
         <div className="flex items-center justify-between">
           <Label className="text-xs">Menu Items ({items.length})</Label>
           <Button type="button" size="sm" variant="outline" onClick={addItem}>
-            <Plus className="h-3 w-3 mr-1" /> Add Item
+            <Plus className="h-3 w-3" /> Add Item
           </Button>
         </div>
         

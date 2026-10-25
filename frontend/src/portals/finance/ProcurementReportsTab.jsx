@@ -7,6 +7,7 @@ import { FileSpreadsheet, ClipboardList, ShoppingCart, Truck, Star } from "lucid
 import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import useExcelExport from "@/hooks/useExcelExport";
@@ -32,15 +33,14 @@ const PO_STATUSES = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
-function ReportCard({ icon: Icon, title, description, accentClass, children, onExport, exportLabel = "Export Excel", testId }) {
+const LABEL = "text-xs font-medium text-muted-foreground";
+
+function ReportCard({ icon: Icon, title, description, accentClass, children, onExport, exportLabel = "Ekspor Excel", testId, disabled }) {
   return (
-    <div className={cn(
-      "rounded-xl border border-border/60 bg-card p-5 flex flex-col gap-4",
-      "hover:border-border transition-colors"
-    )}>
+    <div className="glass-card p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className={cn("p-2.5 rounded-lg flex-shrink-0", accentClass)}>
+        <div className={cn("h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center flex-shrink-0", accentClass)}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -60,11 +60,12 @@ function ReportCard({ icon: Icon, title, description, accentClass, children, onE
       <Button
         size="sm"
         variant="outline"
-        className="w-full mt-auto gap-2 text-sm"
+        className="w-full mt-auto"
         onClick={onExport}
+        disabled={disabled}
         data-testid={testId}
       >
-        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+        <FileSpreadsheet className="text-emerald-500" />
         {exportLabel}
       </Button>
     </div>
@@ -95,18 +96,15 @@ export default function ProcurementReportsTab() {
   const [vpTo, setVpTo] = useState(defaultTo);
 
   return (
-    <div className="space-y-5" data-testid="procurement-reports-tab">
-      {/* Section header */}
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          Laporan Pengadaan
-        </h3>
+    <div className="space-y-3 lg:space-y-4" data-testid="procurement-reports-tab">
+      {/* Keterangan singkat — judul sudah diwakili label tab */}
+      <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+        <span>Unduh data pengadaan (PR, PO, GR, performa vendor) langsung ke file Microsoft Excel (.xlsx).</span>
         <InlineHelp id="procurement-reports" size="xs" placement="right" />
-        <span className="text-xs text-muted-foreground/60">— unduh data ke Excel (.xlsx)</span>
       </div>
 
       {/* Cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
 
         {/* 1. Purchase Request */}
         <ReportCard
@@ -115,6 +113,7 @@ export default function ProcurementReportsTab() {
           description="Daftar semua PR beserta status, outlet, dan jumlah lines. Filter per status dan outlet."
           accentClass="bg-blue-500/10 text-blue-500"
           testId="export-pr-xlsx"
+          disabled={downloading}
           onExport={() => exportXlsx(
             "/procurement/prs/export/xlsx",
             "purchase_requests.xlsx",
@@ -123,7 +122,7 @@ export default function ProcurementReportsTab() {
         >
           {/* Status */}
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label className={LABEL}>
               Status
             </Label>
             <SimpleSelect
@@ -132,12 +131,13 @@ export default function ProcurementReportsTab() {
               options={PR_STATUSES.map(s => ({ value: s.key, label: s.label }))}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="pr-report-status"
+              ariaLabel="Status PR"
             />
           </div>
 
           {/* Outlet */}
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label className={LABEL}>
               Outlet
             </Label>
             <SimpleSelect
@@ -147,26 +147,28 @@ export default function ProcurementReportsTab() {
               placeholder="Semua Outlet"
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="pr-report-outlet"
+              ariaLabel="Outlet PR"
             />
           </div>
 
           {/* Source */}
           <div className="sm:col-span-2">
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
-              Source
+            <Label className={LABEL}>
+              Sumber
             </Label>
             <SimpleSelect
               value={prSource}
               onValueChange={setPrSource}
               options={[
-                { value: "", label: "Semua Source" },
+                { value: "", label: "Semua sumber" },
                 { value: "manual", label: "Manual" },
                 { value: "market_list", label: "Market List" },
                 { value: "urgent", label: "Urgent" },
               ]}
-              placeholder="Semua Source"
+              placeholder="Semua sumber"
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="pr-report-source"
+              ariaLabel="Sumber PR"
             />
           </div>
         </ReportCard>
@@ -178,6 +180,7 @@ export default function ProcurementReportsTab() {
           description="Daftar PO lengkap dengan vendor, total nilai, dan status pengiriman."
           accentClass="bg-violet-500/10 text-violet-500"
           testId="export-po-xlsx"
+          disabled={downloading}
           onExport={() => exportXlsx(
             "/procurement/pos/export/xlsx",
             "purchase_orders.xlsx",
@@ -186,7 +189,7 @@ export default function ProcurementReportsTab() {
         >
           {/* Status */}
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label className={LABEL}>
               Status
             </Label>
             <SimpleSelect
@@ -195,12 +198,13 @@ export default function ProcurementReportsTab() {
               options={PO_STATUSES.map(s => ({ value: s.key, label: s.label }))}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="po-report-status"
+              ariaLabel="Status PO"
             />
           </div>
 
           {/* Outlet */}
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label className={LABEL}>
               Outlet
             </Label>
             <SimpleSelect
@@ -210,6 +214,7 @@ export default function ProcurementReportsTab() {
               placeholder="Semua Outlet"
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="po-report-outlet"
+              ariaLabel="Outlet PO"
             />
           </div>
         </ReportCard>
@@ -221,6 +226,7 @@ export default function ProcurementReportsTab() {
           description="Ringkasan penerimaan barang per periode — jumlah GR, total nilai, dan vendor."
           accentClass="bg-emerald-500/10 text-emerald-500"
           testId="export-gr-xlsx"
+          disabled={downloading}
           onExport={() => exportXlsx(
             "/reports/procurement/gr-summary.xlsx",
             `gr_summary_${grFrom}_${grTo}.xlsx`,
@@ -228,26 +234,28 @@ export default function ProcurementReportsTab() {
           )}
         >
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label htmlFor="gr-report-from" className={LABEL}>
               Dari Tanggal
             </Label>
-            <input
+            <Input
+              id="gr-report-from"
               type="date"
               value={grFrom}
               onChange={e => setGrFrom(e.target.value)}
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              className="glass-input w-full h-9 mt-1"
               data-testid="gr-report-from"
             />
           </div>
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label htmlFor="gr-report-to" className={LABEL}>
               Sampai Tanggal
             </Label>
-            <input
+            <Input
+              id="gr-report-to"
               type="date"
               value={grTo}
               onChange={e => setGrTo(e.target.value)}
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              className="glass-input w-full h-9 mt-1"
               data-testid="gr-report-to"
             />
           </div>
@@ -260,6 +268,7 @@ export default function ProcurementReportsTab() {
           description="Analisis performa vendor: lead time, fill rate, ketepatan harga, dan skor akhir."
           accentClass="bg-amber-500/10 text-amber-500"
           testId="export-vendor-perf-xlsx"
+          disabled={downloading}
           onExport={() => exportXlsx(
             "/reports/procurement/vendor-performance.xlsx",
             `vendor_performance_${vpFrom}_${vpTo}.xlsx`,
@@ -267,36 +276,34 @@ export default function ProcurementReportsTab() {
           )}
         >
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label htmlFor="vp-report-from" className={LABEL}>
               Dari Tanggal
             </Label>
-            <input
+            <Input
+              id="vp-report-from"
               type="date"
               value={vpFrom}
               onChange={e => setVpFrom(e.target.value)}
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              className="glass-input w-full h-9 mt-1"
               data-testid="vp-report-from"
             />
           </div>
           <div>
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+            <Label htmlFor="vp-report-to" className={LABEL}>
               Sampai Tanggal
             </Label>
-            <input
+            <Input
+              id="vp-report-to"
               type="date"
               value={vpTo}
               onChange={e => setVpTo(e.target.value)}
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              className="glass-input w-full h-9 mt-1"
               data-testid="vp-report-to"
             />
           </div>
         </ReportCard>
       </div>
 
-      {/* Download note */}
-      <p className="text-xs text-muted-foreground/60 text-center pt-1">
-        File diunduh langsung ke browser dalam format Microsoft Excel (.xlsx)
-      </p>
     </div>
   );
 }

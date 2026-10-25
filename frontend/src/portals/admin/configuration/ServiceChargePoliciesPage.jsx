@@ -13,7 +13,7 @@ export default function ServiceChargePoliciesPage() {
   return (
     <RuleListPage
       ruleType="service_charge_policy"
-      title="Service Charge"
+      title="Service Charge Policies"
       description="Formula % dengan potongan L&B/L&D dan metode alokasi ke karyawan."
       emptyTitle="Belum ada aturan service charge"
       emptyDescription="Tentukan % service charge dan metode alokasi untuk payroll."

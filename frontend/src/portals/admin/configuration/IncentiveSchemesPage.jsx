@@ -18,7 +18,7 @@ export default function IncentiveSchemesPage() {
   return (
     <RuleListPage
       ruleType="incentive_policy"
-      title="Skema Insentif"
+      title="Incentive Schemes"
       description="Bangun aturan insentif (% penjualan / flat / tier) dengan eligibility."
       emptyTitle="Belum ada skema insentif"
       emptyDescription="Buat skema untuk target penjualan dan perhitungan insentif."

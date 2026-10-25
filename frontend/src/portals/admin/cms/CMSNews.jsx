@@ -3,10 +3,10 @@
  */
 import { useState, useEffect } from "react";
 import {
-  Plus, Edit2, Trash2, Newspaper, Eye, EyeOff, Loader2, CalendarDays, History, Copy, ExternalLink,
+  Plus, Edit2, Trash2, Newspaper, Eye, EyeOff, Loader2, History, Copy, ExternalLink,
   CheckSquare, Square,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,8 @@ import CMSScheduleFields from "@/components/shared/CMSScheduleFields";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import CMSNewsPreview from "./CMSNewsPreview";
 import CMSWorkflow, { WorkflowBadge } from "./CMSWorkflow";
+import SegmentedFilter from "./SegmentedFilter";
+import EmptyState from "@/components/shared/EmptyState";
 
 const CATEGORIES = ["Opening", "Events", "Award", "Story", "Announcement", "Promo"];
 const EMPTY_FORM = {
@@ -155,31 +157,32 @@ export default function CMSNews() {
   const categories = [...new Set(items.map(i => i.category))];
 
   return (
-    <div className="space-y-4" data-testid="cms-news-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-bold">News & Events</h3>
-          <p className="text-sm text-muted-foreground">Kelola artikel, berita, dan event untuk website compro.</p>
-        </div>
+    <div className="space-y-3" data-testid="cms-news-page">
+      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Kelola artikel, berita, dan event untuk website compro.</p>
         <Button onClick={openCreate} data-testid="create-news-btn">
-          <Plus className="h-4 w-4 mr-2" /> Tambah Artikel
+          <Plus className="h-4 w-4" /> Tambah Artikel
         </Button>
       </div>
 
       {/* Search and Filters */}
       <div className="flex gap-3 items-center flex-wrap">
         <Input placeholder="Cari judul..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-               className="max-w-sm" data-testid="news-search-input" />
-        <div className="flex gap-2">
-          {["all","published","draft"].map(s => (
-            <Button key={s} variant={statusFilter === s ? "default" : "outline"} size="sm" onClick={() => setStatusFilter(s)}>
-              {s === "all" ? "Semua" : s.charAt(0).toUpperCase() + s.slice(1)}
-            </Button>
-          ))}
-        </div>
+               className="max-w-sm" aria-label="Cari artikel" data-testid="news-search-input" />
+        <SegmentedFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          ariaLabel="Filter status artikel"
+          options={["all", "published", "draft"].map(s => ({
+            value: s,
+            label: s === "all" ? "Semua" : s.charAt(0).toUpperCase() + s.slice(1),
+            testId: `news-filter-${s}`,
+          }))}
+        />
         {categories.length > 0 && (
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-44" aria-label="Filter kategori" data-testid="news-category-filter"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Kategori</SelectItem>
               {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -190,18 +193,18 @@ export default function CMSNews() {
 
       {/* Bulk bar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+        <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg flex-wrap">
           <span className="text-sm font-medium">{selected.size} dipilih</span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => handleBulkAction("publish")} disabled={bulkLoading}>
-              <Eye className="h-3.5 w-3.5 mr-1.5" /> Publish
+              <Eye className="h-3.5 w-3.5" /> Publish
             </Button>
             <Button size="sm" variant="outline" onClick={() => handleBulkAction("unpublish")} disabled={bulkLoading}>
-              <EyeOff className="h-3.5 w-3.5 mr-1.5" /> Unpublish
+              <EyeOff className="h-3.5 w-3.5" /> Unpublish
             </Button>
             <Button size="sm" variant="outline" className="text-destructive border-destructive/30"
                     onClick={() => handleBulkAction("delete")} disabled={bulkLoading}>
-              <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Hapus
+              <Trash2 className="h-3.5 w-3.5" /> Hapus
             </Button>
           </div>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="ml-auto">Batal</Button>
@@ -209,41 +212,52 @@ export default function CMSNews() {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Newspaper className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>{items.length === 0 ? "Belum ada artikel." : "Tidak ada artikel yang cocok."}</p>
+        <div className="glass-card">
+          <EmptyState
+            icon={Newspaper}
+            title={items.length === 0 ? "Belum ada artikel" : "Tidak ada artikel yang cocok"}
+            description={items.length === 0 ? "Klik Tambah Artikel untuk menulis berita pertama." : "Ubah kata kunci atau filter."}
+          />
         </div>
       ) : (
         <div className="grid gap-3">
           {/* Select all */}
-          <div className="flex items-center gap-2">
-            <button onClick={() => selected.size === filtered.length ? setSelected(new Set()) : setSelected(new Set(filtered.map(i=>i.id)))} className="p-1">
-              {selected.size === filtered.length && filtered.length > 0
-                ? <CheckSquare className="h-4 w-4 text-primary" />
-                : <Square className="h-4 w-4 text-muted-foreground" />}
-            </button>
-            <span className="text-xs text-muted-foreground">Pilih semua</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => selected.size === filtered.length ? setSelected(new Set()) : setSelected(new Set(filtered.map(i=>i.id)))}
+            className="flex items-center gap-2 w-fit text-xs text-muted-foreground hover:text-foreground"
+            aria-pressed={selected.size === filtered.length && filtered.length > 0}
+            data-testid="news-select-all"
+          >
+            {selected.size === filtered.length && filtered.length > 0
+              ? <CheckSquare className="h-4 w-4 text-primary" />
+              : <Square className="h-4 w-4" />}
+            Pilih semua
+          </button>
 
           {filtered.map(item => (
             <div key={item.id}
-                 className={`border rounded-xl p-4 flex gap-3 bg-white hover:shadow-md transition-shadow ${selected.has(item.id) ? "ring-2 ring-primary/30" : ""}`}
+                 className={`glass-card p-4 flex gap-3 hover:shadow-md transition-shadow ${selected.has(item.id) ? "ring-2 ring-primary/30" : ""}`}
                  data-testid={`news-row-${item.id}`}>
-              <button onClick={() => toggleSelect(item.id)} className="flex-shrink-0 mt-1">
+              <button type="button" onClick={() => toggleSelect(item.id)} className="flex-shrink-0 mt-1"
+                      aria-label={`Pilih ${item.title}`} aria-pressed={selected.has(item.id)}>
                 {selected.has(item.id)
                   ? <CheckSquare className="h-4 w-4 text-primary" />
                   : <Square className="h-4 w-4 text-muted-foreground" />}
               </button>
               {item.image && (
-                <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" loading="lazy" decoding="async" />
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                  <img src={item.image} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async"
+                       onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold line-clamp-1">{item.title}</span>
+                  <h3 className="text-sm md:text-base font-semibold line-clamp-1">{item.title}</h3>
                   <Badge className="text-xs">{item.category}</Badge>
-                  {item.brand_id && <Badge variant="outline" className="text-xs">{getBrandName(item.brand_id)}</Badge>}
+                  {item.brand_id && getBrandName(item.brand_id) && <Badge variant="outline" className="text-xs">{getBrandName(item.brand_id)}</Badge>}
                   <Badge variant={item.status === "published" ? "default" : "secondary"} className="text-xs">
                     {item.status === "published" ? "Published" : "Draft"}
                   </Badge>
@@ -279,7 +293,7 @@ export default function CMSNews() {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" data-testid="news-form-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center justify-between gap-2">
+            <DialogTitle className="flex items-center justify-between gap-2 pr-6">
               <span>{editing ? "Edit Artikel" : "Tambah Artikel"}</span>
               <div className="flex items-center gap-2">
                 {editing && (
@@ -287,7 +301,7 @@ export default function CMSNews() {
                                workflowStatus={form.workflow_status}
                                onStatusChange={ws => setForm(f => ({...f, workflow_status: ws, status: ws === "published" ? "published" : f.status}))} />
                 )}
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs"
+                <Button variant="outline" size="sm"
                         onClick={() => setPreviewOpen(true)} type="button" data-testid="preview-news-btn">
                   <ExternalLink className="h-3.5 w-3.5" /> Preview
                 </Button>
@@ -297,35 +311,35 @@ export default function CMSNews() {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label>Judul *</Label>
-              <Input value={form.title} onChange={e => setForm(f=>({...f,title:e.target.value}))} data-testid="news-title" />
+              <Label htmlFor="news-form-judul">Judul *</Label>
+              <Input id="news-form-judul" value={form.title} onChange={e => setForm(f=>({...f,title:e.target.value}))} data-testid="news-title" />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label>Tanggal</Label>
-                <Input type="date" value={form.date} onChange={e => setForm(f=>({...f,date:e.target.value}))} />
+                <Label htmlFor="news-form-tanggal">Tanggal</Label>
+                <Input id="news-form-tanggal" type="date" value={form.date} onChange={e => setForm(f=>({...f,date:e.target.value}))} />
               </div>
               <div className="space-y-1">
-                <Label>Kategori</Label>
+                <Label htmlFor="news-form-kategori">Kategori</Label>
                 <Select value={form.category} onValueChange={v => setForm(f=>({...f,category:v}))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="news-form-kategori"><SelectValue /></SelectTrigger>
                   <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Brand (opsional)</Label>
+                <Label htmlFor="news-form-brand">Brand (opsional)</Label>
                 <Select value={form.brand_id || "none"} onValueChange={v => setForm(f=>({...f,brand_id:v==="none"?"":v}))}>
-                  <SelectTrigger><SelectValue placeholder="— None —" /></SelectTrigger>
+                  <SelectTrigger id="news-form-brand"><SelectValue placeholder="— Tidak ada —" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">— None —</SelectItem>
+                    <SelectItem value="none">— Tidak ada —</SelectItem>
                     {brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Excerpt</Label>
-              <Textarea rows={2} value={form.excerpt} onChange={e => setForm(f=>({...f,excerpt:e.target.value}))} />
+              <Label htmlFor="news-form-excerpt">Excerpt</Label>
+              <Textarea id="news-form-excerpt" rows={2} value={form.excerpt} onChange={e => setForm(f=>({...f,excerpt:e.target.value}))} />
             </div>
             <div className="space-y-1">
               <Label>Konten Lengkap</Label>
@@ -334,8 +348,8 @@ export default function CMSNews() {
             </div>
             <ImageUpload label="Article Image" value={form.image} onChange={url => setForm(f=>({...f,image:url}))} />
             <div className="flex items-center gap-3">
-              <Label>Status</Label>
-              <Switch checked={form.status === "published"} onCheckedChange={v => setForm(f=>({...f,status:v?"published":"draft"}))} />
+              <Label htmlFor="news-form-status">Status</Label>
+              <Switch id="news-form-status" checked={form.status === "published"} onCheckedChange={v => setForm(f=>({...f,status:v?"published":"draft"}))} />
               <span className="text-sm">{form.status === "published" ? "Published" : "Draft"}</span>
             </div>
             <Separator />
@@ -344,9 +358,9 @@ export default function CMSNews() {
             <CMSSEOFields form={form} onChange={handleSEOChange} />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setFormOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="save-news">
-              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Simpan
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Simpan
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -363,7 +377,7 @@ export default function CMSNews() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

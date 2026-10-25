@@ -75,10 +75,10 @@ export function AutosaveBadge({ status }) {
 // ===================== STEPS =====================
 export function ChannelStep({ form, setChannelVal, editable, grossTotal, netTotal }) {
   return (
-    <div className="glass-card p-5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="glass-card p-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div>
-          <h3 className="font-semibold">1. Channel Sales</h3>
+          <h3 className="text-sm md:text-base font-semibold">1. Channel Sales</h3>
           <p className="text-xs text-muted-foreground">
             Isi gross + diskon per channel — net dihitung otomatis.
           </p>
@@ -99,15 +99,17 @@ export function ChannelStep({ form, setChannelVal, editable, grossTotal, netTota
               <Input type="number" min="0" value={c.gross}
                 onChange={e => setChannelVal(c._idx, "gross", e.target.value)}
                 disabled={!editable}
-                className="glass-input h-9 text-right tabular-nums w-32"
+                aria-label={`Gross ${c.label}`}
+                className="glass-input text-right tabular-nums w-32 ml-auto"
                 data-testid={`ds-ch-gross-${c.channel}`} />
             ) },
-          { key: "discount", label: "Discount", numeric: true,
+          { key: "discount", label: "Diskon", numeric: true,
             render: (c) => (
               <Input type="number" min="0" value={c.discount}
                 onChange={e => setChannelVal(c._idx, "discount", e.target.value)}
                 disabled={!editable}
-                className="glass-input h-9 text-right tabular-nums w-32"
+                aria-label={`Diskon ${c.label}`}
+                className="glass-input text-right tabular-nums w-32 ml-auto"
                 data-testid={`ds-ch-disc-${c.channel}`} />
             ) },
           { key: "net", label: "Net", numeric: true,
@@ -128,9 +130,9 @@ export function ChannelStep({ form, setChannelVal, editable, grossTotal, netTota
 
 export function RevenueStep({ form, setBucketVal, editable, revenueTotal, netTotal, channelRevenueAligned, diff }) {
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="mb-3">
-        <h3 className="font-semibold">2. Revenue Bucket</h3>
+        <h3 className="text-sm md:text-base font-semibold">2. Revenue Bucket</h3>
         <p className="text-xs text-muted-foreground">
           Distribusikan net sales ke kategori untuk Profit & Loss. Total bucket harus sama dengan net total channel.
         </p>
@@ -138,11 +140,11 @@ export function RevenueStep({ form, setBucketVal, editable, revenueTotal, netTot
       <div className="space-y-2 max-w-xl">
         {form.revenue_buckets.map((b, i) => (
           <div key={b.bucket} className="flex items-center gap-3">
-            <div className="w-28 text-sm text-muted-foreground capitalize">{b.label}</div>
-            <Input type="number" min="0" value={b.amount}
+            <Label htmlFor={`ds-bucket-input-${b.bucket}`} className="w-28 text-sm font-normal text-muted-foreground capitalize">{b.label}</Label>
+            <Input id={`ds-bucket-input-${b.bucket}`} type="number" min="0" value={b.amount}
               onChange={e => setBucketVal(i, e.target.value)}
               disabled={!editable}
-              className="glass-input h-9 text-right tabular-nums"
+              className="glass-input text-right tabular-nums"
               data-testid={`ds-bucket-${b.bucket}`} />
           </div>
         ))}
@@ -168,30 +170,30 @@ export function RevenueStep({ form, setBucketVal, editable, revenueTotal, netTot
 
 export function TaxStep({ form, setForm, editable, revenueTotal, grandTotal }) {
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="mb-3">
-        <h3 className="font-semibold">3. Service Charge & Tax</h3>
+        <h3 className="text-sm md:text-base font-semibold">3. Service Charge & Tax</h3>
         <p className="text-xs text-muted-foreground">
           Service charge dan PB1/PPN ditambahkan ke grand total. Transaction count opsional (untuk metric).
         </p>
       </div>
       <div className="space-y-2 max-w-xl">
-        <Row label="Service Chg">
-          <Input type="number" min="0" value={form.service_charge}
+        <Row label="Service Charge" htmlFor="ds-sc-input">
+          <Input id="ds-sc-input" type="number" min="0" value={form.service_charge}
             onChange={e => setForm(f => ({ ...f, service_charge: e.target.value }))}
-            disabled={!editable} className="glass-input h-9 text-right tabular-nums"
+            disabled={!editable} className="glass-input text-right tabular-nums"
             data-testid="ds-sc" />
         </Row>
-        <Row label="Tax (PB1)">
-          <Input type="number" min="0" value={form.tax_amount}
+        <Row label="Pajak (PB1)" htmlFor="ds-tax-input">
+          <Input id="ds-tax-input" type="number" min="0" value={form.tax_amount}
             onChange={e => setForm(f => ({ ...f, tax_amount: e.target.value }))}
-            disabled={!editable} className="glass-input h-9 text-right tabular-nums"
+            disabled={!editable} className="glass-input text-right tabular-nums"
             data-testid="ds-tax" />
         </Row>
-        <Row label="Trx Count">
-          <Input type="number" min="0" value={form.transaction_count}
+        <Row label="Jumlah Trx" htmlFor="ds-trx-input">
+          <Input id="ds-trx-input" type="number" min="0" value={form.transaction_count}
             onChange={e => setForm(f => ({ ...f, transaction_count: e.target.value }))}
-            disabled={!editable} className="glass-input h-9 text-right tabular-nums"
+            disabled={!editable} className="glass-input text-right tabular-nums"
             data-testid="ds-trx-count" />
         </Row>
       </div>
@@ -206,15 +208,15 @@ export function TaxStep({ form, setForm, editable, revenueTotal, grandTotal }) {
 
 export function PaymentStep({ form, addPayment, setPaymentVal, removePayment, paymentMethods, editable, grandTotal, paymentTotal, balanced }) {
   return (
-    <div className="glass-card p-5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="glass-card p-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div>
-          <h3 className="font-semibold">4. Payment Breakdown</h3>
+          <h3 className="text-sm md:text-base font-semibold">4. Payment Breakdown</h3>
           <p className="text-xs text-muted-foreground">
             Tambah metode pembayaran. Total harus balance dengan grand total.
           </p>
         </div>
-        <Button onClick={addPayment} disabled={!editable} variant="outline" size="sm" className="rounded-full gap-1" data-testid="ds-pay-add">
+        <Button onClick={addPayment} disabled={!editable} variant="outline" size="sm" data-testid="ds-pay-add">
           <Plus className="h-3.5 w-3.5" /> Tambah
         </Button>
       </div>
@@ -230,18 +232,22 @@ export function PaymentStep({ form, addPayment, setPaymentVal, removePayment, pa
               disabled={!editable}
               options={[{ value: "", label: "-- pilih metode --" }, ...paymentMethods.map(pm => ({ value: pm.id, label: pm.name }))]}
               placeholder="-- pilih metode --"
-              className="glass-input rounded-lg flex-1 px-3 h-9 text-sm"
+              className="glass-input flex-1"
+              ariaLabel={`Metode pembayaran ${i + 1}`}
               testId={`ds-pay-method-${i}`}
             />
             <Input type="number" min="0" value={p.amount}
               onChange={e => setPaymentVal(i, "amount", e.target.value)}
               disabled={!editable}
-              className="glass-input h-9 text-right tabular-nums w-40"
+              aria-label={`Nominal pembayaran ${i + 1}`}
+              className="glass-input text-right tabular-nums w-40"
               data-testid={`ds-pay-amt-${i}`} />
-            <button type="button" onClick={() => removePayment(i)} disabled={!editable}
-              className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center">
+            <Button type="button" variant="ghost" size="icon" onClick={() => removePayment(i)} disabled={!editable}
+              aria-label={`Hapus metode pembayaran ${i + 1}`}
+              className="hover:bg-destructive/10 hover:text-destructive"
+              data-testid={`ds-pay-remove-${i}`}>
               <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         ))}
       </div>
@@ -254,7 +260,7 @@ export function PaymentStep({ form, addPayment, setPaymentVal, removePayment, pa
           {balanced ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
           Total Pembayaran vs Grand Total
         </span>
-        <span className="font-bold tabular-nums">
+        <span className="font-semibold tabular-nums">
           {fmtRp(paymentTotal)} {!balanced && `(Δ ${fmtRp(grandTotal - paymentTotal)})`}
         </span>
       </div>
@@ -266,8 +272,8 @@ export function ReviewStep({ form, setForm, editable, grossTotal, netTotal, reve
   const allOk = balanced && channelRevenueAligned && netTotal > 0 && form.payment_breakdown.length > 0;
   return (
     <div className="space-y-4">
-      <div className="glass-card p-5">
-        <h3 className="font-semibold mb-3">5. Review &amp; Reconciliation</h3>
+      <div className="glass-card p-4">
+        <h3 className="text-sm md:text-base font-semibold mb-3">5. Review &amp; Reconciliation</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <Stat label="Gross" value={fmtRp(grossTotal)} />
@@ -290,14 +296,14 @@ export function ReviewStep({ form, setForm, editable, grossTotal, netTotal, reve
 
         {!allOk && (
           <div className="mt-3 text-xs text-amber-700 dark:text-amber-300 italic">
-            Perbaiki check yang masih merah sebelum submit. Anda masih bisa Save Draft kapan saja.
+            Perbaiki check yang masih merah sebelum submit. Anda masih bisa Simpan Draft kapan saja.
           </div>
         )}
       </div>
 
-      <div className="glass-card p-5">
-        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Catatan</Label>
-        <Textarea value={form.notes}
+      <div className="glass-card p-4">
+        <Label htmlFor="ds-notes-input" className="text-xs md:text-sm font-medium">Catatan</Label>
+        <Textarea id="ds-notes-input" value={form.notes}
           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
           disabled={!editable}
           placeholder="Catatan operasional, anomali, dll."
@@ -308,10 +314,10 @@ export function ReviewStep({ form, setForm, editable, grossTotal, netTotal, reve
   );
 }
 
-function Row({ label, children }) {
+function Row({ label, htmlFor, children }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-28 text-sm text-muted-foreground">{label}</div>
+      <Label htmlFor={htmlFor} className="w-28 text-sm font-normal text-muted-foreground">{label}</Label>
       <div className="flex-1">{children}</div>
     </div>
   );

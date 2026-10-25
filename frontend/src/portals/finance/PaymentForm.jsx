@@ -1,5 +1,5 @@
 /** Payment Request create/edit form — Sprint 1 PPh withholding support. */
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Banknote, Info, Save, Calculator, ChevronDown, ChevronRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LoadingState from "@/components/shared/LoadingState";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 // PPh service types (match backend models/tax.py)
 const PPH23_TYPES = [
@@ -34,6 +34,8 @@ const PPH42_TYPES = [
   { code: "konstruksi_perencanaan_besar", label: "Perencanaan Konstruksi Besar", rate: 0.06 },
   { code: "hak_tanah",                 label: "Pengalihan Hak Tanah/Bangunan", rate: 0.025 },
 ];
+
+const BACK_PATH = "/finance/payments-hub?tab=payments";
 
 export default function PaymentForm() {
   const navigate = useNavigate();
@@ -146,12 +148,12 @@ export default function PaymentForm() {
   }
 
   async function submit(andSubmit = false) {
-    if (!form.description.trim()) { toast.error("Description wajib"); return; }
+    if (!form.description.trim()) { toast.error("Deskripsi wajib diisi"); return; }
     if (!Number(form.amount) || Number(form.amount) <= 0) { toast.error("Amount harus > 0"); return; }
     if (!form.gl_debit_id) { toast.error("Pilih GL Debit"); return; }
     if (!form.bank_account_id) { toast.error("Pilih Bank Account"); return; }
     if (form.payee_type === "vendor" && !form.payee_id && !form.payee_text) {
-      toast.error("Pilih vendor atau isi payee name"); return;
+      toast.error("Pilih vendor atau isi nama payee"); return;
     }
     setSaving(true);
     try {
@@ -187,19 +189,20 @@ export default function PaymentForm() {
   if (loading) return <LoadingState rows={6} />;
 
   return (
-    <div className="space-y-4 max-w-4xl" data-testid="payment-form-page">
-      <div className="glass-card p-5 space-y-5">
-        <div className="flex items-center gap-2">
-          <Banknote className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">New Payment Request</h2>
-        </div>
+    <div className="max-w-4xl" data-testid="payment-form-page">
+      <PageHeader
+        icon={Banknote}
+        title="New Payment"
+        subtitle="Bayar vendor (dari GR outstanding atau ad-hoc), karyawan, atau pihak lain. Field bertanda * wajib diisi."
+      />
+      <div className="glass-card p-4 space-y-4">
 
         {/* Link-to-GR quick selector */}
         {unpaidGrs.length > 0 && (
-          <div className="p-3 rounded-xl bg-primary/5 border border-primary/10" data-testid="pay-gr-card">
-            <Label className="text-xs uppercase tracking-wide font-semibold">Bayar dari GR outstanding (opsional)</Label>
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10" data-testid="pay-gr-card">
+            <Label htmlFor="pay-gr-select" className="text-xs md:text-sm font-medium">Bayar dari GR outstanding (opsional)</Label>
             <Select value={form.gr_id || "none"} onValueChange={(v) => onGrSelect(v === "none" ? "" : v)}>
-              <SelectTrigger className="glass-input mt-1 h-10" data-testid="pay-gr-select">
+              <SelectTrigger id="pay-gr-select" className="glass-input mt-1" data-testid="pay-gr-select">
                 <SelectValue placeholder="Pilih GR untuk di-pay (auto-fill form)" />
               </SelectTrigger>
               <SelectContent>
@@ -215,9 +218,9 @@ export default function PaymentForm() {
         )}
 
         <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Payee Type">
+          <Field label="Payee Type" htmlFor="pay-payee-type" required>
             <Select value={form.payee_type} onValueChange={v => setField("payee_type", v)}>
-              <SelectTrigger className="glass-input h-10" data-testid="pay-payee-type">
+              <SelectTrigger id="pay-payee-type" className="glass-input" data-testid="pay-payee-type">
                 <SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="vendor">Vendor</SelectItem>
@@ -227,50 +230,50 @@ export default function PaymentForm() {
             </Select>
           </Field>
 
-          <Field label="Request Date">
+          <Field label="Request Date" htmlFor="pay-date" required>
             <Input type="date" value={form.request_date} onChange={e => setField("request_date", e.target.value)}
-              className="glass-input h-10" data-testid="pay-date" />
+              id="pay-date" className="glass-input" data-testid="pay-date" />
           </Field>
 
           {form.payee_type === "vendor" && (
-            <Field label="Vendor" className="md:col-span-2">
+            <Field label="Vendor" htmlFor="pay-vendor" required className="md:col-span-2">
               <Select value={form.payee_id || ""} onValueChange={v => setField("payee_id", v)}>
-                <SelectTrigger className="glass-input h-10" data-testid="pay-vendor"><SelectValue placeholder="Pilih vendor..." /></SelectTrigger>
+                <SelectTrigger id="pay-vendor" className="glass-input" data-testid="pay-vendor"><SelectValue placeholder="Pilih vendor..." /></SelectTrigger>
                 <SelectContent>{vendors.map(v => (<SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>))}</SelectContent>
               </Select>
             </Field>
           )}
           {form.payee_type === "employee" && (
-            <Field label="Employee" className="md:col-span-2">
+            <Field label="Employee" htmlFor="pay-emp" required className="md:col-span-2">
               <Select value={form.payee_id || ""} onValueChange={v => setField("payee_id", v)}>
-                <SelectTrigger className="glass-input h-10" data-testid="pay-emp"><SelectValue placeholder="Pilih employee..." /></SelectTrigger>
+                <SelectTrigger id="pay-emp" className="glass-input" data-testid="pay-emp"><SelectValue placeholder="Pilih employee..." /></SelectTrigger>
                 <SelectContent>{employees.map(e => (<SelectItem key={e.id} value={e.id}>{e.full_name} · {e.position}</SelectItem>))}</SelectContent>
               </Select>
             </Field>
           )}
           {form.payee_type === "other" && (
-            <Field label="Payee Name / Description" className="md:col-span-2">
+            <Field label="Payee Name / Description" htmlFor="pay-payee-text" required className="md:col-span-2">
               <Input value={form.payee_text} onChange={e => setField("payee_text", e.target.value)}
-                placeholder="mis. PLN, Telkom, dll" className="glass-input h-10" data-testid="pay-payee-text" />
+                placeholder="mis. PLN, Telkom, dll" id="pay-payee-text" className="glass-input" data-testid="pay-payee-text" />
             </Field>
           )}
 
-          <Field label="Amount Bruto (Rp)">
+          <Field label="Amount Bruto (Rp)" htmlFor="pay-amount" required>
             <Input type="number" inputMode="numeric" value={form.amount}
               onChange={e => setField("amount", e.target.value)}
-              className="glass-input h-10 tabular-nums" data-testid="pay-amount" min={1} />
+              id="pay-amount" className="glass-input tabular-nums" data-testid="pay-amount" min={1} />
           </Field>
 
-          <Field label="Bank Account (dari mana dibayar)">
+          <Field label="Bank Account (dari mana dibayar)" htmlFor="pay-bank" required>
             <Select value={form.bank_account_id} onValueChange={v => setField("bank_account_id", v)}>
-              <SelectTrigger className="glass-input h-10" data-testid="pay-bank"><SelectValue placeholder="Pilih bank account..." /></SelectTrigger>
+              <SelectTrigger id="pay-bank" className="glass-input" data-testid="pay-bank"><SelectValue placeholder="Pilih bank account..." /></SelectTrigger>
               <SelectContent>{banks.map(b => (<SelectItem key={b.id} value={b.id}>{b.bank} {b.account_number} — {b.name}</SelectItem>))}</SelectContent>
             </Select>
           </Field>
 
-          <Field label="GL Debit (COA yang didebit)" className="md:col-span-2">
+          <Field label="GL Debit (COA yang didebit)" htmlFor="pay-gldebit" required className="md:col-span-2">
             <Select value={form.gl_debit_id} onValueChange={v => setField("gl_debit_id", v)}>
-              <SelectTrigger className="glass-input h-10" data-testid="pay-gldebit"><SelectValue placeholder="Pilih COA debit..." /></SelectTrigger>
+              <SelectTrigger id="pay-gldebit" className="glass-input" data-testid="pay-gldebit"><SelectValue placeholder="Pilih COA debit..." /></SelectTrigger>
               <SelectContent>{coas.map(c => (<SelectItem key={c.id} value={c.id}>{c.code} · {c.name} <span className="text-muted-foreground">({c.type})</span></SelectItem>))}</SelectContent>
             </Select>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -278,64 +281,66 @@ export default function PaymentForm() {
             </p>
           </Field>
 
-          <Field label="Invoice No (opsional)">
+          <Field label="Invoice No (opsional)" htmlFor="pay-invno">
             <Input value={form.invoice_no} onChange={e => setField("invoice_no", e.target.value)}
-              className="glass-input h-10" data-testid="pay-invno" />
+              id="pay-invno" className="glass-input" data-testid="pay-invno" />
           </Field>
 
-          <Field label="Invoice Date (opsional)">
+          <Field label="Invoice Date (opsional)" htmlFor="pay-invdate">
             <Input type="date" value={form.invoice_date} onChange={e => setField("invoice_date", e.target.value)}
-              className="glass-input h-10" data-testid="pay-invdate" />
+              id="pay-invdate" className="glass-input" data-testid="pay-invdate" />
           </Field>
 
-          <Field label="Description" className="md:col-span-2">
+          <Field label="Description" htmlFor="pay-desc" required className="md:col-span-2">
             <Textarea value={form.description} onChange={e => setField("description", e.target.value)}
-              placeholder="Alasan/keperluan pembayaran..." rows={2} className="glass-input" data-testid="pay-desc" />
+              placeholder="Alasan/keperluan pembayaran..." rows={2} id="pay-desc" className="glass-input" data-testid="pay-desc" />
           </Field>
 
-          <Field label="Notes (internal)" className="md:col-span-2">
+          <Field label="Notes (internal)" htmlFor="pay-notes" className="md:col-span-2">
             <Textarea value={form.notes} onChange={e => setField("notes", e.target.value)}
-              placeholder="Catatan tambahan..." rows={2} className="glass-input" data-testid="pay-notes" />
+              placeholder="Catatan tambahan..." rows={2} id="pay-notes" className="glass-input" data-testid="pay-notes" />
           </Field>
         </div>
 
         {/* PPh Withholding Section (Sprint 1) */}
         {form.payee_type === "vendor" && (
-          <div className="rounded-xl border border-amber-200 overflow-hidden">
+          <div className="rounded-lg border border-amber-500/30 overflow-hidden">
             <button
               type="button"
               onClick={() => setWhOpen(o => !o)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 hover:bg-amber-100 transition-colors text-sm"
+              aria-expanded={whOpen}
+              data-testid="pay-wh-toggle"
+              className="w-full flex items-center justify-between px-4 py-3 bg-amber-500/5 hover:bg-amber-500/10 transition-colors text-sm"
             >
               <div className="flex items-center gap-2">
-                <Calculator size={15} className="text-amber-600" />
-                <span className="font-medium text-amber-800">
+                <Calculator size={15} className="text-amber-600 dark:text-amber-400" />
+                <span className="font-medium text-amber-800 dark:text-amber-300">
                   PPh Withholding
                   {form.wh_type && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 text-xs font-semibold">
+                    <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-semibold">
                       {form.wh_type.toUpperCase()} — {(form.wh_rate * 100).toFixed(0)}% → Potong {fmtRp(whAmount)}
                     </span>
                   )}
                   {!anyPphActive && !form.wh_type && (
-                    <span className="ml-2 text-xs text-amber-600">(aktifkan di Admin → Tax)</span>
+                    <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">(aktifkan di Admin → Tax)</span>
                   )}
                 </span>
               </div>
-              {whOpen ? <ChevronDown size={16} className="text-amber-600" /> : <ChevronRight size={16} className="text-amber-600" />}
+              {whOpen ? <ChevronDown size={16} className="text-amber-600 dark:text-amber-400" /> : <ChevronRight size={16} className="text-amber-600 dark:text-amber-400" />}
             </button>
 
             {whOpen && (
-              <div className="p-4 space-y-4 bg-white">
+              <div className="p-4 space-y-4">
                 {!anyPphActive && (
-                  <div className="text-sm text-amber-700 bg-amber-50 rounded-lg p-3 border border-amber-200">
+                  <div className="text-sm text-amber-700 dark:text-amber-300 bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
                     PPh 23 dan PPh 4(2) belum diaktifkan. Aktifkan di <strong>Admin → Tax / Pajak</strong> untuk menggunakan fitur ini.
                   </div>
                 )}
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="Jenis PPh">
+                  <Field label="Jenis PPh" htmlFor="pay-wh-type">
                     <Select value={form.wh_type || "none"} onValueChange={v => onWhTypeChange(v === "none" ? "" : v)}>
-                      <SelectTrigger className="glass-input h-10" data-testid="pay-wh-type">
+                      <SelectTrigger id="pay-wh-type" className="glass-input" data-testid="pay-wh-type">
                         <SelectValue placeholder="Tidak ada withholding..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -347,9 +352,9 @@ export default function PaymentForm() {
                   </Field>
 
                   {form.wh_type && (
-                    <Field label="Jenis Transaksi">
+                    <Field label="Jenis Transaksi" htmlFor="pay-wh-subtype">
                       <Select value={form.wh_subtype || ""} onValueChange={onWhSubtypeChange}>
-                        <SelectTrigger className="glass-input h-10" data-testid="pay-wh-subtype">
+                        <SelectTrigger id="pay-wh-subtype" className="glass-input" data-testid="pay-wh-subtype">
                           <SelectValue placeholder="Pilih jenis..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -365,24 +370,24 @@ export default function PaymentForm() {
                 </div>
 
                 {form.wh_type && gross > 0 && (
-                  <div className="grid grid-cols-3 gap-3 p-3 rounded-xl bg-gray-50 border text-sm" data-testid="pay-wh-summary">
+                  <div className="grid grid-cols-3 gap-3 p-3 rounded-lg bg-muted/40 border text-sm" data-testid="pay-wh-summary">
                     <div>
-                      <div className="text-gray-400 text-xs mb-1">Bruto (Gross)</div>
+                      <div className="text-muted-foreground text-xs mb-1">Bruto (Gross)</div>
                       <div className="font-semibold tabular-nums" data-testid="pay-wh-gross">{fmtRp(gross)}</div>
                     </div>
                     <div>
-                      <div className="text-red-500 text-xs mb-1">PPh Dipotong ({(form.wh_rate*100).toFixed(0)}%)</div>
-                      <div className="font-semibold tabular-nums text-red-600" data-testid="pay-wh-amount">— {fmtRp(whAmount)}</div>
+                      <div className="text-red-600 dark:text-red-400 text-xs mb-1">PPh Dipotong ({(form.wh_rate*100).toFixed(0)}%)</div>
+                      <div className="font-semibold tabular-nums text-red-600 dark:text-red-400" data-testid="pay-wh-amount">— {fmtRp(whAmount)}</div>
                     </div>
                     <div>
-                      <div className="text-green-600 text-xs mb-1">Net ke Vendor</div>
-                      <div className="font-bold tabular-nums text-green-700" data-testid="pay-wh-net">{fmtRp(netToPay)}</div>
+                      <div className="text-emerald-600 dark:text-emerald-400 text-xs mb-1">Net ke Vendor</div>
+                      <div className="font-semibold tabular-nums text-emerald-700 dark:text-emerald-400" data-testid="pay-wh-net">{fmtRp(netToPay)}</div>
                     </div>
                   </div>
                 )}
 
                 {form.wh_type && (
-                  <p className="text-xs text-gray-400" data-testid="pay-wh-je-preview">
+                  <p className="text-xs text-muted-foreground" data-testid="pay-wh-je-preview">
                     JE: Dr GL Debit ({fmtRp(gross)}) / Cr Bank ({fmtRp(netToPay)}) / Cr Utang {form.wh_type.toUpperCase()} ({fmtRp(whAmount)})
                   </p>
                 )}
@@ -403,27 +408,26 @@ export default function PaymentForm() {
           </div>
         )}
 
-        <div className="flex items-center gap-3 pt-2" data-testid="pay-form-actions">
-          <Button variant="outline" onClick={() => submit(false)} disabled={saving}
-            className="rounded-full gap-2" data-testid="pay-save-draft">
-            <Save className="h-4 w-4" /> Save as Draft
+        <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border/40" data-testid="pay-form-actions">
+          <Button variant="ghost" onClick={() => navigate(BACK_PATH)} data-testid="pay-cancel">Batal</Button>
+          <Button variant="outline" onClick={() => submit(false)} disabled={saving} data-testid="pay-save-draft">
+            <Save className="h-4 w-4" /> Simpan draft
           </Button>
-          <Button onClick={() => submit(true)} disabled={saving}
-            className="rounded-full gap-2 bg-foreground text-background hover:bg-foreground/90"
-            data-testid="pay-save-submit">
-            Save & Submit for Approval
+          <Button onClick={() => submit(true)} disabled={saving} data-testid="pay-save-submit">
+            {saving ? "Menyimpan..." : "Simpan & ajukan approval"}
           </Button>
-          <Button variant="ghost" onClick={() => navigate("/finance/payments")} data-testid="pay-cancel">Cancel</Button>
         </div>
       </div>
     </div>
   );
 }
 
-function Field({ label, children, className = "" }) {
+function Field({ label, htmlFor, required = false, children, className = "" }) {
   return (
     <div className={className}>
-      <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-xs md:text-sm font-medium">
+        {label}{required && <span className="text-red-500"> *</span>}
+      </Label>
       <div className="mt-1">{children}</div>
     </div>
   );

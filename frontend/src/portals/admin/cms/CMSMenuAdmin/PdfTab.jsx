@@ -9,7 +9,7 @@ import {
   Tag, Image as ImageIcon, Loader2, X, ChevronDown, Eye, EyeOff,
   Download, Star, AlertCircle, Search, Filter
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -86,24 +86,24 @@ function PdfTab({ brands, selectedBrandId }) {
   const getFullUrl = (url) => url && url.startsWith("/") ? `${BACKEND_URL_INNER}${url}` : url;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Upload Section */}
-      <div className="border-2 border-dashed border-border rounded-xl p-6">
+      <div className="border-2 border-dashed border-border rounded-xl p-4">
         <div className="text-center space-y-3">
           <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
             <FileText className="h-6 w-6 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-medium">Upload Menu PDF</p>
+            <h3 className="text-sm md:text-base font-semibold">Upload Menu PDF</h3>
             <p className="text-sm text-muted-foreground mt-1">PDF baru otomatis menjadi versi aktif untuk brand ini. Format: PDF, maks 10MB.</p>
           </div>
           <div className="flex gap-2 justify-center items-center">
-            <Input className="max-w-xs" placeholder="Versi (misal: 2026-Q2, Summer 2026)" value={version} onChange={e => setVersion(e.target.value)} />
+            <Input className="max-w-xs" placeholder="Versi (misal: 2026-Q2, Summer 2026)" aria-label="Versi PDF menu" value={version} onChange={e => setVersion(e.target.value)} data-testid="admin-menu-pdf-version" />
           </div>
           <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden"
             onChange={e => handleUpload(e.target.files?.[0])} />
           <Button onClick={() => fileInputRef.current?.click()} disabled={uploading || !selectedBrandId}>
-            {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             {uploading ? "Mengupload..." : "Pilih & Upload PDF"}
           </Button>
         </div>
@@ -115,7 +115,7 @@ function PdfTab({ brands, selectedBrandId }) {
       ) : pdfs.length === 0 ? (
         <p className="text-center text-muted-foreground text-sm py-6">Belum ada PDF untuk brand ini.</p>
       ) : (
-        <div className="border rounded-xl overflow-hidden bg-white">
+        <div className="glass-card overflow-hidden">
           {pdfs.map((pdf, idx) => (
             <div key={pdf.id} className={`flex items-center justify-between px-4 py-3 ${idx > 0 ? "border-t" : ""} hover:bg-muted/20`}>
               <div className="flex items-center gap-3">
@@ -132,14 +132,14 @@ function PdfTab({ brands, selectedBrandId }) {
               </div>
               <div className="flex gap-1">
                 <Button size="sm" variant="outline" onClick={() => setPreviewUrl(getFullUrl(pdf.pdf_url))} title="Preview">
-                  <Eye className="h-3.5 w-3.5 mr-1" /> Preview
+                  <Eye className="h-3.5 w-3.5" /> Preview
                 </Button>
-                <Button size="sm" variant="outline" asChild title="Download">
+                <Button size="icon-sm" variant="outline" asChild title="Unduh" aria-label="Unduh PDF">
                   <a href={getFullUrl(pdf.pdf_url)} download target="_blank" rel="noreferrer">
                     <Download className="h-3.5 w-3.5" />
                   </a>
                 </Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Hapus PDF menu" onClick={() => setDeleteId(pdf.id)}>
+                <Button size="icon-sm" variant="ghost" className="text-destructive" aria-label="Hapus PDF menu" onClick={() => setDeleteId(pdf.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -151,10 +151,10 @@ function PdfTab({ brands, selectedBrandId }) {
       {/* PDF Preview Modal */}
       <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
         <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
+          <DialogHeader className="px-5 pt-5 pb-3 flex-shrink-0">
             <DialogTitle>Preview PDF Menu</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden px-6 pb-6">
+          <div className="flex-1 overflow-hidden px-5 pb-4">
             <iframe
               src={previewUrl}
               title="PDF Preview"
@@ -162,13 +162,13 @@ function PdfTab({ brands, selectedBrandId }) {
               frameBorder="0"
             />
           </div>
-          <div className="px-6 pb-6 flex justify-end gap-2 flex-shrink-0">
+          <div className="px-5 pb-5 flex justify-end gap-2 flex-shrink-0">
             <Button variant="outline" asChild>
               <a href={previewUrl} download target="_blank" rel="noreferrer">
-                <Download className="h-4 w-4 mr-2" /> Download
+                <Download className="h-4 w-4" /> Unduh
               </a>
             </Button>
-            <Button variant="ghost" onClick={() => setPreviewUrl(null)}>Tutup</Button>
+            <Button variant="outline" onClick={() => setPreviewUrl(null)}>Tutup</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -181,7 +181,7 @@ function PdfTab({ brands, selectedBrandId }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

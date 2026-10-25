@@ -1,9 +1,13 @@
-/** Daily Close — outlet end-of-day checklist + deposit slip upload + submit. (Phase 8B) */
+/** Daily Close — outlet end-of-day checklist + deposit slip upload + submit. (Phase 8B)
+ *
+ *  Komponen yang sama dirender sebagai Langkah 4 di End of Day (/outlet/end-of-day,
+ *  `embedded`). Rute lama /outlet/daily-close tetap ada (deprecated) dan menampilkan
+ *  banner yang mengarahkan ke End of Day. */
 import { useEffect, useState } from "react";
 import {
   ClipboardCheck, CheckCircle2, AlertTriangle, FileImage, Send,
   Lock, RefreshCw, Calendar as CalendarIcon, Receipt, Wallet,
-  ChefHat, ArrowRight,
+  ChefHat, ArrowRight, Info, Store,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import api, { unwrap } from "@/lib/api";
@@ -15,6 +19,7 @@ import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import FileDropZone from "@/components/shared/FileDropZone";
 import { fmtDate, fmtDateTime, fmtRp, todayJakartaISO } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
@@ -29,7 +34,7 @@ const CHECKLIST_ICONS = {
   deposit_slip: FileImage,
 };
 
-export default function DailyClose() {
+export default function DailyClose({ embedded = false }) {
   const { user } = useAuth();
   const { outletId, scopedOutlets: outlets, currentOutlet } = useOutletScopeCtx();
   const [date, setDate] = useState(todayJakartaISO());
@@ -109,58 +114,70 @@ export default function DailyClose() {
   const okCount = items.filter(i => i.ok).length;
 
   return (
-    <div className="space-y-4" data-testid="daily-close-page">
-      {/* Header */}
-      <div className="glass-card p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-          <div className="flex items-start gap-3 flex-1">
-            <div className="h-11 w-11 rounded-xl grad-aurora-soft flex items-center justify-center shrink-0">
-              <ClipboardCheck className="h-5 w-5" />
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-close-page">
+      {!embedded && (
+        <>
+          <PageHeader
+            icon={ClipboardCheck}
+            title="Daily Close"
+            subtitle="Tutup hari operasional outlet. Pastikan checklist hijau & slip setoran terlampir."
+            className="mb-0 md:mb-0"
+          />
+          <div className="glass-card p-3 flex items-start gap-2 text-sm border-l-4 border-l-sky-500" data-testid="dc-deprecated-banner">
+            <Info className="h-4 w-4 mt-0.5 text-sky-600 shrink-0" />
+            <div className="flex-1">
+              Daily Close kini menjadi <b>Langkah 4</b> di alur <b>End of Day</b> (Daily Sales → Daily Orders → Petty Cash → Daily Close).
             </div>
-            <div>
-              <div className="text-base font-bold">Daily Close</div>
-              <div className="text-xs text-muted-foreground max-w-md">
-                Tutup hari operasional outlet. Pastikan checklist hijau & slip setoran terlampir.
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:flex sm:items-end gap-2 sm:gap-3">
-            <div className="sm:min-w-[180px]">
-              <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet Aktif</Label>
-              <div className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1 flex items-center font-medium" data-testid="dc-outlet-display">
-                {currentOutlet ? currentOutlet.name : "— pilih di header"}
-              </div>
-            </div>
-            <div>
-              <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold" htmlFor="dc-date">Tanggal</Label>
-              <Input
-                id="dc-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="glass-input mt-1"
-                data-testid="dc-date"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => { loadStatus(); }}
-              size="sm"
-              className="col-span-2 sm:col-auto rounded-full gap-1.5"
-              data-testid="dc-refresh"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            <Button asChild size="sm" variant="outline" className="shrink-0">
+              <Link to="/outlet/end-of-day?step=3" data-testid="dc-open-eod">Buka End of Day</Link>
             </Button>
           </div>
+        </>
+      )}
+
+      {/* Toolbar: outlet (read-only, dari header) + tanggal */}
+      <div className="glass-card p-3 flex flex-col sm:flex-row sm:items-end gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="text-xs md:text-sm font-medium">Outlet</div>
+          <div className="h-9 mt-1 flex items-center gap-1.5 text-sm font-medium" data-testid="dc-outlet-display">
+            <Store className="h-4 w-4 text-muted-foreground" />
+            {currentOutlet ? currentOutlet.name : <span className="text-muted-foreground font-normal">Belum dipilih — pilih satu outlet di header Outlet Aktif</span>}
+          </div>
         </div>
+        <div className="sm:w-48">
+          <Label className="text-xs md:text-sm font-medium" htmlFor="dc-date">Tanggal</Label>
+          <Input
+            id="dc-date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="glass-input mt-1"
+            data-testid="dc-date"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => { loadStatus(); }}
+          disabled={!outletId}
+          data-testid="dc-refresh"
+        >
+          <RefreshCw className="h-4 w-4" /> Muat ulang
+        </Button>
       </div>
+
+      {!outletId && (
+        <div className="glass-card p-3 text-sm text-muted-foreground flex items-center gap-2" data-testid="dc-pick-outlet-hint">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          Checklist daily close dihitung per outlet. Pilih satu outlet di header Outlet Aktif untuk melihat checklist dan menutup hari.
+        </div>
+      )}
 
       {/* Status banner */}
       {loading && <LoadingState rows={4} />}
       {!loading && status && (
         <div
           className={cn(
-            "glass-card p-4 sm:p-5 border-l-4",
+            "glass-card p-3 sm:p-4 border-l-4",
             closed ? "border-l-emerald-500 bg-emerald-500/5" :
             allOk ? "border-l-emerald-500 bg-emerald-500/5" :
             "border-l-amber-500 bg-amber-500/5",
@@ -169,7 +186,7 @@ export default function DailyClose() {
         >
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
-              <div className="text-base font-bold flex items-center gap-2">
+              <div className="text-base font-semibold flex items-center gap-2">
                 {closed ? (
                   <>
                     <Lock className="h-4 w-4 text-emerald-600" />
@@ -200,7 +217,7 @@ export default function DailyClose() {
                 href={`${process.env.REACT_APP_BACKEND_URL}${status.record.deposit_slip_url}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs px-3 py-1.5 rounded-full glass-input hover:bg-foreground/5 inline-flex items-center gap-1.5"
+                className="text-xs h-8 px-3 rounded-md border border-input hover:bg-accent inline-flex items-center gap-1.5"
                 data-testid="dc-view-slip"
               >
                 <FileImage className="h-3.5 w-3.5" />
@@ -213,8 +230,8 @@ export default function DailyClose() {
 
       {/* Checklist */}
       {!loading && status && (
-        <div className="glass-card p-4 sm:p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">
             Checklist
           </h3>
           <div className="space-y-2" data-testid="dc-checklist">
@@ -224,7 +241,7 @@ export default function DailyClose() {
                 <div
                   key={it.key}
                   className={cn(
-                    "flex items-start gap-3 p-3 rounded-xl border",
+                    "flex items-start gap-3 p-3 rounded-lg border",
                     it.ok
                       ? "border-emerald-500/30 bg-emerald-500/5"
                       : "border-amber-500/30 bg-amber-500/5",
@@ -233,7 +250,7 @@ export default function DailyClose() {
                 >
                   <div
                     className={cn(
-                      "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
+                      "h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center shrink-0",
                       it.ok ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                             : "bg-amber-500/20 text-amber-700 dark:text-amber-400",
                     )}
@@ -268,10 +285,10 @@ export default function DailyClose() {
                     )}
                     {it.key === "kdo_bdo" && !it.ok && (
                       <div className="flex flex-wrap gap-2 mt-1">
-                        <Link to="/outlet/kdo" className="text-xs inline-flex items-center gap-1 text-foreground hover:underline">
+                        <Link to="/outlet/daily-orders?type=kdo" className="text-xs inline-flex items-center gap-1 text-foreground hover:underline">
                           KDO <ArrowRight className="h-3 w-3" />
                         </Link>
-                        <Link to="/outlet/bdo" className="text-xs inline-flex items-center gap-1 text-foreground hover:underline">
+                        <Link to="/outlet/daily-orders?type=bdo" className="text-xs inline-flex items-center gap-1 text-foreground hover:underline">
                           BDO <ArrowRight className="h-3 w-3" />
                         </Link>
                       </div>
@@ -294,9 +311,9 @@ export default function DailyClose() {
 
       {/* Submit form (only when not closed) */}
       {!loading && status && !closed && (
-        <div className="glass-card p-4 sm:p-5" data-testid="dc-submit-form">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            Slip Setoran Bank
+        <div className="glass-card p-4" data-testid="dc-submit-form">
+          <h3 className="text-sm md:text-base font-semibold mb-3">
+            Slip Setoran Bank *
           </h3>
           <FileDropZone
             category="deposit_slip"
@@ -311,7 +328,7 @@ export default function DailyClose() {
             testId="dc-deposit"
           />
           <div className="mt-3">
-            <Label className="text-xs uppercase text-muted-foreground" htmlFor="dc-notes">Catatan</Label>
+            <Label className="text-xs md:text-sm font-medium" htmlFor="dc-notes">Catatan</Label>
             <Textarea
               id="dc-notes"
               value={notes}
@@ -328,7 +345,6 @@ export default function DailyClose() {
             <Button
               onClick={handleSubmit}
               disabled={submitting || !allOk || !depositSlip}
-              className="pill-active rounded-full gap-2 h-10 px-5 touch-target"
               data-testid="dc-submit"
             >
               <Send className="h-4 w-4" />
@@ -340,17 +356,18 @@ export default function DailyClose() {
 
       {/* History */}
       <div className="glass-card">
-        <div className="px-5 py-3 border-b border-border/50 flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+          <h3 className="text-sm md:text-base font-semibold">
             Riwayat Daily Close
           </h3>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={loadHistory}
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
             data-testid="dc-history-refresh"
           >
-            <RefreshCw className="h-3 w-3" /> Refresh
-          </button>
+            <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
+          </Button>
         </div>
         <DataTable
           columns={[
@@ -367,7 +384,7 @@ export default function DailyClose() {
               render: r => fmtRp(r.sales_total || 0),
             },
             {
-              key: "pc_balance", label: "PC Balance", numeric: true,
+              key: "pc_balance", label: "Saldo Petty Cash", numeric: true,
               render: r => fmtRp(r.petty_cash_balance || 0),
             },
             {

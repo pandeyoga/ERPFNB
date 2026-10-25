@@ -31,7 +31,7 @@ export const procurementNav = {
       icon: ShoppingCart,
       items: [
         { id: "po", name: "Purchase Orders", path: "/procurement/po" },
-        { id: "kanban", name: "PO Kanban Board", path: "/procurement/kanban" },
+        { id: "kanban", name: "Procurement Kanban", path: "/procurement/kanban" },
         { id: "comparison", name: "PO Comparison", path: "/procurement/po-comparison" },
       ],
     },

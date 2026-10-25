@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   GitBranch, Plus, Edit2, Trash2, Sparkles, ChevronDown, ChevronRight,
-  Save, X, Layers,
+  Save, Layers,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import StatusPill from "@/components/shared/StatusPill";
@@ -81,40 +83,51 @@ export default function ApprovalWorkflows() {
   }, [items]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="text-sm text-muted-foreground">
-          {items.length} workflow{items.length !== 1 ? "s" : ""} terdaftar — kelola tier amount-based + chain of approvers per entity.
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={seedDefaults} disabled={seeding}
-            className="rounded-full gap-2 h-9" data-testid="wf-seed-defaults">
-            <Sparkles className="h-4 w-4" /> Reset to Defaults
-          </Button>
-          <Button onClick={() => setEditing({ isNew: true, rule_data: blankRule() })}
-            className="rounded-full pill-active gap-2 h-9" data-testid="wf-new">
-            <Plus className="h-4 w-4" /> Workflow Baru
-          </Button>
-        </div>
+    <div className="space-y-3" data-testid="approval-workflows-page">
+      <PageHeader
+        icon={GitBranch}
+        title="Approval Workflows"
+        subtitle={`${items.length} workflow terdaftar — tier berbasis nominal + rantai approver per entitas.`}
+        actions={(
+          <>
+            <Button variant="outline" onClick={seedDefaults} disabled={seeding} data-testid="wf-seed-defaults">
+              <Sparkles /> Reset ke Default
+            </Button>
+            <Button onClick={() => setEditing({ isNew: true, rule_data: blankRule() })} data-testid="wf-new">
+              <Plus /> Tambah Workflow
+            </Button>
+          </>
+        )}
+      />
+
+      {/* Halaman ini = editor daftar (legacy); menu "Approval Matrix" membuka builder visual di /admin/approvals */}
+      <div className="glass-card p-3 flex items-center justify-between gap-3 flex-wrap text-sm" data-testid="wf-matrix-hint">
+        <span className="text-muted-foreground">
+          Ingin mengatur approver per role/user dengan kondisi outlet/brand dan simulasi? Gunakan builder visual.
+        </span>
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/admin/approvals" data-testid="wf-open-matrix">Buka Approval Matrix</Link>
+        </Button>
       </div>
 
       {loading ? <LoadingState rows={6} /> : (
         items.length === 0 ? (
           <EmptyState icon={GitBranch} title="Belum ada workflow"
-            description="Klik 'Reset to Defaults' untuk seed atau tambah workflow baru." />
+            description="Klik 'Reset ke Default' untuk membuat workflow default, atau tambah workflow baru." />
         ) : (
           <div className="space-y-3">
             {Object.entries(grouped).map(([entity_type, group]) => (
               <div key={entity_type} className="glass-card overflow-hidden">
                 <button
                   onClick={() => setOpenIds(s => ({ ...s, [entity_type]: !s[entity_type] }))}
-                  className="w-full px-5 py-3.5 flex items-center gap-3 hover:bg-foreground/5 text-left"
+                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-foreground/5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-expanded={!!openIds[entity_type]}
                   data-testid={`wf-group-${entity_type}`}>
                   {openIds[entity_type] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   <Layers className="h-4 w-4 text-aurora" />
                   <div className="flex-1">
-                    <div className="font-semibold capitalize">{(entityTypes.find(e => e.value === entity_type)?.label) || entity_type.replaceAll("_", " ")}</div>
-                    <div className="text-xs text-muted-foreground">{group.length} version{group.length > 1 ? "s" : ""} · active: {group.filter(g => g.active).length}</div>
+                    <h3 className="text-sm md:text-base font-semibold capitalize">{(entityTypes.find(e => e.value === entity_type)?.label) || entity_type.replaceAll("_", " ")}</h3>
+                    <div className="text-xs text-muted-foreground">{group.length} versi · {group.filter(g => g.active).length} aktif</div>
                   </div>
                 </button>
                 {openIds[entity_type] && (
@@ -155,17 +168,17 @@ function blankRule() {
 function RuleCard({ rule, entityTypes, onEdit, onDelete }) {
   const tiers = rule.rule_data?.tiers || [];
   return (
-    <div className="px-5 py-4 border-b border-border/30 last:border-0">
+    <div className="px-4 py-3 border-b border-border/30 last:border-0">
       <div className="flex items-start gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-foreground/5">v{rule.version}</span>
+            <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-foreground/5">v{rule.version}</span>
             <StatusPill status={rule.active ? "active" : "disabled"} />
-            <span className="text-xs text-muted-foreground">{tiers.length} tier{tiers.length > 1 ? "s" : ""}</span>
+            <span className="text-xs text-muted-foreground">{tiers.length} tier</span>
           </div>
           <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
             {tiers.map((t, ti) => (
-              <div key={ti} className="rounded-xl border border-border/50 p-3 bg-foreground/[0.02]">
+              <div key={ti} className="rounded-[calc(var(--radius)-2px)] border border-border/50 p-3 bg-foreground/[0.02]">
                 <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t.label || `Tier ${ti + 1}`}</div>
                 <div className="text-xs mt-0.5 tabular-nums">
                   {fmtRp(t.min_amount || 0)} <span className="text-muted-foreground">→</span> {t.max_amount != null ? fmtRp(t.max_amount) : <span className="text-muted-foreground">∞</span>}
@@ -175,7 +188,7 @@ function RuleCard({ rule, entityTypes, onEdit, onDelete }) {
                     <div key={si} className="flex items-center gap-2 text-xs">
                       <span className="h-5 w-5 rounded-full bg-aurora/10 text-aurora flex items-center justify-center text-[11px] font-bold">{si + 1}</span>
                       <span className="font-medium truncate">{s.label}</span>
-                      <span className="text-[11px] text-muted-foreground truncate">{(s.any_of_perms || []).join(" / ") || "(any)"}</span>
+                      <span className="text-[11px] text-muted-foreground truncate">{(s.any_of_perms || []).join(" / ") || "(siapa saja)"}</span>
                     </div>
                   ))}
                 </div>
@@ -183,13 +196,13 @@ function RuleCard({ rule, entityTypes, onEdit, onDelete }) {
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-2 shrink-0">
-          <button onClick={onEdit} className="h-8 w-8 rounded-lg hover:bg-foreground/5 flex items-center justify-center" data-testid={`wf-edit-${rule.id}`}>
-            <Edit2 className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={onDelete} className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center" data-testid={`wf-delete-${rule.id}`}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+        <div className="flex flex-col gap-1 shrink-0">
+          <Button variant="ghost" size="icon-sm" onClick={onEdit} title="Edit workflow" aria-label={`Edit workflow v${rule.version}`} data-testid={`wf-edit-${rule.id}`}>
+            <Edit2 className="!h-3.5 !w-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon-sm" onClick={onDelete} className="hover:bg-destructive/10 hover:text-destructive" title="Hapus workflow" aria-label={`Hapus workflow v${rule.version}`} data-testid={`wf-delete-${rule.id}`}>
+            <Trash2 className="!h-3.5 !w-3.5" />
+          </Button>
         </div>
       </div>
     </div>
@@ -294,11 +307,11 @@ function WorkflowDialog({ editing, entityTypes, permsCatalog, onClose, onSaved }
 
   return (
     <Dialog open={!!editing} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="glass-card max-w-4xl max-h-[88vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-4xl" data-testid="wf-dialog">
         <DialogHeader>
-          <DialogTitle>{form.isNew ? "Workflow Baru" : "Edit Workflow"}</DialogTitle>
+          <DialogTitle>{form.isNew ? "Tambah Workflow" : "Edit Workflow"}</DialogTitle>
           <DialogDescription>
-            Definisikan tier amount-based + multi-step approver per entity type.
+            Definisikan tier berbasis nominal + approver bertahap per jenis entitas.
           </DialogDescription>
         </DialogHeader>
 
@@ -306,24 +319,25 @@ function WorkflowDialog({ editing, entityTypes, permsCatalog, onClose, onSaved }
           {/* Entity type */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Entity Type</Label>
+              <Label className="text-xs md:text-sm font-medium">Jenis Entitas <span className="text-destructive">*</span></Label>
               <SimpleSelect
                 value={form.rule_data.entity_type}
                 onValueChange={setEntity}
                 disabled={!form.isNew}
                 options={entityTypes.map(et => ({ value: et.value, label: et.label }))}
-                className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+                className="glass-input w-full mt-1"
+                ariaLabel="Jenis entitas"
                 testId="wf-entity-type"
               />
               {!form.isNew && (
-                <p className="text-[11px] text-muted-foreground mt-1">Entity type tidak dapat diubah setelah dibuat. Buat workflow baru jika perlu beralih.</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Jenis entitas tidak dapat diubah setelah dibuat. Buat workflow baru jika perlu beralih.</p>
               )}
             </div>
             <div>
-              <Label className="text-xs">Amount Field (opsional)</Label>
-              <Input value={form.rule_data.amount_field || ""}
+              <Label htmlFor="wf-amount-field" className="text-xs md:text-sm font-medium">Field Nominal (opsional)</Label>
+              <Input id="wf-amount-field" value={form.rule_data.amount_field || ""}
                 onChange={e => setForm(s => ({ ...s, rule_data: { ...s.rule_data, amount_field: e.target.value || null } }))}
-                placeholder="auto-compute jika kosong" className="glass-input mt-1 h-10" data-testid="wf-amount-field" />
+                placeholder="dihitung otomatis jika kosong" className="glass-input mt-1" data-testid="wf-amount-field" />
             </div>
           </div>
 
@@ -331,37 +345,37 @@ function WorkflowDialog({ editing, entityTypes, permsCatalog, onClose, onSaved }
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="inline-flex items-center gap-2">
-                <Label className="text-sm font-semibold">Tiers ({tiers.length})</Label>
+                <h3 className="text-sm font-semibold">Tier ({tiers.length})</h3>
                 <InlineHelp id="approval-workflow-tier" size="xs" placement="right" />
               </div>
-              <Button onClick={addTier} variant="outline" className="rounded-full gap-1 h-8" data-testid="wf-add-tier">
-                <Plus className="h-3.5 w-3.5" /> Tambah Tier
+              <Button onClick={addTier} variant="outline" size="sm" data-testid="wf-add-tier">
+                <Plus /> Tambah Tier
               </Button>
             </div>
             {tiers.map((t, ti) => (
-              <div key={ti} className="glass-input rounded-xl p-4 space-y-3">
+              <div key={ti} className="glass-input rounded-[calc(var(--radius)-2px)] p-3 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Label</Label>
-                    <Input value={t.label || ""} onChange={e => patchTier(ti, { label: e.target.value })}
-                      className="bg-background mt-1 h-9" data-testid={`wf-tier-label-${ti}`} />
+                    <Label htmlFor={`wf-tier-label-${ti}`} className="text-xs md:text-sm font-medium">Label</Label>
+                    <Input id={`wf-tier-label-${ti}`} value={t.label || ""} onChange={e => patchTier(ti, { label: e.target.value })}
+                      className="bg-background mt-1" data-testid={`wf-tier-label-${ti}`} />
                   </div>
                   <div>
-                    <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Min Amount (Rp)</Label>
-                    <Input type="number" value={t.min_amount ?? 0}
+                    <Label htmlFor={`wf-tier-min-${ti}`} className="text-xs md:text-sm font-medium">Nominal Min (Rp)</Label>
+                    <Input id={`wf-tier-min-${ti}`} type="number" value={t.min_amount ?? 0}
                       onChange={e => patchTier(ti, { min_amount: Number(e.target.value) })}
-                      className="bg-background mt-1 h-9 tabular-nums" data-testid={`wf-tier-min-${ti}`} />
+                      className="bg-background mt-1 tabular-nums" data-testid={`wf-tier-min-${ti}`} />
                   </div>
                   <div>
-                    <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Max Amount (kosong = ∞)</Label>
-                    <Input type="number" value={t.max_amount ?? ""}
+                    <Label htmlFor={`wf-tier-max-${ti}`} className="text-xs md:text-sm font-medium">Nominal Maks (kosong = ∞)</Label>
+                    <Input id={`wf-tier-max-${ti}`} type="number" value={t.max_amount ?? ""}
                       onChange={e => patchTier(ti, { max_amount: e.target.value === "" ? null : Number(e.target.value) })}
-                      className="bg-background mt-1 h-9 tabular-nums" data-testid={`wf-tier-max-${ti}`} />
+                      className="bg-background mt-1 tabular-nums" data-testid={`wf-tier-max-${ti}`} />
                   </div>
                   <div className="flex items-end">
                     <Button onClick={() => removeTier(ti)} variant="outline"
-                      className="rounded-full gap-1 h-9 text-red-600 w-full" disabled={tiers.length <= 1} data-testid={`wf-tier-remove-${ti}`}>
-                      <Trash2 className="h-3.5 w-3.5" /> Hapus Tier
+                      className="text-destructive w-full" disabled={tiers.length <= 1} data-testid={`wf-tier-remove-${ti}`}>
+                      <Trash2 /> Hapus Tier
                     </Button>
                   </div>
                 </div>
@@ -370,12 +384,11 @@ function WorkflowDialog({ editing, entityTypes, permsCatalog, onClose, onSaved }
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="inline-flex items-center gap-2">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">Approval Steps ({(t.steps || []).length})</div>
+                      <div className="text-xs md:text-sm font-semibold">Langkah Approval ({(t.steps || []).length})</div>
                       <InlineHelp id="approval-workflow-step" size="xs" placement="right" />
                     </div>
-                    <Button onClick={() => addStep(ti)} variant="outline" size="sm"
-                      className="rounded-full gap-1 h-7 text-xs" data-testid={`wf-add-step-${ti}`}>
-                      <Plus className="h-3 w-3" /> Step
+                    <Button onClick={() => addStep(ti)} variant="outline" size="sm" data-testid={`wf-add-step-${ti}`}>
+                      <Plus /> Tambah Step
                     </Button>
                   </div>
                   {(t.steps || []).map((s, si) => (
@@ -392,10 +405,10 @@ function WorkflowDialog({ editing, entityTypes, permsCatalog, onClose, onSaved }
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={saving} className="gap-2"><X className="h-4 w-4" /> Batal</Button>
-          <Button onClick={save} disabled={saving} className="pill-active gap-2" data-testid="wf-save">
-            <Save className="h-4 w-4" /> {form.isNew ? "Buat" : "Simpan"}
+        <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 px-5 py-3 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+          <Button variant="outline" onClick={onClose} disabled={saving} data-testid="wf-cancel">Batal</Button>
+          <Button onClick={save} disabled={saving} data-testid="wf-save">
+            <Save /> {saving ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -418,23 +431,26 @@ function StepEditor({ step, stepIdx, permsCatalog, onChange, onRemove, removable
     <div className="bg-background rounded-lg border border-border/40 p-3 space-y-3">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Step {stepIdx + 1} — Label</Label>
-          <Input value={step.label || ""} onChange={e => onChange({ label: e.target.value })}
-            className="bg-foreground/[0.02] mt-1 h-9" data-testid={`wf-step-label-${tIdx}-${stepIdx}`} />
+          <Label htmlFor={`wf-step-label-${tIdx}-${stepIdx}`} className="text-xs md:text-sm font-medium">Step {stepIdx + 1} — Label</Label>
+          <Input id={`wf-step-label-${tIdx}-${stepIdx}`} value={step.label || ""} onChange={e => onChange({ label: e.target.value })}
+            className="bg-foreground/[0.02] mt-1" data-testid={`wf-step-label-${tIdx}-${stepIdx}`} />
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setOpen(o => !o)}
             className="flex-1 rounded-lg border border-border/50 px-3 h-9 text-xs flex items-center gap-2 bg-foreground/[0.02] hover:bg-foreground/[0.05]"
+            aria-expanded={open}
             data-testid={`wf-step-perms-toggle-${tIdx}-${stepIdx}`}>
             {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            <span>{(step.any_of_perms || []).length} permission(s)</span>
-            <span className="ml-auto text-muted-foreground truncate max-w-[160px]">{(step.any_of_perms || []).join(", ") || "any"}</span>
+            <span>{(step.any_of_perms || []).length} permission</span>
+            <span className="ml-auto text-muted-foreground truncate max-w-[160px]">{(step.any_of_perms || []).join(", ") || "siapa saja"}</span>
           </button>
           {removable && (
-            <button type="button" onClick={onRemove}
-              className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center" data-testid={`wf-step-remove-${tIdx}-${stepIdx}`}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            <Button type="button" variant="ghost" size="icon" onClick={onRemove}
+              className="hover:bg-destructive/10 hover:text-destructive"
+              title="Hapus step" aria-label={`Hapus step ${stepIdx + 1}`}
+              data-testid={`wf-step-remove-${tIdx}-${stepIdx}`}>
+              <Trash2 className="!h-3.5 !w-3.5" />
+            </Button>
           )}
         </div>
       </div>
@@ -442,30 +458,32 @@ function StepEditor({ step, stepIdx, permsCatalog, onChange, onRemove, removable
       {/* Deadline + Escalation config */}
       <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border/30">
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          <Label htmlFor={`wf-step-deadline-${tIdx}-${stepIdx}`} className="text-xs md:text-sm font-medium">
             Deadline (jam)
           </Label>
           <Input
+            id={`wf-step-deadline-${tIdx}-${stepIdx}`}
             type="number" min="0" step="1"
             placeholder="Tidak ada batas"
             value={step.deadline_hours ?? ""}
             onChange={e => onChange({ deadline_hours: e.target.value ? parseInt(e.target.value) : null })}
-            className="mt-1 h-8 text-xs"
+            className="mt-1"
             data-testid={`wf-step-deadline-${tIdx}-${stepIdx}`}
           />
           <p className="text-[11px] text-muted-foreground mt-0.5">Eskalasi dikirim jika melewati batas</p>
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          <Label htmlFor={`wf-step-escalate-${tIdx}-${stepIdx}`} className="text-xs md:text-sm font-medium">
             Eskalasi ke (permission)
           </Label>
           <Input
+            id={`wf-step-escalate-${tIdx}-${stepIdx}`}
             placeholder="Misal: *  atau  executive.dashboard.read"
             value={(step.escalate_to_perms || []).join(", ")}
             onChange={e => onChange({
               escalate_to_perms: e.target.value.split(",").map(s => s.trim()).filter(Boolean)
             })}
-            className="mt-1 h-8 text-xs"
+            className="mt-1"
             data-testid={`wf-step-escalate-${tIdx}-${stepIdx}`}
           />
           <p className="text-[11px] text-muted-foreground mt-0.5">Pisahkan dengan koma. Kosong = step yang sama</p>

@@ -3,16 +3,31 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, Filter, Star, TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
+import { Award, Star, TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import PageHeader from "@/components/shared/PageHeader";
 import SimpleSelect from "@/components/shared/SimpleSelect";
+import { Button } from "@/components/ui/button";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
-import { fmtRp, fmtPct, fmtNumber } from "@/lib/format";
+import { fmtRp, fmtNumber, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
-
 import { fetchAll } from "@/lib/api";
+
+/** Persentase absolut (fmtPct menambah tanda "+" karena dirancang untuk delta → "+100.0%"). */
+const pct = (v) => (v == null || isNaN(v) ? "—" : `${Number(v).toFixed(1)}%`);
+
+/** Endpoint /reports/vendor-scorecard hanya menerima date_from/date_to — param `period`
+ *  sebelumnya diabaikan backend sehingga filter YTD/QTD/MTD tidak berpengaruh. */
+function periodRange(period) {
+  const today = todayJakartaISO();
+  const [y, m] = today.split("-").map(Number);
+  const pad = (n) => String(n).padStart(2, "0");
+  let start = `${y}-01-01`;
+  if (period === "mtd") start = `${y}-${pad(m)}-01`;
+  else if (period === "qtd") start = `${y}-${pad(Math.floor((m - 1) / 3) * 3 + 1)}-01`;
+  return { date_from: start, date_to: today };
+}
 export default function VendorScorecardList() {
   const [data, setData] = useState([]);
   const [period, setPeriod] = useState("ytd");
@@ -24,7 +39,7 @@ export default function VendorScorecardList() {
       // Try reports endpoint first
       let rows = null;
       try {
-        const res = await api.get("/reports/vendor-scorecard", { params: { period } });
+        const res = await api.get("/reports/vendor-scorecard", { params: { period, ...periodRange(period) } });
         rows = unwrap(res);
       } catch {
         // Fallback: build from vendor list (no scoring)
@@ -37,7 +52,7 @@ export default function VendorScorecardList() {
       const arr = Array.isArray(rows) ? rows : (rows?.items || rows?.vendors || []);
       setData(arr);
     } catch (e) {
-      toast.error("Gagal load scorecard");
+      toast.error("Gagal memuat scorecard");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [period]);
@@ -58,26 +73,24 @@ export default function VendorScorecardList() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4" data-testid="vendor-scorecard-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="vendor-scorecard-page">
       <PageHeader
         icon={Award}
         title="Vendor Scorecard"
-        subtitle="Penilaian performa vendor (on-time delivery, quality, price competitiveness)"
-        action={
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <SimpleSelect
-              value={period}
-              onValueChange={setPeriod}
-              options={[
-                { value: "ytd", label: "YTD" },
-                { value: "qtd", label: "QTD" },
-                { value: "mtd", label: "MTD" },
-              ]}
-              className="glass-input rounded-lg h-10 text-sm"
-              testId="scorecard-period"
-            />
-          </div>
+        subtitle="Peringkat performa vendor: ketepatan pengiriman, kualitas, dan daya saing harga."
+        actions={
+          <SimpleSelect
+            value={period}
+            onValueChange={setPeriod}
+            options={[
+              { value: "ytd", label: "Tahun berjalan (YTD)" },
+              { value: "qtd", label: "Kuartal berjalan (QTD)" },
+              { value: "mtd", label: "Bulan berjalan (MTD)" },
+            ]}
+            ariaLabel="Periode"
+            className="glass-input w-[200px]"
+            testId="scorecard-period"
+          />
         }
       />
 
@@ -92,9 +105,9 @@ export default function VendorScorecardList() {
                   <div className="text-[11px] text-muted-foreground">{v.vendor_code || v.code}</div>
                 </div>
               ) },
-            { key: "po_count", label: "PO Count", numeric: true, sortable: true, sortAccessor: (v) => v.po_count || 0,
+            { key: "po_count", label: "Jumlah PO", numeric: true, sortable: true, sortAccessor: (v) => v.po_count || 0,
               render: (v) => <span data-testid={`scorecard-pos-${v.vendor_id}`}>{fmtNumber(v.po_count || 0)}</span> },
-            { key: "total_value", label: "Total Value", numeric: true, sortable: true, sortAccessor: (v) => v.total_value || 0,
+            { key: "total_value", label: "Total nilai", numeric: true, sortable: true, sortAccessor: (v) => v.total_value || 0,
               render: (v) => <span className="font-semibold" data-testid={`scorecard-value-${v.vendor_id}`}>{fmtRp(v.total_value || 0)}</span> },
             { key: "on_time", label: "On-Time", numeric: true, sortable: true, sortAccessor: (v) => v.on_time_pct ?? -1,
               render: (v) => (
@@ -102,7 +115,7 @@ export default function VendorScorecardList() {
                   {v.on_time_pct != null ? (
                     <span className="inline-flex items-center gap-1">
                       {Number(v.on_time_pct) >= 80 ? <TrendingUp className="h-3 w-3 text-emerald-500" /> : <TrendingDown className="h-3 w-3 text-rose-500" />}
-                      {fmtPct(v.on_time_pct)}
+                      {pct(v.on_time_pct)}
                     </span>
                   ) : "—"}
                 </span>
@@ -125,10 +138,12 @@ export default function VendorScorecardList() {
           renderExpanded={(v) => <VendorScoreDrilldown v={v} scoreLabel={scoreLabel} />}
           empty={<EmptyState icon={Award} title="Tidak ada data" description="Belum ada vendor dengan transaksi pada periode ini." />}
           rowAction={(v) => (
-            <Link to={`/finance/vendor-scorecard?vendor_id=${v.vendor_id}`} className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-              data-testid={`scorecard-detail-${v.vendor_id}`} onClick={(e) => e.stopPropagation()}>
-              Detail <ExternalLink className="h-3 w-3" />
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={`/finance/vendor-scorecard?vendor_id=${v.vendor_id}`}
+                data-testid={`scorecard-detail-${v.vendor_id}`} aria-label={`Detail KPI ${v.vendor_name || v.name}`}>
+                Detail di Finance <ExternalLink />
+              </Link>
+            </Button>
           )}
         />
       </div>
@@ -143,12 +158,14 @@ export default function VendorScorecardList() {
 function VendorScoreDrilldown({ v, scoreLabel }) {
   const score = v.score ?? v.composite_score ?? null;
   const metrics = [
-    { label: "On-Time Delivery", value: v.on_time_pct != null ? fmtPct(v.on_time_pct) : "—" },
+    { label: "On-time delivery", value: pct(v.on_time_pct) },
     { label: "Jumlah PO", value: fmtNumber(v.po_count || 0) },
     { label: "Total Nilai", value: fmtRp(v.total_value || 0) },
-    { label: "Quality / Defect", value: v.defect_rate != null ? fmtPct(v.defect_rate) : (v.quality_score != null ? Number(v.quality_score).toFixed(0) : "—") },
-    { label: "Avg Lead Time", value: v.avg_lead_time != null ? `${Number(v.avg_lead_time).toFixed(1)} hari` : "—" },
-    { label: "Composite Score", value: score != null ? `${Number(score).toFixed(0)} · ${scoreLabel(score)}` : "N/A" },
+    // Backend mengirim defect_rate_pct / avg_lead_time_days (nama lama tetap sebagai fallback)
+    { label: "Defect / selisih qty", value: (v.defect_rate_pct ?? v.defect_rate) != null ? pct(v.defect_rate_pct ?? v.defect_rate) : (v.quality_score != null ? Number(v.quality_score).toFixed(0) : "—") },
+    { label: "Rata-rata lead time", value: (v.avg_lead_time_days ?? v.avg_lead_time) != null ? `${Number(v.avg_lead_time_days ?? v.avg_lead_time).toFixed(1)} hari` : "—" },
+    { label: "Stabilitas harga", value: pct(v.price_stability_pct) },
+    { label: "Skor gabungan", value: score != null ? `${Number(score).toFixed(0)} · ${scoreLabel(score)}` : "N/A" },
   ];
   return (
     <div className="space-y-2" data-testid={`scorecard-breakdown-${v.vendor_id}`}>

@@ -67,7 +67,7 @@ async def closing_checks(period: str) -> dict:
         "status": "ok" if pending_total == 0 else "info",
         "value": pending_total,
         "detail": f"{pending_pr} PR + {pending_po} PO menunggu",
-        "fix_link": "/procurement/prs", "blocker": False,
+        "fix_link": "/my-approvals", "blocker": False,
     })
 
     # 4) AP open balance

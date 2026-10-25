@@ -2,20 +2,24 @@
  * UserManagementHub — Unified User Management workspace (IA consolidation, plan.md Phase 1c).
  * All Users + Roles & Permissions + Activity Log in one tabbed page.
  * URL param: ?tab=users (default).
+ *
+ * Judul halaman (satu <h1>) = nama menu "Users & Roles"; halaman anak dirender
+ * dengan `embedded` sehingga tidak menampilkan judul besar kedua.
  */
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Users as UsersIcon, Shield, ScrollText, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Users as UsersIcon, Shield, ScrollText } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import Users from "./Users";
 import Roles from "./Roles";
 import AuditLog from "./AuditLog";
 
 const TABS = [
-  { id: "users",     label: "All Users",            short: "Users", icon: UsersIcon,  component: Users },
-  { id: "roles",     label: "Roles & Permissions",  short: "Roles", icon: Shield,     component: Roles },
-  { id: "audit-log", label: "Activity Log",         short: "Log",   icon: ScrollText, component: AuditLog },
+  { id: "users",     label: "All users",           icon: UsersIcon,  component: Users },
+  { id: "roles",     label: "Roles & permissions", icon: Shield,     component: Roles },
+  { id: "audit-log", label: "Activity log",        icon: ScrollText, component: AuditLog },
 ];
 
 export default function UserManagementHub() {
@@ -32,52 +36,37 @@ export default function UserManagementHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || TABS[0].component;
+  const current = TABS.some((t) => t.id === activeTab) ? activeTab : TABS[0].id;
 
   return (
-    <div className="space-y-0" data-testid="admin-user-management-hub">
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-bold">User Management</h2>
-        <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-          <span className="text-muted-foreground/60">User Management</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium">{TABS.find(t => t.id === activeTab)?.label}</span>
-        </div>
-      </div>
+    <div data-testid="admin-user-management-hub">
+      <PageHeader
+        icon={UsersIcon}
+        title="Users & Roles"
+        subtitle="Kelola akun user, role & permission, serta jejak aktivitas sistem."
+      />
 
-      <div
-        className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-border/50 mb-5"
-        data-testid="user-mgmt-hub-tabs"
-        role="tablist"
-      >
-        {TABS.map(tab => {
-          const Icon = tab.icon;
-          const active = tab.id === activeTab;
+      <Tabs value={current} onValueChange={handleTabChange}>
+        <TabsList data-testid="user-mgmt-hub-tabs">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.id} value={tab.id} data-testid={`user-mgmt-tab-${tab.id}`}>
+                <Icon /> {tab.label}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {TABS.map((tab) => {
+          const Comp = tab.component;
           return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={active}
-              data-testid={`user-mgmt-tab-${tab.id}`}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all whitespace-nowrap",
-                active
-                  ? "border-aurora text-aurora bg-aurora/5"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5",
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.short}</span>
-            </button>
+            <TabsContent key={tab.id} value={tab.id} data-testid="user-mgmt-hub-content">
+              <Comp embedded />
+            </TabsContent>
           );
         })}
-      </div>
-
-      <div data-testid="user-mgmt-hub-content" role="tabpanel">
-        <ActiveComponent />
-      </div>
+      </Tabs>
     </div>
   );
 }

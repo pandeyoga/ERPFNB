@@ -1,6 +1,6 @@
 /** Opname List — list sessions + start new (per outlet, snapshot system stock). */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, ClipboardCheck, Eye } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
+import PageHeader from "@/components/shared/PageHeader";
 
 export default function OpnameList() {
+  const navigate = useNavigate();
   const { can } = useAuth();
   const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet } = useOutletScope();
   const [items, setItems] = useState([]);
@@ -43,7 +45,7 @@ export default function OpnameList() {
       const res = await api.get("/inventory/opname", { params });
       setItems(unwrap(res) || []);
       setMeta(res.data?.meta || {});
-    } catch (e) { toast.error("Gagal load opname"); }
+    } catch (e) { toast.error("Gagal memuat sesi opname"); }
     finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [page, outletId]); // eslint-disable-line
@@ -53,37 +55,40 @@ export default function OpnameList() {
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
   return (
-    <div data-testid="opname-list-page" className="space-y-4">
-      <div data-testid="opn-header-card" className="glass-card p-4 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="font-semibold">Opname Sessions</h3>
-          <p className="text-xs text-muted-foreground">
-            {outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua Outlet"} — Stok fisik vs sistem.
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          {/* Outlet switcher for full-access or multi-outlet users */}
-          {scopedOutlets.length > 1 && (
-            <SimpleSelect
-              value={outletId}
-              onValueChange={setOutletId}
-              options={[...(isFullAccess ? [{ value: "", label: "Semua Outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua Outlet"
-              className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
-              testId="opn-outlet-filter"
-            />
-          )}
-          <Button onClick={() => setShowStart(true)} className="rounded-full pill-active gap-2 h-10" data-testid="opn-new" disabled={!can("outlet.opname.execute")}>
-            <Plus className="h-4 w-4" /> Mulai Opname
-          </Button>
-        </div>
+    <div data-testid="opname-list-page" className="space-y-3 lg:space-y-4">
+      <div data-testid="opn-header-card">
+        <PageHeader
+          icon={ClipboardCheck}
+          title="Stock Opname"
+          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua outlet"} — hitung stok fisik dan bandingkan dengan stok sistem.`}
+          className="mb-0 md:mb-0"
+          actions={
+            <>
+              {/* Outlet switcher for full-access or multi-outlet users */}
+              {scopedOutlets.length > 1 && (
+                <SimpleSelect
+                  value={outletId}
+                  onValueChange={setOutletId}
+                  options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                  placeholder="Semua outlet"
+                  className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
+                  testId="opn-outlet-filter"
+                  ariaLabel="Filter outlet"
+                />
+              )}
+              <Button onClick={() => setShowStart(true)} data-testid="opn-new" disabled={!can("outlet.opname.execute")}>
+                <Plus /> Mulai Opname
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <div data-testid="opn-table-card" className="glass-card overflow-hidden">
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true,
-              render: s => <span className="font-mono text-xs">{s.doc_no || s.id.slice(0, 8)}</span> },
+              render: s => <span className="font-medium tabular-nums">{s.doc_no || s.id.slice(0, 8)}</span> },
             { key: "opname_date", label: "Tanggal", sortable: true, render: s => fmtDate(s.opname_date) },
             { key: "outlet", label: "Outlet", render: s => outletMap[s.outlet_id]?.name || s.outlet_id },
             { key: "period", label: "Period", sortable: true, render: s => s.period },
@@ -100,20 +105,31 @@ export default function OpnameList() {
           rowTestIdPrefix="opn-row"
           defaultSort={{ key: "opname_date", dir: "desc" }}
           renderExpanded={(s) => <OpnameVarianceDrilldown s={s} />}
-          empty={<EmptyState icon={ClipboardCheck} title="Belum ada opname session" description="Mulai opname untuk men-snapshot dan menghitung stok fisik." />}
+          empty={
+            <EmptyState
+              icon={ClipboardCheck}
+              title="Belum ada sesi opname"
+              description="Mulai opname untuk mengambil snapshot stok sistem, lalu hitung stok fisik."
+              action={can("outlet.opname.execute") ? (
+                <Button onClick={() => setShowStart(true)} data-testid="opn-empty-new"><Plus /> Mulai Opname</Button>
+              ) : null}
+            />
+          }
           rowAction={(s) => (
-            <Link to={`/inventory/opname/${s.id}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" data-testid={`opn-view-${s.id}`} onClick={(e) => e.stopPropagation()}>
-              <Eye className="h-3.5 w-3.5" /> Buka
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={`/inventory/opname/${s.id}`} data-testid={`opn-view-${s.id}`} onClick={(e) => e.stopPropagation()}>
+                <Eye /> Buka
+              </Link>
+            </Button>
           )}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="opn-pagination">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="opn-prev">Sebelumnya</Button>
+              <span className="tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="opn-next">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -124,7 +140,12 @@ export default function OpnameList() {
         outlets={scopedOutlets}
         defaultOutletId={outletId}
         onClose={() => setShowStart(false)}
-        onStarted={() => { setShowStart(false); load(); }}
+        onStarted={(sess) => {
+          setShowStart(false);
+          // Langsung ke sesi baru (SPA navigate — sebelumnya full page reload via window.location).
+          if (sess?.id) navigate(`/inventory/opname/${sess.id}`);
+          else load();
+        }}
       />
     </div>
   );
@@ -201,11 +222,10 @@ function StartOpnameDialog({ open, outlets, defaultOutletId, onClose, onStarted 
         outlet_id: outletId, period, notes,
       });
       const sess = unwrap(res);
-      toast.success(`Opname dimulai — ${sess.doc_no || ""}`);
-      onStarted();
-      window.location.href = `/inventory/opname/${sess.id}`;
+      toast.success(`Opname dimulai — ${sess?.doc_no || ""}`);
+      onStarted(sess);
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal memulai opname");
     } finally { setSaving(false); }
   };
 
@@ -213,33 +233,34 @@ function StartOpnameDialog({ open, outlets, defaultOutletId, onClose, onStarted 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent data-testid="opn-start-dialog" className="glass-card max-w-md">
         <DialogHeader>
-          <DialogTitle>Mulai Opname Session</DialogTitle>
+          <DialogTitle>Mulai sesi opname</DialogTitle>
           <DialogDescription>Snapshot stok sistem akan diambil sekarang. Hitung fisik bisa dilakukan bertahap.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Outlet <span className="text-destructive">*</span></Label>
             <SimpleSelect
               value={outletId}
               onValueChange={setOutletId}
-              options={[{ value: "", label: "--" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="--"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              options={[{ value: "", label: "Pilih outlet" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Pilih outlet"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="opn-start-outlet"
+              ariaLabel="Outlet"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Period (YYYY-MM)</Label>
-            <Input value={period} onChange={e => setPeriod(e.target.value)} className="glass-input mt-1" placeholder="2026-04" />
+            <Label htmlFor="opn-start-period" className="text-xs md:text-sm font-medium">Periode</Label>
+            <Input id="opn-start-period" type="month" value={period} onChange={e => setPeriod(e.target.value)} className="glass-input mt-1" data-testid="opn-start-period" />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-            <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="glass-input mt-1 min-h-[60px]" />
+            <Label htmlFor="opn-start-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+            <Textarea id="opn-start-notes" value={notes} onChange={e => setNotes(e.target.value)} className="glass-input mt-1 min-h-[60px]" />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="opn-start-confirm">{saving ? "…" : "Mulai"}</Button>
+          <Button onClick={submit} disabled={saving} data-testid="opn-start-confirm">{saving ? "Memulai…" : "Mulai opname"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

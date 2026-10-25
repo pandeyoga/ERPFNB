@@ -7,25 +7,32 @@
  *   - Adjustments
  *
  * All 3 are conceptually "stock moving from one place/state to another", so
- * they belong in one hub with tabs. Old routes still work (redirects).
+ * they belong in one hub with tabs. Old routes still work (/inventory/movements
+ * redirects here; /inventory/transfers & /inventory/adjustments render the same
+ * list stand-alone).
  *
  * URL: /inventory/movements-hub?type=history|transfers|adjustments
  */
-import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { History, ArrowLeftRight, Edit3 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Link, useSearchParams } from "react-router-dom";
+import { History, ArrowLeftRight, Edit3, FileSpreadsheet } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
+import { REPORT_CENTER_PERMS } from "@/lib/portals";
+import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Movements from "./Movements";
 import TransferList from "./TransferList";
 import AdjustmentList from "./AdjustmentList";
 
 const TABS = [
-  { id: "history",     name: "Riwayat",    icon: History,        desc: "Semua pergerakan stock" },
-  { id: "transfers",   name: "Transfer",   icon: ArrowLeftRight, desc: "Antar outlet / lokasi" },
-  { id: "adjustments", name: "Adjustment", icon: Edit3,          desc: "Penyesuaian stock manual" },
+  { id: "history",     name: "Riwayat",    icon: History,        desc: "Semua pergerakan stok masuk & keluar per outlet." },
+  { id: "transfers",   name: "Transfer",   icon: ArrowLeftRight, desc: "Transfer stok antar outlet / lokasi." },
+  { id: "adjustments", name: "Adjustment", icon: Edit3,          desc: "Penyesuaian stok manual (waste, rusak, koreksi)." },
 ];
 
 export default function StockMovementsHub() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = (searchParams.get("type") || "history").toLowerCase();
   const activeTab = TABS.find(t => t.id === type) || TABS[0];
@@ -33,58 +40,37 @@ export default function StockMovementsHub() {
   const setTab = (id) => setSearchParams({ type: id }, { replace: true });
 
   return (
-    <div className="space-y-4" data-testid="stock-movements-hub">
-      <div className="glass-card overflow-hidden">
-        <div className="px-5 pt-5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl grad-aurora-soft flex items-center justify-center">
-              <activeTab.icon className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold leading-tight">Stock Movements</h2>
-              <p className="text-xs text-muted-foreground">{activeTab.desc}</p>
-            </div>
-          </div>
-        </div>
-        <div
-          className="flex items-center gap-1 px-5 pt-4 border-b border-border/40 -mb-px overflow-x-auto"
-          data-testid="movements-tabs"
-          role="tablist"
-        >
+    <div className="space-y-3 lg:space-y-4" data-testid="stock-movements-hub">
+      <PageHeader
+        icon={activeTab.icon}
+        title="Stock Movements"
+        subtitle={activeTab.desc}
+        className="mb-0 md:mb-0"
+        actions={activeTab.id === "history" && permitted(user, REPORT_CENTER_PERMS) ? (
+          // Ekspor Excel riwayat pergerakan ada di Report Center (/reports/stock-movement).
+          <Button asChild variant="outline" data-testid="mov-export-link">
+            <Link to="/reports/stock-movement"><FileSpreadsheet /> Ekspor Excel</Link>
+          </Button>
+        ) : null}
+      />
+
+      <Tabs value={activeTab.id} onValueChange={setTab}>
+        <TabsList data-testid="movements-tabs" aria-label="Jenis pergerakan stok">
           {TABS.map(t => {
-            const isActive = t.id === activeTab.id;
             const Icon = t.icon;
             return (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-                data-testid={`mov-tab-${t.id}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{t.name}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="movements-tab-underline"
-                    className="absolute inset-x-0 -bottom-px h-0.5 bg-foreground"
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
-                )}
-              </button>
+              <TabsTrigger key={t.id} value={t.id} data-testid={`mov-tab-${t.id}`}>
+                <Icon /> {t.name}
+              </TabsTrigger>
             );
           })}
-        </div>
-      </div>
+        </TabsList>
+      </Tabs>
 
       <div data-testid={`movements-content-${activeTab.id}`}>
         {activeTab.id === "history" && <Movements />}
-        {activeTab.id === "transfers" && <TransferList />}
-        {activeTab.id === "adjustments" && <AdjustmentList />}
+        {activeTab.id === "transfers" && <TransferList embedded />}
+        {activeTab.id === "adjustments" && <AdjustmentList embedded />}
       </div>
     </div>
   );

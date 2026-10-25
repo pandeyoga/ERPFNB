@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Activity, RefreshCw, RotateCcw } from "lucide-react";
+import { RefreshCw, RotateCcw } from "lucide-react";
 
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -60,27 +60,25 @@ export default function RateLimitsView() {
   const top = data.top_keys || {};
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Activity className="h-5 w-5" /> Rate Limits</h2>
-          <p className="text-xs text-muted-foreground">In-memory token-bucket per (bucket, key). Window 60s.</p>
-        </div>
+    <div className="space-y-3 lg:space-y-4">
+      {/* Toolbar (judul seksi = tab "Rate Limits" di hub Monitoring) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Token-bucket in-memory per (bucket, key). Window 60 detik.</p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={resetAll} data-testid="rl-reset-all">
-            <RotateCcw className="h-3.5 w-3.5 mr-2" /> Reset All
-          </Button>
-          <Button variant="ghost" size="sm" onClick={load}>
+          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="rl-refresh">
             <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="outline" onClick={resetAll} data-testid="rl-reset-all">
+            <RotateCcw className="h-3.5 w-3.5" /> Reset semua
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
         {Object.entries(buckets).map(([name, [limit, win]]) => (
           <div key={name} className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm uppercase tracking-wide">{name}</h3>
+              <h3 className="text-sm md:text-base font-semibold">{name}</h3>
               <span className="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-400">{limit}/{win}s</span>
             </div>
             <div className="text-xs text-muted-foreground mb-2">{(top[name] || []).length} key aktif</div>
@@ -93,7 +91,7 @@ export default function RateLimitsView() {
                 return (
                   <div key={i} className="text-xs">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="font-mono text-[11px] truncate max-w-[180px]">{row.key}</span>
+                      <span className="text-[11px] font-medium tabular-nums truncate max-w-[180px]" title={row.key}>{row.key}</span>
                       <span className="tabular-nums font-medium">{fmtNumber(row.count)}/{limit}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -104,7 +102,7 @@ export default function RateLimitsView() {
               })}
             </div>
             <Button variant="ghost" size="sm" onClick={() => reset(name)} className="w-full mt-3" data-testid={`rl-reset-${name}`}>
-              <RotateCcw className="h-3 w-3 mr-1.5" /> Reset {name}
+              <RotateCcw className="h-3 w-3" /> Reset {name}
             </Button>
           </div>
         ))}

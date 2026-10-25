@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle, Search, ShoppingCart,
-  CheckSquare, Square, Package, RefreshCw,
+  CheckSquare, Square, Package, RefreshCw, ShieldCheck, XOctagon, TrendingDown, ListChecks,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,8 @@ import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -72,7 +74,7 @@ export default function LowStockAlert() {
       setData(unwrap(res) || { outlets: [], items: [], total_below: 0 });
       setSelected(new Set());
     } catch (e) {
-      toast.error("Gagal load low-stock data");
+      toast.error("Gagal memuat data low stock");
     } finally { setLoading(false); }
   }, [outletId]);
   useEffect(() => { load(); }, [load]);
@@ -148,33 +150,31 @@ export default function LowStockAlert() {
   const allSelected = selected.size === filtered.length && filtered.length > 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-lg font-semibold inline-flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            Low Stock Alert
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Item di bawah par level — buat PR cepat untuk replenish
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} data-testid="low-refresh">
-          <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
-        </Button>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="low-stock-page">
+      <PageHeader
+        icon={AlertTriangle}
+        title="Low Stock Alert"
+        subtitle="Item di bawah par level — pilih item lalu buat PR untuk replenish."
+        className="mb-0 md:mb-0"
+        actions={
+          <Button variant="outline" onClick={load} disabled={loading} data-testid="low-refresh">
+            <RefreshCw /> Muat ulang
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <SummaryTile label="Total di bawah par" value={counts.total} colorClass="text-rose-600 dark:text-rose-400" testid="low-tile-total" />
-        <SummaryTile label="Critical (qty=0/negatif)" value={counts.critical} colorClass="text-rose-600 dark:text-rose-400" testid="low-tile-critical" />
-        <SummaryTile label="Low (di bawah par)" value={counts.low} colorClass="text-amber-600 dark:text-amber-400" testid="low-tile-low" />
-        <SummaryTile label="Item dipilih" value={selected.size} colorClass="text-foreground" testid="low-tile-selected" />
+        <CompactStatCard size="sm" label="Total di bawah par" value={counts.total} tone="danger" icon={TrendingDown} color="aurora-6" loading={loading} testId="low-tile-total" />
+        <CompactStatCard size="sm" label="Critical (qty 0 / negatif)" value={counts.critical} tone="danger" icon={XOctagon} color="aurora-6" loading={loading} testId="low-tile-critical" />
+        <CompactStatCard size="sm" label="Low (di bawah par)" value={counts.low} tone="warning" icon={AlertTriangle} color="aurora-5" loading={loading} testId="low-tile-low" />
+        <CompactStatCard size="sm" label="Item dipilih" value={selected.size} icon={ListChecks} color="aurora-1" testId="low-tile-selected" />
       </div>
 
       <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="low-toolbar">
         <div className="min-w-[200px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
+          <Label className="text-xs md:text-sm font-medium">Outlet</Label>
           <SimpleSelect
+            ariaLabel="Filter outlet"
             value={outletId}
             onValueChange={setOutletId}
             options={[{ value: "", label: "Semua outlet (dalam scope)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
@@ -183,44 +183,41 @@ export default function LowStockAlert() {
             testId="low-outlet"
           />
         </div>
-        <div className="min-w-[200px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Severity</Label>
+        <div className="min-w-[200px]" role="group" aria-labelledby="low-sev-label">
+          <span id="low-sev-label" className="text-xs md:text-sm font-medium">Severity</span>
           <div className="flex gap-1.5 mt-1">
             {[
               { v: "all", l: "Semua" },
               { v: "critical", l: "Critical" },
               { v: "low", l: "Low" },
             ].map(s => (
-              <button
+              <Button
                 key={s.v}
                 type="button"
+                size="sm"
+                variant={severity === s.v ? "default" : "outline"}
+                aria-pressed={severity === s.v}
                 onClick={() => setSeverity(s.v)}
-                className={`text-xs px-2.5 py-1 rounded-full border ${
-                  severity === s.v
-                    ? "bg-foreground text-background border-foreground"
-                    : "bg-background hover:bg-foreground/5 border-border/60"
-                }`}
                 data-testid={`low-sev-${s.v}`}
               >
                 {s.l}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
         <div className="flex-1 min-w-[200px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Cari</Label>
+          <Label htmlFor="low-search-input" className="text-xs md:text-sm font-medium">Cari</Label>
           <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cari item / outlet…" className="glass-input pl-9 h-9"
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input id="low-search-input" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Cari item / outlet…" className="glass-input pl-9"
               data-testid="low-search" />
           </div>
         </div>
         <Button onClick={createPRFromSelected}
           disabled={selectedItems.length === 0}
-          className="pill-active gap-1.5"
           data-testid="low-create-pr">
-          <ShoppingCart className="h-4 w-4" />
+          <ShoppingCart />
           Buat PR ({selectedItems.length})
         </Button>
       </div>
@@ -231,10 +228,15 @@ export default function LowStockAlert() {
           keyField="_rowkey"
           loading={loading}
           rowTestIdPrefix="low-row"
-          empty={<EmptyState title="Stok aman 🎉" description="Tidak ada item yang di bawah par level." />}
+          empty={
+            search || severity !== "all"
+              ? <EmptyState icon={Search} title="Tidak ada item yang cocok" description="Ubah filter severity atau kata kunci pencarian." />
+              : <EmptyState icon={ShieldCheck} title="Stok aman" description="Tidak ada item yang di bawah par level." />
+          }
           columns={[
             { key: "_select", label: (
-                <button onClick={toggleSelectAll} type="button" data-testid="low-select-all" className="inline-flex">
+                <button onClick={toggleSelectAll} type="button" data-testid="low-select-all" className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  role="checkbox" aria-checked={allSelected} aria-label="Pilih semua item">
                   {allSelected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4 text-muted-foreground" />}
                 </button>
               ),
@@ -242,6 +244,8 @@ export default function LowStockAlert() {
                 const sel = selected.has(rowKeyFor(it));
                 return (
                   <button onClick={() => toggleSelect(it)} type="button"
+                    className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    role="checkbox" aria-checked={sel} aria-label={`Pilih ${it.item_name} — ${it.outlet_name}`}
                     data-testid={`low-select-${it.item_id}-${it.outlet_id}`}>
                     {sel ? <CheckSquare className="h-4 w-4 text-foreground" /> : <Square className="h-4 w-4 text-muted-foreground" />}
                   </button>
@@ -302,15 +306,6 @@ export default function LowStockAlert() {
           ]}
         />
       </div>
-    </div>
-  );
-}
-
-function SummaryTile({ label, value, colorClass, testid }) {
-  return (
-    <div className="glass-card p-3" data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
-      <div className={`text-2xl font-semibold tabular-nums mt-1 ${colorClass}`}>{value}</div>
     </div>
   );
 }

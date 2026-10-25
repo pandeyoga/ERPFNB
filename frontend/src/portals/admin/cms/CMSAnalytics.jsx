@@ -5,8 +5,11 @@
 import { useState, useEffect } from "react";
 import { BarChart2, TrendingUp, Eye, RefreshCw, Loader2, Globe, Newspaper, Tag, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { GlassTooltip } from "@/components/shared/charts/chartKit";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { GlassTooltip, axisProps, gridProps } from "@/components/shared/charts/chartKit";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
+import SegmentedFilter from "./SegmentedFilter";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
@@ -45,10 +48,10 @@ export default function CMSAnalytics() {
   useEffect(() => { load(days); }, [days]);
 
   const kpiCards = overview ? [
-    { label: `Total Views (${days}d)`, value: overview.total_views?.toLocaleString() || "0", icon: Eye, color: "text-blue-600 bg-blue-50" },
-    { label: "Views 7 Hari Terakhir", value: overview.views_7d?.toLocaleString() || "0", icon: TrendingUp, color: "text-green-600 bg-green-50" },
-    { label: "Brand Views", value: (overview.by_type?.brand || 0).toLocaleString(), icon: Globe, color: "text-purple-600 bg-purple-50" },
-    { label: "News Views", value: (overview.by_type?.news || 0).toLocaleString(), icon: Newspaper, color: "text-amber-600 bg-amber-50" },
+    { label: `Total Views (${days}d)`, value: overview.total_views?.toLocaleString() || "0", icon: Eye, color: "aurora-3" },
+    { label: "Views 7 Hari Terakhir", value: overview.views_7d?.toLocaleString() || "0", icon: TrendingUp, color: "aurora-4" },
+    { label: "Brand Views", value: (overview.by_type?.brand || 0).toLocaleString(), icon: Globe, color: "aurora-2" },
+    { label: "News Views", value: (overview.by_type?.news || 0).toLocaleString(), icon: Newspaper, color: "aurora-5" },
   ] : [];
 
   // Fill missing dates in trend
@@ -59,67 +62,50 @@ export default function CMSAnalytics() {
     : popular.filter(p => p.content_type === contentTypeFilter);
 
   return (
-    <div className="space-y-6" data-testid="cms-analytics">
-      {/* Header */}
+    <div className="space-y-3" data-testid="cms-analytics">
+      {/* Toolbar: deskripsi + periode + muat ulang (judul sudah di PageHeader/tab CMS Studio) */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <BarChart2 className="h-5 w-5 text-blue-600" />
-            Content Analytics
-          </h3>
-          <p className="text-sm text-muted-foreground">Page views dan performa konten publik.</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Page views dan performa konten publik.</p>
         <div className="flex items-center gap-2">
-          {PERIOD_OPTIONS.map(o => (
-            <Button key={o.value} size="sm" variant={days === o.value ? "default" : "outline"}
-                    onClick={() => setDays(o.value)}>
-              {o.label}
-            </Button>
-          ))}
-          <Button variant="outline" size="sm" onClick={() => load(days)} disabled={loading}>
+          <SegmentedFilter
+            value={days}
+            onChange={(v) => setDays(Number(v))}
+            ariaLabel="Periode analytics"
+            testId="cms-analytics-period"
+            options={PERIOD_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+          />
+          <Button variant="outline" size="icon" onClick={() => load(days)} disabled={loading}
+                  aria-label="Muat ulang" title="Muat ulang" data-testid="cms-analytics-refresh">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           </Button>
         </div>
       </div>
 
       {loading && !overview ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {kpiCards.map((card, i) => {
-              const Icon = card.icon;
-              return (
-                <div key={i} className="border rounded-xl p-4 bg-white">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${card.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-2xl font-bold">{card.value}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{card.label}</div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {kpiCards.map((card) => (
+              <CompactStatCard key={card.label} label={card.label} value={card.value} icon={card.icon} color={card.color} />
+            ))}
           </div>
 
           {/* Daily Trend Chart */}
           {trend.length > 0 && (
-            <div className="border rounded-xl p-5 bg-white">
-              <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+            <div className="glass-card p-4">
+              <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-blue-600" />
                 Daily Page Views — {days} hari terakhir
-              </h4>
+              </h3>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => d.slice(5)} />
-                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                  <Tooltip
-                    formatter={(v) => [v.toLocaleString(), "Views"]}
-                    labelStyle={{ fontSize: 12 }}
-                    contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                  />
-                  <Line type="monotone" dataKey="views" stroke="#3B82F6" strokeWidth={2}
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="date" {...axisProps} tickFormatter={d => d.slice(5)} />
+                  <YAxis {...axisProps} allowDecimals={false} />
+                  <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
+                  <Line type="monotone" dataKey="views" name="Views" stroke="#3B82F6" strokeWidth={2}
                         dot={{ r: 3 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -127,30 +113,33 @@ export default function CMSAnalytics() {
           )}
 
           {trend.length === 0 && (
-            <div className="border rounded-xl p-10 bg-white text-center">
-              <BarChart2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-              <p className="text-muted-foreground text-sm">Belum ada data views untuk periode ini.</p>
-              <p className="text-xs text-muted-foreground mt-1">Tracking dimulai saat pengunjung membuka halaman publik.</p>
+            <div className="glass-card">
+              <EmptyState
+                icon={BarChart2}
+                title="Belum ada data views untuk periode ini"
+                description="Tracking dimulai saat pengunjung membuka halaman publik."
+              />
             </div>
           )}
 
           {/* Popular Content */}
           {popular.length > 0 && (
-            <div className="border rounded-xl bg-white overflow-hidden">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h4 className="font-semibold text-sm flex items-center gap-2">
+            <div className="glass-card overflow-hidden">
+              <div className="p-4 border-b flex items-center justify-between gap-3 flex-wrap">
+                <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
                   <Eye className="h-4 w-4 text-amber-600" />
                   Konten Terpopuler ({days} hari)
-                </h4>
-                <div className="flex gap-1">
-                  {["all", "brand", "news", "outlet", "menu"].map(t => (
-                    <Button key={t} size="sm" variant={contentTypeFilter === t ? "default" : "ghost"}
-                            className="h-6 text-xs px-2"
-                            onClick={() => setContentTypeFilter(t)}>
-                      {t === "all" ? "All" : TYPE_LABELS[t]}
-                    </Button>
-                  ))}
-                </div>
+                </h3>
+                <SegmentedFilter
+                  value={contentTypeFilter}
+                  onChange={setContentTypeFilter}
+                  ariaLabel="Filter tipe konten"
+                  testId="cms-analytics-type-filter"
+                  options={["all", "brand", "news", "outlet", "menu"].map(t => ({
+                    value: t,
+                    label: t === "all" ? "Semua" : TYPE_LABELS[t],
+                  }))}
+                />
               </div>
               <div className="divide-y">
                 {filteredPopular.map((item, i) => {

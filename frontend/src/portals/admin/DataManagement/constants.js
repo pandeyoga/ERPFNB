@@ -43,9 +43,9 @@ const BADGE_COLORS = {
 
 // \u2500\u2500 Tab \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const TABS = [
-  { id: "export", label: "Export Data", icon: Download },
-  { id: "import", label: "Import Data", icon: Upload },
-  { id: "delete", label: "Hapus Data", icon: Trash2 },
+  { id: "export", label: "Ekspor data", icon: Download },
+  { id: "import", label: "Impor data", icon: Upload },
+  { id: "delete", label: "Hapus data", icon: Trash2 },
 ];
 
 

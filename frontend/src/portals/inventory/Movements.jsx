@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api, { unwrap } from "@/lib/api";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
 import { InlineHelp } from "@/components/shared/InlineHelp";
@@ -39,13 +40,14 @@ export default function Movements() {
     setLoading(true);
     try {
       const params = { page, per_page: 50 };
-      if (outletId) params.outlet_id = outletId;      if (type) params.movement_type = type;
+      if (outletId) params.outlet_id = outletId;
+      if (type) params.movement_type = type;
       if (dateFrom) params.date_from = dateFrom;
       const res = await api.get("/inventory/movements", { params });
       setItems(unwrap(res) || []);
       setMeta(res.data?.meta || {});
     } catch (e) {
-      toast.error("Gagal load movements");
+      toast.error("Gagal memuat riwayat pergerakan stok");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [page, outletId, type, dateFrom]); // eslint-disable-line
@@ -56,8 +58,9 @@ export default function Movements() {
     <div className="space-y-4" data-testid="inventory-movements-page">
       <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="movements-filters">
         <div className="min-w-[180px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
+          <Label className="text-xs md:text-sm font-medium">Outlet</Label>
           <SimpleSelect
+            ariaLabel="Filter outlet"
             value={outletId}
             onValueChange={v => { setOutletId(v); setPage(1); }}
             options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
@@ -67,10 +70,11 @@ export default function Movements() {
           />
         </div>
         <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold inline-flex items-center gap-1.5">
-            Type <InlineHelp id="movement-types" size="xs" placement="top" />
+          <Label className="text-xs md:text-sm font-medium inline-flex items-center gap-1.5">
+            Tipe <InlineHelp id="movement-types" size="xs" placement="top" />
           </Label>
           <SimpleSelect
+            ariaLabel="Filter tipe movement"
             value={type}
             onValueChange={v => { setType(v); setPage(1); }}
             options={TYPE_OPTIONS.map(t => ({ value: t.v, label: t.l }))}
@@ -79,8 +83,8 @@ export default function Movements() {
           />
         </div>
         <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Sejak Tanggal</Label>
-          <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
+          <Label htmlFor="movements-date-from" className="text-xs md:text-sm font-medium">Sejak tanggal</Label>
+          <Input id="movements-date-from" type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
             className="glass-input mt-1 h-9" data-testid="movements-filter-date" />
         </div>
       </div>
@@ -105,15 +109,15 @@ export default function Movements() {
           loading={loading}
           rowTestIdPrefix="movement-row"
           defaultSort={{ key: "movement_date", dir: "desc" }}
-          empty={<EmptyState title="Belum ada movement" />}
+          empty={<EmptyState title="Belum ada pergerakan stok" description="Ubah filter outlet, tipe, atau tanggal untuk melihat data lain." />}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="movements-pagination">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="movements-pagination">
             <span data-testid="movements-pagination-total">Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="movements-prev">Prev</button>
-              <span className="px-2 py-1" data-testid="movements-page-info">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="movements-next">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="movements-prev">Sebelumnya</Button>
+              <span className="tabular-nums" data-testid="movements-page-info">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="movements-next">Berikutnya</Button>
             </div>
           </div>
         )}

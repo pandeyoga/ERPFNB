@@ -8,13 +8,14 @@
  *   /executive/outlet/:id  → OutletDrilldown
  *   /executive/budget-approvals → BudgetApprovals
  *   /executive/approvals   → redirect ke /my-approvals (Pusat Persetujuan, App.js)
+ *   /executive/brand · /profit-walk · /period-compare → halaman standalone (dipakai tour);
+ *     di navigasi semuanya tab di /executive/analytics-hub (Performance Analytics).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`.
  * Budget approvals + budget increase requests are gated by `executive.budget.approve`
  * to prevent partial-executive roles from reaching the write surface.
  */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Brain, AlertTriangle, BarChart3 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
 import OwnerHome from "./OwnerHome";
@@ -32,7 +33,6 @@ import AnomalyDetection from "./AnomalyDetection";
 import OutletBudgetAllocation from "./OutletBudgetAllocation";
 import OutletBudgetMonitor from "./OutletBudgetMonitor";
 import BudgetIncreaseRequests from "./BudgetIncreaseRequests";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
 
 
 export default function ExecutivePortal() {

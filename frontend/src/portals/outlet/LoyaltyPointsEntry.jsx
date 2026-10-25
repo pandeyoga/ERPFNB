@@ -2,17 +2,24 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Zap, CheckCircle2, Crown, Plus, RefreshCw, Phone, Loader2, UserPlus, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/shared/PageHeader";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import axios from "axios";
 import { useOutletScopeCtx } from "@/portals/outlet/OutletScopeContext";
 
 const API = process.env.REACT_APP_BACKEND_URL || "";
 
+// Warna tier = warna data loyalty (sama dengan CRM Hub); tanpa emoji di UI.
 const TIER_CONFIG = {
-  bronze: { label: "Bronze", color: "#C9813C", bg: "rgba(201,129,60,0.12)", icon: "🥉", multiplier: "×1.0" },
-  silver: { label: "Silver", color: "#A0AEC0", bg: "rgba(160,174,192,0.12)", icon: "🥈", multiplier: "×1.2" },
-  gold:   { label: "Gold",   color: "#C9A876", bg: "rgba(201,168,118,0.15)", icon: "🥇", multiplier: "×1.5" },
-  platinum: { label: "Platinum", color: "#7F8EA3", bg: "rgba(127,142,163,0.15)", icon: "💎", multiplier: "×2.0" },
+  bronze: { label: "Bronze", color: "#C9813C", bg: "rgba(201,129,60,0.12)", multiplier: "×1.0" },
+  silver: { label: "Silver", color: "#A0AEC0", bg: "rgba(160,174,192,0.12)", multiplier: "×1.2" },
+  gold:   { label: "Gold",   color: "#C9A876", bg: "rgba(201,168,118,0.15)", multiplier: "×1.5" },
+  platinum: { label: "Platinum", color: "#7F8EA3", bg: "rgba(127,142,163,0.15)", multiplier: "×2.0" },
 };
 
 function normalizePhone(raw) {
@@ -60,41 +67,39 @@ function SearchPhase({ onFound, onNotFound, loading, setLoading }) {
   }, [phone, onFound, onNotFound, setLoading]);
 
   return (
-    <form onSubmit={handleSearch} className="space-y-6">
-      <div>
-        <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.7)]">
-          No. HP Customer
-        </p>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              ref={inputRef}
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="081234567890"
-              className="glass-input w-full h-12 pl-10 pr-4 text-base rounded-xl"
-              autoFocus
-              data-testid="cashier-phone-input"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !phone.trim()}
-            className="h-12 px-5 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all"
-            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-            data-testid="cashier-search-button"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            Cari
-          </button>
+    // Enter di input sudah memicu submit form — tidak perlu onKeyDown tambahan
+    // (sebelumnya Enter memanggil pencarian dua kali).
+    <form onSubmit={handleSearch} className="space-y-1.5">
+      <Label htmlFor="cashier-phone" className="text-xs md:text-sm font-medium">
+        No. HP pelanggan *
+      </Label>
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="cashier-phone"
+            ref={inputRef}
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="081234567890"
+            className="glass-input pl-9"
+            autoFocus
+            data-testid="cashier-phone-input"
+          />
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Masukkan nomor HP pelanggan lalu tekan Cari atau Enter.
-        </p>
+        <Button
+          type="submit"
+          disabled={loading || !phone.trim()}
+          data-testid="cashier-search-button"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          Cari
+        </Button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Masukkan nomor HP pelanggan lalu tekan Cari atau Enter.
+      </p>
     </form>
   );
 }
@@ -122,27 +127,28 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Customer card */}
       <div
-        className="rounded-xl p-4 flex items-start gap-4"
+        className="rounded-lg p-3 flex items-start gap-3"
         style={{ background: tier.bg, border: `1px solid ${tier.color}30` }}
         data-testid="cashier-customer-card"
       >
         <div
-          className="h-10 w-10 rounded-full flex items-center justify-center text-lg flex-shrink-0"
-          style={{ background: tier.bg }}
+          className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: tier.bg, color: tier.color }}
+          aria-hidden="true"
         >
-          {tier.icon}
+          <Crown className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
           {wasNew ? (
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <UserPlus className="h-3.5 w-3.5" style={{ color: "#7FAE7A" }} />
-              <span className="text-xs font-semibold" style={{ color: "#7FAE7A" }}>Akun baru akan dibuat</span>
+            <div className="flex items-center gap-1.5 mb-0.5 text-emerald-600 dark:text-emerald-400">
+              <UserPlus className="h-3.5 w-3.5" />
+              <span className="text-xs font-semibold">Akun baru akan dibuat</span>
             </div>
           ) : null}
-          <p className="font-semibold text-base truncate">{customer.full_name}</p>
+          <p className="font-semibold text-sm md:text-base truncate">{customer.full_name}</p>
           <div className="flex items-center gap-3 mt-1">
             <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: tier.bg, color: tier.color, border: `1px solid ${tier.color}30` }}>
               {tier.label} {tier.multiplier}
@@ -153,32 +159,35 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
             </div>
           </div>
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={onReset}
-          className="text-xs text-muted-foreground hover:text-foreground mt-1"
           data-testid="cashier-change-customer"
         >
           Ganti
-        </button>
+        </Button>
       </div>
 
       {/* Amount */}
-      <div>
-        <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.7)]">Nominal Transaksi</p>
+      <div className="space-y-1.5">
+        <Label htmlFor="cashier-amount" className="text-xs md:text-sm font-medium">Nominal transaksi *</Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">Rp</span>
-          <input
+          <Input
+            id="cashier-amount"
             type="text"
             inputMode="numeric"
             value={rawAmount ? formatRupiah(rawAmount) : ""}
             onChange={handleAmountChange}
             placeholder="0"
-            className="glass-input w-full h-12 pl-10 pr-4 text-base font-semibold rounded-xl tabular-nums"
+            className="glass-input pl-10 font-semibold tabular-nums"
             autoFocus
             data-testid="cashier-amount-input"
           />
         </div>
+        <p className="text-xs text-muted-foreground">Minimal Rp 10.000.</p>
       </div>
 
       {/* Points preview */}
@@ -192,13 +201,12 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
             className="overflow-hidden"
           >
             <div
-              className="rounded-xl p-4 flex items-center justify-between"
-              style={{ background: "rgba(var(--primary-rgb, 201 168 118) / 0.08)", border: "1px solid hsl(var(--primary)/.15)" }}
+              className="rounded-lg p-3 flex items-center justify-between bg-primary/5 border border-primary/15"
               data-testid="cashier-points-preview"
             >
               <div>
                 <p className="text-xs text-muted-foreground">Estimasi poin</p>
-                <p className="text-2xl font-semibold">
+                <p className="text-xl font-semibold tabular-nums">
                   +{points.toLocaleString("id-ID")} <span className="text-sm font-normal text-muted-foreground">poin</span>
                 </p>
               </div>
@@ -212,48 +220,52 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
       </AnimatePresence>
 
       {/* Receipt number (required — one receipt earns points once) */}
-      <div>
-        <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.7)]">Nomor Struk</p>
-        <input
+      <div className="space-y-1.5">
+        <Label htmlFor="cashier-order-ref" className="text-xs md:text-sm font-medium">Nomor struk *</Label>
+        <Input
+          id="cashier-order-ref"
           type="text"
           value={orderRef}
           onChange={(e) => setOrderRef(e.target.value)}
           placeholder="mis. TRX-000123"
-          className="glass-input w-full h-10 px-4 text-sm rounded-xl"
+          className="glass-input"
           data-testid="cashier-order-ref-input"
         />
+        <p className="text-xs text-muted-foreground">Satu struk hanya bisa mendapat poin satu kali.</p>
       </div>
 
       {/* Note (optional) */}
-      <div>
-        <p className="text-sm font-medium mb-2 text-[hsl(var(--foreground)/.5)]">Catatan (opsional)</p>
-        <input
+      <div className="space-y-1.5">
+        <Label htmlFor="cashier-note" className="text-xs md:text-sm font-medium">Catatan (opsional)</Label>
+        <Input
+          id="cashier-note"
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="mis. Meja 5, dine-in..."
-          className="glass-input w-full h-10 px-4 text-sm rounded-xl"
+          className="glass-input"
           data-testid="cashier-note-input"
         />
       </div>
 
       {/* Submit */}
-      <button
-        type="submit"
-        disabled={loading || amount < 10000 || !orderRef.trim()}
-        className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
-        style={{
-          background: amount >= 10000 ? "hsl(var(--primary))" : "hsl(var(--muted))",
-          color: amount >= 10000 ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-        }}
-        data-testid="cashier-add-points-button"
-      >
-        {loading ? (
-          <><Loader2 className="h-4 w-4 animate-spin" /> Memproses...</>
-        ) : (
-          <><Plus className="h-4 w-4" /> Tambah Poin</>
-        )}
-      </button>
+      <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+        <Button type="button" variant="outline" onClick={onReset} disabled={loading} data-testid="cashier-cancel-button">
+          Batal
+        </Button>
+        <Button
+          type="submit"
+          className="sm:flex-1"
+          disabled={loading || amount < 10000 || !orderRef.trim()}
+          data-testid="cashier-add-points-button"
+        >
+          {loading ? (
+            <><Loader2 className="h-4 w-4 animate-spin" /> Memproses…</>
+          ) : (
+            <><Plus className="h-4 w-4" /> Tambah Poin</>
+          )}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -266,25 +278,22 @@ function SuccessPhase({ result, onNext }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="text-center py-4"
+      className="text-center py-2"
       data-testid="cashier-success"
     >
-      <div
-        className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4"
-        style={{ background: "rgba(127,174,122,0.15)", border: "1px solid rgba(127,174,122,0.3)" }}
-      >
-        <CheckCircle2 className="h-8 w-8" style={{ color: "#7FAE7A" }} />
+      <div className="h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-emerald-500/10 border border-emerald-500/30">
+        <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
       </div>
 
-      <p className="text-sm text-muted-foreground mb-1">Poin berhasil ditambahkan!</p>
-      <p className="text-5xl font-semibold mb-1" style={{ color: "#7FAE7A" }} data-testid="cashier-success-points">
+      <p className="text-sm text-muted-foreground mb-1">Poin berhasil ditambahkan</p>
+      <p className="text-3xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 mb-0.5" data-testid="cashier-success-points">
         +{result.points_awarded?.toLocaleString("id-ID")}
       </p>
-      <p className="text-sm text-muted-foreground mb-6">poin</p>
+      <p className="text-sm text-muted-foreground mb-4">poin</p>
 
       {/* Customer recap */}
       <div
-        className="rounded-2xl p-4 mb-6 text-left"
+        className="rounded-lg p-3 mb-4 text-left"
         style={{ background: tier.bg, border: `1px solid ${tier.color}25` }}
       >
         <div className="flex items-center justify-between mb-2">
@@ -292,39 +301,39 @@ function SuccessPhase({ result, onNext }) {
             {result.customer?.full_name}
           </p>
           {result.was_created && (
-            <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(127,174,122,0.15)", color: "#7FAE7A" }}>
+            <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
               <UserPlus className="h-3 w-3" /> Akun baru
             </span>
           )}
         </div>
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-1.5">
-            <span>{tier.icon}</span>
+            <Crown className="h-3.5 w-3.5" style={{ color: tier.color }} />
             <span className="font-medium" style={{ color: tier.color }}>{tier.label}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap className="h-3.5 w-3.5" style={{ color: tier.color }} />
-            <span className="font-bold tabular-nums" data-testid="cashier-success-total-points">
+            <span className="font-semibold tabular-nums" data-testid="cashier-success-total-points">
               {result.customer?.total_points?.toLocaleString("id-ID")}
             </span>
             <span className="text-muted-foreground text-xs">total poin</span>
           </div>
         </div>
         {result.was_created && (
-          <p className="text-xs text-muted-foreground mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/50">
             Akun dibuat otomatis. Password = nomor HP. Customer bisa ubah setelah login.
           </p>
         )}
       </div>
 
-      <button
+      <Button
+        type="button"
         onClick={onNext}
-        className="w-full h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
-        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        className="w-full"
         data-testid="cashier-next-customer-button"
       >
         <RefreshCw className="h-4 w-4" /> Pelanggan Berikutnya
-      </button>
+      </Button>
     </motion.div>
   );
 }
@@ -393,79 +402,81 @@ export default function LoyaltyPointsEntry() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Input Poin Kasir</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Input nomor HP pelanggan dan nominal transaksi untuk menambah poin loyalty.
-        </p>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="loyalty-points-entry-page">
+      <PageHeader
+        icon={Zap}
+        title="Loyalty Points Entry"
+        subtitle="Input poin kasir — nomor HP pelanggan + nominal transaksi untuk menambah poin loyalty."
+        className="mb-0 md:mb-0"
+      />
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-7">
-        {["Cari Pelanggan", "Input Transaksi", "Selesai"].map((s, i) => {
-          const currentIdx = phase === "search" ? 0 : phase === "confirm" ? 1 : 2;
-          const active = i === currentIdx;
-          const done = i < currentIdx;
-          return (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
-                style={{
-                  background: active ? "hsl(var(--primary))" : done ? "hsl(var(--primary)/.15)" : "hsl(var(--muted))",
-                  color: active ? "hsl(var(--primary-foreground))" : done ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                }}
-              >
-                {done ? <CheckCircle2 className="h-3 w-3" /> : <span>{i + 1}</span>}
-                {s}
+      <div className="max-w-2xl space-y-3">
+        {/* Step indicator */}
+        <ol className="flex items-center gap-2 flex-wrap" aria-label="Langkah input poin">
+          {["Cari Pelanggan", "Input Transaksi", "Selesai"].map((s, i) => {
+            const currentIdx = phase === "search" ? 0 : phase === "confirm" ? 1 : 2;
+            const active = i === currentIdx;
+            const done = i < currentIdx;
+            return (
+              <li key={s} className="flex items-center gap-2" aria-current={active ? "step" : undefined}>
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 h-8 px-2.5 rounded-full text-xs font-medium transition-colors",
+                    active && "bg-primary text-primary-foreground",
+                    done && "bg-primary/15 text-primary",
+                    !active && !done && "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="tabular-nums">{i + 1}</span>}
+                  {s}
+                </div>
+                {i < 2 && <div className="h-px w-4 flex-shrink-0 bg-border" />}
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* Card */}
+        <Card className="p-4">
+          <AnimatePresence mode="wait">
+            {phase === "search" && (
+              <motion.div key="search" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.25 }}>
+                <SearchPhase onFound={handleFound} onNotFound={handleNotFound} loading={loading} setLoading={setLoading} />
+              </motion.div>
+            )}
+            {phase === "confirm" && (
+              <motion.div key="confirm" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.25 }}>
+                <ConfirmPhase
+                  customer={customer}
+                  rawPhone={rawPhone}
+                  wasNew={wasNew}
+                  onConfirm={handleConfirm}
+                  onReset={handleReset}
+                  loading={loading}
+                />
+              </motion.div>
+            )}
+            {phase === "success" && result && (
+              <motion.div key="success" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+                <SuccessPhase result={result} onNext={handleReset} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Card>
+
+        {/* Info box */}
+        {phase === "search" && (
+          <div className="p-3 rounded-lg text-sm bg-muted/60 border border-border/60">
+            <div className="flex gap-2">
+              <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              <div className="text-muted-foreground space-y-1 text-xs">
+                <p><b>Belum terdaftar?</b> Akun dibuat otomatis. Password awal = nomor HP.</p>
+                <p><b>Poin:</b> Rp 10.000 = 1 poin × multiplier tier (Bronze ×1.0, Silver ×1.2, Gold ×1.5)</p>
               </div>
-              {i < 2 && <div className="h-px w-4 flex-shrink-0" style={{ background: "hsl(var(--border))" }} />}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Card */}
-      <div className="glass-card rounded-2xl p-6">
-        <AnimatePresence mode="wait">
-          {phase === "search" && (
-            <motion.div key="search" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.25 }}>
-              <SearchPhase onFound={handleFound} onNotFound={handleNotFound} loading={loading} setLoading={setLoading} />
-            </motion.div>
-          )}
-          {phase === "confirm" && (
-            <motion.div key="confirm" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.25 }}>
-              <ConfirmPhase
-                customer={customer}
-                rawPhone={rawPhone}
-                wasNew={wasNew}
-                onConfirm={handleConfirm}
-                onReset={handleReset}
-                loading={loading}
-              />
-            </motion.div>
-          )}
-          {phase === "success" && result && (
-            <motion.div key="success" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-              <SuccessPhase result={result} onNext={handleReset} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Info box */}
-      {phase === "search" && (
-        <div className="mt-4 p-4 rounded-xl text-sm" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
-          <div className="flex gap-2">
-            <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <div className="text-muted-foreground space-y-1 text-xs">
-              <p><b>Belum terdaftar?</b> Akun dibuat otomatis. Password awal = nomor HP.</p>
-              <p><b>Poin:</b> Rp 10.000 = 1 poin × multiplier tier (Bronze ×1.0, Silver ×1.2, Gold ×1.5)</p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

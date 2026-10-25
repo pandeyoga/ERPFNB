@@ -16,12 +16,14 @@ import {
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
-import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
+import PageHeader from "@/components/shared/PageHeader";
+import { fmtRp, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
 
-export default function VoucherList() {
+/** @param {{ embedded?: boolean }} props — embedded=true saat dirender sebagai tab di CompensationHub (tanpa PageHeader). */
+export default function VoucherList({ embedded = false }) {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState([]);
@@ -30,6 +32,12 @@ export default function VoucherList() {
   const [redeemFor, setRedeemFor] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  // Debounce pencarian supaya API tidak dipanggil di setiap ketikan.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
   const { scopedOutlets: outlets } = useOutletScope();
 
@@ -65,12 +73,23 @@ export default function VoucherList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [statusFilter, search]);
 
+  const issueBtn = canIssue ? (
+    <Button onClick={() => setShowIssue(true)} data-testid="hr-voucher-issue-btn">
+      <Plus /> Terbitkan Voucher
+    </Button>
+  ) : null;
+
   return (
-    <div className="space-y-4" data-testid="hr-voucher-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="hr-voucher-page">
+      {!embedded && (
+        <PageHeader icon={Ticket} title="Voucher"
+          subtitle="Penerbitan, penukaran & liability voucher"
+          actions={issueBtn} />
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="w-40" data-testid="hr-voucher-filter-status">
+            <SelectTrigger className="w-40" aria-label="Filter status voucher" data-testid="hr-voucher-filter-status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -81,17 +100,13 @@ export default function VoucherList() {
             </SelectContent>
           </Select>
           <div className="relative">
-            <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-muted-foreground" />
-            <Input className="pl-8 w-56" placeholder="Cari kode voucher…"
-                    value={search} onChange={(e) => setSearch(e.target.value)}
+            <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-muted-foreground" aria-hidden />
+            <Input type="search" className="pl-8 w-56" placeholder="Cari kode voucher…" aria-label="Cari kode voucher"
+                    value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
                     data-testid="hr-voucher-search" />
           </div>
         </div>
-        {canIssue && (
-          <Button onClick={() => setShowIssue(true)} className="rounded-full" data-testid="hr-voucher-issue-btn">
-            <Plus className="h-4 w-4 mr-2" /> Issue Voucher
-          </Button>
-        )}
+        {embedded && issueBtn}
       </div>
 
       <div className="glass-card" data-testid="hr-voucher-table-card">
@@ -101,21 +116,22 @@ export default function VoucherList() {
             { key: "issue_date", label: "Issue Date", sortable: true, render: v => fmtDate(v.issue_date) },
             { key: "expire_date", label: "Expire", sortable: true, render: v => v.expire_date ? fmtDate(v.expire_date) : "—" },
             { key: "purpose", label: "Purpose", sortable: true, render: v => <span className="text-xs">{v.purpose}</span> },
-            { key: "value", label: "Value", numeric: true, sortable: true, render: v => fmtRp(v.value) },
-            { key: "redeemed_amount", label: "Redeemed", numeric: true, sortable: true, render: v => <span className="text-xs">{v.status === "redeemed" ? fmtRp(v.redeemed_amount) : "—"}</span> },
+            { key: "value", label: "Value", numeric: true, sortable: true, render: v => <span className="whitespace-nowrap">{fmtRp(v.value)}</span> },
+            { key: "redeemed_amount", label: "Redeemed", numeric: true, sortable: true, render: v => <span className="text-xs whitespace-nowrap">{v.status === "redeemed" ? fmtRp(v.redeemed_amount) : "—"}</span> },
             { key: "status", label: "Status", align: "center", sortable: true, render: v => <StatusPill status={v.status} /> },
           ]}
           rows={items}
           loading={loading}
           defaultSort={{ key: "issue_date", dir: "desc" }}
           empty={<EmptyState icon={Ticket} title="Belum ada voucher"
-            description="Issue voucher promosi/staff/comp — sistem akan track liability + redemption." />}
+            description="Terbitkan voucher promosi/staff/kompensasi — sistem akan melacak liability & penukaran."
+            action={canIssue ? <Button size="sm" onClick={() => setShowIssue(true)}><Plus /> Terbitkan Voucher</Button> : null} />}
           rowAction={(v) => (
             canRedeem && v.status === "issued" ? (
-              <Button size="sm" variant="default" className="rounded-full"
+              <Button size="sm" variant="outline"
                       onClick={() => setRedeemFor(v)}
                       data-testid={`hr-voucher-redeem-${v.code}`}>
-                <BadgeCheck className="h-3.5 w-3.5 mr-1" /> Redeem
+                <BadgeCheck /> Tukarkan
               </Button>
             ) : null
           )}
@@ -169,29 +185,29 @@ function IssueVoucherDialog({ open, onOpenChange, outlets, onIssued }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="hr-voucher-issue-dialog">
         <DialogHeader>
-          <DialogTitle>Issue Voucher Batch</DialogTitle>
+          <DialogTitle>Terbitkan Voucher</DialogTitle>
           <DialogDescription>Generate kode voucher dalam jumlah banyak.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Quantity *</Label>
-              <Input type="number" min="1" max="1000" value={form.qty}
+              <Label htmlFor="hr-voucher-qty">Jumlah *</Label>
+              <Input id="hr-voucher-qty" type="number" min="1" max="1000" value={form.qty}
                       onChange={(e) => setForm(f => ({ ...f, qty: e.target.value }))}
                       data-testid="hr-voucher-qty" />
             </div>
             <div className="space-y-1">
-              <Label>Value (Rp) *</Label>
-              <Input type="number" min="0" step="1000" value={form.value}
+              <Label htmlFor="hr-voucher-value">Nilai (Rp) *</Label>
+              <Input id="hr-voucher-value" type="number" min="0" step="1000" value={form.value}
                       onChange={(e) => setForm(f => ({ ...f, value: e.target.value }))}
                       data-testid="hr-voucher-value" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Purpose</Label>
+              <Label htmlFor="hr-voucher-purpose">Tujuan</Label>
               <Select value={form.purpose} onValueChange={(v) => setForm(f => ({ ...f, purpose: v }))}>
-                <SelectTrigger data-testid="hr-voucher-purpose"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="hr-voucher-purpose" data-testid="hr-voucher-purpose"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="marketing">Marketing</SelectItem>
                   <SelectItem value="customer_comp">Customer Comp</SelectItem>
@@ -201,22 +217,23 @@ function IssueVoucherDialog({ open, onOpenChange, outlets, onIssued }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Prefix</Label>
-              <Input value={form.prefix}
+              <Label htmlFor="hr-voucher-prefix">Prefix</Label>
+              <Input id="hr-voucher-prefix" value={form.prefix}
                       onChange={(e) => setForm(f => ({ ...f, prefix: e.target.value.toUpperCase() }))}
                       data-testid="hr-voucher-prefix" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Expire Date</Label>
-              <Input type="date" value={form.expire_date}
-                      onChange={(e) => setForm(f => ({ ...f, expire_date: e.target.value }))} />
+              <Label htmlFor="hr-voucher-expire">Tanggal Kedaluwarsa</Label>
+              <Input id="hr-voucher-expire" type="date" value={form.expire_date}
+                      onChange={(e) => setForm(f => ({ ...f, expire_date: e.target.value }))}
+                      data-testid="hr-voucher-expire" />
             </div>
             <div className="space-y-1">
-              <Label>Outlet</Label>
+              <Label htmlFor="hr-voucher-outlet">Outlet</Label>
               <Select value={form.outlet_id || "none"} onValueChange={(v) => setForm(f => ({ ...f, outlet_id: v === "none" ? "" : v }))}>
-                <SelectTrigger><SelectValue placeholder="— semua outlet —" /></SelectTrigger>
+                <SelectTrigger id="hr-voucher-outlet" data-testid="hr-voucher-outlet"><SelectValue placeholder="— semua outlet —" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— semua outlet —</SelectItem>
                   {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
@@ -224,23 +241,24 @@ function IssueVoucherDialog({ open, onOpenChange, outlets, onIssued }) {
               </Select>
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.post_journal}
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" className="mt-0.5 h-4 w-4" checked={form.post_journal}
                     onChange={(e) => setForm(f => ({ ...f, post_journal: e.target.checked }))}
                     data-testid="hr-voucher-post-journal" />
             Post journal entry saat issue (Dr Marketing/Comp, Cr Voucher Liability)
           </label>
           <div className="space-y-1">
-            <Label>Notes</Label>
-            <Textarea rows={2} value={form.notes}
-                       onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
+            <Label htmlFor="hr-voucher-notes">Catatan</Label>
+            <Textarea id="hr-voucher-notes" rows={2} value={form.notes}
+                       onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+                       data-testid="hr-voucher-notes" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="rounded-full"
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-voucher-issue-submit">
-            {submitting ? "Issuing…" : `Issue ${form.qty} voucher`}
+            {submitting ? "Menerbitkan…" : `Terbitkan ${form.qty} voucher`}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -271,7 +289,7 @@ function RedeemDialog({ voucher, open, onOpenChange, outlets, onRedeemed }) {
         outlet_id: outletId || undefined,
         ref: ref || undefined,
       });
-      toast.success("Voucher redeemed");
+      toast.success("Voucher berhasil ditukarkan");
       await onRedeemed();
     } catch (e) {
       toast.error(unwrapError(e));
@@ -285,23 +303,23 @@ function RedeemDialog({ voucher, open, onOpenChange, outlets, onRedeemed }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm" data-testid="hr-voucher-redeem-dialog">
         <DialogHeader>
-          <DialogTitle>Redeem Voucher</DialogTitle>
+          <DialogTitle>Tukarkan Voucher</DialogTitle>
           <DialogDescription>
-            Code <span className="font-mono">{voucher.code}</span> · max {fmtRp(voucher.value)}
+            Kode <span className="font-mono">{voucher.code}</span> · maks. {fmtRp(voucher.value)}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Amount</Label>
-            <Input type="number" min="0" max={voucher.value} step="1000"
+            <Label htmlFor="hr-voucher-redeem-amount">Nominal (Rp) *</Label>
+            <Input id="hr-voucher-redeem-amount" type="number" min="0" max={voucher.value} step="1000"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     data-testid="hr-voucher-redeem-amount" />
           </div>
           <div className="space-y-1">
-            <Label>Outlet</Label>
+            <Label htmlFor="hr-voucher-redeem-outlet">Outlet</Label>
             <Select value={outletId || "none"} onValueChange={(v) => setOutletId(v === "none" ? "" : v)}>
-              <SelectTrigger><SelectValue placeholder="— pilih —" /></SelectTrigger>
+              <SelectTrigger id="hr-voucher-redeem-outlet" data-testid="hr-voucher-redeem-outlet"><SelectValue placeholder="— pilih —" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">— tidak spesifik —</SelectItem>
                 {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
@@ -309,17 +327,17 @@ function RedeemDialog({ voucher, open, onOpenChange, outlets, onRedeemed }) {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>Reference</Label>
-            <Input value={ref} onChange={(e) => setRef(e.target.value)}
+            <Label htmlFor="hr-voucher-redeem-ref">Referensi</Label>
+            <Input id="hr-voucher-redeem-ref" value={ref} onChange={(e) => setRef(e.target.value)}
                     placeholder="Daily sales doc / customer / event"
                     data-testid="hr-voucher-redeem-ref" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={handleSubmit} disabled={busy} className="rounded-full"
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={busy}
                   data-testid="hr-voucher-redeem-submit">
-            {busy ? "Memproses…" : "Redeem"}
+            {busy ? "Memproses…" : "Tukarkan"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Calendar, Clock, Users, Phone, Mail, User, MapPin,
   Heart, Cake, Leaf, MessageSquare, ChevronLeft, Loader2,
-  CheckCircle2, AlertCircle, Save
+  CheckCircle2, AlertCircle, Save, ArrowLeft, Minus, Plus, CalendarCheck
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import PageHeader from "@/components/shared/PageHeader";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -151,35 +152,37 @@ export default function ReservationForm() {
   }
 
   return (
-    <div className="p-6 max-w-2xl" data-testid="reservation-form-page">
-      <div className="flex items-center gap-3 mb-6" data-testid="reservation-form-header">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/outlet/reservations")}>
-          <ChevronLeft className="w-4 h-4" />
+    <div className="max-w-3xl space-y-3 lg:space-y-4" data-testid="reservation-form-page">
+      <div data-testid="reservation-form-header">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/outlet/reservations")} className="-ml-2 mb-1" data-testid="reservation-form-back">
+          <ArrowLeft className="h-4 w-4" /> Kembali ke Reservations
         </Button>
-        <div>
-          <h1 className="text-xl font-bold">{isEdit ? "Edit Reservasi" : "Buat Reservasi Baru"}</h1>
-          <p className="text-gray-500 text-sm">Catat reservasi dari telepon, walk-in, atau WhatsApp</p>
-        </div>
+        <PageHeader
+          icon={CalendarCheck}
+          title={isEdit ? "Edit Reservasi" : "Buat Reservasi"}
+          subtitle="Catat reservasi dari telepon, walk-in, WhatsApp, atau website."
+          className="mb-0 md:mb-0"
+        />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6" data-testid="reservation-form">
+      <form onSubmit={handleSubmit} className="space-y-3 lg:space-y-4" data-testid="reservation-form">
         {/* Outlet & Source */}
         <Card data-testid="reservation-form-outlet-card">
           <CardContent className="pt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Outlet *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="res-outlet" className="text-xs md:text-sm font-medium">Outlet *</Label>
                 <Select value={form.outlet_id} onValueChange={v => setField("outlet_id", v)}>
-                  <SelectTrigger><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
+                  <SelectTrigger id="res-outlet" data-testid="reservation-form-outlet"><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
                   <SelectContent>
                     {outlets.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Sumber Reservasi</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-source" className="text-xs md:text-sm font-medium">Sumber reservasi</Label>
                 <Select value={form.source} onValueChange={v => setField("source", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="res-source" data-testid="reservation-form-source"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {SOURCES.map(s => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
                   </SelectContent>
@@ -191,22 +194,23 @@ export default function ReservationForm() {
 
         {/* Date & Time */}
         <Card data-testid="reservation-form-datetime-card">
-          <CardHeader><CardTitle className="text-base">Tanggal & Waktu</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Tanggal & Waktu</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Tanggal Reservasi *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="res-date" className="text-xs md:text-sm font-medium">Tanggal reservasi *</Label>
                 <Input
+                  id="res-date"
                   type="date"
                   value={form.reservation_date}
                   onChange={e => setField("reservation_date", e.target.value)}
                   required
                 />
               </div>
-              <div>
-                <Label>Waktu *</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-time" className="text-xs md:text-sm font-medium">Waktu *</Label>
                 <Select value={form.reservation_time} onValueChange={v => setField("reservation_time", v)}>
-                  <SelectTrigger><SelectValue placeholder="Pilih waktu" /></SelectTrigger>
+                  <SelectTrigger id="res-time" data-testid="reservation-form-time"><SelectValue placeholder="Pilih waktu" /></SelectTrigger>
                   <SelectContent>
                     {TIME_SLOTS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
@@ -214,26 +218,32 @@ export default function ReservationForm() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Label>Jumlah Tamu</Label>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => setField("pax", Math.max(1, form.pax - 1))} className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-50">-</button>
-                <span className="font-medium w-6 text-center">{form.pax}</span>
-                <button type="button" onClick={() => setField("pax", Math.min(50, form.pax + 1))} className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-50">+</button>
-                <span className="text-sm text-gray-500">orang</span>
+              <Label id="res-pax-label" className="text-xs md:text-sm font-medium">Jumlah tamu *</Label>
+              <div className="flex items-center gap-2" role="group" aria-labelledby="res-pax-label">
+                <Button type="button" variant="outline" size="icon-sm" onClick={() => setField("pax", Math.max(1, form.pax - 1))} aria-label="Kurangi jumlah tamu" data-testid="reservation-form-pax-minus">
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="font-medium w-8 text-center tabular-nums" aria-live="polite" data-testid="reservation-form-pax">{form.pax}</span>
+                <Button type="button" variant="outline" size="icon-sm" onClick={() => setField("pax", Math.min(50, form.pax + 1))} aria-label="Tambah jumlah tamu" data-testid="reservation-form-pax-plus">
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">orang</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Area Preferensi</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="res-area" className="text-xs md:text-sm font-medium">Area preferensi</Label>
                 <Input
+                  id="res-area"
                   placeholder="Misal: Indoor, Outdoor, VIP..."
                   value={form.area_preference}
                   onChange={e => setField("area_preference", e.target.value)}
                 />
               </div>
-              <div>
-                <Label>Nomor Meja (opsional)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-table" className="text-xs md:text-sm font-medium">Nomor meja (opsional)</Label>
                 <Input
+                  id="res-table"
                   placeholder="Misal: Meja 5"
                   value={form.table_preference}
                   onChange={e => setField("table_preference", e.target.value)}
@@ -245,21 +255,23 @@ export default function ReservationForm() {
 
         {/* Guest Info */}
         <Card data-testid="reservation-form-guest-card">
-          <CardHeader><CardTitle className="text-base">Informasi Tamu</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Informasi Tamu</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label>Nama Tamu *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="res-name" className="text-xs md:text-sm font-medium">Nama tamu *</Label>
               <Input
+                id="res-name"
                 placeholder="Nama lengkap"
                 value={form.customer_name}
                 onChange={e => setField("customer_name", e.target.value)}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Nomor HP / WA *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="res-phone" className="text-xs md:text-sm font-medium">Nomor HP / WA *</Label>
                 <Input
+                  id="res-phone"
                   type="tel"
                   placeholder="08xx-xxxx-xxxx"
                   value={form.customer_phone}
@@ -267,9 +279,10 @@ export default function ReservationForm() {
                   required
                 />
               </div>
-              <div>
-                <Label>Email (opsional)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-email" className="text-xs md:text-sm font-medium">Email (opsional)</Label>
                 <Input
+                  id="res-email"
                   type="email"
                   placeholder="email@contoh.com"
                   value={form.customer_email}
@@ -282,28 +295,31 @@ export default function ReservationForm() {
 
         {/* Special Requests */}
         <Card data-testid="reservation-form-special-card">
-          <CardHeader><CardTitle className="text-base">Permintaan Khusus</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Permintaan Khusus</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="group" aria-label="Jenis permintaan khusus">
               {SPECIAL_TYPES.map(t => (
                 <button
                   key={t.id}
                   type="button"
+                  aria-pressed={form.special_requests.type === t.id}
                   onClick={() => setSpecial("type", form.special_requests.type === t.id ? "" : t.id)}
-                  className={`px-3 py-2 rounded-lg border text-sm transition-all ${
+                  className={`h-9 px-3 rounded-md border text-sm transition-colors ${
                     form.special_requests.type === t.id
-                      ? "bg-amber-50 border-amber-400 text-amber-700"
-                      : "border-gray-200 hover:border-gray-400"
+                      ? "bg-amber-500/10 border-amber-500/60 text-amber-700 dark:text-amber-300"
+                      : "border-input hover:bg-accent"
                   }`}
+                  data-testid={`reservation-form-special-${t.id}`}
                 >
                   {t.label}
                 </button>
               ))}
             </div>
             {form.special_requests.type && (
-              <div>
-                <Label>Detail Permintaan</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-special-notes" className="text-xs md:text-sm font-medium">Detail permintaan</Label>
                 <Textarea
+                  id="res-special-notes"
                   rows={2}
                   placeholder="Ceritakan lebih lanjut..."
                   value={form.special_requests.notes}
@@ -311,18 +327,20 @@ export default function ReservationForm() {
                 />
               </div>
             )}
-            <div>
-              <Label>Catatan untuk Tamu</Label>
+            <div className="space-y-1">
+              <Label htmlFor="res-notes" className="text-xs md:text-sm font-medium">Catatan untuk tamu</Label>
               <Textarea
+                id="res-notes"
                 rows={2}
                 placeholder="Catatan umum tamu..."
                 value={form.notes}
                 onChange={e => setField("notes", e.target.value)}
               />
             </div>
-            <div>
-              <Label>Catatan Internal (untuk staff)</Label>
+            <div className="space-y-1">
+              <Label htmlFor="res-outlet-notes" className="text-xs md:text-sm font-medium">Catatan internal (untuk staf)</Label>
               <Textarea
+                id="res-outlet-notes"
                 rows={2}
                 placeholder="Catatan internal, tidak ditampilkan ke tamu..."
                 value={form.outlet_notes}
@@ -334,18 +352,18 @@ export default function ReservationForm() {
 
         {/* Deposit / DP */}
         <Card data-testid="reservation-form-deposit-card">
-          <CardHeader><CardTitle className="text-base">Down Payment / DP (opsional)</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Down Payment / DP (opsional)</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Jumlah DP (Rp)</Label>
-                <Input type="number" min={0} value={form.deposit_amount}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="res-dp-amount" className="text-xs md:text-sm font-medium">Jumlah DP (Rp)</Label>
+                <Input id="res-dp-amount" type="number" min={0} value={form.deposit_amount}
                   onChange={e => setField("deposit_amount", parseFloat(e.target.value) || 0)} />
               </div>
-              <div>
-                <Label>Status DP</Label>
+              <div className="space-y-1">
+                <Label htmlFor="res-dp-status" className="text-xs md:text-sm font-medium">Status DP</Label>
                 <Select value={form.deposit_status} onValueChange={v => setField("deposit_status", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="res-dp-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Tidak Diperlukan</SelectItem>
                     <SelectItem value="pending">Menunggu Pembayaran</SelectItem>
@@ -357,11 +375,11 @@ export default function ReservationForm() {
               </div>
             </div>
             {form.deposit_amount > 0 && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Metode Pembayaran DP</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="res-dp-method" className="text-xs md:text-sm font-medium">Metode pembayaran DP</Label>
                   <Select value={form.dp_payment_method || ""} onValueChange={v => setField("dp_payment_method", v)}>
-                    <SelectTrigger><SelectValue placeholder="Pilih metode..." /></SelectTrigger>
+                    <SelectTrigger id="res-dp-method"><SelectValue placeholder="Pilih metode..." /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="cash">Cash</SelectItem>
                       <SelectItem value="transfer_bank">Transfer Bank</SelectItem>
@@ -374,13 +392,13 @@ export default function ReservationForm() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Deadline Bayar DP</Label>
-                  <Input type="date" value={form.dp_deadline || ""} onChange={e => setField("dp_deadline", e.target.value)} />
+                <div className="space-y-1">
+                  <Label htmlFor="res-dp-deadline" className="text-xs md:text-sm font-medium">Deadline bayar DP</Label>
+                  <Input id="res-dp-deadline" type="date" value={form.dp_deadline || ""} onChange={e => setField("dp_deadline", e.target.value)} />
                 </div>
-                <div className="col-span-2">
-                  <Label>No. Referensi / Bukti Transfer</Label>
-                  <Input placeholder="Contoh: TRF-2026051100123" value={form.dp_reference || ""}
+                <div className="sm:col-span-2 space-y-1">
+                  <Label htmlFor="res-dp-reference" className="text-xs md:text-sm font-medium">No. referensi / bukti transfer</Label>
+                  <Input id="res-dp-reference" placeholder="Contoh: TRF-2026051100123" value={form.dp_reference || ""}
                     onChange={e => setField("dp_reference", e.target.value)} />
                 </div>
               </div>
@@ -395,12 +413,12 @@ export default function ReservationForm() {
           </Alert>
         )}
 
-        <div className="flex gap-3" data-testid="reservation-form-actions">
+        <div className="flex justify-end gap-2" data-testid="reservation-form-actions">
           <Button type="button" variant="outline" onClick={() => navigate("/outlet/reservations")}>
             Batal
           </Button>
-          <Button type="submit" disabled={submitting} className="flex-1" data-testid="reservation-form-submit">
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Menyimpan...</> : <><Save className="w-4 h-4 mr-2" /> {isEdit ? "Simpan Perubahan" : "Buat Reservasi"}</>}
+          <Button type="submit" disabled={submitting} data-testid="reservation-form-submit">
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Menyimpan…</> : <><Save className="w-4 h-4" /> {isEdit ? "Simpan Perubahan" : "Buat Reservasi"}</>}
           </Button>
         </div>
       </form>

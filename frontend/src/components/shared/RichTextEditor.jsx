@@ -9,16 +9,15 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { promptDialog } from "@/components/shared/confirmDialog";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading2, Heading3, List, ListOrdered, Quote, Code2,
   Link2, AlignLeft, AlignCenter, AlignRight, Minus,
   RotateCcw, RotateCw, Link2Off,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 // ── Toolbar button helper ──────────────────────────────────────────────────
 function ToolBtn({ onClick, active, disabled, title, children }) {
@@ -26,6 +25,8 @@ function ToolBtn({ onClick, active, disabled, title, children }) {
     <button
       type="button"
       title={title}
+      aria-label={title}
+      aria-pressed={active || undefined}
       disabled={disabled}
       onClick={onClick}
       className={cn(
@@ -41,10 +42,19 @@ function ToolBtn({ onClick, active, disabled, title, children }) {
   );
 }
 
-// ── Link dialog state ──────────────────────────────────────────────────────
-function setLink(editor) {
+// ── Link dialog (promptDialog terpadu; kosongkan URL untuk menghapus link) ──
+async function setLink(editor) {
   const prev = editor.getAttributes("link").href || "";
-  const url = window.prompt("URL Link:", prev);
+  const url = await promptDialog({
+    title: prev ? "Ubah Link" : "Sisipkan Link",
+    description: "Kosongkan URL untuk menghapus link dari teks terpilih.",
+    label: "URL",
+    placeholder: "https://…",
+    defaultValue: prev,
+    required: false,
+    confirmText: "Simpan",
+    testId: "rte-link-dialog",
+  });
   if (url === null) return;
   if (url === "") {
     editor.chain().focus().extendMarkRange("link").unsetLink().run();
@@ -99,83 +109,83 @@ export default function RichTextEditor({ value, onChange, placeholder = "Tulis k
       {/* ── Toolbar ──────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/30">
         {/* History */}
-        <ToolBtn title="Undo" onClick={() => e.chain().focus().undo().run()} disabled={!e.can().undo()}>
+        <ToolBtn title="Urungkan" onClick={() => e.chain().focus().undo().run()} disabled={!e.can().undo()}>
           <RotateCcw className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Redo" onClick={() => e.chain().focus().redo().run()} disabled={!e.can().redo()}>
+        <ToolBtn title="Ulangi" onClick={() => e.chain().focus().redo().run()} disabled={!e.can().redo()}>
           <RotateCw className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Inline marks */}
-        <ToolBtn title="Bold" active={e.isActive("bold")} onClick={() => e.chain().focus().toggleBold().run()}>
+        <ToolBtn title="Tebal" active={e.isActive("bold")} onClick={() => e.chain().focus().toggleBold().run()}>
           <Bold className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Italic" active={e.isActive("italic")} onClick={() => e.chain().focus().toggleItalic().run()}>
+        <ToolBtn title="Miring" active={e.isActive("italic")} onClick={() => e.chain().focus().toggleItalic().run()}>
           <Italic className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Underline" active={e.isActive("underline")} onClick={() => e.chain().focus().toggleUnderline().run()}>
+        <ToolBtn title="Garis bawah" active={e.isActive("underline")} onClick={() => e.chain().focus().toggleUnderline().run()}>
           <UnderlineIcon className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Strikethrough" active={e.isActive("strike")} onClick={() => e.chain().focus().toggleStrike().run()}>
+        <ToolBtn title="Coret" active={e.isActive("strike")} onClick={() => e.chain().focus().toggleStrike().run()}>
           <Strikethrough className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Headings */}
-        <ToolBtn title="Heading 2" active={e.isActive("heading", { level: 2 })} onClick={() => e.chain().focus().toggleHeading({ level: 2 }).run()}>
+        <ToolBtn title="Judul 2" active={e.isActive("heading", { level: 2 })} onClick={() => e.chain().focus().toggleHeading({ level: 2 }).run()}>
           <Heading2 className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Heading 3" active={e.isActive("heading", { level: 3 })} onClick={() => e.chain().focus().toggleHeading({ level: 3 }).run()}>
+        <ToolBtn title="Judul 3" active={e.isActive("heading", { level: 3 })} onClick={() => e.chain().focus().toggleHeading({ level: 3 }).run()}>
           <Heading3 className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Lists */}
-        <ToolBtn title="Bullet List" active={e.isActive("bulletList")} onClick={() => e.chain().focus().toggleBulletList().run()}>
+        <ToolBtn title="Daftar poin" active={e.isActive("bulletList")} onClick={() => e.chain().focus().toggleBulletList().run()}>
           <List className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Numbered List" active={e.isActive("orderedList")} onClick={() => e.chain().focus().toggleOrderedList().run()}>
+        <ToolBtn title="Daftar bernomor" active={e.isActive("orderedList")} onClick={() => e.chain().focus().toggleOrderedList().run()}>
           <ListOrdered className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Block */}
-        <ToolBtn title="Blockquote" active={e.isActive("blockquote")} onClick={() => e.chain().focus().toggleBlockquote().run()}>
+        <ToolBtn title="Kutipan" active={e.isActive("blockquote")} onClick={() => e.chain().focus().toggleBlockquote().run()}>
           <Quote className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Code Block" active={e.isActive("codeBlock")} onClick={() => e.chain().focus().toggleCodeBlock().run()}>
+        <ToolBtn title="Blok kode" active={e.isActive("codeBlock")} onClick={() => e.chain().focus().toggleCodeBlock().run()}>
           <Code2 className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Divider" onClick={() => e.chain().focus().setHorizontalRule().run()}>
+        <ToolBtn title="Garis pemisah" onClick={() => e.chain().focus().setHorizontalRule().run()}>
           <Minus className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Alignment */}
-        <ToolBtn title="Align Left" active={e.isActive({ textAlign: "left" })} onClick={() => e.chain().focus().setTextAlign("left").run()}>
+        <ToolBtn title="Rata kiri" active={e.isActive({ textAlign: "left" })} onClick={() => e.chain().focus().setTextAlign("left").run()}>
           <AlignLeft className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Align Center" active={e.isActive({ textAlign: "center" })} onClick={() => e.chain().focus().setTextAlign("center").run()}>
+        <ToolBtn title="Rata tengah" active={e.isActive({ textAlign: "center" })} onClick={() => e.chain().focus().setTextAlign("center").run()}>
           <AlignCenter className="h-3.5 w-3.5" />
         </ToolBtn>
-        <ToolBtn title="Align Right" active={e.isActive({ textAlign: "right" })} onClick={() => e.chain().focus().setTextAlign("right").run()}>
+        <ToolBtn title="Rata kanan" active={e.isActive({ textAlign: "right" })} onClick={() => e.chain().focus().setTextAlign("right").run()}>
           <AlignRight className="h-3.5 w-3.5" />
         </ToolBtn>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Link */}
-        <ToolBtn title="Set Link" active={e.isActive("link")} onClick={() => setLink(e)}>
+        <ToolBtn title="Sisipkan link" active={e.isActive("link")} onClick={() => setLink(e)}>
           <Link2 className="h-3.5 w-3.5" />
         </ToolBtn>
         {e.isActive("link") && (
-          <ToolBtn title="Remove Link" onClick={() => e.chain().focus().unsetLink().run()}>
+          <ToolBtn title="Hapus link" onClick={() => e.chain().focus().unsetLink().run()}>
             <Link2Off className="h-3.5 w-3.5" />
           </ToolBtn>
         )}

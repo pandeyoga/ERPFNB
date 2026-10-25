@@ -3,14 +3,16 @@
  * Shows live toggle statuses + rates, lets admin enable/disable each type.
  */
 import { useEffect, useState, useCallback } from "react";
-import { Calculator, ArrowRight, CheckCircle2, XCircle, ExternalLink, Info, RefreshCw } from "lucide-react";
+import { Calculator, CheckCircle2, XCircle, ExternalLink, Info, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import api, { unwrap } from "@/lib/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import LoadingState from "@/components/shared/LoadingState";
 import PageHeader from "@/components/shared/PageHeader";
+import StatusPill from "@/components/shared/StatusPill";
 
 const TAX_TYPES = [
   {
@@ -51,36 +53,15 @@ const TAX_TYPES = [
   },
 ];
 
-const colorMap = {
-  blue:   { bg: "bg-blue-50",   border: "border-blue-200",  text: "text-blue-700",   badge: "bg-blue-100 text-blue-700",   ring: "ring-blue-300",   toggle: "bg-blue-500"   },
-  purple: { bg: "bg-purple-50", border: "border-purple-200",text: "text-purple-700", badge: "bg-purple-100 text-purple-700",ring: "ring-purple-300", toggle: "bg-purple-500" },
-  amber:  { bg: "bg-amber-50",  border: "border-amber-200", text: "text-amber-700",  badge: "bg-amber-100 text-amber-700", ring: "ring-amber-300",  toggle: "bg-amber-500"  },
-  rose:   { bg: "bg-rose-50",   border: "border-rose-200",  text: "text-rose-700",   badge: "bg-rose-100 text-rose-700",   ring: "ring-rose-300",   toggle: "bg-rose-500"   },
+// Aksen per jenis pajak (hanya untuk teks/ikon saat aktif — kartu memakai permukaan glass-card standar)
+const ACCENT = {
+  blue:   "text-blue-700 dark:text-blue-300",
+  purple: "text-purple-700 dark:text-purple-300",
+  amber:  "text-amber-700 dark:text-amber-300",
+  rose:   "text-rose-700 dark:text-rose-300",
 };
 
-function ToggleSwitch({ checked, onChange, color = "blue", disabled }) {
-  const c = colorMap[color] || colorMap.blue;
-  return (
-    <button
-      type="button"
-      onClick={() => !disabled && onChange(!checked)}
-      disabled={disabled}
-      className={cn(
-        "relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none",
-        checked ? c.toggle : "bg-gray-200",
-        disabled && "opacity-50 cursor-not-allowed"
-      )}
-      data-testid={`tax-toggle-${color}`}
-    >
-      <span className={cn(
-        "inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all duration-300",
-        checked ? "translate-x-8" : "translate-x-1"
-      )} />
-    </button>
-  );
-}
-
-export default function TaxConfig() {
+export default function TaxConfig({ embedded = false } = {}) {
   const [config, setConfig] = useState(null);
   const [saving, setSaving] = useState(null); // id of saving item
   const [loading, setLoading] = useState(true);
@@ -91,7 +72,7 @@ export default function TaxConfig() {
       const cfgRes = await api.get("/tax/config");
       setConfig(unwrap(cfgRes));
     } catch (e) {
-      toast.error("Gagal memuat config pajak");
+      toast.error("Gagal memuat konfigurasi pajak");
     } finally {
       setLoading(false);
     }
@@ -104,7 +85,7 @@ export default function TaxConfig() {
     try {
       const toggleRes = await api.put("/tax/config", { [taxItem.enabledKey]: String(enabled) });
       unwrap(toggleRes);
-      toast.success(`${taxItem.name}: ${enabled ? "Diaktifkan ✓" : "Dinonaktifkan"}`);
+      toast.success(`${taxItem.name}: ${enabled ? "diaktifkan" : "dinonaktifkan"}`);
       await load();
     } catch (e) {
       toast.error("Gagal: " + (e.message || ""));
@@ -113,118 +94,111 @@ export default function TaxConfig() {
     }
   }
 
+  const fullConfigLink = (
+    <div data-testid="tax-full-config-card">
+      <Link to="/finance/tax" tabIndex={-1} data-testid="tax-full-config-link">
+        <Button variant="outline" data-testid="tax-full-config-btn">
+          Buka Finance → Pajak
+          <ExternalLink />
+        </Button>
+      </Link>
+    </div>
+  );
+
+  const header = !embedded && (
+    <PageHeader
+      icon={Calculator}
+      title="Tax Config"
+      subtitle="Aktif/nonaktifkan setiap jenis pajak. Konfigurasi lengkap ada di Finance → Pajak."
+      actions={fullConfigLink}
+    />
+  );
+
   if (loading) return (
-    <div className="space-y-6 pb-8" data-testid="tax-config-page">
+    <div className="space-y-3" data-testid="tax-config-page">
+      {header}
       <LoadingState rows={4} />
     </div>
   );
   if (!config) return null;
 
   return (
-    <div className="space-y-6 pb-8" data-testid="tax-config-page">
-      <PageHeader
-        icon={Calculator}
-        title="Tax / Pajak"
-        subtitle="Toggle aktif/nonaktif setiap jenis pajak. Konfigurasi lengkap ada di Finance → Pajak."
-      />
+    <div className="space-y-3" data-testid="tax-config-page">
+      {header}
 
-      {/* Info banner */}
-      <div className="rounded-xl bg-blue-50 border border-blue-200 p-4 flex items-start gap-3" data-testid="tax-config-info-banner">
-        <Info size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
-        <div className="text-sm text-blue-800">
-          <p className="font-medium">Sprint 1 — Compliance Indonesia 2026</p>
-          <p className="text-blue-600 mt-1">
-            Halaman ini menampilkan status pajak secara ringkas. Untuk konfigurasi lengkap (kalkulator, tabel tarif, riwayat withholding),
-            buka <Link to="/finance/tax" className="underline font-medium">Finance → Pajak</Link>.
+      {/* Info + tautan ke konfigurasi lengkap (sebelumnya banner + kartu terpisah yang isinya sama) */}
+      <div className="glass-card p-3 flex items-center justify-between gap-3 flex-wrap" data-testid="tax-config-info-banner">
+        <div className="flex items-start gap-2 min-w-0">
+          <Info className="h-4 w-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            Ringkasan status pajak. Kalkulator PPh 21, tabel tarif PPh 23/4(2), riwayat withholding per periode,
+            dan ekspor ada di Finance → Pajak.
           </p>
         </div>
+        {embedded && fullConfigLink}
       </div>
 
       {/* Tax cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="tax-cards-grid">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="tax-cards-grid">
         {TAX_TYPES.map(t => {
           const cfg = config[t.id] || {};
           const enabled = cfg.enabled ?? false;
           const rate = cfg.rate;
-          const c = colorMap[t.color] || colorMap.blue;
+          const accent = ACCENT[t.color] || ACCENT.blue;
+          const switchId = `tax-switch-${t.id}`;
 
           return (
             <div
               key={t.id}
-              className={cn(
-                "rounded-2xl border-2 p-5 transition-all",
-                enabled ? cn(c.bg, c.border) : "bg-gray-50 border-gray-200"
-              )}
+              className={cn("glass-card p-4 transition-colors", enabled && "ring-1 ring-primary/20")}
               data-testid={`tax-card-${t.id}`}
             >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0 pr-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className={cn("font-semibold text-sm", enabled ? c.text : "text-gray-600")}>{t.name}</h3>
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-full text-xs font-medium",
-                      enabled ? cn(c.badge) : "bg-gray-100 text-gray-500"
-                    )}>
-                      {enabled ? "ON" : "OFF"}
-                    </span>
+                    <h3 className={cn("text-sm md:text-base font-semibold", enabled ? accent : "text-muted-foreground")}>
+                      <label htmlFor={switchId} className="cursor-pointer">{t.name}</label>
+                    </h3>
+                    <StatusPill status={enabled ? "active" : "inactive"} />
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{t.law}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.law}</p>
                 </div>
-                <ToggleSwitch
-                  checked={enabled}
-                  onChange={v => toggle(t, v)}
-                  color={t.color}
-                  disabled={saving === t.id}
-                />
+                <div className="flex items-center gap-2 shrink-0">
+                  {saving === t.id && <RefreshCw className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+                  <Switch
+                    id={switchId}
+                    checked={enabled}
+                    onCheckedChange={v => toggle(t, v)}
+                    disabled={saving === t.id}
+                    aria-label={`${enabled ? "Nonaktifkan" : "Aktifkan"} ${t.name}`}
+                    data-testid={`tax-toggle-${t.color}`}
+                  />
+                </div>
               </div>
 
-              {/* Description */}
-              <p className="text-xs text-gray-500 mb-4">{t.desc}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t.desc}</p>
 
-              {/* Rate + status */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {rate !== undefined && (
-                    <span className={cn(
-                      "px-3 py-1 rounded-lg text-sm font-bold tabular-nums",
-                      enabled ? cn(c.badge) : "bg-gray-100 text-gray-400"
-                    )}>
-                      {(rate * 100).toFixed(0)}%
-                    </span>
-                  )}
-                  {t.id === "pph21" && (
-                    <span className="text-xs text-gray-400">Progresif (5–35%)</span>
-                  )}
-                  {enabled ? (
-                    <CheckCircle2 size={16} className={c.text} />
-                  ) : (
-                    <XCircle size={16} className="text-gray-300" />
-                  )}
-                </div>
-                {saving === t.id && <RefreshCw size={14} className="animate-spin text-gray-400" />}
+              <div className="flex items-center gap-2 mt-3">
+                {rate !== undefined && (
+                  <span className={cn(
+                    "px-2 py-0.5 rounded-md text-sm font-semibold tabular-nums",
+                    enabled ? cn("bg-foreground/[0.06]", accent) : "bg-foreground/[0.04] text-muted-foreground"
+                  )}>
+                    Tarif {(rate * 100).toFixed(0)}%
+                  </span>
+                )}
+                {t.id === "pph21" && (
+                  <span className="text-xs text-muted-foreground">Progresif (5–35%)</span>
+                )}
+                {enabled ? (
+                  <CheckCircle2 className={cn("h-4 w-4", accent)} aria-hidden />
+                ) : (
+                  <XCircle className="h-4 w-4 text-muted-foreground/50" aria-hidden />
+                )}
               </div>
             </div>
           );
         })}
-      </div>
-
-      {/* Link to full config */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="tax-full-config-card">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="font-semibold text-gray-900">Konfigurasi Lengkap</h4>
-            <p className="text-sm text-gray-500 mt-1">
-              Kalkulator PPh 21, tabel tarif PPh 23/4(2), riwayat withholding per periode, dan export.
-            </p>
-          </div>
-          <Link to="/finance/tax" data-testid="tax-full-config-link">
-            <Button variant="outline" className="flex items-center gap-2" data-testid="tax-full-config-btn">
-              Buka Finance → Pajak
-              <ExternalLink size={14} />
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );

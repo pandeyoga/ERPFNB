@@ -1,21 +1,18 @@
 /** Daily Sales Detail — read-only view + Validate/Reject (finance) buttons + Edit (outlet). */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, Edit2, CheckCircle2, XCircle, FileText } from "lucide-react";
+import { ArrowLeft, Edit2, CheckCircle2, XCircle, FileText, Receipt } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import StatusPill from "@/components/shared/StatusPill";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
 export default function DailySalesDetail() {
@@ -24,19 +21,21 @@ export default function DailySalesDetail() {
   const { can } = useAuth();
   const [ds, setDs] = useState(null);
   const [outlets, setOutlets] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [reject, setReject] = useState(false);
-  const [reason, setReason] = useState("");
 
   async function load() {
     setLoading(true);
     try {
-      const [r, o] = await Promise.all([
+      const [r, o, pm] = await Promise.all([
         api.get(`/outlet/daily-sales/${id}`),
         fetchAll("/master/outlets"),
+        // Nama metode pembayaran: entri lama hanya menyimpan payment_method_id → tampil UUID.
+        fetchAll("/master/payment-methods").catch(() => null),
       ]);
       setDs(unwrap(r));
       setOutlets(unwrap(o) || []);
+      setPaymentMethods(pm ? (unwrap(pm) || []) : []);
     } catch (e) {
       toast.error("Gagal load detail");
     } finally {
@@ -47,27 +46,38 @@ export default function DailySalesDetail() {
 
   if (loading || !ds) return <LoadingState rows={8} />;
   const outletName = outlets.find(o => o.id === ds.outlet_id)?.name || ds.outlet_id;
+  const pmName = (p) => p.payment_method_name
+    || paymentMethods.find(m => m.id === p.payment_method_id)?.name
+    || p.payment_method_id;
 
   async function validate() {
-    if (!(await confirmDialog("Validate daily sales? Jurnal akan dibuat."))) return;
+    if (!(await confirmDialog("Validasi daily sales ini? Jurnal akan dibuat."))) return;
     try {
       await api.post(`/outlet/daily-sales/${id}/validate`);
-      toast.success("Validated. Jurnal dibuat.");
+      toast.success("Tervalidasi. Jurnal dibuat.");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal validate");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal validasi");
     }
   }
 
   async function rejectSubmit() {
-    if (!reason.trim()) { toast.error("Alasan wajib"); return; }
+    const reason = await promptDialog({
+      title: "Tolak Daily Sales?",
+      description: "Sertakan alasan agar outlet manager bisa memperbaiki.",
+      label: "Alasan penolakan",
+      placeholder: "Mis: Total pembayaran tidak cocok dengan grand total…",
+      multiline: true,
+      destructive: true,
+      confirmText: "Tolak",
+    });
+    if (!reason) return;
     try {
       await api.post(`/outlet/daily-sales/${id}/reject`, { reason });
-      toast.success("Daily sales di-reject");
-      setReject(false); setReason("");
+      toast.success("Daily sales ditolak");
       load();
     } catch (e) {
-      toast.error("Gagal reject");
+      toast.error("Gagal menolak");
     }
   }
 
@@ -76,55 +86,63 @@ export default function DailySalesDetail() {
   const canEdit = (ds.status === "draft" || ds.status === "rejected") && can("outlet.daily_sales.create");
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-testid="daily-sales-detail-page">
-      <div className="flex items-center gap-3 flex-wrap" data-testid="ds-detail-header">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2" data-testid="ds-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
+    <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto" data-testid="daily-sales-detail-page">
+      <div data-testid="ds-detail-header">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/outlet/daily-sales")} className="-ml-2 mb-1" data-testid="ds-back">
+          <ArrowLeft className="h-4 w-4" /> Kembali ke Daily Sales
         </Button>
-        <h2 className="text-xl font-bold">Daily Sales {fmtDate(ds.sales_date)}</h2>
-        <StatusPill status={ds.status} />
-        <div className="ml-auto flex items-center gap-2">
-          {canEdit && (
-            <Link to={`/outlet/daily-sales/${id}/edit`}>
-              <Button variant="outline" className="rounded-full gap-2" data-testid="ds-edit">
-                <Edit2 className="h-4 w-4" /> Edit
-              </Button>
-            </Link>
+        <PageHeader
+          icon={Receipt}
+          title={`Daily Sales ${fmtDate(ds.sales_date)}`}
+          subtitle={outletName}
+          className="mb-0 md:mb-0"
+          actions={(canEdit || canReject || canValidate) && (
+            <>
+              {canEdit && (
+                <Button variant="outline" asChild>
+                  <Link to={`/outlet/daily-sales/${id}/edit`} data-testid="ds-edit">
+                    <Edit2 className="h-4 w-4" /> Ubah
+                  </Link>
+                </Button>
+              )}
+              {canReject && (
+                <Button onClick={rejectSubmit} variant="outline" className="text-red-600 hover:bg-red-500/10" data-testid="ds-reject">
+                  <XCircle className="h-4 w-4" /> Tolak
+                </Button>
+              )}
+              {canValidate && (
+                <Button onClick={validate} data-testid="ds-validate">
+                  <CheckCircle2 className="h-4 w-4" /> Validasi
+                </Button>
+              )}
+            </>
           )}
-          {canReject && (
-            <Button onClick={() => setReject(true)} variant="outline" className="rounded-full gap-2 text-red-600 hover:bg-red-500/10" data-testid="ds-reject">
-              <XCircle className="h-4 w-4" /> Reject
-            </Button>
-          )}
-          {canValidate && (
-            <Button onClick={validate} className="rounded-full pill-active gap-2" data-testid="ds-validate">
-              <CheckCircle2 className="h-4 w-4" /> Validate
-            </Button>
-          )}
-        </div>
+        >
+          <StatusPill status={ds.status} />
+        </PageHeader>
       </div>
 
       {ds.status === "rejected" && ds.rejected_reason && (
-        <div className="glass-card border-l-4 border-red-500 p-4 text-sm">
-          <strong className="text-red-700 dark:text-red-400">Rejected:</strong> {ds.rejected_reason}
+        <div className="glass-card border-l-4 border-red-500 p-3 text-sm">
+          <strong className="text-red-700 dark:text-red-400">Ditolak:</strong> {ds.rejected_reason}
         </div>
       )}
       {ds.journal_entry_id && (
         <div className="glass-card border-l-4 border-emerald-500 p-3 text-sm flex items-center gap-2">
           <FileText className="h-4 w-4" />
-          <span>Journal Entry ID: <code className="text-xs">{ds.journal_entry_id}</code></span>
+          <span>Jurnal dibuat · ID <span className="text-xs text-muted-foreground tabular-nums">{ds.journal_entry_id}</span></span>
         </div>
       )}
 
-      <div className="glass-card p-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 text-sm">
         <Field label="Outlet" value={outletName} />
         <Field label="Tanggal" value={fmtDate(ds.sales_date)} />
-        <Field label="Trx Count" value={ds.transaction_count || 0} />
+        <Field label="Jumlah Transaksi" value={ds.transaction_count || 0} />
         <Field label="Submitted" value={ds.submitted_at ? fmtDateTime(ds.submitted_at) : "-"} />
       </div>
 
-      <div className="glass-card p-5">
-        <h3 className="font-semibold mb-3">Channels</h3>
+      <div className="glass-card p-4">
+        <h3 className="text-sm md:text-base font-semibold mb-2">Channels</h3>
         <DataTable
           rows={ds.channels || []}
           keyField="channel"
@@ -135,16 +153,16 @@ export default function DailySalesDetail() {
             { key: "channel", label: "Channel", primary: true,
               render: (c) => <span className="capitalize">{c.channel}</span> },
             { key: "gross", label: "Gross", numeric: true, sortable: true, render: (c) => fmtRp(c.gross || 0) },
-            { key: "discount", label: "Discount", numeric: true, render: (c) => fmtRp(c.discount || 0) },
+            { key: "discount", label: "Diskon", numeric: true, render: (c) => fmtRp(c.discount || 0) },
             { key: "net", label: "Net", numeric: true, sortable: true,
               render: (c) => <span className="font-medium">{fmtRp(c.net || 0)}</span> },
           ]}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="glass-card p-5">
-          <h3 className="font-semibold mb-3">Revenue Buckets</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">Revenue Buckets</h3>
           <div className="space-y-2 text-sm">
             {(ds.revenue_buckets || []).map(b => (
               <div key={b.bucket} className="flex justify-between">
@@ -157,22 +175,22 @@ export default function DailySalesDetail() {
               <span className="tabular-nums">{fmtRp(ds.service_charge || 0)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Tax</span>
+              <span className="text-muted-foreground">Pajak</span>
               <span className="tabular-nums">{fmtRp(ds.tax_amount || 0)}</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-border/50 text-base font-bold">
+            <div className="flex justify-between pt-2 border-t border-border/50 text-base font-semibold">
               <span>Grand Total</span>
               <span className="tabular-nums">{fmtRp(ds.grand_total || 0)}</span>
             </div>
           </div>
         </div>
-        <div className="glass-card p-5">
-          <h3 className="font-semibold mb-3">Payment Breakdown</h3>
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">Payment Breakdown</h3>
           {(ds.payment_breakdown || []).length === 0 && <div className="text-sm text-muted-foreground">—</div>}
           <div className="space-y-2 text-sm">
             {(ds.payment_breakdown || []).map((p, i) => (
               <div key={i} className="flex justify-between">
-                <span className="text-muted-foreground">{p.payment_method_name || p.payment_method_id}</span>
+                <span className="text-muted-foreground">{pmName(p)}</span>
                 <span className="tabular-nums font-medium">{fmtRp(p.amount || 0)}</span>
               </div>
             ))}
@@ -181,25 +199,12 @@ export default function DailySalesDetail() {
       </div>
 
       {ds.notes && (
-        <div className="glass-card p-5">
-          <h3 className="font-semibold mb-1 text-sm">Catatan</h3>
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-1">Catatan</h3>
           <p className="text-sm text-muted-foreground whitespace-pre-line">{ds.notes}</p>
         </div>
       )}
 
-      <Dialog open={reject} onOpenChange={setReject}>
-        <DialogContent className="glass-card max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reject Daily Sales?</DialogTitle>
-            <DialogDescription>Sertakan alasan agar outlet manager bisa memperbaiki.</DialogDescription>
-          </DialogHeader>
-          <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Mis: Total pembayaran tidak cocok dengan grand total…" className="glass-input min-h-[100px]" data-testid="ds-reject-reason" />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReject(false)}>Batal</Button>
-            <Button onClick={rejectSubmit} className="pill-active" data-testid="ds-reject-confirm">Reject</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

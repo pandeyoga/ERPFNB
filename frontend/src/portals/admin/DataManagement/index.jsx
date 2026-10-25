@@ -8,27 +8,24 @@
  *   - Delete: granular delete by category with confirmation phrase
  *   - Preview: view first N records of any collection
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { logger } from "@/lib/logger";
-import {
-  Download, Upload, Trash2, Database, ChevronDown, ChevronUp,
-  FileJson, FileSpreadsheet, Archive, AlertTriangle, CheckCircle,
-  Eye, RefreshCw, X, Search, Package, DollarSign, ShoppingCart,
-  BoxIcon, Users, Globe, Settings, BarChart3, Shield,
-} from "lucide-react";
-import { useAuth } from "@/lib/auth";
+import { RefreshCw, Database, Package, Shield } from "lucide-react";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 
-// \u2500\u2500 Category config (mirrors backend) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 import { TABS } from "./constants";
-import StatsBar from "./StatsBar";
 import ExportTab from "./ExportTab";
 import ImportTab from "./ImportTab";
 import DeleteTab from "./DeleteTab";
 
-export default function DataManagement() {
-  const { token } = useAuth();
+/** embedded=true saat dirender di hub Monitoring (/admin/operations/data-management):
+ *  tanpa PageHeader karena judul halaman sudah dari hub. */
+export default function DataManagement({ embedded = false }) {
   const [activeTab, setActiveTab] = useState("export");
   const [collections, setCollections] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,76 +44,76 @@ export default function DataManagement() {
 
   useEffect(() => { loadCollections(); }, [loadCollections]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
-      </div>
-    );
-  }
+  const intro = "Backup, restore, dan kelola seluruh data sistem FnB Group ERP.";
+  const refreshBtn = (
+    <Button variant="outline" onClick={loadCollections} disabled={loading} data-testid="dm-refresh">
+      <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+      Muat ulang
+    </Button>
+  );
+
+  const allColls = collections?.all_collections || [];
+  const totalDocs = allColls.reduce((s, c) => s + (c.count || 0), 0);
+  const totalColls = allColls.filter(c => c.count > 0).length;
+  const catCount = Object.keys(collections?.categories || {}).length;
 
   return (
-    <div className="space-y-6" data-testid="data-management-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Manajemen Data Sistem</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Backup, restore, dan kelola seluruh data sistem FnB Group ERP
-          </p>
+    <div className="space-y-3 lg:space-y-4" data-testid="data-management-page">
+      {embedded ? (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-muted-foreground">{intro}</p>
+          {refreshBtn}
         </div>
-        <button
-          onClick={loadCollections}
-          className="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
-      </div>
-
-      {/* Stats bar */}
-      {collections && (
-        <StatsBar categories={collections.categories} allCollections={collections.all_collections} />
+      ) : (
+        <PageHeader icon={Database} title="Data Management" subtitle={intro} actions={refreshBtn} />
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit" data-testid="dm-tabs">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-              data-testid={`dm-tab-${tab.id}`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      {loading && !collections ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+        </div>
+      ) : (
+        <>
+          {/* Stats */}
+          {collections && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3" data-testid="dm-stats">
+              <CompactStatCard testId="dm-stat-total-records" label="Total Records" value={totalDocs.toLocaleString("id-ID")} icon={Database} color="aurora-3" />
+              <CompactStatCard testId="dm-stat-koleksi-aktif" label="Koleksi Aktif" value={totalColls} icon={Package} color="aurora-4" />
+              <CompactStatCard testId="dm-stat-kategori" label="Kategori" value={catCount} icon={Shield} color="aurora-2" />
+            </div>
+          )}
 
-      {/* Tab content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.15 }}
-        >
-          {activeTab === "export" && <ExportTab collections={collections} />}
-          {activeTab === "import" && <ImportTab collections={collections} onSuccess={loadCollections} />}
-          {activeTab === "delete" && <DeleteTab collections={collections} onSuccess={loadCollections} />}
-        </motion.div>
-      </AnimatePresence>
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList data-testid="dm-tabs">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <TabsTrigger key={tab.id} value={tab.id} data-testid={`dm-tab-${tab.id}`}>
+                    <Icon />
+                    {tab.label}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
+
+          {/* Tab content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+            >
+              {activeTab === "export" && <ExportTab collections={collections} />}
+              {activeTab === "import" && <ImportTab collections={collections} onSuccess={loadCollections} />}
+              {activeTab === "delete" && <DeleteTab collections={collections} onSuccess={loadCollections} />}
+            </motion.div>
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }
-
-// \u2500\u2500 Stats Bar \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500

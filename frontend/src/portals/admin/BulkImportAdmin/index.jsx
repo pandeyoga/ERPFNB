@@ -30,11 +30,12 @@ import DataTable from "@/components/shared/DataTable";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 
 import { ENTITY_ICONS, ENTITY_COLORS, STEP_LABELS, MAX_ROWS, downloadErrorCSV } from "./constants";
-import StatCard from "./StatCard";
 
-export default function BulkImport() {
+export default function BulkImport({ embedded = false } = {}) {
   const [entityTypes, setEntityTypes] = useState([]);
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -54,7 +55,7 @@ export default function BulkImport() {
       const res = await api.get("/admin/bulk-import/entity-types");
       setEntityTypes(res.data.data.items || []);
     } catch {
-      toast.error("Gagal memuat entity types");
+      toast.error("Gagal memuat jenis data import");
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,7 @@ export default function BulkImport() {
       toast.success(`Template ${selectedEntity.label} berhasil diunduh`);
       setCurrentStep(2);
     } catch {
-      toast.error("Gagal download template");
+      toast.error("Gagal mengunduh template");
     }
   };
 
@@ -117,12 +118,12 @@ export default function BulkImport() {
       setPreviewResult(data);
       setCurrentStep(3);
       if (data.summary.valid > 0) {
-        toast.success(`Preview OK: ${data.summary.valid} valid, ${data.summary.invalid} invalid`);
+        toast.success(`Pratinjau selesai: ${data.summary.valid} valid, ${data.summary.invalid} tidak valid`);
       } else {
         toast.warning(`Tidak ada row valid. ${data.summary.invalid} baris berisi error.`);
       }
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal preview file");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal memvalidasi file");
     } finally {
       setUploading(false);
     }
@@ -145,7 +146,7 @@ export default function BulkImport() {
       const r = res.data.data.import_result;
       toast.success(`Import selesai: ${r.created} dibuat, ${r.updated} diperbarui`);
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal commit import");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menjalankan import");
     } finally {
       setCommitting(false);
     }
@@ -173,30 +174,38 @@ export default function BulkImport() {
     ? previewResult?.invalid_rows
     : previewResult?.invalid_rows?.slice(0, 20);
 
+  const subtitle = `Import master data dalam jumlah besar via template Excel. Maks ${MAX_ROWS.toLocaleString("id-ID")} baris per import.`;
+  const resetButton = currentStep > 0 && (
+    <Button variant="outline" onClick={handleReset} data-testid="btn-reset">
+      <RotateCcw /> Mulai Ulang
+    </Button>
+  );
+
   return (
-    <div className="space-y-6" data-testid="bulk-import-page">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold" data-testid="bulk-import-title">Bulk Excel Import</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Import master data dalam jumlah besar via Excel template. Batas maks {MAX_ROWS.toLocaleString("id-ID")} baris per import.
-          </p>
+    <div className="space-y-3 lg:space-y-4" data-testid="bulk-import-page">
+      {/* Header — mandiri: PageHeader; di dalam hub "Setup & Numbering": baris ringkas tanpa judul kedua */}
+      {embedded ? (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-muted-foreground" data-testid="bulk-import-title">{subtitle}</p>
+          {resetButton}
         </div>
-        {currentStep > 0 && (
-          <Button variant="outline" onClick={handleReset} className="gap-2" data-testid="btn-reset">
-            <RotateCcw className="w-4 h-4" /> Mulai Ulang
-          </Button>
-        )}
-      </div>
+      ) : (
+        <PageHeader
+          icon={FileSpreadsheet}
+          title="Bulk Excel Import"
+          subtitle={subtitle}
+          actions={resetButton}
+          testId="bulk-import-title"
+        />
+      )}
 
       {/* Progress Steps */}
       <Card data-testid="bulk-import-steps">
-        <CardContent className="pt-4">
+        <CardContent className="pt-3 pb-3">
           <div className="flex items-center justify-between gap-1 overflow-x-auto">
             {STEP_LABELS.map((label, idx) => (
               <div key={idx} className="flex items-center shrink-0">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-bold transition-all ${
+                <div className={`flex items-center justify-center w-7 h-7 rounded-full border-2 text-xs font-semibold transition-all ${
                   idx < currentStep
                     ? "bg-green-500 border-green-500 text-white"
                     : idx === currentStep
@@ -223,34 +232,34 @@ export default function BulkImport() {
       {currentStep === 0 && (
         <Card data-testid="step-select-entity">
           <CardHeader>
-            <CardTitle>Pilih Jenis Master Data</CardTitle>
+            <CardTitle>Pilih jenis master data</CardTitle>
             <CardDescription>Pilih jenis data yang ingin di-import via Excel</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {entityTypes.map((entity) => {
                 const Icon = ENTITY_ICONS[entity.value] || FileSpreadsheet;
                 const colorCls = ENTITY_COLORS[entity.value] || "from-gray-500/15 to-gray-600/15 text-gray-600";
                 return (
                   <button
                     key={entity.value}
-                    className="group text-left rounded-xl border border-border bg-card hover:border-primary hover:shadow-md transition-all p-5 focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="group text-left rounded-[calc(var(--radius)-2px)] border border-border bg-card hover:border-primary hover:shadow-md transition-all p-3 focus:outline-none focus:ring-2 focus:ring-primary"
                     onClick={() => handleSelectEntity(entity)}
                     data-testid={`entity-card-${entity.value}`}
                   >
-                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${colorCls} mb-3`}>
-                      <Icon className="w-6 h-6" />
+                    <div className="flex items-center gap-3">
+                      <div className={`inline-flex shrink-0 items-center justify-center w-9 h-9 rounded-[calc(var(--radius)-2px)] bg-gradient-to-br ${colorCls}`}>
+                        <Icon className="w-[18px] h-[18px]" />
+                      </div>
+                      <h3 className="text-sm md:text-base font-semibold flex-1 min-w-0 truncate">{entity.label}</h3>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
-                    <h3 className="font-semibold text-base mb-1">{entity.label}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Unique key: <Badge variant="secondary" className="text-xs">{entity.unique_key}</Badge>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Kunci unik: <Badge variant="secondary" className="text-xs">{entity.unique_key}</Badge>
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Wajib: {entity.required_fields.join(", ")}
                     </p>
-                    <div className="mt-3 flex items-center gap-1 text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      Pilih <ArrowRight className="w-3 h-3" />
-                    </div>
                   </button>
                 );
               })}
@@ -264,14 +273,14 @@ export default function BulkImport() {
         <Card data-testid="step-download-template">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-primary" />
-              Download Template Excel
+              <FileSpreadsheet className="w-4 h-4 text-primary" />
+              Unduh template Excel
             </CardTitle>
             <CardDescription>
               Template sudah berisi header dan 1 baris contoh. Isi data Anda mulai baris ke-3.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <Alert>
               <Info className="w-4 h-4" />
               <AlertDescription className="text-sm">
@@ -280,24 +289,24 @@ export default function BulkImport() {
                 Maksimum <strong>{MAX_ROWS.toLocaleString("id-ID")} baris</strong> per upload.
               </AlertDescription>
             </Alert>
-            <Button
-              onClick={handleDownloadTemplate}
-              className="w-full gap-2"
-              data-testid="btn-download-template"
-            >
-              <Download className="w-4 h-4" />
-              Download Template — {selectedEntity.label}
-            </Button>
-            {currentStep === 1 && (
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => setCurrentStep(2)}
-                data-testid="btn-skip-template"
+                onClick={handleDownloadTemplate}
+                data-testid="btn-download-template"
               >
-                Sudah punya template? Lanjut ke Upload
+                <Download />
+                Unduh Template — {selectedEntity.label}
               </Button>
-            )}
+              {currentStep === 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(2)}
+                  data-testid="btn-skip-template"
+                >
+                  Sudah punya template? Lanjut unggah
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -307,18 +316,22 @@ export default function BulkImport() {
         <Card data-testid="step-upload-preview">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Upload className="w-5 h-5 text-primary" />
-              Upload & Preview
+              <Upload className="w-4 h-4 text-primary" />
+              Unggah & pratinjau
             </CardTitle>
-            <CardDescription>Upload file Excel lalu preview hasil validasi sebelum import</CardDescription>
+            <CardDescription>Unggah file Excel lalu periksa hasil validasi sebelum import</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {/* Drop zone */}
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
+              role="button"
+              tabIndex={0}
+              aria-label="Pilih file Excel untuk diunggah"
+              className={`border-2 border-dashed rounded-[calc(var(--radius)-2px)] p-6 text-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 file ? "border-green-400 bg-green-50 dark:bg-green-950/20" : "border-border hover:border-primary"
               }`}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
               data-testid="file-dropzone"
             >
               <input
@@ -331,7 +344,7 @@ export default function BulkImport() {
               />
               {file ? (
                 <>
-                  <FileText className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                  <FileText className="w-9 h-9 text-green-500 mx-auto mb-2" />
                   <p className="font-medium text-green-700 dark:text-green-400">{file.name}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {(file.size / 1024).toFixed(1)} KB — klik untuk ganti file
@@ -339,7 +352,7 @@ export default function BulkImport() {
                 </>
               ) : (
                 <>
-                  <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                  <Upload className="w-9 h-9 text-muted-foreground mx-auto mb-2" />
                   <p className="font-medium">Klik untuk pilih file Excel</p>
                   <p className="text-xs text-muted-foreground mt-1">.xlsx atau .xls</p>
                 </>
@@ -350,13 +363,12 @@ export default function BulkImport() {
               <Button
                 onClick={handlePreview}
                 disabled={uploading}
-                className="w-full gap-2"
                 data-testid="btn-preview"
               >
                 {uploading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Memvalidasi...</>
+                  <><Loader2 className="animate-spin" /> Memvalidasi…</>
                 ) : (
-                  <><FileText className="w-4 h-4" /> Preview & Validasi</>  
+                  <><FileText /> Pratinjau & Validasi</>
                 )}
               </Button>
             )}
@@ -366,27 +378,12 @@ export default function BulkImport() {
               <div className="space-y-4 pt-2" data-testid="preview-results">
                 {/* Summary stats */}
                 <div className="grid grid-cols-3 gap-3">
-                  <StatCard
-                    label="Valid"
-                    value={previewResult.summary.valid}
-                    color="text-green-600"
-                    bg="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                    testid="preview-valid-count"
-                  />
-                  <StatCard
-                    label="Invalid"
-                    value={previewResult.summary.invalid}
-                    color="text-red-600"
-                    bg="bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
-                    testid="preview-invalid-count"
-                  />
-                  <StatCard
-                    label="Total"
-                    value={previewResult.total_rows}
-                    color="text-primary"
-                    bg="bg-muted"
-                    testid="preview-total-count"
-                  />
+                  <CompactStatCard label="Valid" value={previewResult.summary.valid}
+                    tone="success" icon={CheckCircle2} color="aurora-4" size="sm" testId="preview-valid-count" />
+                  <CompactStatCard label="Tidak valid" value={previewResult.summary.invalid}
+                    tone="danger" icon={XCircle} color="aurora-3" size="sm" testId="preview-invalid-count" />
+                  <CompactStatCard label="Total baris" value={previewResult.total_rows}
+                    icon={FileSpreadsheet} color="aurora-1" size="sm" testId="preview-total-count" />
                 </div>
 
                 {/* Progress bar */}
@@ -419,19 +416,18 @@ export default function BulkImport() {
                   <Card className="border-red-200 dark:border-red-800" data-testid="invalid-rows-card">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-red-600 text-base">
-                          <XCircle className="w-5 h-5" />
-                          {previewResult.invalid_rows.length} Baris Error
+                        <CardTitle className="flex items-center gap-2 text-red-600">
+                          <XCircle className="w-4 h-4" />
+                          {previewResult.invalid_rows.length} baris error
                         </CardTitle>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-1.5 text-xs h-8"
                           onClick={() => downloadErrorCSV(selectedEntity.label, previewResult.invalid_rows)}
                           data-testid="btn-download-errors"
                         >
-                          <FileDown className="w-3.5 h-3.5" />
-                          Download Error CSV
+                          <FileDown />
+                          Unduh CSV Error
                         </Button>
                       </div>
                     </CardHeader>
@@ -443,7 +439,7 @@ export default function BulkImport() {
                           rowTestIdPrefix="error-row"
                           columns={[
                             { key: "row_num", label: "Baris", primary: true,
-                              render: (row) => <span className="font-mono font-bold text-xs">{row.row_num}</span> },
+                              render: (row) => <span className="font-semibold text-xs tabular-nums">{row.row_num}</span> },
                             { key: "errors", label: "Errors", render: (row) => (
                               <div className="flex flex-wrap gap-1">
                                 {row.errors.map((err, i) => (
@@ -467,15 +463,16 @@ export default function BulkImport() {
                       </div>
                       {previewResult.invalid_rows.length > 20 && (
                         <div className="p-3 text-center border-t">
-                          <button
+                          <Button
+                            variant="link"
+                            size="sm"
                             onClick={() => setShowAllErrors(v => !v)}
-                            className="text-xs text-primary hover:underline"
                             data-testid="btn-show-all-errors"
                           >
                             {showAllErrors
                               ? "Tampilkan lebih sedikit"
-                              : `Lihat semua ${previewResult.invalid_rows.length} error rows`}
-                          </button>
+                              : `Lihat semua ${previewResult.invalid_rows.length} baris error`}
+                          </Button>
                         </div>
                       )}
                     </CardContent>
@@ -492,14 +489,14 @@ export default function BulkImport() {
         <Card className="border-primary/30" data-testid="step-commit">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-primary" />
-              Konfirmasi & Import
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              Konfirmasi & import
             </CardTitle>
             <CardDescription>
               {previewResult.summary.valid} baris valid akan di-upsert ke database
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <Alert>
               <AlertTriangle className="w-4 h-4" />
               <AlertDescription className="text-sm">
@@ -514,7 +511,7 @@ export default function BulkImport() {
             </Alert>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg border p-3">
-                <div className="text-muted-foreground text-xs">Entity</div>
+                <div className="text-muted-foreground text-xs">Jenis data</div>
                 <div className="font-semibold mt-0.5">{selectedEntity.label}</div>
               </div>
               <div className="rounded-lg border p-3">
@@ -523,21 +520,20 @@ export default function BulkImport() {
               </div>
             </div>
           </CardContent>
-          <CardFooter className="gap-3">
+          <CardFooter className="gap-2 justify-end">
+            <Button onClick={handleReset} variant="outline" data-testid="btn-cancel-commit">
+              Batal
+            </Button>
             <Button
               onClick={handleCommit}
               disabled={committing}
-              className="flex-1 gap-2"
               data-testid="btn-commit"
             >
               {committing ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Mengimport...</>
+                <><Loader2 className="animate-spin" /> Mengimpor…</>
               ) : (
-                <><CheckCircle2 className="w-4 h-4" /> Commit Import</>
+                <><CheckCircle2 /> Jalankan Import</>
               )}
-            </Button>
-            <Button onClick={handleReset} variant="outline" data-testid="btn-cancel-commit">
-              Batal
             </Button>
           </CardFooter>
         </Card>
@@ -558,33 +554,18 @@ export default function BulkImport() {
         <Card className="border-green-300 dark:border-green-700" data-testid="step-complete">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-600">
-              <CheckCircle2 className="w-6 h-6" />
-              Import Selesai!
+              <CheckCircle2 className="w-4 h-4" />
+              Import selesai
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <StatCard
-                label="Dibuat"
-                value={importResult.created}
-                color="text-green-600"
-                bg="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                testid="result-created"
-              />
-              <StatCard
-                label="Diperbarui"
-                value={importResult.updated}
-                color="text-blue-600"
-                bg="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
-                testid="result-updated"
-              />
-              <StatCard
-                label="Dilewati"
-                value={importResult.skipped}
-                color="text-muted-foreground"
-                bg="bg-muted"
-                testid="result-skipped"
-              />
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <CompactStatCard label="Dibuat" value={importResult.created}
+                tone="success" icon={CheckCircle2} color="aurora-4" size="sm" testId="result-created" />
+              <CompactStatCard label="Diperbarui" value={importResult.updated}
+                tone="info" icon={RotateCcw} color="aurora-2" size="sm" testId="result-updated" />
+              <CompactStatCard label="Dilewati" value={importResult.skipped}
+                icon={XCircle} color="aurora-1" size="sm" testId="result-skipped" />
             </div>
 
             {importResult.errors?.length > 0 && (
@@ -596,9 +577,9 @@ export default function BulkImport() {
               </Alert>
             )}
           </CardContent>
-          <CardFooter>
-            <Button onClick={handleReset} className="w-full gap-2" data-testid="btn-import-more">
-              <RotateCcw className="w-4 h-4" /> Import Data Lainnya
+          <CardFooter className="justify-end">
+            <Button onClick={handleReset} data-testid="btn-import-more">
+              <RotateCcw /> Import Data Lainnya
             </Button>
           </CardFooter>
         </Card>

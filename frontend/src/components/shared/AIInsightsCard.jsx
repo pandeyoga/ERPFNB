@@ -37,8 +37,8 @@ export default function AIInsightsCard() {
             Beta
           </span>
         </div>
-        <Button onClick={load} disabled={refreshing} size="sm" variant="outline" className="rounded-full gap-1 h-7 px-3">
-          <RefreshCw className={cn("h-3 w-3", refreshing && "animate-spin")} /> Refresh
+        <Button onClick={load} disabled={refreshing} size="sm" variant="outline" data-testid="ai-insights-refresh">
+          <RefreshCw className={cn(refreshing && "animate-spin")} /> Muat ulang
         </Button>
       </div>
 

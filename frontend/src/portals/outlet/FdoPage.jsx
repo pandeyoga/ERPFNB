@@ -15,9 +15,11 @@ import {
 } from "../../components/ui/select";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import StatusPill from "@/components/shared/StatusPill";
+import { Label } from "../../components/ui/label";
 import {
   Plus, Trash2, Search, Star, ChevronLeft, ChevronRight,
-  RefreshCw, Send, Package, Info, TrendingUp, TrendingDown
+  RefreshCw, Send, Package, Info, TrendingUp, TrendingDown, Utensils
 } from "lucide-react";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
@@ -149,6 +151,7 @@ export default function FdoPage() {
       setShowForm(false);
       setLines([]);
       setNotes("");
+      toast.success("FDO berhasil di-submit");
       await fetchFdoList();
     } catch (e) {
       const errs = e.response?.data?.errors || [];
@@ -174,47 +177,46 @@ export default function FdoPage() {
     } finally { setSaving(false); }
   };
 
-  const statusBadge = (status) => {
-    const map = {
-      draft: "bg-gray-100 text-gray-700",
-      submitted: "bg-blue-100 text-blue-700",
-      approved: "bg-green-100 text-green-700",
-      rejected: "bg-red-100 text-red-700",
-      converted: "bg-purple-100 text-purple-700",
-    };
-    return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${map[status] || "bg-gray-100 text-gray-700"}`}>{status?.toUpperCase()}</span>;
-  };
-
   return (
-    <div className="p-6 max-w-full" data-testid="fdo-page">
-      <div className="flex items-center justify-between mb-6" data-testid="fdo-header">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">FDO — Floor Daily Order</h1>
-          <p className="text-sm text-gray-500 mt-1">Permintaan harian untuk floor/service department</p>
+    <div className="space-y-3" data-testid="fdo-page">
+      {/* Section toolbar — sama dengan KDO/BDO (judul h2, bukan h1: halaman induk punya PageHeader) */}
+      <div className="glass-card p-3 flex flex-col sm:flex-row sm:items-center gap-3" data-testid="fdo-header">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center shrink-0">
+            <Utensils className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-base md:text-lg font-semibold leading-tight">FDO — Floor Daily Order</h2>
+            <p className="text-xs text-muted-foreground">
+              Permintaan harian untuk floor/service department.
+              {!selectedOutlet && " Pilih outlet di formulir atau di header Outlet Aktif."}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchFdoList} data-testid="fdo-refresh"><RefreshCw className="h-4 w-4" /></Button>
-          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setShowForm(true)} disabled={!selectedOutlet} data-testid="fdo-create-btn">
-            <Plus className="h-4 w-4 mr-1" />Buat FDO
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={fetchFdoList} aria-label="Muat ulang daftar FDO" title="Muat ulang" data-testid="fdo-refresh"><RefreshCw className="h-4 w-4" /></Button>
+          <Button onClick={() => setShowForm(true)} data-testid="fdo-create-btn">
+            <Plus className="h-4 w-4" /> FDO Baru
           </Button>
         </div>
       </div>
 
       {/* Favorites */}
       {favorites.length > 0 && (
-        <Card className="mb-4" data-testid="fdo-favorites-card">
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />Item Sering Dipesan
+        <Card data-testid="fdo-favorites-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" />Item Sering Dipesan
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent>
             <div className="flex gap-2 flex-wrap" data-testid="fdo-favorites-list">
               {favorites.map((fav, i) => (
                 <button
                   key={i}
                   onClick={() => { setShowForm(true); setTimeout(() => addFavorite(fav), 100); }}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:border-indigo-300 border border-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
+                  type="button"
+                  className="glass-input rounded-full h-8 px-2.5 text-xs hover:bg-foreground/10 inline-flex items-center gap-1.5"
                   data-testid={`fdo-favorite-${i}`}
                 >
                   {fav.item_name || fav.name}
@@ -234,63 +236,70 @@ export default function FdoPage() {
             loading={loading}
             rowTestIdPrefix="fdo-row"
             empty={(
-              <div className="text-center py-12 text-gray-400" data-testid="fdo-list-empty">
-                <Package className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                <div>Belum ada FDO</div>
+              <div data-testid="fdo-list-empty">
+                <EmptyState
+                  icon={Utensils}
+                  title="Belum ada FDO"
+                  description="Buat FDO untuk mengajukan kebutuhan floor/service harian ke purchasing."
+                  action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>FDO Baru</Button>}
+                />
               </div>
             )}
             columns={[
               { key: "request_date", label: "Tanggal", primary: true, sortable: true,
                 render: (fdo) => fdo.request_date || fdo.created_at?.slice(0, 10) },
               { key: "doc_no", label: "No. Dokumen", sortable: true,
-                render: (fdo) => <span className="font-mono text-sm">{fdo.doc_no || "-"}</span> },
+                render: (fdo) => <span className="text-xs font-medium tabular-nums">{fdo.doc_no || "-"}</span> },
               { key: "outlet_id", label: "Outlet",
                 render: (fdo) => outletMap[fdo.outlet_id] || fdo.outlet_id },
               { key: "lines", label: "Jumlah Item", align: "center",
                 sortAccessor: (fdo) => fdo.lines?.length || 0,
                 render: (fdo) => fdo.lines?.length || 0 },
-              { key: "status", label: "Status", render: (fdo) => statusBadge(fdo.status) },
+              { key: "status", label: "Status", render: (fdo) => <StatusPill status={fdo.status} /> },
               { key: "notes", label: "Catatan",
-                render: (fdo) => <span className="text-sm text-gray-500">{fdo.notes || "-"}</span> },
+                render: (fdo) => <span className="text-sm text-muted-foreground">{fdo.notes || "-"}</span> },
             ]}
           />
-          <div className="flex items-center justify-between px-4 py-3 border-t" data-testid="fdo-pagination">
-            <div className="text-sm text-gray-500">{meta.total || 0} FDO</div>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="fdo-prev-page"><ChevronLeft className="h-4 w-4" /></Button>
-              <Button variant="outline" size="sm" disabled={page * 20 >= (meta.total || 0)} onClick={() => setPage(p => p + 1)} data-testid="fdo-next-page"><ChevronRight className="h-4 w-4" /></Button>
+          {(meta.total || 0) > 20 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border/50" data-testid="fdo-pagination">
+              <div className="text-xs text-muted-foreground">Total: {meta.total || 0}</div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="fdo-prev-page"><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon-sm" disabled={page * 20 >= (meta.total || 0)} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="fdo-next-page"><ChevronRight className="h-4 w-4" /></Button>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
       {/* FDO Form Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="fdo-form-dialog">
+        <DialogContent className="max-w-3xl" data-testid="fdo-form-dialog">
           <DialogHeader>
-            <DialogTitle>Buat FDO — Floor Daily Order</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Utensils className="h-4 w-4" /> FDO Baru</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">Outlet <span className="text-red-500">*</span></label>
+                <Label htmlFor="fdo-form-outlet-trigger" className="text-xs md:text-sm font-medium">Outlet *</Label>
                 <Select value={selectedOutlet} onValueChange={setSelectedOutlet}>
-                  <SelectTrigger className="mt-1" data-testid="fdo-form-outlet"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="fdo-form-outlet-trigger" className="mt-1" data-testid="fdo-form-outlet"><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
                   <SelectContent>{outlets.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Tanggal Request <span className="text-red-500">*</span></label>
-                <Input type="date" value={reqDate} onChange={e => setReqDate(e.target.value)} className="mt-1" data-testid="fdo-form-date" />
+                <Label htmlFor="fdo-form-date-input" className="text-xs md:text-sm font-medium">Tanggal request *</Label>
+                <Input id="fdo-form-date-input" type="date" value={reqDate} onChange={e => setReqDate(e.target.value)} className="mt-1" data-testid="fdo-form-date" />
               </div>
             </div>
 
             {/* Item search */}
             <div>
-              <label className="text-sm font-medium">Tambah Item</label>
+              <Label htmlFor="fdo-form-item-search-input" className="text-xs md:text-sm font-medium">Tambah item</Label>
               <div className="relative mt-1" ref={searchRef}>
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
+                  id="fdo-form-item-search-input"
                   placeholder="Cari item dari market list..."
                   className="pl-9"
                   value={itemSearch}
@@ -299,22 +308,23 @@ export default function FdoPage() {
                   data-testid="fdo-form-item-search"
                 />
                 {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border rounded-lg shadow-lg z-50 mt-1 max-h-64 overflow-y-auto" data-testid="fdo-form-search-dropdown">
+                  <div className="absolute top-full left-0 right-0 bg-popover text-popover-foreground border rounded-lg shadow-lg z-50 mt-1 max-h-64 overflow-y-auto" data-testid="fdo-form-search-dropdown">
                     {searchResults.map(item => (
                       <button
                         key={item.id}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-start justify-between border-b last:border-b-0"
+                        type="button"
+                        className="w-full text-left px-4 py-3 hover:bg-muted/60 flex items-start justify-between border-b last:border-b-0"
                         onClick={() => addLine(item)}
                         data-testid={`fdo-form-add-item-${item.id}`}
                       >
                         <div>
                           <div className="font-medium text-sm">{item.name}</div>
-                          <div className="text-xs text-gray-400">{item.unit_default} · {item.category_name || "Tanpa Kategori"}</div>
+                          <div className="text-xs text-muted-foreground">{item.unit_default} · {item.category_name || "Tanpa Kategori"}</div>
                         </div>
                         {item._ref_price && (
                           <div className="text-right tabular-nums">
-                            <div className="text-xs font-medium text-blue-700">Rp {fmt(item._ref_price.ref_price)}</div>
-                            <div className="text-xs text-gray-400">{item._ref_price.quarter_label}</div>
+                            <div className="text-xs font-medium text-blue-700 dark:text-blue-400">Rp {fmt(item._ref_price.ref_price)}</div>
+                            <div className="text-xs text-muted-foreground">{item._ref_price.quarter_label}</div>
                           </div>
                         )}
                       </button>
@@ -327,7 +337,7 @@ export default function FdoPage() {
             {/* Lines table */}
             {lines.length > 0 && (
               <div>
-                <label className="text-sm font-medium mb-2 block">Item yang Dipesan</label>
+                <h3 className="text-sm md:text-base font-semibold mb-2">Item yang dipesan</h3>
                 <div className="border rounded-lg overflow-hidden">
                   <DataTable
                     rows={lines.map((ln, idx) => ({ ...ln, _idx: idx }))}
@@ -351,24 +361,25 @@ export default function FdoPage() {
                         render: (ln) => (
                           <Input type="number" value={ln.qty}
                             onChange={e => updateLine(ln._idx, "qty", e.target.value)}
-                            className="h-8 text-center w-20" min="0.01"
+                            className="text-center w-20 ml-auto" min="0.01"
+                            aria-label={`Qty ${ln.name}`}
                             data-testid={`fdo-form-line-${ln._idx}-qty`} />
                         ) },
                       { key: "unit", label: "Unit",
                         render: (ln) => (
                           <Input value={ln.unit}
                             onChange={e => updateLine(ln._idx, "unit", e.target.value)}
-                            className="h-8 w-20" data-testid={`fdo-form-line-${ln._idx}-unit`} />
+                            className="w-20" aria-label={`Satuan ${ln.name}`} data-testid={`fdo-form-line-${ln._idx}-unit`} />
                         ) },
                       { key: "ref_price", label: "Harga Ref.", numeric: true,
                         render: (ln) => ln.ref_price
-                          ? <span className="text-xs text-blue-700 font-medium">Rp {fmt(ln.ref_price)}</span>
-                          : <span className="text-xs text-gray-400">-</span> },
+                          ? <span className="text-xs text-blue-700 dark:text-blue-400 font-medium">Rp {fmt(ln.ref_price)}</span>
+                          : <span className="text-xs text-muted-foreground">-</span> },
                     ]}
                     rowAction={(ln) => (
-                      <button onClick={() => removeLine(ln._idx)} className="text-red-400 hover:text-red-600" data-testid={`fdo-form-line-${ln._idx}-remove`}>
+                      <Button type="button" variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)} className="text-red-500 hover:text-red-600" aria-label={`Hapus ${ln.name}`} data-testid={`fdo-form-line-${ln._idx}-remove`}>
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </Button>
                     )}
                   />
                 </div>
@@ -376,8 +387,8 @@ export default function FdoPage() {
             )}
 
             <div>
-              <label className="text-sm font-medium">Catatan</label>
-              <Input value={notes} onChange={e => setNotes(e.target.value)} className="mt-1" placeholder="Catatan tambahan..." data-testid="fdo-form-notes" />
+              <Label htmlFor="fdo-form-notes-input" className="text-xs md:text-sm font-medium">Catatan</Label>
+              <Input id="fdo-form-notes-input" value={notes} onChange={e => setNotes(e.target.value)} className="mt-1" placeholder="Catatan tambahan (opsional)…" data-testid="fdo-form-notes" />
             </div>
           </div>
           <DialogFooter>
@@ -385,11 +396,10 @@ export default function FdoPage() {
             <Button
               onClick={handleSubmit}
               disabled={saving || lines.length === 0}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
               data-testid="fdo-form-submit"
             >
-              <Send className="h-4 w-4 mr-1" />
-              {saving ? "Mengirim..." : "Submit FDO"}
+              <Send className="h-4 w-4" />
+              {saving ? "Mengirim…" : "Submit FDO"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -3,6 +3,15 @@ import { Navigate, useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// Palet hangat brand FnB Group (sama dengan situs publik). Tipografi tetap Inter —
+// font display situs publik (Cormorant/Azeret) tidak dimuat di app ERP.
+const INK = "#1C1510";
+const PAPER = "#F8F5EF";
+const inkA = (a) => `rgba(28,21,16,${a})`;
 
 export default function Login() {
   const { user, login, loading } = useAuth();
@@ -43,96 +52,100 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16" style={{ background: "#F8F5EF" }} data-testid="login-page">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10" style={{ background: PAPER }} data-testid="login-page">
       {/* Very subtle back to website */}
-      <div className="mb-8 text-center">
+      <div className="mb-6 text-center">
         <Link
           to="/"
-          className="text-xs hover:underline transition-colors"
-          style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace", letterSpacing: "0.1em" }}
+          className="text-xs font-medium uppercase tracking-[0.1em] hover:underline transition-colors"
+          style={{ color: inkA(0.45) }}
           data-testid="login-back-to-website"
         >
-          &larr; FNBGROUP.ID
+          &larr; fnbgroup.id
         </Link>
       </div>
 
       {/* Compact form card */}
       <div
-        className="w-full max-w-sm bg-white rounded-2xl shadow-sm border p-8"
-        style={{ borderColor: "rgba(28,21,16,0.08)" }}
+        className="w-full max-w-sm bg-white rounded-xl shadow-sm border p-6"
+        style={{ borderColor: inkA(0.08) }}
       >
         {/* Header — minimal */}
-        <div className="mb-6">
-          <p
-            className="text-[11px] uppercase tracking-[0.25em] mb-3"
-            style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace" }}
-          >
+        <div className="mb-5">
+          <p className="text-[11px] font-medium uppercase tracking-[0.2em] mb-2" style={{ color: inkA(0.45) }}>
             FnB Group ERP — Staff Portal
           </p>
-          <h1 className="text-xl font-semibold" style={{ color: "#1C1510", fontFamily: "'Cormorant Garamond', serif" }}>
+          <h1 className="text-xl md:text-2xl font-semibold leading-tight" style={{ color: INK }}>
             Masuk
           </h1>
-          <p className="text-xs mt-0.5" style={{ color: "rgba(28,21,16,0.45)" }}>
+          <p className="text-xs md:text-sm mt-0.5" style={{ color: inkA(0.55) }}>
             Akses khusus karyawan FnB Group
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium" style={{ color: "rgba(28,21,16,0.55)" }}>Email</label>
-            <input
+            <Label htmlFor="login-email" className="text-xs md:text-sm font-medium" style={{ color: inkA(0.7) }}>Email *</Label>
+            <Input
+              id="login-email"
               type="email"
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@fnbgroup.id"
-              className="w-full h-10 px-3 text-sm rounded-lg border outline-none transition-colors"
-              style={{ background: "#F8F5EF", borderColor: "rgba(28,21,16,0.15)", color: "#1C1510" }}
+              style={{ background: PAPER, borderColor: inkA(0.15), color: INK }}
               data-testid="login-email"
               autoFocus
               required
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium" style={{ color: "rgba(28,21,16,0.55)" }}>Password</label>
+            <Label htmlFor="login-password" className="text-xs md:text-sm font-medium" style={{ color: inkA(0.7) }}>Password *</Label>
             <div className="relative">
-              <input
+              <Input
+                id="login-password"
                 type={show ? "text" : "password"}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-10 px-3 pr-10 text-sm rounded-lg border outline-none transition-colors"
-                style={{ background: "#F8F5EF", borderColor: "rgba(28,21,16,0.15)", color: "#1C1510" }}
+                className="pr-10"
+                style={{ background: PAPER, borderColor: inkA(0.15), color: INK }}
                 data-testid="login-password"
                 required
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setShow((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-                style={{ color: "rgba(28,21,16,0.35)" }}
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 hover:bg-black/5"
+                style={{ color: inkA(0.5) }}
+                aria-label={show ? "Sembunyikan password" : "Tampilkan password"}
+                aria-pressed={show}
                 data-testid="login-toggle-password"
               >
-                {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              </button>
+                {show ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={submitting}
-            className="w-full h-10 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
-            style={{ background: "#1C1510", color: "#F8F5EF" }}
+            className="w-full font-semibold hover:opacity-90"
+            style={{ background: INK, color: PAPER }}
             data-testid="login-submit"
           >
-            {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Masuk
-          </button>
+            {submitting && <Loader2 className="animate-spin" />}
+            {submitting ? "Memproses…" : "Masuk"}
+          </Button>
         </form>
 
-        {/* Demo accounts — collapsible */}
-        <div className="mt-5 pt-5" style={{ borderTop: "1px solid rgba(28,21,16,0.07)" }}>
-          <p className="text-[11px] mb-2.5" style={{ color: "rgba(28,21,16,0.35)", fontFamily: "'Azeret Mono', monospace" }}>
-            DEMO — password: Demo@2026
+        {/* Demo accounts */}
+        <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${inkA(0.07)}` }}>
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] mb-2" style={{ color: inkA(0.45) }}>
+            Akun demo — password: Demo@2026
           </p>
           <div className="flex flex-wrap gap-1.5">
             {[
@@ -142,28 +155,31 @@ export default function Login() {
               { k: "procurement", l: "Procurement" },
               { k: "the-coffeeshop", l: "Outlet" },
             ].map((d) => (
-              <button
+              <Button
                 key={d.k}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => fillDemo(d.k)}
-                className="px-2 py-1 rounded-md text-[11px] font-medium transition-colors hover:bg-black/5"
-                style={{ background: "rgba(28,21,16,0.04)", color: "rgba(28,21,16,0.55)" }}
+                className="hover:bg-black/5"
+                style={{ background: inkA(0.04), color: inkA(0.65) }}
+                aria-label={`Isi akun demo ${d.l}`}
                 data-testid={`demo-${d.k}`}
               >
                 {d.l}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       </div>
 
       {/* Customer loyalty link */}
-      <div className="mt-6 text-center">
-        <p className="text-xs" style={{ color: "rgba(28,21,16,0.35)" }}>Pelanggan FnB Group?</p>
+      <div className="mt-5 text-center">
+        <p className="text-xs" style={{ color: inkA(0.5) }}>Pelanggan FnB Group?</p>
         <Link
           to="/loyalty/login"
           className="text-sm font-medium hover:underline mt-0.5 inline-block"
-          style={{ color: "#1C1510" }}
+          style={{ color: INK }}
           data-testid="login-loyalty-link"
         >
           Bergabung Loyalty Program &rarr;

@@ -14,6 +14,7 @@ import {
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import PageHeader from "@/components/shared/PageHeader";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { ChartEmpty } from "@/components/shared/charts/chartKit";
@@ -39,7 +40,8 @@ const PERIODS = [
   { v: "last_month", l: "Last Month" },
 ];
 
-export default function PeriodCompare() {
+/** PeriodCompare — `embedded` = dirender sebagai tab di Performance Analytics (tanpa <h1>). */
+export default function PeriodCompare({ embedded = false }) {
   const [selectedMetrics, setSelectedMetrics] = useState([
     "revenue", "cogs", "gross_profit", "opex", "net_profit",
   ]);
@@ -64,7 +66,7 @@ export default function PeriodCompare() {
       });
       setData(unwrap(r));
     } catch (e) {
-      toast.error("Gagal load comparison");
+      toast.error("Gagal memuat perbandingan periode");
     } finally { setLoading(false); }
   }
 
@@ -104,43 +106,43 @@ export default function PeriodCompare() {
     last_month: "#06B6D4",
   };
 
+  const subtitle = "Bandingkan beberapa metrik lintas MTD / LMTD / QTD / YTD / YoY";
+  const refreshBtn = (
+    <Button variant="outline" onClick={load} data-testid="period-compare-refresh">
+      <RefreshCw /> Muat ulang
+    </Button>
+  );
+
   return (
-    <div className="space-y-6" data-testid="period-compare-page">
-      <div className="glass-card p-5" data-testid="period-compare-controls">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="h-9 w-9 rounded-xl grad-aurora text-white flex items-center justify-center">
-              <GitCompareArrows className="h-4 w-4" />
-            </span>
-            <div>
-              <h2 className="font-bold">Period Comparison</h2>
-              <p className="text-xs text-muted-foreground">
-                Bandingkan multi-metric across MTD/LMTD/YoY/QTD/YTD
-              </p>
-            </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="period-compare-page">
+      {!embedded && (
+        <PageHeader icon={GitCompareArrows} title="Period Compare" subtitle={subtitle} actions={refreshBtn} className="mb-0 md:mb-0" />
+      )}
+      <div className="glass-card p-4" data-testid="period-compare-controls">
+        {embedded && (
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+            {refreshBtn}
           </div>
-          <Button variant="outline" size="sm" onClick={load} className="gap-1" data-testid="period-compare-refresh">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
           <div>
-            <div className="text-xs font-semibold mb-2">Metrics</div>
+            <div className="text-xs md:text-sm font-medium mb-2">Metrik</div>
             <div className="flex flex-wrap gap-2" data-testid="period-compare-metrics">
               {METRICS.map((m) => (
-                <label key={m.v} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-muted/30 cursor-pointer text-xs" data-testid={`metric-checkbox-${m.v}`}>
-                  <Checkbox checked={selectedMetrics.includes(m.v)} onCheckedChange={() => toggleMetric(m.v)} />
+                <label key={m.v} className="flex items-center gap-1.5 px-2.5 h-8 rounded-full border bg-muted/30 cursor-pointer text-[13px]" data-testid={`metric-checkbox-${m.v}`}>
+                  <Checkbox checked={selectedMetrics.includes(m.v)} onCheckedChange={() => toggleMetric(m.v)} aria-label={`Metrik ${m.l}`} />
                   {m.l}
                 </label>
               ))}
             </div>
           </div>
           <div>
-            <div className="text-xs font-semibold mb-2">Periods</div>
+            <div className="text-xs md:text-sm font-medium mb-2">Periode</div>
             <div className="flex flex-wrap gap-2">
               {PERIODS.map((p) => (
-                <label key={p.v} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-muted/30 cursor-pointer text-xs">
-                  <Checkbox checked={selectedPeriods.includes(p.v)} onCheckedChange={() => togglePeriod(p.v)} />
+                <label key={p.v} className="flex items-center gap-1.5 px-2.5 h-8 rounded-full border bg-muted/30 cursor-pointer text-[13px]" data-testid={`period-checkbox-${p.v}`}>
+                  <Checkbox checked={selectedPeriods.includes(p.v)} onCheckedChange={() => togglePeriod(p.v)} aria-label={`Periode ${p.l}`} />
                   {p.l}
                 </label>
               ))}
@@ -149,20 +151,20 @@ export default function PeriodCompare() {
         </div>
       </div>
 
-      {loading || !data ? <LoadingState message="Loading…" /> : (
+      {loading || !data ? <LoadingState message="Memuat…" /> : (
         <>
           {/* Phase 4C: Visual Overview - Grouped Bar Chart */}
           {chartData.length > 0 && (
-            <div className="glass-card p-5 mb-5">
+            <div className="glass-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold">Visual Overview</h3>
+                <h3 className="text-sm md:text-base font-semibold">Visual Overview</h3>
               </div>
-              <div style={{ height: 320 }}>
+              <div style={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={chartData}
-                    margin={{ top: 16, right: 16, left: 0, bottom: 60 }}
+                    margin={{ top: 16, right: 16, left: 0, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                     <XAxis
@@ -170,7 +172,7 @@ export default function PeriodCompare() {
                       tick={{ fontSize: 11 }}
                       angle={-25}
                       textAnchor="end"
-                      height={70}
+                      height={60}
                     />
                     <YAxis
                       tick={{ fontSize: 11 }}
@@ -199,7 +201,7 @@ export default function PeriodCompare() {
                                   />
                                   {periods.find((pr) => pr.kind === p.dataKey)?.label || p.dataKey}:
                                 </span>
-                                <span className="font-bold tabular-nums">{fmtRp(p.value)}</span>
+                                <span className="font-semibold tabular-nums">{fmtRp(p.value)}</span>
                               </div>
                             ))}
                           </div>
@@ -207,7 +209,7 @@ export default function PeriodCompare() {
                       }}
                     />
                     <Legend
-                      wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                      wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
                       formatter={(value) =>
                         periods.find((p) => p.kind === value)?.label || value
                       }
@@ -227,13 +229,13 @@ export default function PeriodCompare() {
           )}
 
           {chartData.length === 0 && (
-            <div className="glass-card p-5 mb-5">
+            <div className="glass-card p-4">
               <ChartEmpty message="Pilih minimal satu metrik & periode untuk membandingkan." />
             </div>
           )}
 
           {/* Detailed table */}
-          <div className="glass-card p-5 overflow-x-auto">
+          <div className="glass-card overflow-hidden">
             <DataTable
               rows={data.metrics || []}
               keyField="metric"
@@ -254,7 +256,7 @@ export default function PeriodCompare() {
                     const pctv = (v1 && v1 !== 0) ? ((v0 - v1) / Math.abs(v1) * 100).toFixed(1) : null;
                     if (delta == null) return "—";
                     return (
-                      <span className={cn("font-mono", delta >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                      <span className={cn("font-mono", delta >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                         {delta >= 0 ? "+" : ""}{fmtRp(delta)}
                         {pctv != null && <span className="text-[11px] ml-1">({pctv > 0 ? "+" : ""}{pctv}%)</span>}
                       </span>

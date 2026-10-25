@@ -1,6 +1,6 @@
 /** Phase 7C — 3-month Forecasting (linear regression + EWMA + hybrid). */
 import { useEffect, useMemo, useState } from "react";
-import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Sparkles, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Target, BarChart3, Sparkles, Info, LineChart, Gauge } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Badge } from "@/components/ui/badge";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,8 @@ const METHOD_COLORS = {
   hybrid: "#7c4cc4",   // aurora purple
 };
 
+const LABEL = "text-xs font-medium text-muted-foreground";
+
 function mapeColor(mape) {
   if (mape == null) return "text-muted-foreground bg-muted/40";
   if (mape <= 10) return "text-emerald-700 bg-emerald-500/15 dark:text-emerald-300";
@@ -26,7 +30,7 @@ function mapeColor(mape) {
   return "text-red-700 bg-red-500/15 dark:text-red-300";
 }
 
-export default function Forecasting() {
+export default function Forecasting({ embedded = false }) {
   const [methodsCatalog, setMethodsCatalog] = useState(null);
   const [target, setTarget] = useState("sales");
   const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
@@ -58,75 +62,73 @@ export default function Forecasting() {
       setData(unwrap(main));
       setDashboard(dash ? unwrap(dash) : null);
     } catch (e) {
-      toast.error("Gagal load forecast: " + (e.response?.data?.errors?.[0]?.message || e.message));
+      toast.error("Gagal memuat forecast: " + (e.response?.data?.errors?.[0]?.message || e.message));
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [target, outletId, months, method, historyDays]); // eslint-disable-line
 
+  const header = !embedded && (
+    <PageHeader
+      icon={LineChart}
+      title="Forecasting"
+      subtitle="Proyeksi sales & expense 1–6 bulan ke depan (linear, EWMA, hybrid)"
+    />
+  );
+
   if (!methodsCatalog) return (
-    <div className="space-y-4" data-testid="forecasting-page">
+    <div data-testid="forecasting-page">
+      {header}
       <LoadingState rows={3} />
     </div>
   );
 
+  const methodDesc = methodsCatalog.methods.find(m => m.key === method)?.description;
+  const mape = data?.accuracy_mape;
+  const grade = mape == null ? "n/a" : mape <= 10 ? "Sangat akurat" : mape <= 20 ? "Baik" : mape <= 35 ? "Cukup" : "Volatil";
+  const growth = data?.totals?.growth_pct;
+
   return (
-    <div className="space-y-4" data-testid="forecasting-page">
+    <div data-testid="forecasting-page">
+      {header}
+      <div className="space-y-3 lg:space-y-4">
       {/* Filter bar */}
-      <div className="glass-card p-4 grid grid-cols-2 lg:grid-cols-6 gap-3 items-end">
-        <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Target</Label>
-          <SimpleSelect value={target} onValueChange={setTarget}
-            options={methodsCatalog.targets.map(t => ({ value: t.key, label: t.label }))}
+      <div className="glass-card p-3 flex flex-wrap gap-3 items-end">
+        <div className="w-full sm:w-52">
+          <Label className={LABEL}>Target</Label>
+          <SimpleSelect value={target} onValueChange={setTarget} ariaLabel="Target"
+            options={methodsCatalog.targets.map(t => ({ value: t.key, label: String(t.label || t.key).split(" (")[0] }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="forecast-target" />
         </div>
-        <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId}
-            options={[{ value: "", label: "Consolidated (All)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Consolidated (All)"
+        <div className="w-full sm:w-52">
+          <Label className={LABEL}>Outlet</Label>
+          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
+            options={[{ value: "", label: "Konsolidasi (semua)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+            placeholder="Konsolidasi (semua)"
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="forecast-outlet" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Method</Label>
-          <div className="flex gap-1 mt-1">
-            {methodsCatalog.methods.map(m => (
-              <button key={m.key} onClick={() => setMethod(m.key)}
-                className={cn(
-                  "px-2.5 py-1.5 rounded-full text-xs font-semibold flex-1 transition-colors capitalize",
-                  method === m.key
-                    ? "grad-aurora text-white"
-                    : "bg-muted/30 text-muted-foreground hover:text-foreground",
-                )}
-                data-testid={`forecast-method-${m.key}`}>
-                {m.key}
-              </button>
-            ))}
-          </div>
+          <div className={LABEL} id="forecast-method-label">Metode</div>
+          <Segmented labelledBy="forecast-method-label" value={method} onChange={setMethod}
+            options={methodsCatalog.methods.map(m => ({ value: m.key, label: m.key, title: m.description }))}
+            testIdPrefix="forecast-method" capitalize />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Months Ahead</Label>
-          <div className="flex gap-1 mt-1">
-            {[1, 3, 6].map(m => (
-              <button key={m} onClick={() => setMonths(m)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-semibold flex-1 transition-colors",
-                  months === m ? "bg-foreground text-background" : "bg-muted/30 text-muted-foreground hover:text-foreground",
-                )}
-                data-testid={`forecast-months-${m}`}>
-                {m}M
-              </button>
-            ))}
-          </div>
+          <div className={LABEL} id="forecast-months-label">Horizon</div>
+          <Segmented labelledBy="forecast-months-label" value={months} onChange={setMonths}
+            options={[1, 3, 6].map(m => ({ value: m, label: `${m} bln` }))}
+            testIdPrefix="forecast-months" />
         </div>
-        <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">History (days)</Label>
-          <Input type="number" value={historyDays}
+        <div className="w-28">
+          <Label htmlFor="forecast-history-days" className={LABEL}>Histori (hari)</Label>
+          <Input id="forecast-history-days" type="number" value={historyDays}
             onChange={e => setHistoryDays(Math.max(14, Math.min(365, +e.target.value || 90)))}
             className="glass-input mt-1 h-9" min={14} max={365} data-testid="forecast-history-days" />
         </div>
-        <div className="text-xs text-muted-foreground self-center">
-          {methodsCatalog.methods.find(m => m.key === method)?.description}
-        </div>
+        {methodDesc && (
+          <p className="basis-full text-xs text-muted-foreground">
+            <span className="font-medium capitalize text-foreground/80">{method}:</span> {methodDesc}
+          </p>
+        )}
       </div>
 
       {loading && <LoadingState rows={6} />}
@@ -134,39 +136,57 @@ export default function Forecasting() {
       {!loading && data && (
         <>
           {/* KPI row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <CompactStatCard
               icon={Activity}
-              label={`History ${data.filters.history_days}d`}
+              color="aurora-3"
+              label={`Histori ${data.filters.history_days} hari`}
               value={fmtRp(data.totals.history_total)}
-              hint={`Avg ${fmtRp(data.totals.history_avg_daily)}/day`}
-              testid="forecast-history-kpi"
+              sub={`Rata-rata ${fmtRp(data.totals.history_avg_daily)}/hari`}
+              testId="forecast-history-kpi"
             />
-            <KpiCard
+            <CompactStatCard
               icon={Target}
-              label={`Forecast ${months}M`}
+              color="aurora-2"
+              label={`Forecast ${months} bulan`}
               value={fmtRp(data.totals.forecast_total)}
-              hint={`Avg ${fmtRp(data.totals.forecast_avg_daily)}/day`}
-              highlight
-              testid="forecast-total-kpi"
+              sub={`Rata-rata ${fmtRp(data.totals.forecast_avg_daily)}/hari`}
+              active
+              testId="forecast-total-kpi"
             />
-            <GrowthCard pct={data.totals.growth_pct} band={data.confidence_band} testid="forecast-growth-kpi" />
-            <AccuracyCard mape={data.accuracy_mape} method={data.method} testid="forecast-accuracy-kpi" />
+            <CompactStatCard
+              icon={growth > 0 ? TrendingUp : TrendingDown}
+              color={growth > 0 ? "aurora-4" : growth < 0 ? "aurora-6" : "aurora-1"}
+              tone={growth > 0 ? "success" : growth < 0 ? "danger" : "default"}
+              label="Pertumbuhan vs histori"
+              value={growth == null ? "—" : `${growth >= 0 ? "+" : ""}${growth}%`}
+              sub={`±${fmtRp(data.confidence_band)} (CI 95%)`}
+              testId="forecast-growth-kpi"
+            />
+            <CompactStatCard
+              icon={Gauge}
+              color="aurora-5"
+              tone={mape == null ? "default" : mape <= 10 ? "success" : mape <= 20 ? "warning" : "danger"}
+              label="Akurasi backtest"
+              value={mape == null ? "—" : `${mape}%`}
+              sub={`MAPE 30 hari (${data.method}) — ${grade}`}
+              testId="forecast-accuracy-kpi"
+            />
           </div>
 
           {/* Main chart */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                <h3 className="font-semibold">
-                  {target === "sales" ? "Sales" : "Expense"} — Historical &amp; Forecast
+                <h3 className="text-sm md:text-base font-semibold">
+                  {target === "sales" ? "Sales" : "Expense"} — histori &amp; forecast
                 </h3>
               </div>
-              <div className="flex items-center gap-3 text-xs">
-                <LegendDot color="#94a3b8" label="History" />
+              <div className="flex items-center gap-3 text-xs flex-wrap">
+                <LegendDot color="#94a3b8" label="Histori" />
                 <LegendDot color={METHOD_COLORS[data.method]} label={`Forecast (${data.method})`} dashed />
-                <LegendDot color={METHOD_COLORS[data.method]} label="Confidence band" opacity={0.2} swatch />
+                <LegendDot color={METHOD_COLORS[data.method]} label="Rentang kepercayaan" opacity={0.2} swatch />
               </div>
             </div>
             <ForecastChart history={data.history_daily} forecast={data.forecast_daily}
@@ -174,11 +194,11 @@ export default function Forecasting() {
           </div>
 
           {/* Monthly bars */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Monthly Forecast — Next {months} {months === 1 ? "month" : "months"}</h3>
+              <h3 className="text-sm md:text-base font-semibold">Forecast bulanan — {months} bulan ke depan</h3>
               <Badge className="bg-muted/40 text-foreground border-0 text-xs">
-                Method: <span className="capitalize ml-1">{data.method}</span>
+                Metode: <span className="capitalize ml-1">{data.method}</span>
               </Badge>
             </div>
             <MonthlyBars history={data.monthly_history} forecast={data.monthly_forecast}
@@ -186,9 +206,9 @@ export default function Forecasting() {
           </div>
 
           {/* Method comparison */}
-          <div className="glass-card p-5">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Sparkles className="h-4 w-4" /> Method Comparison (3-month forecast total)
+          <div className="glass-card p-4">
+            <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
+              <Sparkles className="h-4 w-4" /> Perbandingan metode (total forecast {months} bulan)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {Object.entries(data.comparison_methods).map(([m, fc]) => {
@@ -196,7 +216,7 @@ export default function Forecasting() {
                 const isActive = m === data.method;
                 return (
                   <div key={m} className={cn(
-                    "rounded-xl p-4 border transition-all",
+                    "rounded-lg p-3 border transition-all",
                     isActive ? "border-2" : "border-border/30",
                   )}
                     style={isActive ? { borderColor: METHOD_COLORS[m] } : undefined}
@@ -204,11 +224,11 @@ export default function Forecasting() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] }} />
                       <span className="text-sm font-semibold capitalize">{m}</span>
-                      {isActive && <Badge className="ml-auto bg-foreground text-background text-[11px] h-4">active</Badge>}
+                      {isActive && <Badge className="ml-auto bg-foreground text-background text-[11px] h-5">aktif</Badge>}
                     </div>
-                    <div className="text-xl font-bold tabular-nums">{fmtRp(total)}</div>
+                    <div className="text-lg font-semibold tabular-nums">{fmtRp(total)}</div>
                     <div className="text-[11px] text-muted-foreground mt-1">
-                      {fc.map(f => f.period.slice(5)).join(" / ")}: {fc.map(f => `${(f.value / 1e6).toFixed(0)}M`).join(" / ")}
+                      {fc.map(f => f.period.slice(5)).join(" / ")}: {fc.map(f => `${(f.value / 1e6).toFixed(0)}jt`).join(" / ")}
                     </div>
                   </div>
                 );
@@ -218,8 +238,8 @@ export default function Forecasting() {
 
           {/* Per-outlet dashboard (only for sales + consolidated) */}
           {target === "sales" && dashboard && !outletId && (
-            <div className="glass-card p-5">
-              <h3 className="font-semibold mb-3">Per-Outlet Forecast Summary</h3>
+            <div className="glass-card p-0 overflow-hidden">
+              <h3 className="px-4 py-3 border-b border-border/30 text-sm md:text-base font-semibold">Ringkasan forecast per outlet</h3>
               <DataTable
                 rows={dashboard.outlets.map(o => ({ ...o, _rid: o.outlet_code || o.outlet_id }))}
                 keyField="_rid"
@@ -227,13 +247,13 @@ export default function Forecasting() {
                 columns={[
                   { key: "outlet_name", label: "Outlet", primary: true, sortable: true,
                     render: (o) => <span className="font-medium">{o.outlet_name}</span> },
-                  { key: "history_total", label: `History ${historyDays}d`, numeric: true, sortable: true,
+                  { key: "history_total", label: `Histori ${historyDays} hr`, numeric: true, sortable: true,
                     render: (o) => fmtRp(o.history_total) },
-                  { key: "forecast_total", label: `Forecast ${months}M`, numeric: true, sortable: true,
-                    render: (o) => <span className="font-bold">{fmtRp(o.forecast_total)}</span> },
-                  { key: "growth_pct", label: "Growth", numeric: true, sortable: true,
+                  { key: "forecast_total", label: `Forecast ${months} bln`, numeric: true, sortable: true,
+                    render: (o) => <span className="font-semibold">{fmtRp(o.forecast_total)}</span> },
+                  { key: "growth_pct", label: "Pertumbuhan", numeric: true, sortable: true,
                     render: (o) => <GrowthBadge pct={o.growth_pct} /> },
-                  { key: "confidence_band", label: "±Band", numeric: true,
+                  { key: "confidence_band", label: "±Rentang", numeric: true,
                     render: (o) => <span className="text-muted-foreground">±{fmtRp(o.confidence_band)}</span> },
                   { key: "accuracy_mape", label: "MAPE", numeric: true, sortable: true,
                     render: (o) => (
@@ -243,8 +263,8 @@ export default function Forecasting() {
                     ) },
                 ]}
                 footer={
-                  <tr className="bg-muted/40 font-bold border-t-2 border-border">
-                    <td className="px-4 py-2.5">Group Consolidated</td>
+                  <tr className="bg-muted/40 font-semibold border-t-2 border-border">
+                    <td className="px-4 py-2.5">Konsolidasi grup</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmtRp(dashboard.consolidated.history_total)}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmtRp(dashboard.consolidated.forecast_total)}</td>
                     <td className="px-4 py-2.5 text-right"><GrowthBadge pct={dashboard.consolidated.growth_pct} /></td>
@@ -264,58 +284,36 @@ export default function Forecasting() {
           <div className="flex items-start gap-2 text-xs text-muted-foreground p-3 rounded-lg bg-muted/20 border border-border/30">
             <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
             <div>
-              Forecast adalah <span className="font-semibold">estimasi statistik</span> dari pola historis. MAPE ≤10% sangat akurat, ≤20% bagus, &gt;20% data masih volatil.
-              Gunakan rentang confidence band (±) sebagai range realistis. Method <span className="font-semibold capitalize">{data.method}</span>: {methodsCatalog.methods.find(m => m.key === data.method)?.description}
+              Forecast adalah <span className="font-semibold">estimasi statistik</span> dari pola historis. MAPE ≤10% sangat akurat, ≤20% baik, &gt;20% data masih volatil.
+              Gunakan rentang kepercayaan (±) sebagai kisaran realistis.
             </div>
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
 
 // ============== Sub-components ==============
 
-function KpiCard({ icon: Icon, label, value, hint, highlight, testid }) {
+/** Segmented control — gaya sama dengan Tabs (h-8, 13px, aktif = pill-active). */
+function Segmented({ value, onChange, options, testIdPrefix, labelledBy, capitalize = false }) {
   return (
-    <div className={cn("glass-card p-4", highlight && "border-2 border-primary/30")} data-testid={testid}>
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground mb-1">
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </div>
-      <div className="text-2xl font-bold tabular-nums">{value}</div>
-      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
-    </div>
-  );
-}
-
-function GrowthCard({ pct, band, testid }) {
-  const positive = pct > 0;
-  const Icon = positive ? TrendingUp : TrendingDown;
-  const color = positive ? "text-emerald-700 dark:text-emerald-400"
-    : pct < 0 ? "text-red-700 dark:text-red-400" : "text-muted-foreground";
-  return (
-    <div className="glass-card p-4" data-testid={testid}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Growth vs History</div>
-      <div className={cn("text-2xl font-bold tabular-nums flex items-center gap-2", color)}>
-        <Icon className="h-5 w-5" />
-        {pct == null ? "—" : `${pct >= 0 ? "+" : ""}${pct}%`}
-      </div>
-      <div className="text-[11px] text-muted-foreground mt-1">±{fmtRp(band)} (95% CI)</div>
-    </div>
-  );
-}
-
-function AccuracyCard({ mape, method, testid }) {
-  const grade = mape == null ? "n/a" : mape <= 10 ? "Excellent" : mape <= 20 ? "Good" : mape <= 35 ? "Fair" : "Volatile";
-  return (
-    <div className="glass-card p-4" data-testid={testid}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Backtest Accuracy</div>
-      <div className="text-2xl font-bold tabular-nums">
-        {mape == null ? "—" : `${mape}%`}
-      </div>
-      <div className="text-[11px] text-muted-foreground mt-1">
-        MAPE on last 30d ({method}) — <span className="font-semibold">{grade}</span>
-      </div>
+    <div role="group" aria-labelledby={labelledBy}
+      className="mt-1 inline-flex items-center gap-1 rounded-[calc(var(--radius)-2px)] border border-border/60 bg-white/35 dark:bg-white/5 p-px">
+      {options.map(o => (
+        <button key={o.value} type="button" onClick={() => onChange(o.value)} aria-pressed={value === o.value}
+          title={o.title}
+          className={cn(
+            "h-8 rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] font-medium transition-colors whitespace-nowrap",
+            capitalize && "capitalize",
+            value === o.value ? "pill-active" : "text-muted-foreground hover:text-foreground",
+          )}
+          data-testid={`${testIdPrefix}-${o.value}`}>
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -400,8 +398,8 @@ function ForecastChart({ history, forecast, band, color }) {
             <g key={i}>
               <line x1={PAD_L} y1={y} x2={W - 10} y2={y}
                 stroke="currentColor" strokeOpacity="0.08" strokeDasharray="2 4" />
-              <text x={PAD_L - 6} y={y + 3} textAnchor="end" fontSize="10" className="fill-current opacity-60 tabular-nums">
-                {(t / 1e6).toFixed(0)}M
+              <text x={PAD_L - 6} y={y + 4} textAnchor="end" fontSize="12" className="fill-current opacity-60 tabular-nums">
+                {(t / 1e6).toFixed(0)}jt
               </text>
             </g>
           );
@@ -414,7 +412,7 @@ function ForecastChart({ history, forecast, band, color }) {
             <g>
               <line x1={bx} y1={PAD_T} x2={bx} y2={PAD_T + innerH}
                 stroke="currentColor" strokeOpacity="0.2" strokeDasharray="3 3" />
-              <text x={bx + 4} y={PAD_T + 12} fontSize="10" className="fill-current opacity-60">today</text>
+              <text x={bx + 4} y={PAD_T + 12} fontSize="12" className="fill-current opacity-60">hari ini</text>
             </g>
           );
         })()}
@@ -433,7 +431,7 @@ function ForecastChart({ history, forecast, band, color }) {
           if (i % xLabelEvery !== 0) return null;
           const [x] = xy(i, 0);
           return (
-            <text key={i} x={x} y={H - 4} textAnchor="middle" fontSize="9"
+            <text key={i} x={x} y={H - 4} textAnchor="middle" fontSize="12"
               className="fill-current opacity-60">{d.date.slice(5)}</text>
           );
         })}
@@ -457,7 +455,7 @@ function MonthlyBars({ history, forecast, color }) {
         const key = `${r.type}-${r.period}`;
         return (
           <div key={key} className="flex flex-col items-center gap-1.5 min-w-[60px]" data-testid={`month-bar-${key}`}>
-            <div className="text-[11px] tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}M</div>
+            <div className="text-[11px] tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}jt</div>
             <div className="w-12 rounded-t-md transition-all"
               style={{
                 height: `${Math.max(4, h)}px`,
@@ -472,7 +470,7 @@ function MonthlyBars({ history, forecast, color }) {
             </div>
             {r.type === "forecast" && (
               <span className="text-[11px] uppercase font-semibold tracking-wider"
-                style={{ color }}>forecast</span>
+                style={{ color }}>proyeksi</span>
             )}
           </div>
         );

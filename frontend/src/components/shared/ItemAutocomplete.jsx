@@ -27,6 +27,8 @@ function describeDaysAgo(days) {
 export default function ItemAutocomplete({
   value, onChange, onSelect, placeholder = "Cari item…", className,
   showLastPrice = true, showVendorHint = true, showMarketRef = false, outletId, dataTestId,
+  // id / ariaLabel diteruskan ke <Input> agar bisa dihubungkan dengan <Label htmlFor>.
+  id, ariaLabel,
 }) {
   const [query, setQuery] = useState(value || "");
   const [results, setResults] = useState([]);
@@ -76,6 +78,9 @@ export default function ItemAutocomplete({
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
         className="glass-input"
+        id={id}
+        aria-label={ariaLabel}
+        autoComplete="off"
         data-testid={dataTestId}
       />
       {open && (results.length > 0 || loading) && (

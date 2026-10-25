@@ -87,11 +87,12 @@ export default function KpiSnapshotStrip() {
         type="button"
         onClick={load}
         disabled={refreshing}
-        className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto"
+        className="h-8 px-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 inline-flex items-center gap-1 ml-auto"
         data-testid="kpi-strip-refresh"
+        aria-label="Muat ulang ringkasan KPI"
       >
         <RefreshCw className={cn("h-3 w-3", refreshing && "animate-spin")} />
-        refresh
+        Muat ulang
       </button>
     </div>
   );

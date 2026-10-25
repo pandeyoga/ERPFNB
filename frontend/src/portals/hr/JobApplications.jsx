@@ -33,6 +33,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
 import DataTable from "@/components/shared/DataTable";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
@@ -145,47 +146,46 @@ export default function JobApplications() {
   const totalPages = Math.ceil(total / perPage);
 
   return (
-    <div className="space-y-6" data-testid="job-applications-page">
-      {/* Page Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">Lamaran Kerja</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {total} lamaran masuk dari portal karir publik
-            </p>
-          </div>
-          <InlineHelp id="hr-job-applications" size="sm" />
-        </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} data-testid="refresh-applications">
-          <RefreshCw className={cn("h-4 w-4 mr-1.5", loading && "animate-spin")} />
-          Refresh
-        </Button>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="job-applications-page">
+      <PageHeader
+        icon={Briefcase}
+        title="Job Applications"
+        subtitle={`${total} lamaran masuk dari portal karir publik`}
+        actions={
+          <>
+            <InlineHelp id="hr-job-applications" size="sm" />
+            <Button variant="outline" onClick={load} disabled={loading} data-testid="refresh-applications">
+              <RefreshCw className={cn(loading && "animate-spin")} />
+              Muat ulang
+            </Button>
+          </>
+        }
+      />
 
       {/* Filters */}
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end">
+      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="job-applications-filters">
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]">
+        <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]" role="search">
           <Input
+            type="search"
             placeholder="Cari nama, email, posisi..."
+            aria-label="Cari lamaran (nama, email, posisi)"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="h-9 text-sm"
             data-testid="search-applications"
           />
-          <Button type="submit" size="sm" variant="outline">
-            <Search className="h-4 w-4" />
+          <Button type="submit" size="icon" variant="outline" aria-label="Cari" data-testid="search-applications-submit">
+            <Search />
           </Button>
         </form>
 
         {/* Status Filter */}
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-          <SelectTrigger className="h-9 w-36 text-sm" data-testid="status-filter">
+          <SelectTrigger className="w-40" aria-label="Filter status" data-testid="status-filter">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="all">Semua status</SelectItem>
             {Object.entries(STATUS_CONFIG).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
@@ -194,11 +194,11 @@ export default function JobApplications() {
 
         {/* Department Filter */}
         <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setPage(1); }}>
-          <SelectTrigger className="h-9 w-40 text-sm" data-testid="dept-filter">
+          <SelectTrigger className="w-40" aria-label="Filter departemen" data-testid="dept-filter">
             <SelectValue placeholder="Departemen" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Semua Dept.</SelectItem>
+            <SelectItem value="all">Semua departemen</SelectItem>
             {DEPT_OPTIONS.map((d) => (
               <SelectItem key={d} value={d}>{d}</SelectItem>
             ))}
@@ -206,24 +206,27 @@ export default function JobApplications() {
         </Select>
       </div>
 
-      {/* Summary Badges */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Quick status filter — segmented pills (gaya sama dengan Tabs: h-8, 13px, aktif = pill-active) */}
+      <div className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-[calc(var(--radius)-2px)] bg-white/35 dark:bg-white/5 border border-border/60 p-1"
+           role="group" aria-label="Filter cepat status lamaran" data-testid="job-applications-status-chips">
         {Object.entries(STATUS_CONFIG).map(([k, v]) => {
           const count = apps.filter((a) => a.status === k).length;
-          if (count === 0 && statusFilter !== "all") return null;
+          if (count === 0 && statusFilter !== "all" && statusFilter !== k) return null;
+          const active = statusFilter === k;
           return (
             <button
               key={k}
-              onClick={() => { setStatusFilter(k === statusFilter ? "all" : k); setPage(1); }}
+              type="button"
+              aria-pressed={active}
+              onClick={() => { setStatusFilter(active ? "all" : k); setPage(1); }}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                statusFilter === k
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background hover:bg-muted border-border text-muted-foreground"
+                "inline-flex h-8 items-center gap-1.5 rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                active ? "pill-active" : "text-muted-foreground hover:text-foreground"
               )}
+              data-testid={`status-chip-${k}`}
             >
               {v.label}
-              <span className="font-bold">{count}</span>
+              <span className="tabular-nums font-semibold">{count}</span>
             </button>
           );
         })}
@@ -245,7 +248,7 @@ export default function JobApplications() {
             { key: "job_title", label: "Posisi", sortable: true, render: (app) => app.job_title },
             {
               key: "job_dept", label: "Dept.", sortable: true,
-              render: (app) => <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{app.job_dept}</span>,
+              render: (app) => <span className="text-xs bg-muted px-2 py-0.5 rounded-full whitespace-nowrap">{app.job_dept}</span>,
             },
             {
               key: "applied_at", label: "Tanggal", sortable: true,
@@ -264,16 +267,17 @@ export default function JobApplications() {
           defaultSort={{ key: "applied_at", dir: "desc" }}
           onRowClick={openDetail}
           empty={<EmptyState icon={Briefcase} title="Belum ada lamaran"
-            description="Lamaran dari halaman /careers akan muncul di sini." />}
+            description="Lamaran dari halaman karir publik (/careers) akan muncul di sini." />}
           rowAction={(app) => (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon-sm"
               onClick={() => openDetail(app)}
               data-testid={`app-view-${app.id}`}
               aria-label={`Lihat detail lamaran ${app.name}`}
+              title="Lihat detail"
             >
-              <Eye className="h-4 w-4" />
+              <Eye />
             </Button>
           )}
           rowTestIdPrefix="app-row"
@@ -284,10 +288,10 @@ export default function JobApplications() {
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 text-sm text-muted-foreground" data-testid="job-applications-pagination">
             <span>Halaman {page} dari {totalPages} ({total} total)</span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="job-applications-prev">
                 Sebelumnya
               </Button>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="job-applications-next">
                 Berikutnya
               </Button>
             </div>
@@ -310,7 +314,7 @@ export default function JobApplications() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 mt-2">
+              <div className="space-y-3">
                 {/* Contact Info */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -330,10 +334,10 @@ export default function JobApplications() {
                 {/* Cover Letter */}
                 {selected.message && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <h3 className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1.5">
                       <MessageSquare className="h-3.5 w-3.5" />
                       Cover Letter
-                    </Label>
+                    </h3>
                     <div className="text-sm text-foreground bg-muted/40 rounded-lg p-3 whitespace-pre-wrap">
                       {selected.message}
                     </div>
@@ -342,11 +346,11 @@ export default function JobApplications() {
 
                 {/* Status Actions */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    Update Status
+                  <h3 id="app-status-label" className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                    Ubah Status
                     <InlineHelp id="hr-job-application-status" size="xs" />
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
+                  </h3>
+                  <div className="flex flex-wrap gap-2" role="group" aria-labelledby="app-status-label">
                     {Object.entries(STATUS_CONFIG).map(([k, v]) => (
                       <Button
                         key={k}
@@ -354,7 +358,7 @@ export default function JobApplications() {
                         variant={selected.status === k ? "default" : "outline"}
                         disabled={updating}
                         onClick={() => updateStatus(selected.id, k)}
-                        className="text-xs"
+                        aria-pressed={selected.status === k}
                         data-testid={`status-btn-${k}`}
                       >
                         {v.label}
@@ -365,22 +369,23 @@ export default function JobApplications() {
 
                 {/* Notes */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Label htmlFor="app-notes" className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1.5">
                     <FileText className="h-3.5 w-3.5" />
                     Catatan Internal
                   </Label>
                   <Textarea
+                    id="app-notes"
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Tambahkan catatan internal untuk tim HR..."
                     rows={3}
-                    className="resize-none text-sm"
+                    className="resize-none"
                     data-testid="notes-textarea"
                   />
                 </div>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter>
                 <Button variant="outline" onClick={() => setDetailOpen(false)}>Tutup</Button>
                 <Button onClick={saveNotes} disabled={updating} data-testid="save-notes-btn">
                   Simpan Catatan

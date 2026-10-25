@@ -23,7 +23,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
+import ListHeader from "./ListHeader";
 
 const REASONS = [
   { v: "waste", l: "Waste / Buang" },
@@ -32,7 +33,8 @@ const REASONS = [
   { v: "other", l: "Other" },
 ];
 
-export default function AdjustmentList() {
+/** `embedded` = dirender sebagai tab di Stock Movements hub (tanpa <h1> sendiri). */
+export default function AdjustmentList({ embedded = false }) {
   const { can } = useAuth();
   const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet } = useOutletScope();
   const [showForm, setShowForm] = useState(false);
@@ -57,15 +59,13 @@ export default function AdjustmentList() {
   useEffect(() => { setPage(1); }, [outletId]);
 
   async function approve(a) {
-    if (!(await confirmDialog(`Approve adjustment ${a.doc_no || a.id.slice(0, 8)}?`))) return;
+    if (!(await confirmDialog(`Setujui adjustment ${a.doc_no || a.id.slice(0, 8)}? Stok & jurnal akan diperbarui.`))) return;
     try {
       await api.post(`/inventory/adjustments/${a.id}/approve`, { note: "approved" });
-      toast.success("Approved"); refetch();
-    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal"); }
+      toast.success("Adjustment disetujui"); refetch();
+    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyetujui adjustment"); }
   }
 
-  const [rejectDlg, setRejectDlg] = useState(null);
-  const [rejectReason, setRejectReason] = useState("");
   const [stateDlg, setStateDlg] = useState(null);
   const [stateData, setStateData] = useState(null);
 
@@ -78,53 +78,66 @@ export default function AdjustmentList() {
     } catch { setStateData(null); }
   }
 
-  async function rejectSubmit() {
-    if (!rejectReason.trim()) { toast.error("Alasan wajib"); return; }
+  // Alasan penolakan via promptDialog global (sebelumnya dialog ad-hoc lokal).
+  async function reject(a) {
+    const reason = await promptDialog({
+      title: "Tolak adjustment?",
+      description: `${a.doc_no || a.id.slice(0, 8)} — stok tidak akan berubah.`,
+      label: "Alasan penolakan",
+      placeholder: "Tulis alasan penolakan…",
+      required: true,
+      multiline: true,
+      destructive: true,
+      confirmText: "Tolak",
+    });
+    if (reason == null) return;
     try {
-      await api.post(`/inventory/adjustments/${rejectDlg.id}/reject`, { reason: rejectReason });
-      toast.success("Rejected");
-      setRejectDlg(null); setRejectReason("");
+      await api.post(`/inventory/adjustments/${a.id}/reject`, { reason: reason.trim() });
+      toast.success("Adjustment ditolak");
       refetch();
-    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal"); }
+    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menolak adjustment"); }
   }
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
   return (
-    <div className="space-y-4" data-testid="inventory-adjustment-page">
-      <div className="glass-card p-4 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="font-semibold">Stock Adjustments</h3>
-          <p className="text-xs text-muted-foreground">
-            {outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua Outlet"} — Waste/damage/koreksi stok. Approval menghasilkan jurnal.
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          {/* Outlet switcher for multi-outlet / full-access users */}
-          {scopedOutlets.length > 1 && (
-            <SimpleSelect
-              value={outletId}
-              onValueChange={setOutletId}
-              options={[...(isFullAccess ? [{ value: "", label: "Semua Outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua Outlet"
-              className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
-              testId="adj-outlet-filter"
-            />
-          )}
-          <Button onClick={() => setShowForm(true)} className="rounded-full pill-active gap-2 h-10" data-testid="adj-new" disabled={!can("inventory.adjustment.create")}>
-            <Plus className="h-4 w-4" /> Adjustment Baru
-          </Button>
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="inventory-adjustment-page">
+      <div data-testid="adj-header-card">
+        <ListHeader
+          embedded={embedded}
+          icon={Sliders}
+          title="Stock Adjustments"
+          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua outlet"} — waste, rusak, atau koreksi stok. Approval menghasilkan jurnal.`}
+          actions={
+            <>
+              {/* Outlet switcher for multi-outlet / full-access users */}
+              {scopedOutlets.length > 1 && (
+                <SimpleSelect
+                  value={outletId}
+                  onValueChange={setOutletId}
+                  options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                  placeholder="Semua outlet"
+                  className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
+                  testId="adj-outlet-filter"
+                  ariaLabel="Filter outlet"
+                />
+              )}
+              <Button onClick={() => setShowForm(true)} data-testid="adj-new" disabled={!can("inventory.adjustment.create")}>
+                <Plus /> Adjustment Baru
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <div className="glass-card overflow-hidden" data-testid="adj-table">
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true,
-              render: a => <span className="font-mono text-xs">{a.doc_no || a.id.slice(0, 8)}</span> },
+              render: a => <span className="font-medium tabular-nums">{a.doc_no || a.id.slice(0, 8)}</span> },
             { key: "adjustment_date", label: "Tanggal", sortable: true, render: a => fmtDate(a.adjustment_date) },
             { key: "outlet", label: "Outlet", render: a => outletMap[a.outlet_id]?.name || a.outlet_id },
-            { key: "reason", label: "Reason", sortable: true, render: a => <span className="capitalize">{a.reason}</span> },
+            { key: "reason", label: "Alasan", sortable: true, render: a => <span className="capitalize">{a.reason}</span> },
             { key: "lines", label: "Lines", numeric: true, sortable: true, sortAccessor: a => a.lines?.length || 0, render: a => a.lines?.length || 0 },
             { key: "total_value", label: "Total Value", numeric: true, sortable: true,
               render: a => <span className={cn("font-semibold", a.total_value < 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400")}>{fmtRp(a.total_value || 0)}</span> },
@@ -135,22 +148,22 @@ export default function AdjustmentList() {
           rowTestIdPrefix="adj-row"
           defaultSort={{ key: "adjustment_date", dir: "desc" }}
           renderExpanded={(a) => <AdjustmentLines a={a} />}
-          empty={<EmptyState icon={Sliders} title="Belum ada adjustment" />}
+          empty={<EmptyState icon={Sliders} title="Belum ada adjustment" description="Buat adjustment untuk mencatat waste, barang rusak, atau koreksi stok." />}
           rowAction={(a) => (
             <div className="inline-flex items-center gap-1.5">
-              <button onClick={(e) => { e.stopPropagation(); openState(a); }}
-                className="h-7 w-7 rounded-full hover:bg-foreground/5 flex items-center justify-center" title="Lihat approval state"
+              <Button variant="ghost" size="icon-sm" onClick={(e) => { e.stopPropagation(); openState(a); }}
+                title="Lihat status approval" aria-label={`Lihat status approval ${a.doc_no || ""}`.trim()}
                 data-testid={`adj-state-${a.id}`}>
-                <Eye className="h-3.5 w-3.5" />
-              </button>
+                <Eye />
+              </Button>
               {(a.status === "submitted" || a.status === "awaiting_approval") && can("inventory.adjustment.approve") && (
                 <>
-                  <AsyncButton onClick={async (e) => { e.stopPropagation(); await approve(a); }} size="sm" busyText="Approving…" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`adj-approve-${a.id}`}>
-                    <CheckCircle2 className="h-3 w-3" /> Approve
+                  <AsyncButton onClick={async (e) => { e.stopPropagation(); await approve(a); }} size="sm" busyText="Menyetujui…" data-testid={`adj-approve-${a.id}`}>
+                    <CheckCircle2 /> Setujui
                   </AsyncButton>
-                  <Button onClick={(e) => { e.stopPropagation(); setRejectDlg(a); setRejectReason(""); }} size="sm" variant="outline"
-                    className="rounded-full gap-1 h-7 px-3 text-red-600" data-testid={`adj-reject-${a.id}`}>
-                    <XCircle className="h-3 w-3" /> Reject
+                  <Button onClick={(e) => { e.stopPropagation(); reject(a); }} size="sm" variant="outline"
+                    className="text-destructive" data-testid={`adj-reject-${a.id}`}>
+                    <XCircle /> Tolak
                   </Button>
                 </>
               )}
@@ -158,12 +171,12 @@ export default function AdjustmentList() {
           )}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="adj-pagination">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="adj-prev">Sebelumnya</Button>
+              <span className="tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="adj-next">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -177,39 +190,26 @@ export default function AdjustmentList() {
         onSaved={() => { setShowForm(false); refetch(); }}
       />
 
-      {/* Reject dialog */}
-      <Dialog open={!!rejectDlg} onOpenChange={(v) => !v && setRejectDlg(null)}>
-        <DialogContent className="glass-card max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reject Adjustment?</DialogTitle>
-            <DialogDescription>{rejectDlg?.doc_no || rejectDlg?.id?.slice(0, 8)}</DialogDescription>
-          </DialogHeader>
-          <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)}
-            placeholder="Alasan reject…" className="glass-input min-h-[100px]" data-testid="adj-reject-reason" />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDlg(null)}>Batal</Button>
-            <Button onClick={rejectSubmit} className="pill-active" data-testid="adj-reject-confirm">Reject</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Approval state detail */}
       <Dialog open={!!stateDlg} onOpenChange={(v) => !v && setStateDlg(null)}>
         <DialogContent className="glass-card max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Approval Detail · {stateDlg?.doc_no || stateDlg?.id?.slice(0, 8)}</DialogTitle>
+            <DialogTitle>Status approval · {stateDlg?.doc_no || stateDlg?.id?.slice(0, 8)}</DialogTitle>
             <DialogDescription>Tier, step saat ini, dan timeline approval.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold mb-2">Approval Progress</h4>
+              <h3 className="text-sm font-semibold mb-2">Progres approval</h3>
               <ApprovalProgress state={stateData} />
             </div>
             <div>
-              <h4 className="text-sm font-semibold mb-2">Timeline</h4>
+              <h3 className="text-sm font-semibold mb-2">Timeline</h3>
               <ApprovalChain chain={stateDlg?.approval_chain || []} />
             </div>
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStateDlg(null)} data-testid="adj-state-close">Tutup</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -305,7 +305,7 @@ function AdjustmentForm({ open, outlets, defaultOutletId, onClose, onSaved }) {
       toast.success("Adjustment dibuat");
       onSaved();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyimpan adjustment");
     } finally { setSaving(false); }
   };
 
@@ -316,41 +316,43 @@ function AdjustmentForm({ open, outlets, defaultOutletId, onClose, onSaved }) {
           <DialogTitle>Adjustment Baru</DialogTitle>
           <DialogDescription>Status awal submitted, perlu approval untuk update stok &amp; jurnal.</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Outlet <span className="text-destructive">*</span></Label>
             <SimpleSelect
               value={form.outlet_id}
               onValueChange={v => setForm(f => ({ ...f, outlet_id: v }))}
-              options={[{ value: "", label: "--" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="--"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              options={[{ value: "", label: "Pilih outlet" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Pilih outlet"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="adj-outlet"
+              ariaLabel="Outlet"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Tanggal *</Label>
-            <Input type="date" value={form.adjustment_date}
+            <Label htmlFor="adj-date" className="text-xs md:text-sm font-medium">Tanggal <span className="text-destructive">*</span></Label>
+            <Input id="adj-date" type="date" value={form.adjustment_date}
               onChange={e => setForm(f => ({ ...f, adjustment_date: e.target.value }))}
-              className="glass-input mt-1" />
+              className="glass-input mt-1" data-testid="adj-date" />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Reason *</Label>
+            <Label className="text-xs md:text-sm font-medium">Alasan <span className="text-destructive">*</span></Label>
             <SimpleSelect
               value={form.reason}
               onValueChange={v => setForm(f => ({ ...f, reason: v }))}
               options={REASONS.map(r => ({ value: r.v, label: r.l }))}
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="adj-reason"
+              ariaLabel="Alasan adjustment"
             />
           </div>
         </div>
 
         <div className="mt-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold">Line Items <span className="text-xs text-muted-foreground">(qty_delta: negatif = kurangi, positif = tambah)</span></h4>
-            <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1">
-              <Plus className="h-3.5 w-3.5" /> Tambah
+            <h3 className="text-sm font-semibold">Item <span className="text-xs font-normal text-muted-foreground">(±Qty: negatif = kurangi, positif = tambah)</span></h3>
+            <Button onClick={addLine} variant="outline" size="sm" data-testid="adj-add-line">
+              <Plus /> Tambah baris
             </Button>
           </div>
           {form.lines.map((ln, i) => (
@@ -371,29 +373,30 @@ function AdjustmentForm({ open, outlets, defaultOutletId, onClose, onSaved }) {
               </div>
               <Input type="number" value={ln.qty_delta}
                 onChange={e => setLine(i, "qty_delta", e.target.value)}
-                className="glass-input col-span-2 h-9 text-right tabular-nums" placeholder="±Qty" data-testid={`adj-line-qty-${i}`} />
-              <Input value={ln.unit} onChange={e => setLine(i, "unit", e.target.value)} className="glass-input col-span-1 h-9" />
-              <Input type="number" min="0" value={ln.unit_cost} onChange={e => setLine(i, "unit_cost", e.target.value)} className="glass-input col-span-2 h-9 text-right tabular-nums" placeholder="Cost" />
+                className="glass-input col-span-2 text-right tabular-nums" placeholder="±Qty" aria-label={`±Qty baris ${i + 1}`} data-testid={`adj-line-qty-${i}`} />
+              <Input value={ln.unit} onChange={e => setLine(i, "unit", e.target.value)} className="glass-input col-span-1" placeholder="Unit" aria-label={`Unit baris ${i + 1}`} />
+              <Input type="number" min="0" value={ln.unit_cost} onChange={e => setLine(i, "unit_cost", e.target.value)} className="glass-input col-span-2 text-right tabular-nums" placeholder="Harga" aria-label={`Harga satuan baris ${i + 1}`} />
               <div className="col-span-1 text-right text-xs tabular-nums">{fmtRp(Number(ln.qty_delta || 0) * Number(ln.unit_cost || 0))}</div>
-              <button onClick={() => removeLine(i)} className="col-span-1 h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center">
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(i)} disabled={form.lines.length <= 1}
+                className="col-span-1 hover:bg-destructive/10 hover:text-destructive" aria-label={`Hapus baris ${i + 1}`} data-testid={`adj-line-remove-${i}`}>
+                <Trash2 />
+              </Button>
             </div>
           ))}
-          <div className="flex justify-between pt-2 border-t border-border/50 text-sm font-bold">
-            <span>Total Value</span>
+          <div className="flex justify-between pt-2 border-t border-border/50 text-sm font-semibold">
+            <span>Total nilai</span>
             <span className={cn("tabular-nums", total < 0 ? "text-red-700 dark:text-red-400" : "")}>{fmtRp(total)}</span>
           </div>
         </div>
 
         <div>
-          <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-          <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="glass-input mt-1 min-h-[60px]" />
+          <Label htmlFor="adj-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+          <Textarea id="adj-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="glass-input mt-1 min-h-[60px]" />
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="adj-save">{saving ? "…" : "Submit"}</Button>
+          <Button onClick={submit} disabled={saving} data-testid="adj-save">{saving ? "Mengajukan…" : "Ajukan"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

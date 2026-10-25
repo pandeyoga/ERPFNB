@@ -1,16 +1,15 @@
 /** PaymentRunTemplateList.jsx — Daftar template + Create + Apply dialog */
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layout, Plus, Play, Pencil, Trash2, Clock, CheckCircle2, CalendarDays } from "lucide-react";
+import { Layout, Plus, Play, Pencil, Trash2, Clock, CheckCircle2, CalendarDays, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 
 import api, { unwrap, unwrapWithMeta } from "@/lib/api";
-import { fmtRp, fmtDate, fmtRelative } from "@/lib/format";
+import { fmtRp, fmtRelative } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -21,8 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
 
-export default function PaymentRunTemplateList() {
+export default function PaymentRunTemplateList({ embedded = false }) {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [meta, setMeta] = useState({ total: 0 });
@@ -56,35 +56,39 @@ export default function PaymentRunTemplateList() {
     }
   }
 
+  const subtitle = "Simpan konfigurasi vendor + jumlah untuk pembayaran tetap bulanan. Apply template → langsung jadi Payment Run.";
+  const actions = (
+    <Button onClick={() => setShowCreate(true)} data-testid="prn-tmpl-create-btn">
+      <Plus className="h-4 w-4" />Buat Template
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="prn-template-list-page">
-      {/* Toolbar */}
-      <div className="glass-card p-4 flex items-center gap-3 flex-wrap" data-testid="prn-template-toolbar">
-        <div>
-          <h2 className="font-semibold text-sm">Payment Run Templates</h2>
-          <p className="text-xs text-muted-foreground">
-            Simpan konfigurasi vendor + jumlah untuk pembayaran tetap bulanan. Apply template → langsung ke Payment Run.
-          </p>
-        </div>
-        <div className="ml-auto">
-          <Button onClick={() => setShowCreate(true)}
-            className="rounded-full gap-2 h-9 bg-foreground text-background hover:bg-foreground/90 text-sm"
-            data-testid="prn-tmpl-create-btn">
-            <Plus className="h-4 w-4" />Buat Template
-          </Button>
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="prn-template-list-page">
+      <div data-testid="prn-template-toolbar">
+        {embedded ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+          </div>
+        ) : (
+          <PageHeader icon={ClipboardList} title="Payment Run Templates" subtitle={subtitle} actions={actions} />
+        )}
       </div>
 
       {loading && <LoadingState rows={4} />}
       {!loading && templates.length === 0 && (
-        <EmptyState icon={Layout} title="Belum ada template"
-          description="Buat template sekali, apply tiap bulan untuk menghemat waktu pembayaran vendor tetap."
-          actionLabel="Buat Template Pertama" onAction={() => setShowCreate(true)}
-          data-testid="prn-tmpl-empty" />
+        <div className="glass-card">
+          <EmptyState icon={Layout} title="Belum ada template"
+            description="Buat template sekali, apply tiap bulan untuk menghemat waktu pembayaran vendor tetap."
+            action={<Button size="sm" onClick={() => setShowCreate(true)} data-testid="prn-tmpl-empty-create">
+              <Plus className="h-4 w-4" />Buat Template Pertama</Button>}
+            data-testid="prn-tmpl-empty" />
+        </div>
       )}
 
       {!loading && templates.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" data-testid="prn-tmpl-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4" data-testid="prn-tmpl-grid">
           {templates.map(t => (
             <TemplateCard key={t.id} template={t}
               onApply={() => setApplyTarget(t)}
@@ -122,7 +126,7 @@ export default function PaymentRunTemplateList() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="prn-tmpl-delete-cancel">Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90"
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               data-testid="prn-tmpl-delete-confirm">Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -134,7 +138,7 @@ export default function PaymentRunTemplateList() {
 // ── Template Card ─────────────────────────────────────────────────────────────
 function TemplateCard({ template: t, onApply, onEdit, onDelete }) {
   return (
-    <div className="glass-card p-5 space-y-4 hover:shadow-lg transition-shadow" data-testid={`prn-tmpl-card-${t.id}`}>
+    <div className="glass-card p-4 space-y-3" data-testid={`prn-tmpl-card-${t.id}`}>
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
           <Layout className="h-5 w-5 text-primary" />
@@ -164,16 +168,16 @@ function TemplateCard({ template: t, onApply, onEdit, onDelete }) {
         </div>
       )}
 
-      <div className="flex gap-2 pt-1 border-t border-border/40">
-        <Button onClick={onApply} className="flex-1 h-8 gap-1.5 text-xs" data-testid={`prn-tmpl-apply-${t.id}`}>
-          <Play className="h-3 w-3" />Apply
+      <div className="flex gap-2 pt-3 border-t border-border/40">
+        <Button size="sm" onClick={onApply} className="flex-1" data-testid={`prn-tmpl-apply-${t.id}`}>
+          <Play className="h-3.5 w-3.5" />Apply
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={onEdit} data-testid={`prn-tmpl-edit-${t.id}`}
-          title="Edit template">
+        <Button variant="outline" size="icon-sm" onClick={onEdit} data-testid={`prn-tmpl-edit-${t.id}`}
+          title="Edit template" aria-label={`Edit template ${t.name}`}>
           <Pencil className="h-3.5 w-3.5" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:border-red-300"
-          onClick={onDelete} data-testid={`prn-tmpl-delete-${t.id}`} title="Hapus template">
+        <Button variant="outline" size="icon-sm" className="text-red-600 hover:text-red-700"
+          onClick={onDelete} data-testid={`prn-tmpl-delete-${t.id}`} title="Hapus template" aria-label={`Hapus template ${t.name}`}>
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -250,14 +254,14 @@ function ApplyDialog({ template, onClose, onApplied }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Payment Date <span className="text-red-500">*</span></Label>
-            <Input type="date" value={paymentDate}
+            <Label htmlFor="apply-dialog-date">Payment Date <span className="text-red-500">*</span></Label>
+            <Input id="apply-dialog-date" type="date" value={paymentDate}
               onChange={e => setPaymentDate(e.target.value)}
               className="glass-input" data-testid="apply-dialog-date" />
           </div>
           <div className="space-y-1.5">
-            <Label>Catatan (opsional)</Label>
-            <Input value={notes} onChange={e => setNotes(e.target.value)}
+            <Label htmlFor="apply-dialog-notes">Catatan (opsional)</Label>
+            <Input id="apply-dialog-notes" value={notes} onChange={e => setNotes(e.target.value)}
               placeholder="Mis: Pembayaran vendor Juni 2026"
               className="glass-input" data-testid="apply-dialog-notes" />
           </div>
@@ -276,8 +280,8 @@ function ApplyDialog({ template, onClose, onApplied }) {
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} data-testid="apply-dialog-cancel">Batal</Button>
           <Button onClick={handleApply} disabled={applying} data-testid="apply-dialog-submit">
-            <Play className="h-4 w-4 mr-1.5" />
-            {applying ? "Memproses..." : "Apply Sekarang"}
+            <Play className="h-4 w-4" />
+            {applying ? "Memproses..." : "Apply sekarang"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -323,14 +327,14 @@ function CreateTemplateDialog({ onClose, onCreated }) {
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Nama Template <span className="text-red-500">*</span></Label>
-            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            <Label htmlFor="tmpl-form-name">Nama Template <span className="text-red-500">*</span></Label>
+            <Input id="tmpl-form-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Mis: Vendor Tetap Bulanan" className="glass-input"
               data-testid="tmpl-form-name" />
           </div>
           <div className="space-y-1.5">
-            <Label>Deskripsi</Label>
-            <Input value={form.description}
+            <Label htmlFor="tmpl-form-desc">Deskripsi</Label>
+            <Input id="tmpl-form-desc" value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="Sewa kantor, retainer konsultan..." className="glass-input"
               data-testid="tmpl-form-desc" />
@@ -339,17 +343,18 @@ function CreateTemplateDialog({ onClose, onCreated }) {
             <div className="space-y-1.5">
               <Label>Bank Account <span className="text-red-500">*</span></Label>
               <SimpleSelect
+                ariaLabel="Bank Account"
                 value={form.bank_account_id}
                 onValueChange={v => setForm(f => ({ ...f, bank_account_id: v }))}
                 options={[{ value: "", label: "— Pilih bank —" }, ...banks.map(b => ({ value: b.id, label: `${b.bank} ${b.account_number} — ${b.name}` }))]}
                 placeholder="— Pilih bank —"
-                className="glass-input rounded-lg w-full px-3 h-9 text-sm"
+                className="glass-input w-full"
                 testId="tmpl-form-bank"
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Tanggal Bayar Bulanan</Label>
-              <Input type="number" min={1} max={28} value={form.schedule_day}
+              <Label htmlFor="tmpl-form-day">Tanggal Bayar Bulanan</Label>
+              <Input id="tmpl-form-day" type="number" min={1} max={28} value={form.schedule_day}
                 onChange={e => setForm(f => ({ ...f, schedule_day: parseInt(e.target.value) }))}
                 className="glass-input" data-testid="tmpl-form-day" />
               <p className="text-[11px] text-muted-foreground">Hari ke-1 s/d 28 tiap bulan</p>

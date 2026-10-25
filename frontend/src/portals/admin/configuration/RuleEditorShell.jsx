@@ -3,7 +3,7 @@
  * scope/effective-dating fields, and slots a custom editor body.
  */
 import { useEffect, useMemo, useState } from "react";
-import { CalendarIcon, X, Save, AlertTriangle, Eye } from "lucide-react";
+import { CalendarIcon, Save, AlertTriangle, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 import api, { unwrap, unwrapError } from "@/lib/api";
@@ -119,11 +119,11 @@ export default function RuleEditorShell({
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Identitas</h4>
           <span className="text-[11px] text-muted-foreground">
-            Scope: <span className="font-mono">{scope.scope_type}</span> / <span className="font-mono">{scope.scope_id}</span>
+            Scope: <span className="font-medium text-foreground/80">{scope.scope_type}</span> / <span className="font-medium text-foreground/80">{scope.scope_id}</span>
           </span>
         </div>
         <div>
-          <Label htmlFor="rule-name" className="text-xs">Nama Aturan</Label>
+          <Label htmlFor="rule-name" className="text-xs md:text-sm font-medium">Nama Aturan <span className="text-destructive">*</span></Label>
           <Input
             id="rule-name"
             value={name}
@@ -134,7 +134,7 @@ export default function RuleEditorShell({
           {errors.name && <p className="text-[11px] text-destructive mt-1">{errors.name}</p>}
         </div>
         <div>
-          <Label htmlFor="rule-desc" className="text-xs">Deskripsi (opsional)</Label>
+          <Label htmlFor="rule-desc" className="text-xs md:text-sm font-medium">Deskripsi (opsional)</Label>
           <Textarea
             id="rule-desc"
             rows={2}
@@ -152,8 +152,9 @@ export default function RuleEditorShell({
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs">Mulai</Label>
+            <Label htmlFor="rule-eff-from" className="text-xs md:text-sm font-medium">Mulai</Label>
             <Input
+              id="rule-eff-from"
               type="date"
               value={effFrom || ""}
               onChange={(e) => setEffFrom(e.target.value)}
@@ -161,8 +162,9 @@ export default function RuleEditorShell({
             />
           </div>
           <div>
-            <Label className="text-xs">Berakhir</Label>
+            <Label htmlFor="rule-eff-to" className="text-xs md:text-sm font-medium">Berakhir</Label>
             <Input
+              id="rule-eff-to"
               type="date"
               value={effTo || ""}
               onChange={(e) => setEffTo(e.target.value)}
@@ -179,7 +181,7 @@ export default function RuleEditorShell({
             onCheckedChange={setActive}
             data-testid="config-editor-active-switch"
           />
-          <Label htmlFor="rule-active" className="text-xs">
+          <Label htmlFor="rule-active" className="text-xs md:text-sm font-medium">
             {active ? "Aktif (akan diberlakukan sesuai jadwal)" : "Diarsipkan (tidak diberlakukan)"}
           </Label>
         </div>
@@ -203,15 +205,19 @@ export default function RuleEditorShell({
     </div>
   );
 
+  // Footer sticky agar tombol Simpan selalu terjangkau di editor yang panjang
   const Footer = (
-    <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-3">
+    <div className={cn(
+      "sticky bottom-0 z-10 py-3 mt-3 flex items-center justify-between gap-2 border-t border-border/40 bg-background/95 backdrop-blur-sm",
+      variant === "dialog" ? "-mx-5 px-5" : "-mx-6 px-6",
+    )}>
       <div className="text-[11px] text-muted-foreground">
         {isEdit ? `v${rule.version || "?"} — ID: ${rule.id?.slice(0, 8)}…` : "Aturan baru"}
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" onClick={onClose} disabled={saving} data-testid="config-editor-cancel-btn">Batal</Button>
-        <Button onClick={save} disabled={saving} className="rounded-full" data-testid="config-editor-save-schedule-button">
-          <Save className="h-3.5 w-3.5 mr-1" />
+        <Button variant="outline" onClick={onClose} disabled={saving} data-testid="config-editor-cancel-btn">Batal</Button>
+        <Button onClick={save} disabled={saving} data-testid="config-editor-save-schedule-button">
+          <Save />
           {saving ? "Menyimpan…" : (isEdit ? "Simpan Perubahan" : "Simpan & Jadwalkan")}
         </Button>
       </div>
@@ -221,14 +227,10 @@ export default function RuleEditorShell({
   if (variant === "dialog") {
     return (
       <Dialog open={open} onOpenChange={(v) => !v && onClose?.()}>
-        <DialogContent className={cn("glass-card max-h-[88vh] overflow-y-auto", size)} data-testid="config-editor-dialog">
+        <DialogContent className={cn("glass-card pb-0", size)} data-testid="config-editor-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {isEdit ? "Edit" : "Buat"} {ruleTypeLabel}
-              <button onClick={onClose} className="ml-auto rounded-full p-1 hover:bg-foreground/[0.05]" aria-label="Tutup">
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </DialogTitle>
+            {/* Tombol tutup bawaan Dialog sudah ada di pojok kanan atas — tombol X kedua dihapus */}
+            <DialogTitle>{isEdit ? "Edit" : "Buat"} {ruleTypeLabel}</DialogTitle>
             <DialogDescription>Atur kebijakan dan periode berlaku.</DialogDescription>
           </DialogHeader>
           {Body}
@@ -242,7 +244,7 @@ export default function RuleEditorShell({
     <Sheet open={open} onOpenChange={(v) => !v && onClose?.()}>
       <SheetContent
         side="right"
-        className={cn("glass-card !w-full sm:!w-[640px] sm:!max-w-[640px] overflow-y-auto")}
+        className={cn("glass-card !w-full sm:!w-[640px] sm:!max-w-[640px] overflow-y-auto pb-0")}
         data-testid="config-editor-dialog"
       >
         <SheetHeader>

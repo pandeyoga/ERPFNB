@@ -1,6 +1,6 @@
 /** e-Faktur / Coretax Export — Sprint 1b */
 import { useState, useEffect } from "react";
-import { FileText, Download, AlertCircle, CheckCircle2, Calendar } from "lucide-react";
+import { FileText, Download, CheckCircle2, Eye, RefreshCw } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,12 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency, formatDateID } from "@/lib/format";
 import { logger } from "@/lib/logger";
 
-export default function EFakturExport() {
+export default function EFakturExport({ embedded = false }) {
   const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
   const [jobType, setJobType] = useState("keluaran");
   const [preview, setPreview] = useState(null);
@@ -46,10 +47,10 @@ export default function EFakturExport() {
       const res = await api.get("/efaktur/preview", { params: { period, job_type: jobType } });
       if (res.data.success) {
         setPreview(res.data.data);
-        toast.success(`Preview loaded: ${res.data.data.keluaran.length + res.data.data.masukan.length} faktur`);
+        toast.success(`Preview dimuat: ${res.data.data.keluaran.length + res.data.data.masukan.length} faktur`);
       }
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Failed to load preview");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal memuat preview");
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function EFakturExport() {
         loadExports();
       }
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Failed to generate export");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal membuat file ekspor");
     } finally {
       setExporting(false);
     }
@@ -74,13 +75,13 @@ export default function EFakturExport() {
 
   const downloadFile = (format, type) => {
     if (!lastExport || !lastExport.files) {
-      toast.error("No export files available");
+      toast.error("Belum ada file ekspor");
       return;
     }
     const key = `${format}_${type}`;
     const content = lastExport.files[key];
     if (!content) {
-      toast.error(`File ${key} not found`);
+      toast.error(`File ${key} tidak ditemukan`);
       return;
     }
     const blob = new Blob([content], { type: format === "csv" ? "text/csv" : "application/xml" });
@@ -90,11 +91,11 @@ export default function EFakturExport() {
     a.download = `${type}_${period}.${format}`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Downloaded ${type}_${period}.${format}`);
+    toast.success(`${type}_${period}.${format} diunduh`);
   };
 
   const fakturColumns = (nameKey, nameLabel) => [
-    { key: "faktur_no", label: "No Faktur", primary: true, render: (f) => <span className="font-mono text-xs">{f.faktur_no}</span> },
+    { key: "faktur_no", label: "No Faktur", primary: true, render: (f) => <span className="text-xs font-medium tabular-nums">{f.faktur_no}</span> },
     { key: "tanggal_faktur", label: "Tanggal", render: (f) => formatDateID(f.tanggal_faktur) },
     { key: nameKey, label: nameLabel, render: (f) => <span className="block truncate max-w-xs">{f[nameKey]}</span> },
     { key: "dpp", label: "DPP", numeric: true, sortable: true, render: (f) => formatCurrency(f.dpp) },
@@ -109,35 +110,39 @@ export default function EFakturExport() {
   ];
 
   return (
-    <div className="space-y-6" data-testid="efaktur-export">
-      <div>
-        <h2 className="text-2xl font-semibold">e-Faktur / Coretax Export</h2>
-        <p className="text-muted-foreground">Export Faktur Pajak (CSV + XML) untuk upload ke DJP</p>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="efaktur-export">
+      {!embedded && (
+        <PageHeader
+          icon={FileText}
+          title="e-Faktur Export"
+          subtitle="Ekspor Faktur Pajak (CSV + XML) format Coretax untuk diunggah ke DJP"
+          className="mb-0 md:mb-0"
+        />
+      )}
 
       <Card data-testid="export-form-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Generate Export
+            <FileText className="h-4 w-4" />
+            Buat file ekspor
           </CardTitle>
           <CardDescription>
-            Pilih periode dan tipe faktur, lalu preview sebelum generate export files
+            Pilih periode dan tipe faktur, lalu tampilkan preview sebelum membuat file ekspor (CSV + XML Coretax).
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="period">Periode</Label>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="efaktur-period">Periode</Label>
               <Input
-                id="period"
+                id="efaktur-period"
                 type="month"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 data-testid="period-input"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="job-type">Tipe Faktur</Label>
               <Select value={jobType} onValueChange={setJobType}>
                 <SelectTrigger id="job-type" data-testid="job-type-select">
@@ -151,18 +156,20 @@ export default function EFakturExport() {
               </Select>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={loadPreview} disabled={loading} data-testid="preview-btn">
-              {loading ? "Loading..." : "Preview"}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={loadPreview} disabled={loading} data-testid="preview-btn">
+              {loading ? <RefreshCw className="animate-spin" /> : <Eye />}
+              {loading ? "Memuat…" : "Preview"}
             </Button>
             <Button
               onClick={generateExport}
               disabled={exporting || !preview}
-              variant="default"
               data-testid="generate-btn"
             >
-              {exporting ? "Generating..." : "Generate Export"}
+              {exporting ? <RefreshCw className="animate-spin" /> : <Download />}
+              {exporting ? "Membuat…" : "Buat file ekspor"}
             </Button>
+            {!preview && <span className="text-xs text-muted-foreground">Tampilkan preview dulu untuk mengaktifkan ekspor.</span>}
           </div>
         </CardContent>
       </Card>
@@ -181,25 +188,25 @@ export default function EFakturExport() {
                 <TabsTrigger value="keluaran">Keluaran ({preview.keluaran.length})</TabsTrigger>
                 <TabsTrigger value="masukan">Masukan ({preview.masukan.length})</TabsTrigger>
               </TabsList>
-              <TabsContent value="keluaran" className="mt-4">
+              <TabsContent value="keluaran">
                 <DataTable
                   rows={preview.keluaran.slice(0, 10)}
                   columns={fakturColumns("nama_pembeli", "Pembeli")}
                   keyField="faktur_no"
                   rowTestIdPrefix="efaktur-keluaran-row"
-                  empty={<div className="p-6"><EmptyState title="Tidak ada faktur keluaran" description="Tidak ada faktur keluaran pada periode ini." /></div>}
+                  empty={<div className="p-3"><EmptyState title="Tidak ada faktur keluaran" description="Tidak ada faktur keluaran pada periode ini." /></div>}
                 />
                 {preview.keluaran.length > 10 && (
                   <p className="text-sm text-muted-foreground mt-2">...dan {preview.keluaran.length - 10} lainnya</p>
                 )}
               </TabsContent>
-              <TabsContent value="masukan" className="mt-4">
+              <TabsContent value="masukan">
                 <DataTable
                   rows={preview.masukan.slice(0, 10)}
                   columns={fakturColumns("nama_penjual", "Penjual")}
                   keyField="faktur_no"
                   rowTestIdPrefix="efaktur-masukan-row"
-                  empty={<div className="p-6"><EmptyState title="Tidak ada faktur masukan" description="Tidak ada faktur masukan pada periode ini." /></div>}
+                  empty={<div className="p-3"><EmptyState title="Tidak ada faktur masukan" description="Tidak ada faktur masukan pada periode ini." /></div>}
                 />
                 {preview.masukan.length > 10 && (
                   <p className="text-sm text-muted-foreground mt-2">...dan {preview.masukan.length - 10} lainnya</p>
@@ -214,25 +221,25 @@ export default function EFakturExport() {
         <Alert data-testid="download-alert">
           <CheckCircle2 className="h-4 w-4" />
           <AlertDescription>
-            <div className="font-semibold mb-2">Export berhasil dibuat!</div>
+            <div className="font-semibold mb-2">File ekspor berhasil dibuat. Unduh file:</div>
             <div className="flex gap-2 flex-wrap">
               {lastExport.job_type !== "masukan" && (
                 <>
                   <Button size="sm" variant="outline" onClick={() => downloadFile("csv", "keluaran")} data-testid="download-csv-keluaran">
-                    <Download className="h-3 w-3 mr-1" /> CSV Keluaran
+                    <Download /> CSV Keluaran
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => downloadFile("xml", "keluaran")} data-testid="download-xml-keluaran">
-                    <Download className="h-3 w-3 mr-1" /> XML Keluaran
+                    <Download /> XML Keluaran
                   </Button>
                 </>
               )}
               {lastExport.job_type !== "keluaran" && (
                 <>
                   <Button size="sm" variant="outline" onClick={() => downloadFile("csv", "masukan")} data-testid="download-csv-masukan">
-                    <Download className="h-3 w-3 mr-1" /> CSV Masukan
+                    <Download /> CSV Masukan
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => downloadFile("xml", "masukan")} data-testid="download-xml-masukan">
-                    <Download className="h-3 w-3 mr-1" /> XML Masukan
+                    <Download /> XML Masukan
                   </Button>
                 </>
               )}
@@ -243,7 +250,7 @@ export default function EFakturExport() {
 
       <Card data-testid="export-history-card">
         <CardHeader>
-          <CardTitle>Riwayat Export</CardTitle>
+          <CardTitle>Riwayat ekspor</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
@@ -251,7 +258,7 @@ export default function EFakturExport() {
             columns={historyColumns}
             keyField="id"
             rowTestIdPrefix="efaktur-history-row"
-            empty={<div className="py-8"><EmptyState title="Belum ada export" description="Belum ada riwayat export e-Faktur." /></div>}
+            empty={<EmptyState title="Belum ada ekspor" description="Riwayat ekspor e-Faktur akan muncul di sini setelah file pertama dibuat." />}
           />
         </CardContent>
       </Card>

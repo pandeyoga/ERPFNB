@@ -1,7 +1,8 @@
 /** Transfer List + create + send/receive actions. */
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Truck, Send, Inbox, Trash2 } from "lucide-react";
-import api, { unwrap } from "@/lib/api";
+import { Link } from "react-router-dom";
+import { Plus, Truck, Send, Inbox, Trash2, Eye } from "lucide-react";
+import api from "@/lib/api";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import { Button } from "@/components/ui/button";
 import AsyncButton from "@/components/shared/AsyncButton";
@@ -22,8 +23,10 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog } from "@/components/shared/confirmDialog";
+import ListHeader from "./ListHeader";
 
-export default function TransferList() {
+/** `embedded` = dirender sebagai tab di Stock Movements hub (tanpa <h1> sendiri). */
+export default function TransferList({ embedded = false }) {
   const { can } = useAuth();
   const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet } = useOutletScope();
   const [showForm, setShowForm] = useState(false);
@@ -52,50 +55,53 @@ export default function TransferList() {
     try {
       await api.post(`/inventory/transfers/${t.id}/send`);
       toast.success("Transfer dikirim"); refetch();
-    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal"); }
+    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengirim transfer"); }
   }
   async function receive(t) {
     if (!(await confirmDialog("Konfirmasi penerimaan? Stock akan masuk ke outlet tujuan."))) return;
     try {
       await api.post(`/inventory/transfers/${t.id}/receive`);
       toast.success("Transfer diterima"); refetch();
-    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal"); }
+    } catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menerima transfer"); }
   }
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
   return (
-    <div data-testid="transfer-list-page" className="space-y-4">
-      <div data-testid="trf-header-card" className="glass-card p-4 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="font-semibold">Stock Transfers</h3>
-          <p className="text-xs text-muted-foreground">
-            {outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua Outlet"} — Pindahkan stok antar outlet.
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          {/* Outlet scope switcher */}
-          {scopedOutlets.length > 1 && (
-            <SimpleSelect
-              value={outletId}
-              onValueChange={setOutletId}
-              options={[...(isFullAccess ? [{ value: "", label: "Semua Outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua Outlet"
-              className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
-              testId="trf-outlet-filter"
-            />
-          )}
-          <Button onClick={() => setShowForm(true)} className="rounded-full pill-active gap-2 h-10" data-testid="trf-new" disabled={!can("inventory.transfer.create")}>
-            <Plus className="h-4 w-4" /> Transfer Baru
-          </Button>
-        </div>
+    <div data-testid="transfer-list-page" className="space-y-3 lg:space-y-4">
+      <div data-testid="trf-header-card">
+        <ListHeader
+          embedded={embedded}
+          icon={Truck}
+          title="Stock Transfers"
+          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua outlet"} — pindahkan stok antar outlet.`}
+          actions={
+            <>
+              {/* Outlet scope switcher */}
+              {scopedOutlets.length > 1 && (
+                <SimpleSelect
+                  value={outletId}
+                  onValueChange={setOutletId}
+                  options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                  placeholder="Semua outlet"
+                  className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
+                  testId="trf-outlet-filter"
+                  ariaLabel="Filter outlet"
+                />
+              )}
+              <Button onClick={() => setShowForm(true)} data-testid="trf-new" disabled={!can("inventory.transfer.create")}>
+                <Plus /> Transfer Baru
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <div data-testid="trf-table-card" className="glass-card overflow-hidden">
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true,
-              render: t => <span className="font-mono text-xs">{t.doc_no || t.id.slice(0, 8)}</span> },
+              render: t => <span className="font-medium tabular-nums">{t.doc_no || t.id.slice(0, 8)}</span> },
             { key: "transfer_date", label: "Tanggal", sortable: true, render: t => fmtDate(t.transfer_date) },
             { key: "from", label: "Dari", render: t => outletMap[t.from_outlet_id]?.name || t.from_outlet_id },
             { key: "to", label: "Ke", render: t => outletMap[t.to_outlet_id]?.name || t.to_outlet_id },
@@ -114,25 +120,31 @@ export default function TransferList() {
           rowAction={(t) => (
             <div className="inline-flex items-center gap-1.5">
               {t.status === "draft" && can("inventory.transfer.send") && (
-                <AsyncButton onClick={async (e) => { e.stopPropagation(); await send(t); }} size="sm" busyText="Mengirim…" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`trf-send-${t.id}`}>
-                  <Send className="h-3 w-3" /> Kirim
+                <AsyncButton onClick={async (e) => { e.stopPropagation(); await send(t); }} size="sm" busyText="Mengirim…" data-testid={`trf-send-${t.id}`}>
+                  <Send /> Kirim
                 </AsyncButton>
               )}
               {t.status === "sent" && can("inventory.transfer.receive") && (
-                <AsyncButton onClick={async (e) => { e.stopPropagation(); await receive(t); }} size="sm" busyText="Menerima…" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`trf-receive-${t.id}`}>
-                  <Inbox className="h-3 w-3" /> Terima
+                <AsyncButton onClick={async (e) => { e.stopPropagation(); await receive(t); }} size="sm" busyText="Menerima…" data-testid={`trf-receive-${t.id}`}>
+                  <Inbox /> Terima
                 </AsyncButton>
               )}
+              {/* Satu-satunya jalan ke halaman detail transfer (sebelumnya tidak ada link sama sekali). */}
+              <Button asChild variant="ghost" size="icon-sm" aria-label={`Lihat detail ${t.doc_no || "transfer"}`} title="Lihat detail">
+                <Link to={`/inventory/transfers/${t.id}`} onClick={(e) => e.stopPropagation()} data-testid={`trf-view-${t.id}`}>
+                  <Eye />
+                </Link>
+              </Button>
             </div>
           )}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="trf-pagination">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="trf-prev">Sebelumnya</Button>
+              <span className="tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="trf-next">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -235,7 +247,7 @@ function TransferForm({ open, fromOutlets, toOutlets, defaultFromOutletId, onClo
       toast.success("Transfer dibuat");
       onSaved();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyimpan transfer");
     } finally { setSaving(false); }
   };
 
@@ -246,42 +258,44 @@ function TransferForm({ open, fromOutlets, toOutlets, defaultFromOutletId, onClo
           <DialogTitle>Transfer Baru</DialogTitle>
           <DialogDescription>Status awal akan draft. Klik Kirim untuk mengurangi stok asal.</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Dari Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Dari outlet <span className="text-destructive">*</span></Label>
             <SimpleSelect
               value={form.from_outlet_id}
               onValueChange={v => setForm(f => ({ ...f, from_outlet_id: v }))}
-              options={[{ value: "", label: "--" }, ...fromOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="--"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              options={[{ value: "", label: "Pilih outlet asal" }, ...fromOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Pilih outlet asal"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="trf-from"
+              ariaLabel="Dari outlet"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Ke Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Ke outlet <span className="text-destructive">*</span></Label>
             <SimpleSelect
               value={form.to_outlet_id}
               onValueChange={v => setForm(f => ({ ...f, to_outlet_id: v }))}
-              options={[{ value: "", label: "--" }, ...(toOutlets || fromOutlets).filter(o => o.id !== form.from_outlet_id).map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="--"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              options={[{ value: "", label: "Pilih outlet tujuan" }, ...(toOutlets || fromOutlets).filter(o => o.id !== form.from_outlet_id).map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Pilih outlet tujuan"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="trf-to"
+              ariaLabel="Ke outlet"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Tanggal *</Label>
-            <Input type="date" value={form.transfer_date}
+            <Label htmlFor="trf-date" className="text-xs md:text-sm font-medium">Tanggal <span className="text-destructive">*</span></Label>
+            <Input id="trf-date" type="date" value={form.transfer_date}
               onChange={e => setForm(f => ({ ...f, transfer_date: e.target.value }))}
-              className="glass-input mt-1" />
+              className="glass-input mt-1" data-testid="trf-date" />
           </div>
         </div>
 
         <div className="mt-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold">Line Items</h4>
-            <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1">
-              <Plus className="h-3.5 w-3.5" /> Tambah
+            <h3 className="text-sm font-semibold">Item</h3>
+            <Button onClick={addLine} variant="outline" size="sm" data-testid="trf-add-line">
+              <Plus /> Tambah baris
             </Button>
           </div>
           {form.lines.map((ln, i) => (
@@ -302,32 +316,33 @@ function TransferForm({ open, fromOutlets, toOutlets, defaultFromOutletId, onClo
               </div>
               <Input type="number" min="0" value={ln.qty}
                 onChange={e => setLine(i, "qty", e.target.value)}
-                className="glass-input col-span-2 h-9 text-right tabular-nums"
-                placeholder="Qty" data-testid={`trf-line-qty-${i}`} />
-              <Input value={ln.unit} onChange={e => setLine(i, "unit", e.target.value)} className="glass-input col-span-1 h-9" placeholder="unit" />
+                className="glass-input col-span-2 text-right tabular-nums"
+                placeholder="Qty" aria-label={`Qty baris ${i + 1}`} data-testid={`trf-line-qty-${i}`} />
+              <Input value={ln.unit} onChange={e => setLine(i, "unit", e.target.value)} className="glass-input col-span-1" placeholder="Unit" aria-label={`Unit baris ${i + 1}`} />
               <Input type="number" min="0" value={ln.unit_cost}
                 onChange={e => setLine(i, "unit_cost", e.target.value)}
-                className="glass-input col-span-2 h-9 text-right tabular-nums" placeholder="Cost" />
+                className="glass-input col-span-2 text-right tabular-nums" placeholder="Harga" aria-label={`Harga satuan baris ${i + 1}`} />
               <div className="col-span-1 text-right text-xs tabular-nums">{fmtRp(Number(ln.qty || 0) * Number(ln.unit_cost || 0))}</div>
-              <button onClick={() => removeLine(i)} className="col-span-1 h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center">
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(i)} disabled={form.lines.length <= 1}
+                className="col-span-1 hover:bg-destructive/10 hover:text-destructive" aria-label={`Hapus baris ${i + 1}`} data-testid={`trf-line-remove-${i}`}>
+                <Trash2 />
+              </Button>
             </div>
           ))}
-          <div className="flex justify-between pt-2 border-t border-border/50 text-sm font-bold">
-            <span>Total Value</span>
+          <div className="flex justify-between pt-2 border-t border-border/50 text-sm font-semibold">
+            <span>Total nilai</span>
             <span className="tabular-nums">{fmtRp(total)}</span>
           </div>
         </div>
 
         <div>
-          <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-          <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="glass-input mt-1 min-h-[60px]" />
+          <Label htmlFor="trf-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+          <Textarea id="trf-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="glass-input mt-1 min-h-[60px]" />
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="trf-save">{saving ? "…" : "Simpan Draft"}</Button>
+          <Button onClick={submit} disabled={saving} data-testid="trf-save">{saving ? "Menyimpan…" : "Simpan draft"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

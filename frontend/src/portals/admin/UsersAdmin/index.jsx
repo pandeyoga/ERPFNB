@@ -17,7 +17,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import StatusPill from "@/components/shared/StatusPill";
 import DataTable from "@/components/shared/DataTable";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -31,7 +33,7 @@ import ResetPwdDialog from "./ResetPwdDialog";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
-export default function Users() {
+export default function Users({ embedded = false } = {}) {
   const { user: me } = useAuth();
   const { allOutlets } = useOutletScope();
   const outlets = allOutlets;
@@ -75,27 +77,38 @@ export default function Users() {
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
+  const newButton = (
+    <Button onClick={() => setEditing({})} data-testid="users-new">
+      <Plus /> Tambah User
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="users-page">
+    <div className="space-y-3" data-testid="users-page">
+      {/* Halaman mandiri (/admin/users) punya judul sendiri; di dalam hub "Users & Roles" judul dari hub */}
+      {!embedded && (
+        <PageHeader
+          icon={Users2}
+          title="Users"
+          subtitle="Akun user ERP, role, dan akses outlet/brand."
+          actions={newButton}
+        />
+      )}
+
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Cari nama atau email…"
+            aria-label="Cari user berdasarkan nama atau email"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="glass-input pl-9 h-10"
+            className="glass-input pl-9"
             data-testid="users-search"
           />
         </div>
-        <Button
-          onClick={() => setEditing({})}
-          className="rounded-full pill-active h-10 px-4 gap-2"
-          data-testid="users-new"
-        >
-          <Plus className="h-4 w-4" /> User Baru
-        </Button>
+        {embedded && newButton}
       </div>
 
       {/* Legend */}
@@ -143,13 +156,9 @@ export default function Users() {
             } },
             { key: "access", label: "Akses Outlet / Brand", render: (u) => <AccessBadge u={u} outlets={outlets} brands={brands} /> },
             { key: "status", label: "Status", align: "center", sortable: true, render: (u) => (
-              <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium",
-                u.status === "active" ? "status-active" : "status-disabled"
-              )}>
-                {u.status === "active" ? "Aktif" : "Nonaktif"}
-              </span>
+              <StatusPill status={u.status === "active" ? "active" : "inactive"} />
             ) },
-            { key: "last_login_at", label: "Last Login", sortable: true, hideOnMobile: true, render: (u) => (
+            { key: "last_login_at", label: "Login Terakhir", sortable: true, hideOnMobile: true, render: (u) => (
               <span className="text-xs text-muted-foreground">{u.last_login_at ? fmtRelative(u.last_login_at) : "—"}</span>
             ) },
           ]}
@@ -177,43 +186,44 @@ export default function Users() {
           }}
           rowAction={(u) => (
             <div className="flex items-center gap-1 justify-end">
-              <button
+              <Button
+                variant="ghost" size="icon-sm"
                 onClick={() => setEditing(u)}
-                className="h-8 w-8 rounded-lg hover:bg-foreground/5 flex items-center justify-center"
-                title="Edit"
+                title="Edit user" aria-label={`Edit user ${u.full_name}`}
                 data-testid={`user-edit-${u.id}`}
               >
-                <Edit2 className="h-3.5 w-3.5" />
-              </button>
-              <button
+                <Edit2 className="!h-3.5 !w-3.5" />
+              </Button>
+              <Button
+                variant="ghost" size="icon-sm"
                 onClick={() => setResetTarget(u)}
-                className="h-8 w-8 rounded-lg hover:bg-foreground/5 flex items-center justify-center"
-                title="Reset password"
+                title="Reset password" aria-label={`Reset password ${u.full_name}`}
                 data-testid={`user-reset-${u.id}`}
               >
-                <KeyRound className="h-3.5 w-3.5" />
-              </button>
+                <KeyRound className="!h-3.5 !w-3.5" />
+              </Button>
               {u.id !== me?.id && (
-                <button
+                <Button
+                  variant="ghost" size="icon-sm"
                   onClick={() => disableUser(u, load)}
-                  className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center"
-                  title="Nonaktifkan"
+                  className="hover:bg-destructive/10 hover:text-destructive"
+                  title="Nonaktifkan user" aria-label={`Nonaktifkan user ${u.full_name}`}
                   data-testid={`user-disable-${u.id}`}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                  <Trash2 className="!h-3.5 !w-3.5" />
+                </Button>
               )}
             </div>
           )}
           rowTestIdPrefix="user-row"
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="users-prev">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="users-next">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} data-testid="users-prev">Sebelumnya</Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} data-testid="users-next">Berikutnya</Button>
             </div>
           </div>
         )}

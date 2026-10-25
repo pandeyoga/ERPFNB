@@ -11,17 +11,18 @@ import {
   XCircle, UserCheck, MessageCircle, ChevronRight, Crown,
   Award, Gift, Zap, TrendingUp, Star, BarChart3, AlertTriangle,
   ArrowRight, Eye, UserPlus, Sparkles, CalendarCheck, Loader2,
-  Badge as BadgeIcon, Filter,
+  Badge as BadgeIcon, Filter, Flag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
-} from "@/components/ui/dialog";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
+import { promptDialog } from "@/components/shared/confirmDialog";
 import api, { unwrap } from "@/lib/api";
 import { fmtDate, fmtRp } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
@@ -38,37 +39,13 @@ const STATUS_CONFIG = {
 };
 
 const TIER_CONFIG = {
-  bronze: { label: "Bronze", icon: "🥉", color: "#C9813C" },
-  silver: { label: "Silver", icon: "🥈", color: "#A0AEC0" },
-  gold:   { label: "Gold",   icon: "🥇", color: "#C9A876" },
+  bronze: { label: "Bronze", color: "#C9813C" },
+  silver: { label: "Silver", color: "#A0AEC0" },
+  gold:   { label: "Gold",   color: "#C9A876" },
 };
 
-// ===================== KPI CARD =====================
-function KpiCard({ label, value, hint, icon: Icon, accent = "aurora-1", loading, testId }) {
-  const colors = {
-    "aurora-1": "from-rose-500/10 to-rose-600/5 text-rose-600 dark:text-rose-400",
-    "aurora-2": "from-orange-500/10 to-orange-600/5 text-orange-600 dark:text-orange-400",
-    "aurora-3": "from-amber-500/10 to-amber-600/5 text-amber-600 dark:text-amber-400",
-    "aurora-4": "from-blue-500/10 to-blue-600/5 text-blue-600 dark:text-blue-400",
-    "aurora-5": "from-violet-500/10 to-violet-600/5 text-violet-600 dark:text-violet-400",
-  };
-  return (
-    <div className="glass-card p-5 flex flex-col gap-2" data-testid={testId}>
-      <div className="flex items-start justify-between">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">{label}</p>
-        <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${colors[accent]} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="h-4 w-4" />
-        </div>
-      </div>
-      {loading ? (
-        <Skeleton className="h-8 w-20 mt-1" />
-      ) : (
-        <div className="text-2xl sm:text-3xl font-bold tabular-nums">{value ?? "—"}</div>
-      )}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
-  );
-}
+// Label tab filter reservasi (dipakai juga untuk pesan empty state).
+const RES_TAB_LABEL = { all: "Semua", pending: "Menunggu", confirmed: "Dikonfirmasi", done: "Selesai" };
 
 // ===================== QUICK ACTION TILE =====================
 function QATile({ to, onClick, icon: Icon, label, sublabel, accent = "aurora-1", testId }) {
@@ -83,11 +60,11 @@ function QATile({ to, onClick, icon: Icon, label, sublabel, accent = "aurora-1",
 
   const inner = (
     <div
-      className={`glass-card-hover p-4 flex items-center gap-3 rounded-xl cursor-pointer group`}
+      className="glass-card-hover p-3 flex items-center gap-3 cursor-pointer group h-full"
       data-testid={testId}
     >
-      <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${accentClasses[accent]}`}>
-        <Icon className="h-5 w-5" />
+      <div className={`h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center flex-shrink-0 ${accentClasses[accent]}`}>
+        <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold leading-tight">{label}</p>
@@ -97,8 +74,8 @@ function QATile({ to, onClick, icon: Icon, label, sublabel, accent = "aurora-1",
     </div>
   );
 
-  if (onClick) return <button onClick={onClick} className="w-full text-left">{inner}</button>;
-  return <Link to={to}>{inner}</Link>;
+  if (onClick) return <button type="button" onClick={onClick} className="w-full text-left">{inner}</button>;
+  return <Link to={to} className="block">{inner}</Link>;
 }
 
 // ===================== RESERVATION ROW =====================
@@ -118,7 +95,7 @@ function ReservationRow({ r, onAction, loading }) {
     >
       {/* Time */}
       <div className="flex flex-col items-center gap-0.5 w-14 flex-shrink-0 mt-0.5">
-        <span className="text-sm font-bold tabular-nums">{r.reservation_time || "—"}</span>
+        <span className="text-sm font-semibold tabular-nums">{r.reservation_time || "—"}</span>
         <div className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
       </div>
 
@@ -140,7 +117,7 @@ function ReservationRow({ r, onAction, loading }) {
           <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.customer_phone}</span>
           {r.area_preference && <span>Area: {r.area_preference}</span>}
           {r.special_requests?.type && (
-            <span className="text-rose-500">⚑ {r.special_requests.type}</span>
+            <span className="text-rose-500 inline-flex items-center gap-1"><Flag className="h-3 w-3" /> {r.special_requests.type}</span>
           )}
         </div>
       </div>
@@ -149,7 +126,7 @@ function ReservationRow({ r, onAction, loading }) {
       <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
         {r.status === "pending" && (
           <Button size="sm" variant="outline"
-            className="h-7 text-xs text-blue-700 border-blue-300 hover:bg-blue-50"
+            className="text-blue-700 border-blue-300 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10"
             onClick={() => onAction(r.id, "confirmed")}
             disabled={loading}
             data-testid={`crm-confirm-btn-${r.id}`}
@@ -159,7 +136,7 @@ function ReservationRow({ r, onAction, loading }) {
         )}
         {r.status === "confirmed" && (
           <Button size="sm" variant="outline"
-            className="h-7 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+            className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
             onClick={() => onAction(r.id, "completed")}
             disabled={loading}
             data-testid={`crm-complete-btn-${r.id}`}
@@ -167,8 +144,8 @@ function ReservationRow({ r, onAction, loading }) {
             <UserCheck className="h-3.5 w-3.5 mr-1" /> Selesai
           </Button>
         )}
-        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground" asChild title="Lihat Detail">
-          <Link to={`/outlet/reservations`} state={{ openId: r.id }}>
+        <Button size="icon-sm" variant="ghost" className="text-muted-foreground" asChild title="Lihat detail">
+          <Link to={`/outlet/reservations`} state={{ openId: r.id }} aria-label={`Lihat detail reservasi ${r.customer_name || ""}`}>
             <Eye className="h-3.5 w-3.5" />
           </Link>
         </Button>
@@ -187,8 +164,6 @@ export default function CRMHub() {
   const [resLoading, setResLoading] = useState(true);
   const [resTab, setResTab] = useState("all");
   const [actionLoading, setActionLoading] = useState(false);
-  const [cancelDialog, setCancelDialog] = useState(null); // reservation to cancel
-  const [cancelReason, setCancelReason] = useState("");
 
   // Loyalty state
   const [loyaltyStats, setLoyaltyStats] = useState(null);
@@ -224,7 +199,8 @@ export default function CRMHub() {
         api.get("/admin/loyalty/customers", { params: { per_page: 5, sort: "created_at", order: "desc" } }),
       ]);
       setLoyaltyStats(statsRes.data?.data || statsRes.data || null);
-      const membersData = membersRes.data?.data;
+      // Endpoint admin loyalty mengembalikan {items,total} tanpa envelope `data`.
+      const membersData = membersRes.data?.data ?? membersRes.data;
       setRecentMembers(
         Array.isArray(membersData) ? membersData.slice(0, 5) :
         Array.isArray(membersData?.items) ? membersData.items.slice(0, 5) : []
@@ -254,7 +230,6 @@ export default function CRMHub() {
       await api.post(`/reservations/${id}/status`, { status, reason });
       toast.success(`Reservasi → ${STATUS_CONFIG[status]?.label}`);
       await loadReservations();
-      if (cancelDialog?.id === id) setCancelDialog(null);
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengubah status");
     } finally {
@@ -282,50 +257,45 @@ export default function CRMHub() {
   const totalPax = reservations.filter(r => ["pending","confirmed"].includes(r.status)).reduce((s,r) => s + (r.pax || 0), 0);
 
   return (
-    <div className="space-y-6" data-testid="crm-hub-page">
-
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-8 w-8 rounded-lg grad-aurora-soft flex items-center justify-center">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <h2 className="text-xl font-bold">CRM & Reservasi Hub</h2>
-          </div>
-          <p className="text-sm text-muted-foreground">{todayLabel}</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/outlet/reservations/new" className="gap-1.5" data-testid="crm-new-reservation-btn">
-              <Plus className="h-4 w-4" /> Buat Reservasi
-            </Link>
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="crm-hub-page">
+      <PageHeader
+        icon={Sparkles}
+        title="CRM & Reservations"
+        subtitle={`Reservasi hari ini & ringkasan loyalty · ${todayLabel}`}
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            <Button variant="outline" onClick={handleRefresh} data-testid="crm-refresh">
+              <RefreshCw className="h-4 w-4" /> Muat ulang
+            </Button>
+            <Button asChild>
+              <Link to="/outlet/reservations/new" data-testid="crm-new-reservation-btn">
+                <Plus className="h-4 w-4" /> Buat Reservasi
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {/* ── KPI Strip ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="crm-kpi-strip">
-        <KpiCard label="Reservasi Hari Ini" value={totalToday} hint="Semua status"
-          icon={CalendarCheck} accent="aurora-4" loading={resLoading} testId="kpi-reservasi-total" />
-        <KpiCard label="Menunggu Konfirmasi" value={pendingCount} hint="Perlu tindakan"
-          icon={Clock} accent="aurora-3" loading={resLoading} testId="kpi-reservasi-pending"  />
-        <KpiCard label="Dikonfirmasi" value={confirmedCount} hint="Siap datang"
-          icon={CheckCircle2} accent="aurora-1" loading={resLoading} testId="kpi-reservasi-confirmed" />
-        <KpiCard label="Estimasi Tamu" value={totalPax} hint="Kursi pending + confirmed"
-          icon={Users} accent="aurora-2" loading={resLoading} testId="kpi-reservasi-pax" />
-        <KpiCard label="Total Member Loyalty" value={loyaltyStats?.total_customers ?? "—"}
-          hint={loyaltyStats ? `${loyaltyStats.active_customers ?? 0} aktif` : ""}
-          icon={Crown} accent="aurora-5" loading={loyaltyLoading} testId="kpi-loyalty-total" />
+        <CompactStatCard label="Reservasi Hari Ini" value={totalToday} sub="Semua status"
+          icon={CalendarCheck} color="aurora-4" loading={resLoading} testId="kpi-reservasi-total" />
+        <CompactStatCard label="Menunggu Konfirmasi" value={pendingCount} sub="Perlu tindakan"
+          icon={Clock} color="aurora-3" tone={pendingCount > 0 ? "warning" : "default"} loading={resLoading} testId="kpi-reservasi-pending" />
+        <CompactStatCard label="Dikonfirmasi" value={confirmedCount} sub="Siap datang"
+          icon={CheckCircle2} color="aurora-1" loading={resLoading} testId="kpi-reservasi-confirmed" />
+        <CompactStatCard label="Estimasi Tamu" value={totalPax} sub="Pending + dikonfirmasi"
+          icon={Users} color="aurora-2" loading={resLoading} testId="kpi-reservasi-pax" />
+        <CompactStatCard label="Total Member Loyalty" value={loyaltyStats?.total_customers ?? "—"}
+          sub={loyaltyStats ? `${loyaltyStats.active_customers ?? 0} aktif` : undefined}
+          icon={Crown} color="aurora-5" loading={loyaltyLoading} testId="kpi-loyalty-total" />
       </div>
 
       {/* ── Quick Actions ── */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Quick Actions</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      <section data-testid="crm-quick-actions">
+        <h2 className="text-base md:text-lg font-semibold mb-2">Aksi Cepat</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <QATile to="/outlet/reservations/new" icon={CalendarCheck} label="Buat Reservasi" sublabel="Walk-in atau telp" accent="blue" testId="qa-new-reservation" />
           <QATile to="/outlet/reservations" icon={Calendar} label="Semua Reservasi" sublabel="Lihat & kelola" accent="aurora-1" testId="qa-all-reservations" />
           <QATile to="/outlet/loyalty/input-poin" icon={Zap} label="Input Poin Kasir" sublabel="Scan struk" accent="amber" testId="qa-input-poin" />
@@ -333,19 +303,19 @@ export default function CRMHub() {
           <QATile to="/admin/loyalty/customers" icon={Users} label="Daftar Member" sublabel="Cari & kelola" accent="green" testId="qa-members" />
           <QATile to="/admin/loyalty/analytics" icon={BarChart3} label="CRM Analytics" sublabel="Statistik loyalty" accent="rose" testId="qa-crm-analytics" />
         </div>
-      </div>
+      </section>
 
       {/* ── Main Content: 2 columns ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 lg:gap-4">
 
         {/* LEFT: Today's Reservation Timeline */}
         <div className="lg:col-span-3 glass-card overflow-hidden" data-testid="crm-reservation-panel">
           {/* Panel header */}
-          <div className="px-5 py-4 flex items-center justify-between border-b border-border/50">
+          <div className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap border-b border-border/50">
             <div className="flex items-center gap-2.5">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <h3 className="font-semibold text-base">Reservasi Hari Ini</h3>
+                <h3 className="text-sm md:text-base font-semibold">Reservasi Hari Ini</h3>
                 {!resLoading && (
                   <p className="text-xs text-muted-foreground">{totalToday} reservasi · {totalPax} estimasi tamu</p>
                 )}
@@ -353,27 +323,27 @@ export default function CRMHub() {
             </div>
             <div className="flex items-center gap-2">
               <Tabs value={resTab} onValueChange={setResTab}>
-                <TabsList className="h-7 text-xs">
-                  <TabsTrigger value="all" className="h-6 px-2 text-xs">Semua</TabsTrigger>
-                  <TabsTrigger value="pending" className="h-6 px-2 text-xs">
-                    Menunggu {pendingCount > 0 && <span className="ml-1 bg-amber-500 text-white rounded-full text-[11px] w-4 h-4 flex items-center justify-center">{pendingCount}</span>}
+                <TabsList aria-label="Filter status reservasi">
+                  <TabsTrigger value="all" data-testid="crm-res-tab-all">{RES_TAB_LABEL.all}</TabsTrigger>
+                  <TabsTrigger value="pending" data-testid="crm-res-tab-pending">
+                    {RES_TAB_LABEL.pending} {pendingCount > 0 && <span className="bg-amber-500 text-white rounded-full text-[11px] min-w-4 h-4 px-1 inline-flex items-center justify-center">{pendingCount}</span>}
                   </TabsTrigger>
-                  <TabsTrigger value="confirmed" className="h-6 px-2 text-xs">Konfirmasi</TabsTrigger>
-                  <TabsTrigger value="done" className="h-6 px-2 text-xs">Selesai</TabsTrigger>
+                  <TabsTrigger value="confirmed" data-testid="crm-res-tab-confirmed">{RES_TAB_LABEL.confirmed}</TabsTrigger>
+                  <TabsTrigger value="done" data-testid="crm-res-tab-done">{RES_TAB_LABEL.done}</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <Button size="sm" variant="ghost" className="h-7 px-2" asChild>
-                <Link to="/outlet/reservations">
-                  <ArrowRight className="h-3.5 w-3.5" />
+              <Button size="icon-sm" variant="ghost" asChild>
+                <Link to="/outlet/reservations" aria-label="Lihat semua reservasi" title="Lihat semua reservasi">
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             </div>
           </div>
 
           {/* Reservation List */}
-          <div className="min-h-[300px] max-h-[520px] overflow-y-auto">
+          <div className="min-h-[240px] max-h-[520px] overflow-y-auto" data-testid="crm-timeline">
             {resLoading ? (
-              <div className="p-5 space-y-4">
+              <div className="p-4 space-y-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="flex gap-3">
                     <Skeleton className="h-10 w-14 flex-shrink-0" />
@@ -386,19 +356,18 @@ export default function CRMHub() {
                 ))}
               </div>
             ) : sorted.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <CalendarCheck className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground text-sm">
-                  {resTab === "all"
-                    ? "Belum ada reservasi untuk hari ini."
-                    : `Tidak ada reservasi dengan status "${STATUS_CONFIG[resTab]?.label || resTab}".`}
-                </p>
-                <Button size="sm" className="mt-4" asChild>
-                  <Link to="/outlet/reservations/new">
-                    <Plus className="h-4 w-4 mr-2" /> Buat Reservasi Baru
-                  </Link>
-                </Button>
-              </div>
+              <EmptyState
+                icon={CalendarCheck}
+                title={resTab === "all" ? "Belum ada reservasi hari ini" : `Tidak ada reservasi "${RES_TAB_LABEL[resTab] || resTab}"`}
+                description="Reservasi dari telepon, walk-in, WhatsApp, atau website akan tampil di sini."
+                action={
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/outlet/reservations/new">
+                      <Plus className="h-4 w-4" /> Buat Reservasi
+                    </Link>
+                  </Button>
+                }
+              />
             ) : (
               <AnimatePresence>
                 {sorted.map(r => (
@@ -407,7 +376,17 @@ export default function CRMHub() {
                     r={r}
                     onAction={(id, status) => {
                       if (status === "cancelled") {
-                        setCancelDialog(r);
+                        promptDialog({
+                          title: "Batalkan Reservasi",
+                          description: `Reservasi atas nama ${r.customer_name || "-"} akan dibatalkan.`,
+                          label: "Alasan pembatalan",
+                          placeholder: "Opsional",
+                          required: false,
+                          multiline: true,
+                          destructive: true,
+                          confirmText: "Batalkan Reservasi",
+                          cancelText: "Kembali",
+                        }).then((reason) => { if (reason !== null) handleStatusChange(id, "cancelled", reason); });
                       } else {
                         handleStatusChange(id, status);
                       }
@@ -421,23 +400,23 @@ export default function CRMHub() {
 
           {/* Footer */}
           {sorted.length > 0 && (
-            <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between">
+            <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{sorted.length} reservasi ditampilkan</p>
               <Link to="/outlet/reservations" className="text-xs font-medium text-foreground/70 hover:text-foreground flex items-center gap-1">
-                Lihat Semua <ArrowRight className="h-3.5 w-3.5" />
+                Lihat semua <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           )}
         </div>
 
         {/* RIGHT: Loyalty Panel */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3 lg:space-y-4">
 
           {/* Loyalty KPIs mini */}
-          <div className="glass-card p-5" data-testid="crm-loyalty-panel">
-            <div className="flex items-center gap-2 mb-4">
-              <Crown className="h-5 w-5 text-muted-foreground" />
-              <h3 className="font-semibold text-base">Loyalty Overview</h3>
+          <div className="glass-card p-4" data-testid="crm-loyalty-panel">
+            <div className="flex items-center gap-2 mb-3">
+              <Crown className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm md:text-base font-semibold">Loyalty Overview</h3>
               <Link to="/admin/loyalty" className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                 Detail <ArrowRight className="h-3 w-3" />
               </Link>
@@ -457,11 +436,11 @@ export default function CRMHub() {
                     { label: "Poin Beredar", val: (loyaltyStats?.total_points_outstanding ?? 0).toLocaleString("id-ID"), icon: Star, accent: "text-amber-600" },
                     { label: "Redemption/30d", val: loyaltyStats?.redemptions_30d ?? 0, icon: Gift, accent: "text-violet-600" },
                   ].map(({ label, val, icon: Ic, accent }) => (
-                    <div key={label} className="glass-input rounded-xl p-3">
+                    <div key={label} className="rounded-lg border border-border/60 p-2.5">
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
                       <div className="flex items-center gap-1.5 mt-1">
                         <Ic className={`h-3.5 w-3.5 ${accent}`} />
-                        <span className="text-base font-bold tabular-nums">{val}</span>
+                        <span className="text-base font-semibold tabular-nums">{val}</span>
                       </div>
                     </div>
                   ))}
@@ -478,7 +457,10 @@ export default function CRMHub() {
                         const tc = TIER_CONFIG[tier];
                         return (
                           <div key={tier} className="flex items-center gap-2 text-xs">
-                            <span className="w-14 text-muted-foreground">{tc?.icon} {tc?.label}</span>
+                            <span className="w-16 text-muted-foreground inline-flex items-center gap-1.5">
+                              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: tc?.color }} />
+                              {tc?.label || tier}
+                            </span>
                             <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                               <div className="h-full rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%`, backgroundColor: tc?.color }} />
@@ -495,10 +477,10 @@ export default function CRMHub() {
           </div>
 
           {/* Recent Members */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <UserPlus className="h-4 w-4 text-muted-foreground" />
-              <h4 className="font-semibold text-sm">Member Terbaru</h4>
+              <h3 className="text-sm md:text-base font-semibold">Member Terbaru</h3>
               <Link to="/admin/loyalty/customers" className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                 Semua <ArrowRight className="h-3 w-3" />
               </Link>
@@ -520,7 +502,7 @@ export default function CRMHub() {
                   const tierConf = TIER_CONFIG[m.loyalty_tier] || TIER_CONFIG.bronze;
                   return (
                     <div key={m.id} className="py-2.5 flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-sm font-semibold">
                         {m.full_name?.[0] || "?"}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -530,7 +512,7 @@ export default function CRMHub() {
                       <div className="flex-shrink-0">
                         <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{ backgroundColor: tierConf.color + "22", color: tierConf.color }}>
-                          {tierConf.icon} {tierConf.label}
+                          {tierConf.label}
                         </span>
                       </div>
                     </div>
@@ -543,14 +525,14 @@ export default function CRMHub() {
           {/* Points activity hint */}
           {loyaltyStats && (
             <div className="glass-card p-4 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <div className="h-9 w-9 rounded-[calc(var(--radius)-2px)] bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                 <TrendingUp className="h-4 w-4 text-amber-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">Poin earned (30 hari)</p>
-                <p className="text-base font-bold tabular-nums">{(loyaltyStats.points_earned_30d || 0).toLocaleString("id-ID")} pts</p>
+                <p className="text-base font-semibold tabular-nums">{(loyaltyStats.points_earned_30d || 0).toLocaleString("id-ID")} pts</p>
               </div>
-              <Link to="/admin/loyalty/analytics" className="text-xs text-muted-foreground hover:text-foreground flex-shrink-0">
+              <Link to="/admin/loyalty/analytics" className="text-xs text-muted-foreground hover:text-foreground flex-shrink-0" aria-label="Buka CRM Analytics" title="Buka CRM Analytics">
                 <BarChart3 className="h-4 w-4" />
               </Link>
             </div>
@@ -558,30 +540,6 @@ export default function CRMHub() {
         </div>
       </div>
 
-      {/* ── Cancel Dialog ── */}
-      <Dialog open={!!cancelDialog} onOpenChange={() => { setCancelDialog(null); setCancelReason(""); }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Batalkan Reservasi</DialogTitle>
-            <DialogDescription>Reservasi atas nama <strong>{cancelDialog?.customer_name}</strong> akan dibatalkan.</DialogDescription>
-          </DialogHeader>
-          <textarea
-            rows={3}
-            value={cancelReason}
-            onChange={e => setCancelReason(e.target.value)}
-            placeholder="Alasan pembatalan (opsional)..."
-            className="w-full border rounded-lg px-3 py-2 text-sm resize-none bg-background"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setCancelDialog(null); setCancelReason(""); }}>Kembali</Button>
-            <Button variant="destructive" disabled={actionLoading}
-              onClick={() => handleStatusChange(cancelDialog.id, "cancelled", cancelReason)}>
-              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
-              Batalkan Reservasi
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

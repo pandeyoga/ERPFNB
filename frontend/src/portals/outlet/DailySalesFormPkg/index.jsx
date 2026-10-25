@@ -13,7 +13,7 @@ import {
   AlertTriangle, CheckCircle2, Wallet, Tag, Receipt,
   Coins, ListChecks, Loader2, UserCheck, Search, X, Star,
 } from "lucide-react";
-import api, { unwrap } from "@/lib/api";
+import api, { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import PeriodLockBanner from "@/components/shared/PeriodLockBanner";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import StatusPill from "@/components/shared/StatusPill";
+import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -74,8 +75,12 @@ export default function DailySalesForm() {
   const [voucherRules, setVoucherRules] = useState(null);
 
   // ----- Load masters -----
+  // Outlets datang dari OutletScopeContext. Brand & metode pembayaran sebelumnya tidak
+  // pernah dimuat (state kosong) → dropdown Brand & "Metode" di langkah Payment selalu
+  // kosong sehingga langkah 4 tidak bisa dilewati.
   useEffect(() => {
-    // outlets are provided by OutletScopeContext
+    fetchAll("/master/brands").then(r => setBrands(unwrap(r) || [])).catch(() => {});
+    fetchAll("/master/payment-methods").then(r => setPaymentMethods(unwrap(r) || [])).catch(() => {});
   }, []);
 
   // Default outlet_id from outlet picker context (or single-outlet user)
@@ -368,26 +373,38 @@ export default function DailySalesForm() {
 
   // ----- Render -----
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2">
-          <ArrowLeft className="h-4 w-4" /> Kembali
+    <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto">
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate(isEdit ? `/outlet/daily-sales/${id}` : "/outlet/daily-sales")} className="-ml-2 mb-1" data-testid="ds-form-back">
+          <ArrowLeft className="h-4 w-4" /> {isEdit ? "Kembali ke detail" : "Kembali ke Daily Sales"}
         </Button>
-        <h2 className="text-xl font-bold">{isEdit ? "Edit Daily Sales" : "Daily Sales Baru"}</h2>
-        {form.status && <StatusPill status={form.status} />}
-        <AutosaveBadge status={autosaveStatus} />
-        <div className="ml-auto flex items-center gap-2">
-          <Button onClick={() => saveDraftCore()} disabled={!editable || saving}
-            variant="outline" className="rounded-full gap-2"
-            data-testid="ds-save-draft">
-            <Save className="h-4 w-4" /> {saving ? "…" : "Simpan Draft"}
-          </Button>
-          <Button onClick={submitForValidation}
-            disabled={!editable || submitting || !balanced || periodLocked}
-            className="rounded-full pill-active gap-2" data-testid="ds-submit">
-            <Send className="h-4 w-4" /> {submitting ? "…" : "Submit"}
-          </Button>
-        </div>
+        <PageHeader
+          icon={Receipt}
+          title={isEdit ? "Edit Daily Sales" : "Daily Sales Baru"}
+          subtitle="Isi per langkah — draft tersimpan otomatis setiap 5 detik."
+          className="mb-0 md:mb-0"
+          actions={
+            <>
+              <Button onClick={() => saveDraftCore()} disabled={!editable || saving}
+                variant="outline"
+                data-testid="ds-save-draft">
+                <Save className="h-4 w-4" /> {saving ? "Menyimpan…" : "Simpan Draft"}
+              </Button>
+              <Button onClick={submitForValidation}
+                disabled={!editable || submitting || !balanced || periodLocked}
+                data-testid="ds-submit">
+                <Send className="h-4 w-4" /> {submitting ? "Mengirim…" : "Submit"}
+              </Button>
+            </>
+          }
+        >
+          {(form.status || autosaveStatus !== "idle") && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {form.status && <StatusPill status={form.status} />}
+              <AutosaveBadge status={autosaveStatus} />
+            </div>
+          )}
+        </PageHeader>
       </div>
 
       <PeriodLockBanner
@@ -420,16 +437,16 @@ export default function DailySalesForm() {
       }} />
 
       {/* Header (always visible) */}
-      <div className="glass-card p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
         <div>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tanggal *</Label>
-          <Input type="date" value={form.sales_date}
+          <Label htmlFor="ds-date-input" className="text-xs md:text-sm font-medium">Tanggal *</Label>
+          <Input id="ds-date-input" type="date" value={form.sales_date}
             onChange={e => setForm(f => ({ ...f, sales_date: e.target.value }))}
             disabled={!editable}
             className="glass-input mt-1" data-testid="ds-date" />
         </div>
         <div>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Outlet *</Label>
+          <Label className="text-xs md:text-sm font-medium">Outlet *</Label>
           <SimpleSelect
             value={form.outlet_id}
             onValueChange={v => setForm(f => ({ ...f, outlet_id: v }))}
@@ -440,19 +457,21 @@ export default function DailySalesForm() {
                 || (user.permissions || []).includes("*")
             ).map(o => ({ value: o.id, label: o.name }))]}
             placeholder="-- Pilih outlet --"
-            className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+            className="glass-input w-full mt-1"
+            ariaLabel="Outlet"
             testId="ds-outlet"
           />
         </div>
         <div>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Brand</Label>
+          <Label className="text-xs md:text-sm font-medium">Brand</Label>
           <SimpleSelect
             value={form.brand_id}
             onValueChange={v => setForm(f => ({ ...f, brand_id: v }))}
             disabled={!editable}
             options={[{ value: "", label: "-- (opsional) --" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
             placeholder="-- (opsional) --"
-            className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+            className="glass-input w-full mt-1"
+            ariaLabel="Brand"
             testId="ds-brand"
           />
         </div>
@@ -460,11 +479,11 @@ export default function DailySalesForm() {
 
       {/* Sprint C — Voucher Redemption Card */}
       {editable && (
-        <div className="glass-card p-4 border border-dashed border-amber/30 bg-amber/5">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="glass-card p-4 border border-dashed border-amber-500/30">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             <Receipt className="h-4 w-4 text-amber-600" />
-            <span className="text-sm font-semibold">Voucher Redemption</span>
-            <span className="text-xs text-muted-foreground ml-1">(opsional — diskon otomatis diterapkan)</span>
+            <h3 className="text-sm md:text-base font-semibold">Voucher</h3>
+            <span className="text-xs text-muted-foreground">Opsional — diskon otomatis diterapkan.</span>
           </div>
           {voucherStatus?.valid ? (
             <div className="space-y-3">
@@ -472,17 +491,17 @@ export default function DailySalesForm() {
                 <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-3 py-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span className="text-sm font-medium">{voucherStatus.reward_name}</span>
-                  <span className="text-xs font-mono tracking-wider text-muted-foreground">{form.voucher_code}</span>
+                  <span className="text-xs tracking-wider text-muted-foreground">{form.voucher_code}</span>
                 </div>
-                <Button size="sm" variant="ghost" onClick={clearVoucher}
-                  className="rounded-full h-7 w-7 p-0" data-testid="ds-clear-voucher">
-                  <X className="h-3 w-3" />
+                <Button size="icon-sm" variant="ghost" onClick={clearVoucher}
+                  aria-label="Hapus voucher" title="Hapus voucher" data-testid="ds-clear-voucher">
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
               <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2"
                 data-testid="daily-sales-voucher-discount-value">
                 <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Diskon diterapkan</span>
-                <span className="text-sm font-bold tabular-nums text-emerald-800 dark:text-emerald-200">
+                <span className="text-sm font-semibold tabular-nums text-emerald-800 dark:text-emerald-200">
                   {fmtRp(form.voucher_discount_amount)}
                 </span>
               </div>
@@ -495,14 +514,15 @@ export default function DailySalesForm() {
                   value={voucherInput}
                   onChange={e => { setVoucherInput(e.target.value.toUpperCase()); setVoucherStatus(null); }}
                   onKeyDown={e => e.key === "Enter" && validateVoucher()}
-                  className="glass-input max-w-xs font-mono tracking-wider"
+                  className="glass-input max-w-xs tracking-wider"
+                  aria-label="Kode voucher"
                   data-testid="daily-sales-voucher-code-input"
                   disabled={voucherValidating}
                 />
                 <Button size="sm" onClick={validateVoucher} disabled={voucherValidating || !voucherInput.trim()}
-                  variant="outline" className="rounded-full gap-1.5" data-testid="daily-sales-validate-voucher-button">
+                  variant="outline" data-testid="daily-sales-validate-voucher-button">
                   {voucherValidating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                  Validate
+                  Validasi
                 </Button>
               </div>
               {voucherStatus && !voucherStatus.valid && (
@@ -560,15 +580,15 @@ export default function DailySalesForm() {
       {/* Step nav */}
       <div className="glass-card p-3 flex items-center justify-between">
         <Button variant="outline" disabled={stepIdx === 0}
-          onClick={handlePrev} className="rounded-full gap-1.5"
+          onClick={handlePrev}
           data-testid="ds-step-prev">
-          <ArrowLeft className="h-3.5 w-3.5" /> Kembali
+          <ArrowLeft className="h-3.5 w-3.5" /> Sebelumnya
         </Button>
         <div className="text-xs text-muted-foreground">
-          Step {stepIdx + 1} / {STEPS.length} — {STEPS[stepIdx].label}
+          Langkah {stepIdx + 1} / {STEPS.length} — {STEPS[stepIdx].label}
         </div>
         {stepIdx < STEPS.length - 1 ? (
-          <Button onClick={handleNext} className="rounded-full pill-active gap-1.5"
+          <Button onClick={handleNext}
             disabled={!nextCheck.ok}
             title={nextCheck.ok ? "" : nextCheck.msg}
             data-testid="ds-step-next">
@@ -577,7 +597,7 @@ export default function DailySalesForm() {
         ) : (
           <Button onClick={submitForValidation}
             disabled={!editable || submitting || !balanced}
-            className="rounded-full pill-active gap-1.5" data-testid="ds-step-submit">
+            data-testid="ds-step-submit">
             <Send className="h-3.5 w-3.5" /> Submit
           </Button>
         )}

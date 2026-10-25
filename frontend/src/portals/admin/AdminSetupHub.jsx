@@ -2,20 +2,24 @@
  * AdminSetupHub — Unified system setup workspace (IA consolidation, plan.md Phase 1c).
  * Number Series + Tax Config + Bulk Excel Import in one tabbed page.
  * URL param: ?tab=number-series (default).
+ *
+ * Judul halaman (satu <h1>) = nama menu "Setup & Numbering"; halaman anak dirender
+ * dengan `embedded` sehingga tidak menampilkan judul besar kedua.
  */
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Hash, Calculator, Upload, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Hash, Calculator, Upload, Wrench } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import NumberSeries from "./NumberSeries";
 import TaxConfig from "./TaxConfig";
 import BulkImport from "./BulkImport";
 
 const TABS = [
-  { id: "number-series", label: "Number Series",     short: "Numbering", icon: Hash,       component: NumberSeries },
-  { id: "tax-config",    label: "Tax Config",        short: "Tax",       icon: Calculator, component: TaxConfig },
-  { id: "bulk-import",   label: "Bulk Excel Import", short: "Import",    icon: Upload,     component: BulkImport },
+  { id: "number-series", label: "Number series",     icon: Hash,       component: NumberSeries },
+  { id: "tax-config",    label: "Tax config",        icon: Calculator, component: TaxConfig },
+  { id: "bulk-import",   label: "Bulk Excel import", icon: Upload,     component: BulkImport },
 ];
 
 export default function AdminSetupHub() {
@@ -32,52 +36,37 @@ export default function AdminSetupHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || TABS[0].component;
+  const current = TABS.some((t) => t.id === activeTab) ? activeTab : TABS[0].id;
 
   return (
-    <div className="space-y-0" data-testid="admin-setup-hub">
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-bold">Setup &amp; Numbering</h2>
-        <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-          <span className="text-muted-foreground/60">Configuration</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium">{TABS.find(t => t.id === activeTab)?.label}</span>
-        </div>
-      </div>
+    <div data-testid="admin-setup-hub">
+      <PageHeader
+        icon={Wrench}
+        title="Setup & Numbering"
+        subtitle="Penomoran dokumen, status pajak, dan import master data massal."
+      />
 
-      <div
-        className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-border/50 mb-5"
-        data-testid="setup-hub-tabs"
-        role="tablist"
-      >
-        {TABS.map(tab => {
-          const Icon = tab.icon;
-          const active = tab.id === activeTab;
+      <Tabs value={current} onValueChange={handleTabChange}>
+        <TabsList data-testid="setup-hub-tabs">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.id} value={tab.id} data-testid={`setup-tab-${tab.id}`}>
+                <Icon /> {tab.label}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        {TABS.map((tab) => {
+          const Comp = tab.component;
           return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={active}
-              data-testid={`setup-tab-${tab.id}`}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all whitespace-nowrap",
-                active
-                  ? "border-aurora text-aurora bg-aurora/5"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5",
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.short}</span>
-            </button>
+            <TabsContent key={tab.id} value={tab.id} data-testid="setup-hub-content">
+              <Comp embedded />
+            </TabsContent>
           );
         })}
-      </div>
-
-      <div data-testid="setup-hub-content" role="tabpanel">
-        <ActiveComponent />
-      </div>
+      </Tabs>
     </div>
   );
 }

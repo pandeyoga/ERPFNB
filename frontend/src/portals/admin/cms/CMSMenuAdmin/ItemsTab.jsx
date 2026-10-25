@@ -9,7 +9,7 @@ import {
   Tag, Image as ImageIcon, Loader2, X, ChevronDown, Eye, EyeOff,
   Download, Star, AlertCircle, Search, Filter
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -136,15 +136,15 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-3 flex-wrap" data-testid="admin-menu-toolbar">
         <div className="flex gap-2 flex-1 min-w-0" data-testid="admin-menu-search-group">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Cari nama menu..." value={q} onChange={e => setQ(e.target.value)} data-testid="admin-menu-search" />
+            <Input className="pl-9" placeholder="Cari nama menu..." value={q} onChange={e => setQ(e.target.value)} aria-label="Cari menu" data-testid="admin-menu-search" />
           </div>
           <Select value={catFilter} onValueChange={setCatFilter}>
-            <SelectTrigger className="w-40" data-testid="admin-menu-filter-category">
+            <SelectTrigger className="w-40" aria-label="Filter kategori" data-testid="admin-menu-filter-category">
               <SelectValue placeholder="Semua Kategori" />
             </SelectTrigger>
             <SelectContent>
@@ -154,20 +154,20 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
           </Select>
         </div>
         <Button onClick={openCreate} disabled={!selectedBrandId} data-testid="admin-menu-create-button">
-          <Plus className="h-4 w-4 mr-2" /> Tambah Item
+          <Plus className="h-4 w-4" /> Tambah Item
         </Button>
       </div>
 
       {loading ? (
         <div className="space-y-2">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
+        <div className="text-center py-8 text-muted-foreground">
           <UtensilsCrossed className="h-10 w-10 mx-auto mb-3 opacity-30" />
           <p>Belum ada menu item untuk brand ini.</p>
-          {selectedBrandId && <Button className="mt-3" onClick={openCreate}><Plus className="h-4 w-4 mr-2" /> Tambah Item Pertama</Button>}
+          {selectedBrandId && <Button className="mt-3" onClick={openCreate}><Plus className="h-4 w-4" /> Tambah Item Pertama</Button>}
         </div>
       ) : (
-        <div className="border rounded-xl overflow-hidden bg-white" data-testid="admin-menu-table">
+        <div className="glass-card overflow-hidden" data-testid="admin-menu-table">
           <DataTable
             rows={filtered}
             keyField="id"
@@ -181,7 +181,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
                   {item.dietary_tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {item.dietary_tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs py-0 px-1.5 h-4">{tag}</Badge>
+                        <Badge key={tag} variant="outline" className="text-[11px] py-0 px-1.5">{tag}</Badge>
                       ))}
                     </div>
                   )}
@@ -198,10 +198,10 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
             ]}
             rowAction={(item) => (
               <div className="flex gap-1 justify-end" data-testid={`admin-menu-row-actions-${item.id}`}>
-                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(item)} title="Edit">
+                <Button size="icon-sm" variant="ghost" onClick={() => openEdit(item)} title="Edit" aria-label="Edit menu item">
                   <Edit2 className="h-3.5 w-3.5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(item.id)} title="Hapus">
+                <Button size="icon-sm" variant="ghost" className="text-destructive" onClick={() => setDeleteId(item.id)} title="Hapus" aria-label="Hapus menu item">
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -220,49 +220,49 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
             <DialogTitle>{editing ? "Edit Menu Item" : "Tambah Menu Item"}</DialogTitle>
             <DialogDescription>Isi detail menu item untuk ditampilkan di website.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Brand *</Label>
+                <Label htmlFor="menu-item-brand">Brand *</Label>
                 <Select value={form.brand_id} onValueChange={v => setForm(f => ({ ...f, brand_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Pilih brand..." /></SelectTrigger>
+                  <SelectTrigger id="menu-item-brand"><SelectValue placeholder="Pilih brand..." /></SelectTrigger>
                   <SelectContent>{brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Kategori *</Label>
-                <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                <Label htmlFor="menu-item-kategori">Kategori *</Label>
+                <Input id="menu-item-kategori" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
                   placeholder="Coffee, Brunch, Mains..." />
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Nama Menu *</Label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <Label htmlFor="menu-item-nama-menu">Nama Menu *</Label>
+              <Input id="menu-item-nama-menu" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div className="space-y-1">
-              <Label>Deskripsi</Label>
-              <Textarea rows={2} value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              <Label htmlFor="menu-item-deskripsi">Deskripsi</Label>
+              <Textarea id="menu-item-deskripsi" rows={2} value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Harga (Rp) *</Label>
-                <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="65000" />
+                <Label htmlFor="menu-item-harga">Harga (Rp) *</Label>
+                <Input id="menu-item-harga" type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="65000" />
               </div>
               <div className="space-y-1">
-                <Label>Sort Order</Label>
-                <Input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))} />
+                <Label htmlFor="menu-item-sort-order">Sort Order</Label>
+                <Input id="menu-item-sort-order" type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))} />
               </div>
             </div>
 
             {/* Image Upload */}
             <div className="space-y-2">
-              <Label>Foto Menu</Label>
+              <Label htmlFor="menu-item-foto-menu">Foto Menu</Label>
               <div className="flex gap-3 items-start">
                 <div className="border rounded-lg overflow-hidden w-20 h-20 flex-shrink-0">
                   <MenuImage src={form.image_url} alt="preview" className="w-full h-full" />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Input
+                  <Input id="menu-item-foto-menu"
                     placeholder="URL gambar atau upload..."
                     value={form.image_url || ""}
                     onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))}
@@ -271,7 +271,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
                     onChange={e => handleImageUpload(e.target.files?.[0])} />
                   <Button type="button" variant="outline" size="sm" className="w-full"
                     onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                    {uploading ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <Upload className="h-3.5 w-3.5 mr-2" />}
+                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
                     {uploading ? "Mengupload..." : "Upload Gambar"}
                   </Button>
                 </div>
@@ -290,6 +290,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
                         ? "text-white border-transparent" : "text-muted-foreground border-border hover:border-foreground/30"
                     }`}
                     style={form.dietary_tags.includes(opt.value) ? { backgroundColor: opt.color, borderColor: opt.color } : {}}
+                    aria-pressed={form.dietary_tags.includes(opt.value)}
                     data-testid={`tag-${opt.value}`}
                   >
                     {opt.label}
@@ -301,19 +302,19 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
             <Separator />
             <div className="flex gap-6">
               <div className="flex items-center gap-2">
-                <Switch checked={form.is_available} onCheckedChange={v => setForm(f => ({ ...f, is_available: v }))} />
-                <Label>Tersedia</Label>
+                <Switch id="menu-item-available" checked={form.is_available} onCheckedChange={v => setForm(f => ({ ...f, is_available: v }))} />
+                <Label htmlFor="menu-item-available">Tersedia</Label>
               </div>
               <div className="flex items-center gap-2">
-                <Switch checked={form.is_featured} onCheckedChange={v => setForm(f => ({ ...f, is_featured: v }))} />
-                <Label>Featured</Label>
+                <Switch id="menu-item-featured" checked={form.is_featured} onCheckedChange={v => setForm(f => ({ ...f, is_featured: v }))} />
+                <Label htmlFor="menu-item-featured">Featured</Label>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setFormOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="admin-menu-edit-submit-button">
-              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Simpan
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Simpan
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -328,7 +329,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground"
+              className={buttonVariants({ variant: "destructive" })}
               data-testid="admin-menu-delete-confirm-button">Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -31,6 +31,7 @@ import NoAccess from "@/pages/NoAccess";
 import NotFound from "@/pages/NotFound";
 import MyApprovals from "@/pages/MyApprovals";
 import { REPORT_CENTER_PERMS } from "@/lib/portals";
+import { ConfirmDialogHost } from "@/components/shared/confirmDialog";
 
 // Loyalty Pages (eagerly loaded — lightweight)
 import LoyaltyRegister from "@/pages/loyalty/LoyaltyRegister";
@@ -379,6 +380,7 @@ export default function App() {
           </AuthProvider>
         </BrowserRouter>
         <Toaster position="top-right" />
+        <ConfirmDialogHost />
         <PWAInstallBanner />
       </QueryClientProvider>
     </ThemeProvider>

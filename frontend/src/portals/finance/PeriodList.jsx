@@ -1,31 +1,25 @@
 /** PeriodList — table of accounting periods with status pills + lock/unlock/wizard actions. */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Lock, Unlock, ListChecks, CalendarRange, RefreshCw } from "lucide-react";
+import { Lock, Unlock, ListChecks, CalendarRange, RefreshCw, CheckCircle2 } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
-import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtDateTime } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
-export default function PeriodList() {
+export default function PeriodList({ embedded = false }) {
   const { can } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [unlockDlg, setUnlockDlg] = useState(null); // {period}
-  const [unlockReason, setUnlockReason] = useState("");
   const [acting, setActing] = useState("");
 
   async function load() {
@@ -34,45 +28,53 @@ export default function PeriodList() {
       const res = await api.get("/finance/periods", { params: { year } });
       setItems(unwrap(res) || []);
     } catch {
-      toast.error("Gagal memuat periods");
+      toast.error("Gagal memuat daftar periode");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [year]);
 
   async function lock(period) {
-    if (!(await confirmDialog(`Lock period ${period}? Setelah locked, jurnal di period ini tidak bisa di-post.`))) return;
+    if (!(await confirmDialog(`Kunci periode ${period}? Setelah dikunci, jurnal di periode ini tidak bisa diposting.`))) return;
     try {
       setActing(period);
       await api.post(`/finance/periods/${period}/lock`, { reason: "Lock from period list" });
-      toast.success(`Period ${period} locked`);
+      toast.success(`Periode ${period} dikunci`);
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal lock");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengunci periode");
     } finally { setActing(""); }
   }
 
   async function close(period) {
-    if (!(await confirmDialog(`Close period ${period}? Soft-close (masih bisa di-reopen).`))) return;
+    if (!(await confirmDialog(`Tutup periode ${period}? Soft-close (masih bisa dibuka kembali).`))) return;
     try {
       setActing(period);
       await api.post(`/finance/periods/${period}/close`, { reason: "Close from period list" });
-      toast.success(`Period ${period} closed`);
+      toast.success(`Periode ${period} ditutup (soft-close)`);
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal close");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menutup periode");
     } finally { setActing(""); }
   }
 
-  async function submitUnlock() {
-    if (!unlockReason.trim()) { toast.error("Alasan wajib"); return; }
+  async function unlock(period) {
+    const reason = await promptDialog({
+      title: `Buka kembali periode ${period}?`,
+      description: "Periode akan kembali ke status open sehingga jurnal dapat diposting lagi. Aksi ini tercatat pada audit log.",
+      label: "Alasan",
+      placeholder: "Mis: koreksi adjustment, tambah jurnal terlewat…",
+      required: true,
+      multiline: true,
+      confirmText: "Buka kembali",
+    });
+    if (!reason) return;
     try {
-      setActing(unlockDlg.period);
-      await api.post(`/finance/periods/${unlockDlg.period}/unlock`, { reason: unlockReason.trim() });
-      toast.success(`Period ${unlockDlg.period} reopened`);
-      setUnlockDlg(null); setUnlockReason("");
+      setActing(period);
+      await api.post(`/finance/periods/${period}/unlock`, { reason });
+      toast.success(`Periode ${period} dibuka kembali`);
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal unlock");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal membuka kembali periode");
     } finally { setActing(""); }
   }
 
@@ -81,22 +83,30 @@ export default function PeriodList() {
   const canUnlock = can("finance.period.unlock");
 
   return (
-    <div className="space-y-4" data-testid="periods-page">
-      <div className="glass-card p-4 flex flex-wrap items-end gap-3">
-        <div className="min-w-[120px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Tahun</Label>
-          <Input type="number" value={year} onChange={e => setYear(Number(e.target.value))}
+    <div data-testid="periods-page">
+      {!embedded && (
+        <PageHeader
+          icon={CalendarRange}
+          title="Periods"
+          subtitle="Status periode akuntansi (open / closed / locked) beserta aksi tutup, kunci, dan buka kembali"
+        />
+      )}
+      <div className="space-y-3 lg:space-y-4">
+      <div className="glass-card p-3 flex flex-wrap items-end gap-3">
+        <div className="w-32">
+          <Label htmlFor="period-year" className="text-xs font-medium text-muted-foreground">Tahun</Label>
+          <Input id="period-year" type="number" value={year} onChange={e => setYear(Number(e.target.value))}
             className="glass-input mt-1 h-9" data-testid="period-year" />
         </div>
-        <Button variant="outline" onClick={load} className="rounded-full gap-2 h-10" data-testid="period-refresh">
-          <RefreshCw className="h-4 w-4" /> Refresh
+        <Button variant="outline" onClick={load} disabled={loading} data-testid="period-refresh">
+          <RefreshCw className={loading ? "animate-spin" : undefined} /> Muat ulang
         </Button>
-        <div className="ml-auto text-xs text-muted-foreground hidden md:block">
-          <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 mr-1">open</span> dapat di-posting
-          <span className="mx-2">·</span>
-          <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 mr-1">closed</span> soft-close
-          <span className="mx-2">·</span>
-          <span className="inline-block px-2 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-400 mr-1">locked</span> hard-lock
+        <div className="ml-auto text-xs text-muted-foreground hidden md:flex items-center gap-1.5" data-testid="period-status-legend">
+          <StatusPill status="open" /> dapat diposting
+          <span className="mx-1">·</span>
+          <StatusPill status="closed" /> soft-close
+          <span className="mx-1">·</span>
+          <StatusPill status="locked" /> hard-lock
         </div>
       </div>
 
@@ -106,17 +116,17 @@ export default function PeriodList() {
           keyField="period"
           loading={loading}
           rowTestIdPrefix="period-row"
-          empty={<div className="p-6"><EmptyState icon={CalendarRange} title="Belum ada period" description="Periods akan auto-create saat ada JE pertama." /></div>}
+          empty={<EmptyState icon={CalendarRange} title="Belum ada periode" description="Periode dibuat otomatis saat jurnal pertama di tahun ini diposting." />}
           columns={[
             { key: "period", label: "Period", sortable: true, primary: true,
-              render: (p) => <span className="font-mono font-semibold">{p.period}</span> },
+              render: (p) => <span className="font-semibold tabular-nums">{p.period}</span> },
             { key: "status", label: "Status", sortable: true,
               render: (p) => <StatusPill status={p.status} /> },
             { key: "locked", label: "Locked / Closed",
               render: (p) => (
-                <span className="text-xs text-muted-foreground">
-                  {p.locked_at ? <>🔒 {fmtDateTime(p.locked_at)}</> :
-                    p.closed_at ? <>🔐 {fmtDateTime(p.closed_at)}</> : "—"}
+                <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                  {p.locked_at ? <><Lock className="h-3 w-3" aria-label="Dikunci" /> {fmtDateTime(p.locked_at)}</> :
+                    p.closed_at ? <><CheckCircle2 className="h-3 w-3" aria-label="Ditutup" /> {fmtDateTime(p.closed_at)}</> : "—"}
                 </span>
               ) },
             { key: "updated_at", label: "Last Update", sortable: true,
@@ -124,55 +134,36 @@ export default function PeriodList() {
           ]}
           rowAction={(p) => (
             <div className="inline-flex gap-2">
-              <Link to={`/finance/period-closing/${p.period}`}>
-                <Button size="sm" variant="outline" className="rounded-full gap-1 h-8" data-testid={`period-wizard-${p.period}`}>
-                  <ListChecks className="h-3.5 w-3.5" /> Wizard
-                </Button>
-              </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link to={`/finance/period-closing/${p.period}`} data-testid={`period-wizard-${p.period}`}>
+                  <ListChecks /> Wizard
+                </Link>
+              </Button>
               {p.status === "open" && canClose && (
                 <Button size="sm" variant="outline" disabled={acting === p.period} onClick={() => close(p.period)}
-                  className="rounded-full gap-1 h-8" data-testid={`period-close-${p.period}`}>
-                  Close
+                  data-testid={`period-close-${p.period}`}>
+                  Tutup
                 </Button>
               )}
               {(p.status === "open" || p.status === "closed") && canLock && (
-                <Button size="sm" disabled={acting === p.period} onClick={() => lock(p.period)}
-                  className="pill-active rounded-full gap-1 h-8" data-testid={`period-lock-${p.period}`}>
-                  <Lock className="h-3.5 w-3.5" /> Lock
+                <Button size="sm" variant="outline" disabled={acting === p.period} onClick={() => lock(p.period)}
+                  data-testid={`period-lock-${p.period}`}>
+                  <Lock /> Kunci
                 </Button>
               )}
               {(p.status === "locked" || p.status === "closed") && canUnlock && (
                 <Button size="sm" variant="outline" disabled={acting === p.period}
-                  onClick={() => { setUnlockDlg({ period: p.period }); setUnlockReason(""); }}
-                  className="rounded-full gap-1 h-8 text-amber-700" data-testid={`period-unlock-${p.period}`}>
-                  <Unlock className="h-3.5 w-3.5" /> Reopen
+                  onClick={() => unlock(p.period)}
+                  className="text-amber-700 dark:text-amber-400" data-testid={`period-unlock-${p.period}`}>
+                  <Unlock /> Buka kembali
                 </Button>
               )}
             </div>
           )}
         />
       </div>
+      </div>
 
-      <Dialog open={!!unlockDlg} onOpenChange={(v) => !v && setUnlockDlg(null)}>
-        <DialogContent className="glass-card max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reopen Period {unlockDlg?.period}?</DialogTitle>
-            <DialogDescription>
-              Reopen akan mengembalikan period ke status <b>open</b> sehingga jurnal dapat di-posting kembali. Aksi ini tercatat pada audit log.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label className="text-xs">Alasan reopen</Label>
-            <Textarea value={unlockReason} onChange={e => setUnlockReason(e.target.value)}
-              placeholder="Mis: koreksi adjustment, tambah jurnal terlewat…"
-              className="glass-input min-h-[100px]" data-testid="period-unlock-reason" />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUnlockDlg(null)}>Batal</Button>
-            <Button onClick={submitUnlock} className="pill-active" data-testid="period-unlock-confirm">Reopen</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

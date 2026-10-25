@@ -38,7 +38,7 @@ export default function CMSBrandPreview({ open, onClose, form }) {
         {/* Preview banner */}
         <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 bg-amber-500 text-white text-sm font-medium">
           <span>👁 Preview — Tampilan publik (belum disimpan/dipublikasi)</span>
-          <Button variant="ghost" size="icon" aria-label="Tutup preview" className="h-7 w-7 text-white hover:bg-amber-600" onClick={onClose}>
+          <Button variant="ghost" size="icon-sm" aria-label="Tutup preview" className="text-white hover:bg-amber-600" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -53,7 +53,7 @@ export default function CMSBrandPreview({ open, onClose, form }) {
           }}
         >
           <div className="p-6 text-white">
-            <h1 className="text-3xl md:text-4xl font-bold mb-1">{form.name || "Nama Brand"}</h1>
+            <h2 className="text-3xl md:text-4xl font-bold mb-1">{form.name || "Nama Brand"}</h2>
             <p className="text-white/80 text-sm">{form.tagline}</p>
           </div>
         </div>

@@ -15,6 +15,8 @@ import {
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import VendorAutocomplete from "@/components/shared/VendorAutocomplete";
 import ReceiptCapture from "@/components/shared/ReceiptCapture";
@@ -71,7 +73,7 @@ export default function UrgentPurchaseList() {
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
   async function approve(up) {
-    if (!(await confirmDialog(`Approve urgent purchase ${up.doc_no || up.id}?`))) return;
+    if (!(await confirmDialog(`Setujui urgent purchase ${up.doc_no || up.id}? Jurnal akan dibuat.`))) return;
     try {
       await api.post(`/outlet/urgent-purchases/${up.id}/approve`);
       toast.success("Disetujui. Jurnal dibuat.");
@@ -82,43 +84,35 @@ export default function UrgentPurchaseList() {
   }
 
   return (
-    <div className="space-y-4" data-testid="urgent-purchase-page">
-      <div className="glass-card p-4">
-        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
-          <div className="flex-1">
-            <p className="text-sm text-muted-foreground">
-              Outlet filter dikendalikan dari header. Pilih outlet di atas untuk mempersempit data.
-            </p>
-          </div>
-          <Button onClick={() => setShowForm(true)} className="sm:ml-auto rounded-full pill-active gap-2 h-10 px-5 w-full sm:w-auto" data-testid="up-new">
+    <div className="space-y-3 lg:space-y-4" data-testid="urgent-purchase-page">
+      <PageHeader
+        icon={ShoppingBag}
+        title="Urgent Purchase"
+        subtitle="Pembelian mendadak di luar PR normal — disetujui finance. Filter outlet ada di header Outlet Aktif."
+        className="mb-0 md:mb-0"
+        actions={
+          <Button onClick={() => setShowForm(true)} data-testid="up-new">
             <Plus className="h-4 w-4" /> Urgent Purchase Baru
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1" role="tablist" aria-label="Filter status">
-        {STATUS_TABS.map(t => (
-          <button
-            key={t.key || "all"}
-            role="tab"
-            aria-selected={status === t.key}
-            onClick={() => { setStatus(t.key); setPage(1); }}
-            className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-target ${
-              status === t.key ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground"
-            }`}
-            data-testid={`up-tab-${t.key || "all"}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={status || "all"} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
+        <TabsList aria-label="Filter status">
+          {STATUS_TABS.map(t => (
+            <TabsTrigger key={t.key || "all"} value={t.key || "all"} data-testid={`up-tab-${t.key || "all"}`}>
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       <div className="glass-card">
         <DataTable
           columns={[
             {
-              key: "doc_no", label: "Doc No", primary: true,
-              render: up => <span className="font-mono text-xs">{up.doc_no || up.id.slice(0, 8)}</span>,
+              key: "doc_no", label: "No. Dokumen", primary: true,
+              render: up => <span className="text-xs font-medium tabular-nums">{up.doc_no || up.id.slice(0, 8)}</span>,
             },
             { key: "purchase_date", label: "Tanggal", render: up => fmtDate(up.purchase_date) },
             {
@@ -137,23 +131,24 @@ export default function UrgentPurchaseList() {
           ]}
           rows={items}
           loading={loading}
-          empty={<EmptyState icon={ShoppingBag} title="Belum ada urgent purchase" description="Buat ketika ada kebutuhan mendadak yang tidak bisa lewat PR normal." />}
+          empty={<EmptyState icon={ShoppingBag} title="Belum ada urgent purchase" description="Buat ketika ada kebutuhan mendadak yang tidak bisa lewat PR normal."
+            action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>Urgent Purchase Baru</Button>} />}
           rowAction={(up) => (
             up.status === "submitted" && can("finance.payment.approve") && (
-              <Button onClick={() => approve(up)} size="sm" className="rounded-full pill-active gap-1 h-8 px-4" data-testid={`up-approve-${up.id}`}>
-                <CheckCircle2 className="h-3 w-3" /> Approve
+              <Button onClick={() => approve(up)} size="sm" variant="outline" data-testid={`up-approve-${up.id}`}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> Setujui
               </Button>
             )
           )}
           rowTestIdPrefix="up"
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman sebelumnya">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman berikutnya">Next</button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya">Sebelumnya</Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -278,7 +273,7 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-3xl">
         <DialogHeader>
           <DialogTitle>Urgent Purchase Baru</DialogTitle>
           <DialogDescription>Untuk pembelian mendadak yang tidak melalui PR normal.</DialogDescription>
@@ -296,25 +291,26 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Outlet *</Label>
             <SimpleSelect
               value={form.outlet_id}
               onValueChange={v => setForm(f => ({ ...f, outlet_id: v }))}
               options={[{ value: "", label: "-- pilih outlet --" }, ...userOutlets.map(o => ({ value: o.id, label: o.name }))]}
               placeholder="-- pilih outlet --"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              className="glass-input w-full mt-1"
+              ariaLabel="Outlet"
               testId="up-form-outlet"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tanggal *</Label>
-            <Input type="date" value={form.purchase_date}
+            <Label htmlFor="up-form-date-input" className="text-xs md:text-sm font-medium">Tanggal *</Label>
+            <Input id="up-form-date-input" type="date" value={form.purchase_date}
               onChange={e => setForm(f => ({ ...f, purchase_date: e.target.value }))}
               className="glass-input mt-1" data-testid="up-form-date"
             />
           </div>
           <div className="col-span-2">
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Vendor</Label>
+            <Label className="text-xs md:text-sm font-medium">Vendor</Label>
             <VendorAutocomplete
               value={form.vendor_text}
               onChange={v => setForm(f => ({ ...f, vendor_text: v, vendor_id: null }))}
@@ -323,19 +319,20 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
             />
           </div>
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Payment Method</Label>
+            <Label className="text-xs md:text-sm font-medium">Metode Pembayaran</Label>
             <SimpleSelect
               value={form.payment_method_id}
               onValueChange={v => setForm(f => ({ ...f, payment_method_id: v }))}
               options={[{ value: "", label: "-- pilih --" }, ...paymentMethods.map(pm => ({ value: pm.id, label: pm.name }))]}
               placeholder="-- pilih --"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              className="glass-input w-full mt-1"
+              ariaLabel="Metode pembayaran"
               testId="up-form-pm"
             />
           </div>
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Paid By</Label>
-            <Input value={form.paid_by}
+            <Label htmlFor="up-form-paidby-input" className="text-xs md:text-sm font-medium">Dibayar oleh</Label>
+            <Input id="up-form-paidby-input" value={form.paid_by}
               onChange={e => setForm(f => ({ ...f, paid_by: e.target.value }))}
               placeholder="Nama pegawai/keterangan"
               className="glass-input mt-1"
@@ -345,8 +342,8 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
 
         <div className="mt-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold">Items</h4>
-            <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1" data-testid="up-add-line">
+            <h3 className="text-sm md:text-base font-semibold">Item</h3>
+            <Button type="button" onClick={addLine} variant="outline" size="sm" data-testid="up-add-line">
               <Plus className="h-3.5 w-3.5" /> Tambah
             </Button>
           </div>
@@ -380,36 +377,39 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
               <Input
                 type="number" min="0" value={ln.qty}
                 onChange={e => setLine(i, "qty", e.target.value)}
-                className="glass-input col-span-2 h-9 text-right tabular-nums"
-                placeholder="Qty" data-testid={`up-line-qty-${i}`}
+                className="glass-input col-span-2 text-right tabular-nums"
+                placeholder="Qty" aria-label={`Qty item ${i + 1}`} data-testid={`up-line-qty-${i}`}
               />
               <Input
                 value={ln.unit}
                 onChange={e => setLine(i, "unit", e.target.value)}
-                className="glass-input col-span-1 h-9"
+                className="glass-input col-span-1 px-2"
                 placeholder="unit"
+                aria-label={`Satuan item ${i + 1}`}
               />
               <Input
                 type="number" min="0" value={ln.cost}
                 onChange={e => setLine(i, "cost", e.target.value)}
-                className="glass-input col-span-2 h-9 text-right tabular-nums"
-                placeholder="Harga" data-testid={`up-line-cost-${i}`}
+                className="glass-input col-span-2 text-right tabular-nums"
+                placeholder="Harga" aria-label={`Harga item ${i + 1}`} data-testid={`up-line-cost-${i}`}
               />
               <div className="col-span-1 text-right text-sm tabular-nums font-medium">{fmtRp(ln.total || 0)}</div>
-              <button onClick={() => removeLine(i)} className="col-span-1 h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center">
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(i)}
+                aria-label={`Hapus item ${i + 1}`} data-testid={`up-line-remove-${i}`}
+                className="col-span-1 hover:bg-destructive/10 hover:text-destructive">
                 <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              </Button>
             </div>
           ))}
-          <div className="flex justify-between pt-3 border-t border-border/50 text-sm font-bold">
+          <div className="flex justify-between pt-3 border-t border-border/50 text-sm font-semibold">
             <span>Grand Total</span>
             <span className="tabular-nums">{fmtRp(total)}</span>
           </div>
         </div>
 
         <div>
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Notes / Justifikasi</Label>
-          <Textarea value={form.notes}
+          <Label htmlFor="up-form-notes-input" className="text-xs md:text-sm font-medium">Catatan / Justifikasi</Label>
+          <Textarea id="up-form-notes-input" value={form.notes}
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
             className="glass-input mt-1 min-h-[60px]" />
           {form.notes && form.notes.trim().length >= 4 && (
@@ -454,13 +454,14 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
 
         {needsReason && (
           <div className={cn(
-            "mt-3 rounded-xl p-3 border-2",
+            "mt-3 rounded-lg p-3 border-2",
             hasSevereGuard ? "border-red-500/40" : "border-amber-500/40",
           )}>
-            <Label className="text-xs uppercase text-muted-foreground font-semibold">
-              Alasan / Justifikasi (wajib karena {hasSevereGuard ? "jauh" : ""} di atas forecast)
+            <Label htmlFor="up-guard-reason-input" className="text-xs md:text-sm font-medium">
+              Alasan / Justifikasi * (wajib karena {hasSevereGuard ? "jauh " : ""}di atas forecast)
             </Label>
             <Textarea
+              id="up-guard-reason-input"
               value={confirmReason}
               onChange={e => setConfirmReason(e.target.value)}
               placeholder="mis. Vendor langganan habis stok, terpaksa beli langsung di pasar untuk operasional malam ini, dll."
@@ -478,9 +479,9 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
           <Button
             onClick={submit}
             disabled={saving || (needsReason && !confirmReason.trim())}
-            className="pill-active" data-testid="up-save"
+            data-testid="up-save"
           >
-            {saving ? "…" : (needsReason ? "Submit (with reason)" : "Submit")}
+            {saving ? "Mengirim…" : (needsReason ? "Submit dengan alasan" : "Submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -39,8 +39,9 @@ export default function PettyCashPolicyEditor(props) {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Limit Bulanan (Rp)</Label>
+                <Label htmlFor="pc-monthly-limit-input" className="text-xs md:text-sm font-medium">Limit Bulanan (Rp)</Label>
                 <Input
+                  id="pc-monthly-limit-input"
                   type="number"
                   min={0}
                   value={monthlyLimit}
@@ -50,9 +51,9 @@ export default function PettyCashPolicyEditor(props) {
                 <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{fmtRp(monthlyLimit)}</p>
               </div>
               <div>
-                <Label className="text-xs">Frekuensi Replenish</Label>
+                <Label htmlFor="pc-replenish-freq-select" className="text-xs md:text-sm font-medium">Frekuensi Replenish</Label>
                 <Select value={freq} onValueChange={(v) => set("replenish_frequency", v)}>
-                  <SelectTrigger data-testid="pc-replenish-freq-select">
+                  <SelectTrigger id="pc-replenish-freq-select" data-testid="pc-replenish-freq-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -66,8 +67,8 @@ export default function PettyCashPolicyEditor(props) {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs">Maksimal per Transaksi</Label>
-                <span className="text-xs font-mono tabular-nums">{fmtRp(maxPerTxn)}</span>
+                <Label className="text-xs md:text-sm font-medium">Maksimal per Transaksi</Label>
+                <span className="text-xs font-medium tabular-nums">{fmtRp(maxPerTxn)}</span>
               </div>
               <Slider
                 value={[maxPerTxn]}
@@ -75,14 +76,15 @@ export default function PettyCashPolicyEditor(props) {
                 min={0}
                 max={Math.max(monthlyLimit || 5_000_000, 1_000_000)}
                 step={50_000}
+                aria-label="Maksimal per transaksi"
                 data-testid="pc-max-per-txn-slider"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs">Butuh Approval Jika &gt; ini</Label>
-                <span className="text-xs font-mono tabular-nums">{fmtRp(apprThreshold)}</span>
+                <Label className="text-xs md:text-sm font-medium">Butuh Approval Jika &gt; ini</Label>
+                <span className="text-xs font-medium tabular-nums">{fmtRp(apprThreshold)}</span>
               </div>
               <Slider
                 value={[apprThreshold]}
@@ -90,6 +92,7 @@ export default function PettyCashPolicyEditor(props) {
                 min={0}
                 max={Math.max(maxPerTxn || 1_000_000, 1_000_000)}
                 step={25_000}
+                aria-label="Ambang approval"
                 data-testid="pc-approval-threshold-slider"
               />
               <p className="text-[11px] text-muted-foreground mt-1">
@@ -99,10 +102,11 @@ export default function PettyCashPolicyEditor(props) {
 
             <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
               <div>
-                <Label className="text-xs">Wajib Lampiran Struk</Label>
+                <Label htmlFor="pc-require-receipt-switch" className="text-xs md:text-sm font-medium">Wajib Lampiran Struk</Label>
                 <p className="text-[11px] text-muted-foreground">Saat upload, sistem mengingatkan jika foto struk belum dilampirkan.</p>
               </div>
               <Switch
+                id="pc-require-receipt-switch"
                 checked={requireReceipt}
                 onCheckedChange={(v) => set("require_receipt", v)}
                 data-testid="pc-require-receipt-switch"

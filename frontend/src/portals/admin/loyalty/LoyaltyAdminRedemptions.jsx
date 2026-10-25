@@ -232,7 +232,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
             { key: "points_used", label: "Poin", numeric: true, sortable: true, render: (item) => (item.points_used || 0).toLocaleString() },
             { key: "voucher_code", label: "Voucher Code", render: (item) => (
               item.voucher_code ? (
-                <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{item.voucher_code}</code>
+                <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium tabular-nums">{item.voucher_code}</span>
               ) : (
                 <span className="text-muted-foreground text-xs">-</span>
               )

@@ -56,3 +56,27 @@ async def customer_identity_keys() -> dict:
     if n or dups:
         logger.info("customer identity keys: %s", res)
     return res
+
+
+async def legacy_seed_field_names() -> dict:
+    """UI-DATA-01/02/03: older demo seeds wrote reservations as guest_name/date/time, PRs as
+    `converted_to_po` and anomalies as high/medium/low; the API and pages read customer_name/reservation_date/reservation_time and
+    `converted` (procurement_service), so those rows showed blank names and an empty "Converted" tab.
+    """
+    db = get_db()
+    renames = {"guest_name": "customer_name", "guest_phone": "customer_phone", "guest_email": "customer_email",
+               "date": "reservation_date", "time": "reservation_time"}
+    n = 0
+    for old, new in renames.items():
+        r = await db.reservations.update_many(
+            {old: {"$exists": True}, new: {"$exists": False}}, {"$rename": {old: new}})
+        n = max(n, r.modified_count)
+    p = await db.purchase_requests.update_many({"status": "converted_to_po"}, {"$set": {"status": "converted"}})
+    # anomaly detectors emit severe/mild; old seeds wrote high/medium/low (filters & counters saw 0)
+    a = 0
+    for old_sev, new_sev in (("critical", "severe"), ("high", "severe"), ("medium", "mild"), ("low", "mild")):
+        a += (await db.anomaly_events.update_many({"severity": old_sev}, {"$set": {"severity": new_sev}})).modified_count
+    res = {"reservations": n, "purchase_requests": p.modified_count, "anomaly_events": a}
+    if any(res.values()):
+        logger.info("legacy seed field names normalized: %s", res)
+    return res

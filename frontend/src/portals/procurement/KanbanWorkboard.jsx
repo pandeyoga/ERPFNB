@@ -25,15 +25,14 @@ import {
   Calendar,
   FileText,
   FileCheck,
-  Filter as FilterIcon,
   CheckCircle2,
   Send,
   Truck,
-  ClipboardCheck,
   ShoppingCart,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/shared/PageHeader";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { fmtRp, fmtDate, fmtRelative } from "@/lib/format";
 import LoadingState from "@/components/shared/LoadingState";
@@ -92,7 +91,7 @@ export default function KanbanWorkboard() {
       setData(unwrap(wb));
       setTransitions(unwrap(tr)?.transitions || []);
     } catch (e) {
-      toast.error("Gagal load workboard");
+      toast.error("Gagal memuat workboard");
     } finally { setLoading(false); }
   }, [days, outletId, vendorId]);
 
@@ -165,7 +164,7 @@ export default function KanbanWorkboard() {
       toast.success(`${card.title}: ${t.label}`);
       await load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal pindahkan");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal memindahkan kartu");
     } finally { setDragMoving(false); }
   };
 
@@ -175,81 +174,82 @@ export default function KanbanWorkboard() {
   }, [data]);
 
   return (
-    <div className="space-y-4" data-testid="kanban-workboard-page">
-      {/* Header / Filters */}
-      <div className="glass-card p-4" data-testid="wb-header">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <Layers className="h-5 w-5 text-foreground/70" />
-              <h2 className="text-lg font-bold">Procurement Workboard</h2>
-              <span className="text-xs text-muted-foreground hidden sm:inline">
-                Drag &amp; drop card untuk transition status
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1" data-testid="wb-meta">
-              <span data-testid="wb-total-count">{totalCount}</span> card{totalCount > 1 ? "s" : ""} aktif {data?.as_of && `· refreshed ${fmtRelative(data.as_of)}`}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-end gap-2" data-testid="wb-filters">
-            <div>
-              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-outlet">Outlet</label>
-              <SimpleSelect
-                value={outletId}
-                onValueChange={setOutletId}
-                options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-                placeholder="Semua"
-                className="glass-input rounded-lg h-9 text-xs mt-0.5 min-w-[140px]"
-                testId="wb-filter-outlet"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-vendor">Vendor</label>
-              <SimpleSelect
-                value={vendorId}
-                onValueChange={setVendorId}
-                options={[{ value: "", label: "Semua" }, ...vendors.map(v => ({ value: v.id, label: v.name }))]}
-                placeholder="Semua"
-                className="glass-input rounded-lg h-9 text-xs mt-0.5 min-w-[160px]"
-                testId="wb-filter-vendor"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] uppercase font-semibold text-muted-foreground" htmlFor="wb-days">Periode</label>
-              <SimpleSelect
-                value={days}
-                onValueChange={(v) => setDays(Number(v))}
-                options={[
-                  { value: 30, label: "30 hari" },
-                  { value: 60, label: "60 hari" },
-                  { value: 90, label: "90 hari" },
-                  { value: 180, label: "180 hari" },
-                ]}
-                className="glass-input rounded-lg h-9 text-xs mt-0.5"
-                testId="wb-filter-days"
-              />
-            </div>
-            <Button onClick={load} disabled={loading} variant="outline" size="sm"
-              className="rounded-full h-9 gap-1.5" data-testid="wb-refresh">
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-          </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="kanban-workboard-page">
+      <PageHeader
+        icon={Layers}
+        title="Procurement Kanban"
+        testId="wb-header"
+        subtitle={
+          <span data-testid="wb-meta">
+            Seret kartu PR/PO antar kolom untuk approve, kirim, atau terima barang ·{" "}
+            <span data-testid="wb-total-count">{totalCount}</span> kartu aktif
+            {data?.as_of && ` · diperbarui ${fmtRelative(data.as_of)}`}
+          </span>
+        }
+        actions={
+          <Button onClick={load} disabled={loading} variant="outline" data-testid="wb-refresh">
+            <RefreshCw className={loading ? "animate-spin" : ""} /> Muat ulang
+          </Button>
+        }
+      />
+
+      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="wb-filters">
+        <SimpleSelect
+          value={outletId}
+          onValueChange={setOutletId}
+          options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+          placeholder="Semua outlet"
+          ariaLabel="Filter outlet"
+          className="glass-input w-[180px]"
+          testId="wb-filter-outlet"
+        />
+        <SimpleSelect
+          value={vendorId}
+          onValueChange={setVendorId}
+          options={[{ value: "", label: "Semua vendor" }, ...vendors.map(v => ({ value: v.id, label: v.name }))]}
+          placeholder="Semua vendor"
+          ariaLabel="Filter vendor"
+          className="glass-input w-[200px]"
+          testId="wb-filter-vendor"
+        />
+        <SimpleSelect
+          value={days}
+          onValueChange={(v) => setDays(Number(v))}
+          options={[
+            { value: 30, label: "30 hari terakhir" },
+            { value: 60, label: "60 hari terakhir" },
+            { value: 90, label: "90 hari terakhir" },
+            { value: 180, label: "180 hari terakhir" },
+          ]}
+          ariaLabel="Periode"
+          className="glass-input w-[170px]"
+          testId="wb-filter-days"
+        />
+        <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto" data-testid="wb-legend">
+          <span className="inline-flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Setujui PR/PO
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Send className="h-3 w-3 text-violet-600" /> Kirim ke vendor
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Truck className="h-3 w-3 text-orange-600" /> Terima barang (buka form GR)
+          </span>
         </div>
       </div>
 
       {loading && !data ? (
-        <div className="glass-card p-8" data-testid="wb-loading"><LoadingState rows={4} /></div>
+        <div className="glass-card p-4" data-testid="wb-loading"><LoadingState rows={4} /></div>
       ) : !data || totalCount === 0 ? (
-        <div className="glass-card p-8" data-testid="wb-empty">
+        <div className="glass-card" data-testid="wb-empty">
           <EmptyState
             icon={Layers}
             title="Belum ada card di workboard"
             description="Buat PR atau PO baru untuk memulai pipeline procurement."
             action={
-              <div className="flex gap-2 mt-3">
-                <Link to="/procurement/pr/new"><Button className="pill-active rounded-full" data-testid="wb-empty-new-pr">PR Baru</Button></Link>
-                <Link to="/procurement/po/new"><Button variant="outline" className="rounded-full" data-testid="wb-empty-new-po">PO Baru</Button></Link>
+              <div className="flex gap-2">
+                <Button asChild data-testid="wb-empty-new-pr"><Link to="/procurement/pr/new">PR Baru</Link></Button>
+                <Button asChild variant="outline" data-testid="wb-empty-new-po"><Link to="/procurement/po/new">PO Baru</Link></Button>
               </div>
             }
           />
@@ -261,7 +261,8 @@ export default function KanbanWorkboard() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3" data-testid="wb-board">
+          {/* Kolom dengan lebar tetap + scroll horizontal (sebelumnya 7 kolom dipaksa muat → kartu terpotong, halaman 9.000px) */}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x" data-testid="wb-board">
             {data.columns.map((col) => (
               <KanbanColumn
                 key={col.key}
@@ -278,21 +279,6 @@ export default function KanbanWorkboard() {
         </DndContext>
       )}
 
-      {/* Help / Legend */}
-      <div className="glass-card p-3">
-        <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span><strong>Tip:</strong> drag card untuk approve/send/receive.</span>
-          <span className="inline-flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Approve PR/PO
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Send className="h-3 w-3 text-violet-600" /> Send to Vendor
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <Truck className="h-3 w-3 text-orange-600" /> Receive (open GR form)
-          </span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -305,23 +291,23 @@ function KanbanColumn({ column, cards, count, dimmed }) {
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-2xl border ${tone} p-3 min-h-[400px] transition-colors ${isOver ? "ring-2 ring-foreground/20" : ""} ${dimmed ? "opacity-50" : ""}`}
+      className={`w-[248px] shrink-0 snap-start rounded-xl border ${tone} p-2.5 flex flex-col transition-colors ${isOver ? "ring-2 ring-foreground/20" : ""} ${dimmed ? "opacity-50" : ""}`}
       data-testid={`wb-col-${column.key}`}
       role="region"
       aria-label={column.label}
     >
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
-        <div className="text-xs font-bold uppercase tracking-wide text-foreground/80 truncate">
+      <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-border/40">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground/80 truncate" title={column.label}>
           {column.label}
-        </div>
-        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0`}>
+        </h3>
+        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0 tabular-nums`}>
           {count}
         </span>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 min-h-[160px] max-h-[calc(100vh-280px)] overflow-y-auto -mr-1 pr-1">
         {cards.length === 0 ? (
-          <div className="text-[11px] text-muted-foreground italic px-1 py-3 text-center">
-            (kosong)
+          <div className="text-xs text-muted-foreground px-1 py-6 text-center">
+            Kosong
           </div>
         ) : (
           cards.map((card) => (
@@ -350,21 +336,22 @@ function KanbanCard({ card, dragging = false }) {
         opacity: isDragging ? 0.4 : 1,
         cursor: dragging ? "grabbing" : "grab",
       }}
-      className={`bg-background rounded-xl border border-border/60 p-3 hover:border-foreground/30 hover:shadow-md transition-all ${dragging ? "shadow-2xl ring-2 ring-foreground/20" : ""}`}
+      className={`bg-background rounded-lg border border-border/60 p-2.5 hover:border-foreground/30 hover:shadow-md transition-all ${dragging ? "shadow-2xl ring-2 ring-foreground/20 w-[228px]" : ""}`}
       data-testid={`wb-card-${card.id}`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-          <span className="font-mono text-[11px] truncate">{card.title}</span>
+          <span className="font-mono text-xs font-medium truncate" title={card.title}>{card.title}</span>
         </div>
-        <Link to={card.url} target="_self" rel="noopener" onClick={(e) => e.stopPropagation()}
-          className="h-6 w-6 rounded hover:bg-foreground/10 flex items-center justify-center flex-shrink-0"
-          aria-label="Buka detail">
-          <ExternalLink className="h-3 w-3" />
-        </Link>
+        <Button asChild variant="ghost" size="icon-sm" className="h-7 w-7 -mr-1 shrink-0">
+          <Link to={card.url} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}
+            aria-label={`Buka detail ${card.title}`} data-testid={`wb-card-open-${card.id}`}>
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
       </div>
-      <div className="space-y-1 text-[11px]">
+      <div className="space-y-1 text-xs">
         {card.vendor_name && (
           <div className="text-foreground font-medium truncate" title={card.vendor_name} data-testid={`wb-card-vendor-${card.id}`}>
             {card.vendor_name}
@@ -379,11 +366,11 @@ function KanbanCard({ card, dragging = false }) {
           <span className="text-muted-foreground inline-flex items-center gap-1">
             <Calendar className="h-3 w-3" /> {fmtDate(card.date)}
           </span>
-          <StatusPill status={card.status} className="!text-[11px] !px-1.5 !py-0.5" />
+          <StatusPill status={card.status} className="!px-1.5" />
         </div>
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/30">
-          <span className="text-[11px] text-muted-foreground" data-testid={`wb-card-lines-${card.id}`}>
-            {card.line_count} line{card.line_count > 1 ? "s" : ""}
+          <span className="text-muted-foreground" data-testid={`wb-card-lines-${card.id}`}>
+            {card.line_count} item
           </span>
           {card.total > 0 && (
             <span className="font-semibold tabular-nums" data-testid={`wb-card-total-${card.id}`}>{fmtRp(card.total)}</span>

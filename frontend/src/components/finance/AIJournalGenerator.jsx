@@ -65,17 +65,18 @@ export default function AIJournalGenerator({ onGenerated }) {
       <div className="glass-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-5 w-5 text-purple-700 dark:text-purple-400" />
-          <h3 className="font-semibold">AI Journal Entry Generator</h3>
+          <h3 className="text-sm md:text-base font-semibold">AI Journal Entry Generator</h3>
         </div>
 
-        <Label className="text-xs uppercase text-muted-foreground">
-          Deskripsi Transaksi (Natural Language)
+        <Label htmlFor="ai-journal-input">
+          Deskripsi transaksi (bahasa sehari-hari)
         </Label>
         <Textarea
+          id="ai-journal-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Contoh:&#10;- Bayar sewa gedung The Bistro bulan Mei 2026 Rp 50 juta&#10;- Terima pembayaran customer invoice #INV-001 sebesar Rp 25 juta via transfer&#10;- Beli peralatan dapur untuk outlet MDS Rp 15 juta tunai&#10;- Bayar gaji karyawan bulan April total Rp 80 juta"
-          className="glass-input mt-2 min-h-[120px] font-mono text-sm"
+          className="glass-input mt-1.5 min-h-[120px] text-sm"
           data-testid="ai-journal-input"
         />
 
@@ -83,12 +84,11 @@ export default function AIJournalGenerator({ onGenerated }) {
           <Button
             onClick={generate}
             disabled={loading || !input.trim()}
-            className="rounded-full gap-2 bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800"
             data-testid="ai-journal-generate"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+                <Loader2 className="h-4 w-4 animate-spin" /> Membuat jurnal…
               </>
             ) : (
               <>

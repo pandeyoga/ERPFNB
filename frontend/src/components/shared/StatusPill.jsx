@@ -1,6 +1,8 @@
 /** Status pill — maps backend status string to a labelled, colored pill.
  *
- * Satu kamus status untuk seluruh aplikasi (label + tone warna). Status yang belum
+ * Satu kamus status untuk seluruh aplikasi (label + tone warna). Label status memakai
+ * istilah siklus dokumen ERP berbahasa Inggris secara konsisten (Draft, Submitted,
+ * Awaiting Approval, Approved, Active, …). Status yang belum
  * terdaftar tidak lagi tampil sebagai enum mentah (`converted_to_po`) — di-humanize
  * ("Converted to PO") dan diberi warna netral.
  */
@@ -22,9 +24,10 @@ const STATUS = {
   open: ["Open", "info"],
   pending: ["Pending", "warning"],
   submitted: ["Submitted", "info"],
-  awaiting_approval: ["Menunggu Approval", "warning"],
-  pending_approval: ["Menunggu Approval", "warning"],
-  pending_validation: ["Menunggu Validasi", "warning"],
+  awaiting_approval: ["Awaiting Approval", "warning"],
+  pending_approval: ["Awaiting Approval", "warning"],
+  pending_validation: ["Awaiting Validation", "warning"],
+  pending_review: ["Pending Review", "warning"],
   validating: ["Validating", "warning"],
   validated: ["Validated", "success"],
   approved: ["Approved", "success"],
@@ -55,13 +58,15 @@ const STATUS = {
   calculated: ["Calculated", "info"],
   completed: ["Completed", "success"],
   closed: ["Closed", "neutral"],
+  overdue: ["Overdue", "danger"],
+  due: ["Due", "warning"],
   locked: ["Locked", "neutral"],
   reopened: ["Reopened", "warning"],
   published: ["Published", "success"],
   archived: ["Archived", "neutral"],
-  active: ["Aktif", "success"],
-  inactive: ["Nonaktif", "neutral"],
-  disabled: ["Nonaktif", "neutral"],
+  active: ["Active", "success"],
+  inactive: ["Inactive", "neutral"],
+  disabled: ["Inactive", "neutral"],
   expired: ["Expired", "neutral"],
   claimed: ["Claimed", "success"],
   redeemed: ["Redeemed", "success"],
@@ -80,6 +85,8 @@ const STATUS = {
   warn: ["Warning", "warning"],
   no_show: ["No Show", "danger"],
   seated: ["Seated", "success"],
+  waitlist: ["Waitlist", "warning"],
+  done: ["Done", "success"],
 };
 
 const ACRONYMS = new Set(["po", "pr", "gr", "ap", "ar", "je", "rfq", "ok", "fdo", "kdo", "bdo"]);

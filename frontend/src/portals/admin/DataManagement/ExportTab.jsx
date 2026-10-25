@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
 import DataTable from "@/components/shared/DataTable";
 
 // \u2500\u2500 Category config (mirrors backend) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -126,14 +127,14 @@ function ExportTab({ collections }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
       {/* Left: Collection selector */}
       <div className="lg:col-span-2 space-y-4">
-        <div className="bg-white rounded-xl border">
+        <div className="glass-card">
           <div className="p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Database className="w-4 h-4 text-gray-500" />
-              <span className="font-medium text-sm">Pilih Koleksi Data</span>
+              <h3 className="text-sm md:text-base font-semibold">Pilih Koleksi Data</h3>
               {selectedCollections.length > 0 && (
                 <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                   {selectedCollections.length} dipilih
@@ -141,13 +142,12 @@ function ExportTab({ collections }) {
               )}
             </div>
             <div className="flex gap-2">
-              <button onClick={selectAll} className="text-xs text-blue-600 hover:underline">
+              <Button variant="ghost" size="sm" onClick={selectAll} data-testid="dm-select-all">
                 Pilih Semua
-              </button>
-              <span className="text-gray-300">|</span>
-              <button onClick={clearAll} className="text-xs text-gray-500 hover:underline">
+              </Button>
+              <Button variant="ghost" size="sm" onClick={clearAll} data-testid="dm-clear-selection">
                 Hapus Pilihan
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -173,6 +173,7 @@ function ExportTab({ collections }) {
                         onChange={(e) => { e.stopPropagation(); toggleCategory(catId); }}
                         onClick={(e) => e.stopPropagation()}
                         className="rounded"
+                        aria-label={`Pilih semua koleksi ${cat.label || catId}`}
                       />
                       <div className={`p-1.5 rounded-md border ${CATEGORY_COLORS[catId]}`}>
                         <Icon className="w-3.5 h-3.5" />
@@ -203,18 +204,21 @@ function ExportTab({ collections }) {
                                 checked={selectedCollections.includes(coll.name)}
                                 onChange={() => toggleCollection(coll.name)}
                                 className="rounded"
+                                aria-label={`Pilih koleksi ${coll.name}`}
                               />
-                              <span className="text-sm text-gray-700 font-mono">{coll.name}</span>
+                              <span className="text-sm text-gray-700 font-medium tabular-nums">{coll.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500">{coll.count?.toLocaleString("id-ID")} docs</span>
-                              <button
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
                                 onClick={() => handlePreview(coll.name)}
-                                className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors"
                                 title="Preview data"
+                                aria-label={`Preview data ${coll.name}`}
                               >
                                 <Eye className="w-3.5 h-3.5" />
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
@@ -270,8 +274,8 @@ function ExportTab({ collections }) {
 
       {/* Right: Export options */}
       <div className="space-y-4">
-        <div className="bg-white rounded-xl border p-5 space-y-4">
-          <h3 className="font-medium text-sm text-gray-800 flex items-center gap-2">
+        <div className="glass-card p-4 space-y-3">
+          <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
             <Download className="w-4 h-4" />
             Opsi Export
           </h3>
@@ -326,29 +330,29 @@ function ExportTab({ collections }) {
             </div>
           )}
 
-          <button
+          <Button
             onClick={handleExport}
             disabled={exporting || selectedCollections.length === 0}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="w-full"
             data-testid="export-btn"
           >
             {exporting ? (
               <>
                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                Exporting...
+                Mengekspor...
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                Export {selectedCollections.length > 0 ? `(${selectedCollections.length})` : ""}
+                Ekspor {selectedCollections.length > 0 ? `(${selectedCollections.length})` : ""}
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Quick export buttons */}
-        <div className="bg-white rounded-xl border p-5 space-y-3">
-          <h3 className="font-medium text-sm text-gray-800">Quick Export</h3>
+        <div className="glass-card p-4 space-y-3">
+          <h3 className="text-sm md:text-base font-semibold">Quick Export</h3>
           <div className="space-y-2">
             {[
               { label: "Full Backup (semua data)", collections: ["all"], format: "zip_json" },

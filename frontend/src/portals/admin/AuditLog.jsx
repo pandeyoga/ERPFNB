@@ -3,10 +3,11 @@ import api, { unwrap } from "@/lib/api";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRelative, fmtDateTime } from "@/lib/format";
-import { Search, RefreshCw } from "lucide-react";
+import { RefreshCw, ScrollText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 
 const ACTION_COLORS = {
@@ -19,7 +20,7 @@ const ACTION_COLORS = {
   logout: "bg-zinc-300 text-zinc-700",
 };
 
-export default function AuditLog() {
+export default function AuditLog({ embedded = false } = {}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState({ entity_type: "", action: "" });
@@ -41,20 +42,35 @@ export default function AuditLog() {
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 50)));
 
+  // Enter di kolom filter = terapkan filter (sebelumnya hanya lewat tombol)
+  const applyFilter = () => { if (page === 1) load(); else setPage(1); };
+  const onFilterKey = (e) => { if (e.key === "Enter") applyFilter(); };
+
   return (
-    <div className="space-y-4" data-testid="audit-log-page">
+    <div className="space-y-3" data-testid="audit-log-page">
+      {!embedded && (
+        <PageHeader
+          icon={ScrollText}
+          title="Audit Log"
+          subtitle="Jejak aktivitas user: login, create, update, approve, dsb."
+        />
+      )}
       <div className="flex flex-wrap items-center gap-2" data-testid="audit-toolbar">
-        <Input placeholder="Filter entity_type" value={q.entity_type}
+        <Input placeholder="Entitas (mis. auth, daily_sales)" value={q.entity_type}
+               aria-label="Filter entitas"
                onChange={e => setQ({...q, entity_type: e.target.value})}
-               className="glass-input h-10 max-w-[160px]"
+               onKeyDown={onFilterKey}
+               className="glass-input max-w-[220px]"
                data-testid="audit-filter-entity" />
-        <Input placeholder="Filter action" value={q.action}
+        <Input placeholder="Aksi (mis. login, create)" value={q.action}
+               aria-label="Filter aksi"
                onChange={e => setQ({...q, action: e.target.value})}
-               className="glass-input h-10 max-w-[160px]"
+               onKeyDown={onFilterKey}
+               className="glass-input max-w-[200px]"
                data-testid="audit-filter-action" />
-        <Button onClick={() => { setPage(1); load(); }} className="rounded-full pill-active gap-2"
+        <Button variant="outline" onClick={applyFilter}
                 data-testid="audit-refresh">
-          <RefreshCw className="h-4 w-4" /> Refresh
+          <RefreshCw /> Terapkan &amp; muat ulang
         </Button>
         <InlineHelp id="audit-log-filter" size="xs" placement="right" />
       </div>
@@ -62,10 +78,10 @@ export default function AuditLog() {
         <DataTable
           columns={[
             { key: "timestamp", label: "Waktu", primary: true, sortable: true, render: (e) => (<div className="text-xs whitespace-nowrap"><div>{fmtDateTime(e.timestamp)}</div><div className="text-muted-foreground">{fmtRelative(e.timestamp)}</div></div>) },
-            { key: "user_id", label: "User", render: (e) => <span className="text-xs font-mono text-muted-foreground">{(e.user_id || "—").slice(0, 8)}…</span> },
-            { key: "entity_type", label: "Entity", sortable: true, render: (e) => <span className="text-xs">{e.entity_type}</span> },
-            { key: "action", label: "Action", sortable: true, render: (e) => <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", ACTION_COLORS[e.action] || "bg-foreground/10")}>{e.action}</span> },
-            { key: "entity_id", label: "ID", render: (e) => <span className="text-xs font-mono text-muted-foreground">{(e.entity_id || "—").slice(0, 8)}…</span> },
+            { key: "user_id", label: "User", render: (e) => <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.user_id || ""}>{(e.user_id || "—").slice(0, 8)}…</span> },
+            { key: "entity_type", label: "Entitas", sortable: true, render: (e) => <span className="text-xs">{e.entity_type}</span> },
+            { key: "action", label: "Aksi", sortable: true, render: (e) => <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", ACTION_COLORS[e.action] || "bg-foreground/10")}>{e.action}</span> },
+            { key: "entity_id", label: "ID", render: (e) => <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.entity_id || ""}>{(e.entity_id || "—").slice(0, 8)}…</span> },
           ]}
           rows={items}
           loading={loading}
@@ -74,12 +90,12 @@ export default function AuditLog() {
           rowTestIdPrefix="audit-row"
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="audit-prev">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="audit-next">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="audit-prev">Sebelumnya</Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="audit-next">Berikutnya</Button>
             </div>
           </div>
         )}

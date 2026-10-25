@@ -52,9 +52,9 @@ export default function WhatsAppTestPanel() {
           <Phone className="h-4 w-4" />
         </span>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm">Test WhatsApp</h3>
+          <h3 className="font-semibold text-sm">Tes WhatsApp</h3>
           <p className="text-[11px] text-muted-foreground">
-            Active: <span className="font-mono">{info.provider}</span>
+            Provider aktif: <span className="font-medium text-foreground/80">{info.provider}</span>
           </p>
         </div>
         <IntegrationStatusPill status={status} size="sm" />
@@ -62,23 +62,23 @@ export default function WhatsAppTestPanel() {
 
       <div className="space-y-3">
         <div>
-          <Label className="text-xs">To (phone number)</Label>
-          <Input value={to} onChange={(e) => setTo(e.target.value)}
+          <Label htmlFor="wa-test-to" className="text-xs md:text-sm font-medium">Nomor tujuan</Label>
+          <Input id="wa-test-to" value={to} onChange={(e) => setTo(e.target.value)}
                  placeholder="+628123456789 atau 08123..."
-                 className="font-mono text-xs mt-1"
+                 className="text-xs mt-1"
                  data-testid="wa-test-to" />
         </div>
 
         <div>
-          <Label className="text-xs">Message</Label>
-          <Textarea value={message} onChange={(e) => setMessage(e.target.value)}
-                    rows={2} className="text-xs mt-1" />
+          <Label htmlFor="wa-test-message" className="text-xs md:text-sm font-medium">Pesan</Label>
+          <Textarea id="wa-test-message" value={message} onChange={(e) => setMessage(e.target.value)}
+                    rows={2} className="text-xs mt-1" data-testid="wa-test-message" />
         </div>
 
         <Button size="sm" onClick={test} disabled={busy || !to.trim() || !message.trim()}
-                className="w-full gap-1" data-testid="wa-test-send">
-          <Send className="h-3.5 w-3.5" />
-          {busy ? "Sending…" : "Send Test WhatsApp"}
+                className="w-full" data-testid="wa-test-send">
+          <Send />
+          {busy ? "Mengirim…" : "Kirim Tes WhatsApp"}
         </Button>
 
         {result && (
@@ -89,7 +89,7 @@ export default function WhatsAppTestPanel() {
 
         <div className="text-[11px] text-muted-foreground space-y-1">
           <p>
-            💡 Pilih provider:
+            Pilihan provider:
           </p>
           <ul className="list-disc ml-5 space-y-0.5">
             <li><b>fonnte</b> — paling simple buat Indonesia, butuh device aktif (<a href="https://fonnte.com" target="_blank" rel="noreferrer" className="underline">fonnte.com</a>)</li>

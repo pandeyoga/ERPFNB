@@ -21,6 +21,7 @@ import {
   Sparkles,
   ChevronRight,
   RefreshCw,
+  MousePointerClick,
 } from "lucide-react";
 
 import api, { unwrap } from "@/lib/api";
@@ -43,6 +44,8 @@ import {
 } from "@/components/ui/dialog";
 import { getTourMetadata } from "@/contexts/tour/tourMap";
 import { toast } from "sonner";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 
 const PERIODS = [
   { value: "7", label: "7 hari" },
@@ -70,7 +73,17 @@ function fmtDuration(ms) {
   return `${m}m ${rs}s`;
 }
 
-export default function TourAnalytics() {
+/** Ikon tour seragam (lucide) — emoji dari tourMap tidak dirender di UI admin. */
+function TourIcon({ className = "h-4 w-4" }) {
+  return (
+    <span className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <MousePointerClick className={className} />
+    </span>
+  );
+}
+
+/** embedded=true saat dirender di hub Monitoring (/admin/operations/tour-analytics). */
+export default function TourAnalytics({ embedded = false }) {
   const [days, setDays] = useState("30");
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,91 +127,57 @@ export default function TourAnalytics() {
     return { topPerformers: top, needAttention: attn };
   }, [tours]);
 
+  const intro = "Lacak penggunaan & efektivitas panduan interaktif di seluruh sistem.";
+  const headerActions = (
+    <>
+      <Select value={days} onValueChange={setDays}>
+        <SelectTrigger className="w-32" aria-label="Periode" data-testid="ta-period-select">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {PERIODS.map((p) => (
+            <SelectItem key={p.value} value={p.value}>
+              {p.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        variant="outline"
+        onClick={() => loadData(true)}
+        disabled={refreshing}
+        data-testid="ta-refresh"
+      >
+        <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        Muat ulang
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-6" data-testid="tour-analytics-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="tour-analytics-page">
       {/* Header */}
-      <div className="glass-card p-6">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <span className="h-10 w-10 rounded-xl grad-aurora flex items-center justify-center text-white">
-              <BarChart3 className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-xl font-bold mb-0.5">Tour Analytics</h2>
-              <p className="text-sm text-muted-foreground">
-                Lacak penggunaan & efektivitas panduan interaktif di seluruh sistem.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Select value={days} onValueChange={setDays}>
-              <SelectTrigger className="w-32" data-testid="ta-period-select">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PERIODS.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>
-                    {p.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadData(true)}
-              disabled={refreshing}
-              data-testid="ta-refresh"
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${refreshing ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
+      {embedded ? (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-muted-foreground">{intro}</p>
+          <div className="flex gap-2">{headerActions}</div>
         </div>
-      </div>
+      ) : (
+        <PageHeader icon={BarChart3} title="Tour Analytics" subtitle={intro} actions={headerActions} />
+      )}
 
       {/* Global KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4" data-testid="ta-global-kpis">
-        <KpiCard
-          label="Tour Dimulai"
-          value={fmtNum(totals.total_starts || 0)}
-          icon={Play}
-          color="blue"
-          loading={loading}
-        />
-        <KpiCard
-          label="Selesai"
-          value={fmtNum(totals.total_completes || 0)}
-          icon={CheckCircle2}
-          color="emerald"
-          loading={loading}
-        />
-        <KpiCard
-          label="Diskip"
-          value={fmtNum(totals.total_skips || 0)}
-          icon={XCircle}
-          color="amber"
-          loading={loading}
-        />
-        <KpiCard
-          label="Completion Rate"
-          value={fmtPct(totals.completion_rate)}
-          icon={TrendingUp}
-          color="purple"
-          loading={loading}
-        />
-        <KpiCard
-          label="Unique Users"
-          value={fmtNum(totals.unique_users || 0)}
-          icon={Users}
-          color="slate"
-          loading={loading}
-        />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-testid="ta-global-kpis">
+        <CompactStatCard label="Tour Dimulai" value={fmtNum(totals.total_starts || 0)} icon={Play} color="aurora-3" loading={loading} />
+        <CompactStatCard label="Selesai" value={fmtNum(totals.total_completes || 0)} icon={CheckCircle2} color="aurora-4" loading={loading} />
+        <CompactStatCard label="Diskip" value={fmtNum(totals.total_skips || 0)} icon={XCircle} color="aurora-5" loading={loading} />
+        <CompactStatCard label="Completion Rate" value={fmtPct(totals.completion_rate)} icon={TrendingUp} color="aurora-2" loading={loading} />
+        <CompactStatCard label="Unique Users" value={fmtNum(totals.unique_users || 0)} icon={Users} color="aurora-1" loading={loading} />
       </div>
 
       {/* Top performers + needs attention */}
       {!loading && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
           <PerformerCard
             title="Tour Performa Terbaik"
             subtitle="Tingkat penyelesaian tertinggi (min. 3 starts)"
@@ -224,7 +203,7 @@ export default function TourAnalytics() {
       <div className="glass-card overflow-hidden" data-testid="ta-tour-table">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
-            <h3 className="font-semibold">Semua Tour</h3>
+            <h3 className="text-sm md:text-base font-semibold">Semua Tour</h3>
             <p className="text-xs text-muted-foreground">
               Klik baris untuk lihat detail drop-off per step
             </p>
@@ -237,7 +216,7 @@ export default function TourAnalytics() {
               sortAccessor: (t) => getTourMetadata(t.tour_id)?.title || t.tour_id,
               render: (t) => (
                 <div className="flex items-center gap-2">
-                  <span className="text-base">{getTourMetadata(t.tour_id)?.icon || "📊"}</span>
+                  <TourIcon className="h-3.5 w-3.5" />
                   <div>
                     <p className="font-medium text-sm">{getTourMetadata(t.tour_id)?.title || t.tour_id}</p>
                     <p className="text-xs text-muted-foreground">{t.tour_id}</p>
@@ -275,39 +254,18 @@ export default function TourAnalytics() {
 // ============================================================
 // Helper components
 // ============================================================
-function KpiCard({ label, value, icon: Icon, color, loading }) {
-  const colorMap = {
-    blue: "from-blue-500/15 to-blue-500/5 text-blue-600",
-    emerald: "from-emerald-500/15 to-emerald-500/5 text-emerald-600",
-    amber: "from-amber-500/15 to-amber-500/5 text-amber-600",
-    purple: "from-purple-500/15 to-purple-500/5 text-purple-600",
-    slate: "from-slate-500/15 to-slate-500/5 text-slate-600",
-  };
-  return (
-    <div className="glass-card p-4">
-      <div className={`inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br mb-2 ${colorMap[color] || colorMap.slate}`}>
-        <Icon className="h-4 w-4" />
-      </div>
-      <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      <p className="text-2xl font-bold tabular-nums">
-        {loading ? "…" : value}
-      </p>
-    </div>
-  );
-}
-
 function PerformerCard({ title, subtitle, icon: Icon, color, tours, emptyText, onSelect }) {
   const colorMap = {
     emerald: "from-emerald-500 to-teal-500",
     amber: "from-amber-500 to-orange-500",
   };
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-1">
         <span className={`h-8 w-8 rounded-lg flex items-center justify-center text-white bg-gradient-to-br ${colorMap[color]}`}>
           <Icon className="h-4 w-4" />
         </span>
-        <h3 className="font-semibold">{title}</h3>
+        <h3 className="text-sm md:text-base font-semibold">{title}</h3>
       </div>
       <p className="text-xs text-muted-foreground mb-3">{subtitle}</p>
       {tours.length === 0 ? (
@@ -316,13 +274,14 @@ function PerformerCard({ title, subtitle, icon: Icon, color, tours, emptyText, o
         <div className="space-y-2">
           {tours.map((t) => (
             <button
+              type="button"
               key={t.tour_id}
               onClick={() => onSelect(t.tour_id)}
               className="w-full flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left"
               data-testid={`ta-performer-${t.tour_id}`}
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-lg">{getTourMetadata(t.tour_id)?.icon || "📊"}</span>
+                <TourIcon />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
                     {getTourMetadata(t.tour_id)?.title || t.tour_id}
@@ -400,11 +359,11 @@ function TourDetailDialog({ tourId, days, onClose }) {
       <DialogContent className="max-w-2xl" data-testid="ta-detail-dialog">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{meta?.icon || "📊"}</span>
+            <TourIcon />
             {meta?.title || tourId}
           </DialogTitle>
           <DialogDescription>
-            {meta?.description} · Last {days} days
+            {meta?.description} · {days} hari terakhir
           </DialogDescription>
         </DialogHeader>
 
@@ -413,31 +372,19 @@ function TourDetailDialog({ tourId, days, onClose }) {
         ) : (
           <div className="space-y-4">
             {/* Quick stats */}
-            <div className="grid grid-cols-4 gap-2">
-              <MiniStat label="Starts" value={fmtNum(detail.starts)} />
-              <MiniStat
-                label="Completes"
-                value={fmtNum(detail.completes)}
-                color="text-emerald-600"
-              />
-              <MiniStat
-                label="Skips"
-                value={fmtNum(detail.skips)}
-                color="text-amber-600"
-              />
-              <MiniStat
-                label="Completion"
-                value={fmtPct(detail.completion_rate)}
-                color="text-purple-600"
-              />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <CompactStatCard size="sm" label="Starts" value={fmtNum(detail.starts)} />
+              <CompactStatCard size="sm" label="Completes" value={fmtNum(detail.completes)} tone="success" />
+              <CompactStatCard size="sm" label="Skips" value={fmtNum(detail.skips)} tone="warning" />
+              <CompactStatCard size="sm" label="Completion" value={fmtPct(detail.completion_rate)} tone="info" />
             </div>
 
             {/* Step views drop-off */}
             <div>
-              <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+              <h3 className="text-sm md:text-base font-semibold mb-2 flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
                 Step View Pattern
-              </h4>
+              </h3>
               {detail.step_views.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   Belum ada step view event.
@@ -471,10 +418,10 @@ function TourDetailDialog({ tourId, days, onClose }) {
             {/* Skip drop-off */}
             {detail.skip_dropoffs.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1.5 text-amber-600">
+                <h3 className="text-sm md:text-base font-semibold mb-2 flex items-center gap-1.5 text-amber-600">
                   <TrendingDown className="h-4 w-4" />
                   Skip Drop-off (langkah dimana user keluar)
-                </h4>
+                </h3>
                 <div className="space-y-1.5">
                   {detail.skip_dropoffs.map((s) => (
                     <div key={s.step} className="flex items-center gap-2">
@@ -505,14 +452,5 @@ function TourDetailDialog({ tourId, days, onClose }) {
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function MiniStat({ label, value, color = "" }) {
-  return (
-    <div className="bg-muted/40 rounded-lg p-3">
-      <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-      <p className={`text-lg font-bold tabular-nums ${color}`}>{value}</p>
-    </div>
   );
 }

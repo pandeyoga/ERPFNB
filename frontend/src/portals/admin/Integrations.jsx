@@ -20,6 +20,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import api, { unwrap } from "@/lib/api";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import IntegrationStatusPill from "@/components/shared/IntegrationStatusPill";
 import IntegrationSettingsList from "@/components/shared/IntegrationSettingsList";
 import TelegramTestPanel from "./integrations/TelegramTestPanel";
@@ -83,65 +85,51 @@ export default function Integrations() {
   const goTab = (id) => navigate(`/admin/integrations/${id}`);
 
   return (
-    <div data-testid="admin-integrations-page">
-      <div className="glass-card p-5 mb-5" data-testid="admin-integrations-header">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="h-10 w-10 rounded-xl grad-aurora flex items-center justify-center text-white">
-            <Plug className="h-5 w-5" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-semibold">Integrations Hub</h2>
-            <p className="text-xs text-muted-foreground">
-              Atur API keys & credentials (Telegram, WhatsApp, Email, AI, dll) langsung dari sini.
-              Semua nilai rahasia disimpan terenkripsi.
-            </p>
-          </div>
-        </div>
+    <div className="space-y-3" data-testid="admin-integrations-page">
+      <div data-testid="admin-integrations-header">
+        <PageHeader
+          icon={Plug}
+          title="Integrations"
+          subtitle="Atur API key & kredensial (Telegram, WhatsApp, Email, AI, dll). Semua nilai rahasia disimpan terenkripsi."
+        />
 
-        {/* Tab strip */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-thin" data-testid="admin-integrations-tabs">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            const isActive = activeTab.id === t.id;
-            const stat = tabStatuses[t.id] || { total: 0, set: 0 };
-            return (
-              <button
-                key={t.id}
-                onClick={() => goTab(t.id)}
-                data-testid={`integration-tab-${t.id}`}
-                className={cn(
-                  "px-3.5 py-2 rounded-full text-sm flex items-center gap-2 whitespace-nowrap transition-colors",
-                  isActive
-                    ? "bg-foreground text-background font-semibold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {t.label}
-                {stat.total > 0 && (
-                  <span className={cn(
-                    "px-1.5 rounded-full text-[11px] font-mono",
-                    isActive ? "bg-background/20" : "bg-muted",
-                    stat.set === stat.total && stat.total > 0 && !isActive && "bg-emerald-100 text-emerald-700",
-                  )}>
-                    {stat.set}/{stat.total}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {/* Tab strip — gaya Tabs standar; angka = jumlah setting terisi / total */}
+        <Tabs value={activeTab.id} onValueChange={goTab}>
+          <TabsList data-testid="admin-integrations-tabs">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const stat = tabStatuses[t.id] || { total: 0, set: 0 };
+              const complete = stat.total > 0 && stat.set === stat.total;
+              return (
+                <TabsTrigger key={t.id} value={t.id} data-testid={`integration-tab-${t.id}`}>
+                  <Icon /> {t.label}
+                  {stat.total > 0 && (
+                    <span
+                      className={cn(
+                        "px-1.5 rounded-full text-[11px] tabular-nums bg-foreground/10",
+                        complete && "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+                      )}
+                      title={`${stat.set} dari ${stat.total} setting terisi`}
+                    >
+                      {stat.set}/{stat.total}
+                    </span>
+                  )}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
       </div>
 
       {loading ? (
         <LoadingState rows={5} />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5" data-testid="integration-content">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 lg:gap-4 items-start" data-testid="integration-content">
           <div className="xl:col-span-2" data-testid="integration-settings-list">
             {filteredItems.length === 0 ? (
               <EmptyState
                 title="Belum ada setting di kategori ini"
-                description="Pakai tab 'Lainnya' untuk lihat custom settings, atau cek dokumentasi."
+                description="Buka tab 'Lainnya' untuk melihat setting custom, atau cek dokumentasi."
               />
             ) : (
               <IntegrationSettingsList
@@ -150,7 +138,7 @@ export default function Integrations() {
               />
             )}
           </div>
-          <div className="space-y-5">
+          <div className="space-y-3">
             {/* Right rail: per-tab test panel */}
             {activeTab.id === "telegram" && <TelegramTestPanel onReload={() => setReloadKey((k) => k + 1)} />}
             {activeTab.id === "whatsapp" && <WhatsAppTestPanel onReload={() => setReloadKey((k) => k + 1)} />}

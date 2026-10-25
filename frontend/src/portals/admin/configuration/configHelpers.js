@@ -1,12 +1,13 @@
 /** Helpers shared by /admin/configuration/* pages. */
 import { fmtDate } from "@/lib/format";
 
+// Nama jenis aturan = nama tab di /admin/configuration (istilah ERP berbahasa Inggris).
 export const RULE_LABELS = {
-  sales_input_schema: "Skema Penjualan",
-  petty_cash_policy: "Kebijakan Kas Kecil",
-  service_charge_policy: "Service Charge",
-  incentive_policy: "Skema Insentif",
-  anomaly_threshold_policy: "Threshold Deteksi Anomali",
+  sales_input_schema: "Sales Schema",
+  petty_cash_policy: "Petty Cash Policy",
+  service_charge_policy: "Service Charge Policy",
+  incentive_policy: "Incentive Scheme",
+  anomaly_threshold_policy: "Anomaly Threshold",
 };
 
 export function ruleStatus(rule) {

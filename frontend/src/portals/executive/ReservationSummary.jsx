@@ -4,12 +4,19 @@
 import { useState, useEffect } from "react";
 import {
   CalendarCheck, Users, Clock,
-  RefreshCw, Loader2, UserCheck,
+  RefreshCw, UserCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import LoadingState from "@/components/shared/LoadingState";
+import StatusPill from "@/components/shared/StatusPill";
+import EmptyState from "@/components/shared/EmptyState";
+import { fmtNumber } from "@/lib/format";
 import api from "@/lib/api";
 import { toast } from "sonner";
 
@@ -21,13 +28,6 @@ const STATUS_LABELS = {
   no_show: "Tidak Hadir",
 };
 
-const STATUS_COLORS = {
-  pending: "text-amber-600",
-  confirmed: "text-blue-600",
-  completed: "text-green-600",
-  cancelled: "text-red-600",
-  no_show: "text-gray-500",
-};
 
 export default function ReservationSummary() {
   const [summary, setSummary] = useState(null);
@@ -61,73 +61,47 @@ export default function ReservationSummary() {
   const statuses = Object.keys(STATUS_LABELS);
 
   return (
-    <div className="p-6 space-y-6" data-testid="reservation-summary-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Ringkasan Reservasi</h1>
-          <p className="text-gray-500 text-sm mt-1">Statistik dan performa reservasi semua outlet</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load} data-testid="reservation-refresh">
-          <RefreshCw className="w-4 h-4" />
-        </Button>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="reservation-summary-page">
+      <PageHeader
+        icon={CalendarCheck}
+        title="Reservations"
+        subtitle="Statistik dan performa reservasi semua outlet"
+        className="mb-0 md:mb-0"
+        actions={
+          <Button variant="outline" onClick={load} disabled={loading} data-testid="reservation-refresh">
+            <RefreshCw className={loading ? "animate-spin" : undefined} /> Muat ulang
+          </Button>
+        }
+      />
 
       {/* Filters */}
-      <div className="flex gap-3" data-testid="reservation-filters">
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Dari</label>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[140px]" data-testid="filter-date-from" />
+      <div className="glass-card p-3 flex flex-wrap items-end gap-3" data-testid="reservation-filters">
+        <div className="space-y-1">
+          <Label htmlFor="reservation-date-from" className="text-xs md:text-sm font-medium">Dari</Label>
+          <Input id="reservation-date-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[160px]" data-testid="filter-date-from" />
         </div>
-        <div>
-          <label className="text-xs text-gray-500 mb-1 block">Sampai</label>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[140px]" data-testid="filter-date-to" />
+        <div className="space-y-1">
+          <Label htmlFor="reservation-date-to" className="text-xs md:text-sm font-medium">Sampai</Label>
+          <Input id="reservation-date-to" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[160px]" data-testid="filter-date-to" />
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div>
+        <LoadingState rows={4} />
       ) : summary ? (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" data-testid="reservation-kpi-cards">
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-3xl font-bold text-gray-900 tabular-nums">{summary.total}</p>
-                <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-                  <CalendarCheck className="w-4 h-4" /> Total Reservasi
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-3xl font-bold text-blue-600 tabular-nums">{summary.upcoming}</p>
-                <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-                  <Clock className="w-4 h-4" /> Akan Datang
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-3xl font-bold text-green-600 tabular-nums">{summary.by_status?.completed?.count || 0}</p>
-                <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-                  <UserCheck className="w-4 h-4" /> Selesai
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-3xl font-bold text-amber-600 tabular-nums">{summary.total_pax}</p>
-                <p className="text-gray-500 text-sm mt-1 flex items-center justify-center gap-1">
-                  <Users className="w-4 h-4" /> Total Tamu
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="reservation-kpi-cards">
+            <CompactStatCard testId="reservation-kpi-total" label="Total Reservasi" value={fmtNumber(summary.total)} icon={CalendarCheck} color="aurora-1" />
+            <CompactStatCard testId="reservation-kpi-upcoming" label="Akan Datang" value={fmtNumber(summary.upcoming)} icon={Clock} color="aurora-3" tone="info" />
+            <CompactStatCard testId="reservation-kpi-completed" label="Selesai" value={fmtNumber(summary.by_status?.completed?.count || 0)} icon={UserCheck} color="aurora-4" tone="success" />
+            <CompactStatCard testId="reservation-kpi-pax" label="Total Tamu" value={fmtNumber(summary.total_pax)} icon={Users} color="aurora-5" tone="warning" />
           </div>
 
           {/* Status Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Status Breakdown</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Status Breakdown</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {statuses.map(s => {
@@ -135,16 +109,16 @@ export default function ReservationSummary() {
                     const count = data?.count || 0;
                     const pct = summary.total > 0 ? Math.round(count / summary.total * 100) : 0;
                     return (
-                      <div key={s} className="flex items-center justify-between">
-                        <span className={`text-sm font-medium ${STATUS_COLORS[s]}`}>{STATUS_LABELS[s]}</span>
+                      <div key={s} className="flex items-center justify-between gap-3">
+                        <StatusPill status={s} label={STATUS_LABELS[s]} />
                         <div className="flex items-center gap-3">
-                          <div className="w-32 bg-gray-100 rounded-full h-2">
+                          <div className="w-32 bg-muted rounded-full h-2">
                             <div
                               className="bg-amber-500 h-2 rounded-full transition-all"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-sm text-gray-500 w-16 text-right tabular-nums">{count} ({pct}%)</span>
+                          <span className="text-sm text-muted-foreground w-16 text-right tabular-nums">{count} ({pct}%)</span>
                         </div>
                       </div>
                     );
@@ -155,19 +129,19 @@ export default function ReservationSummary() {
 
             {/* By Outlet */}
             <Card>
-              <CardHeader><CardTitle className="text-base">Per Outlet</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Per Outlet</CardTitle></CardHeader>
               <CardContent className="p-0">
                 <DataTable
                   columns={[
                     { key: "outlet_name", label: "Outlet", primary: true, sortable: true, render: (o) => <span className="font-medium">{o.outlet_name}</span> },
                     { key: "count", label: "Reservasi", numeric: true, sortable: true },
                     { key: "pax", label: "Tamu", numeric: true, sortable: true },
-                    { key: "completed", label: "Selesai", numeric: true, sortable: true, render: (o) => <span className="text-green-600">{o.completed}</span> },
+                    { key: "completed", label: "Selesai", numeric: true, sortable: true, render: (o) => <span className="text-green-600 dark:text-green-400">{o.completed}</span> },
                   ]}
                   rows={summary.by_outlet || []}
                   keyField="outlet_id"
                   defaultSort={{ key: "count", dir: "desc" }}
-                  empty={<p className="text-gray-400 text-sm p-4" data-testid="reservation-outlet-empty">Belum ada data</p>}
+                  empty={<p className="text-muted-foreground text-sm p-4" data-testid="reservation-outlet-empty">Belum ada reservasi pada rentang tanggal ini.</p>}
                   rowTestIdPrefix="reservation-outlet-row"
                 />
               </CardContent>
@@ -175,7 +149,9 @@ export default function ReservationSummary() {
           </div>
         </>
       ) : (
-        <p className="text-gray-400 text-center py-12">Tidak ada data</p>
+        <div className="glass-card">
+          <EmptyState icon={CalendarCheck} title="Tidak ada data" description="Ringkasan reservasi belum tersedia untuk rentang tanggal ini." />
+        </div>
       )}
     </div>
   );

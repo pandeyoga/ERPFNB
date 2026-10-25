@@ -1,30 +1,90 @@
-/** TaxCenter/index.jsx — main TaxCenter orchestrator. */
+/** TaxCenter/index.jsx — main TaxCenter orchestrator.
+ *
+ * Dua mode:
+ *  - standalone (/finance/tax-center): PageHeader "Tax Center" + Tabs PPN/PPh.
+ *  - embedded (di FinanceTaxHub, prop `section`): hanya panel pajak yang dipilih —
+ *    tanpa judul & tanpa baris tab kedua (tab sudah ada di hub).
+ */
 import { useEffect, useState, useCallback } from "react";
-import { Receipt, ToggleLeft, ToggleRight, Calculator, ChevronDown, ChevronRight,
-         AlertTriangle, CheckCircle2, Info, RefreshCw, TrendingDown, FileDown } from "lucide-react";
+import { Receipt, Calculator, AlertTriangle, Info, RefreshCw, FileDown, Users, UserCheck, Wallet } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
-import { fmtRp, fmtDate } from "@/lib/format";
+import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import LoadingState from "@/components/shared/LoadingState";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 
 // ───── helpers ────────────────────────────────────────────────────────
-import { TABS, PPH_LABELS, fmtRpShort, ToggleSwitch, RateInput, badgeColor, colMap } from "./constants";
+import { TABS, PPH_LABELS, TONE_TEXT, NOTE_TONE, RateInput } from "./constants";
 import PPh21Calculator from "./PPh21Calculator";
 import { WithholdingCalcPreview, BracketsTable, WithholdingSummaryTable, ServiceTypeList } from "./WithholdingComponents";
 
-export default function TaxCenter() {
-  const [activeTab, setActiveTab] = useState("ppn");
+/** Header kartu konfigurasi pajak: nama + dasar hukum + switch Aktif/Nonaktif. */
+function TaxCardHeader({ taxId, color, enabled, saving, onToggle }) {
+  const switchId = `${taxId}-toggle-switch`;
+  return (
+    <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="min-w-0">
+        <h3 className="text-sm md:text-base font-semibold">{PPH_LABELS[taxId].full}</h3>
+        <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{PPH_LABELS[taxId].law}</p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Label htmlFor={switchId} className={cn("text-sm font-medium", enabled ? TONE_TEXT[color] : "text-muted-foreground")}>
+          {enabled ? "Aktif" : "Nonaktif"}
+        </Label>
+        <Switch
+          id={switchId}
+          checked={!!enabled}
+          onCheckedChange={onToggle}
+          disabled={saving}
+          data-testid={`${taxId}-toggle`}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Catatan info bertint (pengganti kotak bg-*-50 yang tidak ramah dark mode). */
+function InfoNote({ color, title, children }) {
+  return (
+    <div className={cn("rounded-lg border p-3 text-sm", NOTE_TONE[color])}>
+      <div className="flex items-start gap-2">
+        <Info className="h-4 w-4 mt-0.5 shrink-0" />
+        <div className="space-y-1">
+          <p className="font-medium">{title}</p>
+          <div className="space-y-1 opacity-90">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryCard({ title, testId, year }) {
+  return (
+    <div data-testid={testId} className="glass-card p-4">
+      <h3 className="text-sm md:text-base font-semibold mb-3">{title}</h3>
+      <WithholdingSummaryTable year={year} />
+    </div>
+  );
+}
+
+export default function TaxCenter({ embedded = false, section }) {
+  const [activeTab, setActiveTab] = useState(section || "ppn");
   const [config, setConfig] = useState(null);
   const [types, setTypes] = useState({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [localRates, setLocalRates] = useState({});
   const curYear = String(new Date().getFullYear());
+
+  // Hub mengontrol section aktif (mode embedded)
+  useEffect(() => { if (section) setActiveTab(section); }, [section]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,10 +117,11 @@ export default function TaxCenter() {
     try {
       const toggleRes = await api.put("/tax/config", { [keyMap[taxType]]: String(enabled) });
       unwrap(toggleRes);
-      toast.success(`${taxType.toUpperCase()} ${enabled ? "diaktifkan" : "dinonaktifkan"}`);
+      const label = TABS.find(t => t.id === taxType)?.label || taxType.toUpperCase();
+      toast.success(`${label} ${enabled ? "diaktifkan" : "dinonaktifkan"}`);
       await load();
     } catch(e) {
-      toast.error("Gagal update: " + (e.message || ""));
+      toast.error("Gagal memperbarui: " + (e.message || ""));
     } finally {
       setSaving(false);
     }
@@ -73,7 +134,7 @@ export default function TaxCenter() {
       toast.success(`Tarif diperbarui → ${(value*100).toFixed(1)}%`);
       await load();
     } catch(e) {
-      toast.error("Gagal: " + (e.message || ""));
+      toast.error("Gagal menyimpan tarif: " + (e.message || ""));
     } finally {
       setSaving(false);
     }
@@ -83,101 +144,66 @@ export default function TaxCenter() {
     setSaving(true);
     try {
       const saveMethodRes = await api.put("/tax/config", { TAX_PPH21_METHOD: method }); unwrap(saveMethodRes);
-      toast.success(`Metode PPh 21 → ${method}`);
+      toast.success(`Metode PPh 21 → ${method === "gross_up" ? "Gross-Up" : "Gross"}`);
       await load();
     } catch(e) {
-      toast.error("Gagal: " + (e.message || ""));
+      toast.error("Gagal menyimpan metode: " + (e.message || ""));
     } finally {
       setSaving(false);
     }
   }
 
+  const header = !embedded && (
+    <PageHeader
+      icon={Calculator}
+      title="Tax Center"
+      subtitle="Konfigurasi PPN, PPh 21/23/4(2) sesuai regulasi pajak Indonesia"
+      testId="tax-center-header"
+    />
+  );
+
   if (loading) return (
-    <div data-testid="tax-center-page" className="space-y-6 pb-8">
+    <div data-testid="tax-center-page">
+      {header}
       <LoadingState rows={4} />
     </div>
   );
   if (!config) return null;
 
-  const activeInfo = TABS.find(t => t.id === activeTab);
-  const color = activeInfo?.color || "blue";
+  const current = section || activeTab;
 
   return (
-    <div data-testid="tax-center-page" className="space-y-6 pb-8">
-      {/* Header banner */}
-      <div data-testid="tax-center-header" className="rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700 text-white p-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Pusat Pajak</h2>
-            <p className="text-gray-300 text-sm mt-1">Konfigurasi PPN, PPh 21/23/4(2) — Sprint 1 Compliance Indonesia 2026</p>
-          </div>
-          <div className="flex gap-3">
-            {TABS.map(t => (
-              <div key={t.id} className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
-                badgeColor[t.color],
-                config[t.id]?.enabled
-                  ? "opacity-100"
-                  : "opacity-40 line-through"
-              )}>
-                {t.label}: {config[t.id]?.enabled ? "ON" : "OFF"}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div data-testid="tax-center-page">
+      {header}
 
-      {/* Tab nav */}
-      <div data-testid="tax-center-tabs" className="flex gap-2 border-b border-gray-200 pb-0">
-        {TABS.map(t => {
-          const Icon = t.Icon || Receipt;
-          const enabled = config[t.id]?.enabled;
-          return (
-            <button
-              key={t.id}
-              data-testid={`tax-tab-${t.id}`}
-              onClick={() => setActiveTab(t.id)}
-              className={cn(
-                "flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-t-lg transition-all border border-b-0",
-                activeTab === t.id
-                  ? cn(colMap[t.color], "border-current")
-                  : "text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50"
-              )}
-            >
-              <span className={cn(
-                "w-2 h-2 rounded-full",
-                enabled ? (t.color === "blue" ? "bg-blue-500" : t.color === "purple" ? "bg-purple-500" : t.color === "amber" ? "bg-amber-500" : "bg-rose-500") : "bg-gray-300"
-              )} />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Tab pajak — hanya di mode standalone (di hub, tab ada di FinanceTaxHub) */}
+      {!embedded && (
+        <Tabs value={current} onValueChange={setActiveTab} className="mb-3">
+          <TabsList data-testid="tax-center-tabs">
+            {TABS.map(t => {
+              const Icon = t.icon || Receipt;
+              const enabled = config[t.id]?.enabled;
+              return (
+                <TabsTrigger key={t.id} value={t.id} data-testid={`tax-tab-${t.id}`} title={enabled ? "Aktif" : "Nonaktif"}>
+                  <Icon />
+                  {t.label}
+                  <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", enabled ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+                  <span className="sr-only">{enabled ? "(aktif)" : "(nonaktif)"}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* PPN Panel */}
-      {activeTab === "ppn" && (
-        <div data-testid="ppn-panel" className="space-y-6">
-          <div data-testid="ppn-config-card" className="rounded-2xl border border-blue-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{PPH_LABELS.ppn.full}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{PPH_LABELS.ppn.law}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={cn("text-sm font-medium", config.ppn.enabled ? "text-blue-700" : "text-gray-400")}>
-                  {config.ppn.enabled ? "Aktif" : "Nonaktif"}
-                </span>
-                <ToggleSwitch
-                  data-testid="ppn-toggle"
-                  checked={config.ppn.enabled}
-                  onChange={(v) => toggleEnabled("ppn", v)}
-                  color="blue"
-                  disabled={saving}
-                />
-              </div>
-            </div>
+      {current === "ppn" && (
+        <div data-testid="ppn-panel" className="space-y-3 lg:space-y-4">
+          <div data-testid="ppn-config-card" className="glass-card p-4">
+            <TaxCardHeader taxId="ppn" color="blue" enabled={config.ppn.enabled} saving={saving}
+              onToggle={(v) => toggleEnabled("ppn", v)} />
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
               <div data-testid="ppn-rate-input">
                 <RateInput
                   label="Tarif PPN" keyName="TAX_PPN_RATE"
@@ -188,52 +214,33 @@ export default function TaxCenter() {
                   hint="Default: 0.12 (12%) sesuai Perpu 2/2024"
                 />
               </div>
-              <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
-                <div className="flex items-start gap-2">
-                  <Info size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium">PPN 12% berlaku efektif 1 Jan 2025</p>
-                    <p className="text-blue-600 mt-1">Sebelumnya 11% (UU HPP). Diubah menjadi 12% via Perpu 2/2024.</p>
-                    <p className="text-blue-600 mt-1">Tarif ini otomatis digunakan di form Daily Sales, GR, dan Payment.</p>
-                  </div>
-                </div>
-              </div>
+              <InfoNote color="blue" title="PPN 12% berlaku efektif 1 Jan 2025">
+                <p>Sebelumnya 11% (UU HPP). Diubah menjadi 12% via Perpu 2/2024.</p>
+                <p>Tarif ini otomatis digunakan di form Daily Sales, GR, dan Payment.</p>
+              </InfoNote>
             </div>
 
             {!config.ppn.enabled && (
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                <AlertTriangle size={16} />
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
                 <span>PPN dinonaktifkan. Semua transaksi baru <b>tidak</b> akan dikenakan PPN hingga diaktifkan kembali.</span>
               </div>
             )}
           </div>
-          <div className="rounded-2xl border bg-white p-6">
-            <h4 className="font-semibold mb-4">Riwayat Withholding</h4>
-            <WithholdingSummaryTable year={curYear} />
-          </div>
+          <HistoryCard title="Riwayat Withholding" year={curYear} />
         </div>
       )}
 
       {/* PPh 21 Panel */}
-      {activeTab === "pph21" && (
-        <div data-testid="pph21-panel" className="space-y-6">
-          <div data-testid="pph21-config-card" className="rounded-2xl border border-purple-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{PPH_LABELS.pph21.full}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{PPH_LABELS.pph21.law}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={cn("text-sm font-medium", config.pph21.enabled ? "text-purple-700" : "text-gray-400")}>
-                  {config.pph21.enabled ? "Aktif" : "Nonaktif"}
-                </span>
-                <ToggleSwitch data-testid="pph21-toggle" checked={config.pph21.enabled} onChange={v => toggleEnabled("pph21", v)} color="purple" disabled={saving} />
-              </div>
-            </div>
+      {current === "pph21" && (
+        <div data-testid="pph21-panel" className="space-y-3 lg:space-y-4">
+          <div data-testid="pph21-config-card" className="glass-card p-4">
+            <TaxCardHeader taxId="pph21" color="purple" enabled={config.pph21.enabled} saving={saving}
+              onToggle={(v) => toggleEnabled("pph21", v)} />
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              <div data-testid="pph21-method-selector" className="space-y-2">
-                <Label>Metode Perhitungan</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-4">
+              <div data-testid="pph21-method-selector" className="space-y-2" role="group" aria-labelledby="pph21-method-label">
+                <p id="pph21-method-label" className="text-xs md:text-sm font-medium">Metode Perhitungan</p>
                 <div className="flex gap-3">
                   {[
                     { v: "gross",    label: "Gross",    desc: "Pajak ditanggung karyawan (dipotong gaji)" },
@@ -241,33 +248,29 @@ export default function TaxCenter() {
                   ].map(m => (
                     <button
                       key={m.v}
+                      type="button"
+                      aria-pressed={config.pph21.method === m.v}
                       data-testid={`pph21-method-${m.v}`}
                       onClick={() => saveMethod(m.v)}
                       disabled={!config.pph21.enabled || saving}
                       className={cn(
-                        "flex-1 rounded-xl border p-3 text-sm text-left transition-all",
+                        "flex-1 rounded-lg border p-3 text-sm text-left transition-colors",
                         config.pph21.method === m.v
-                          ? "border-purple-400 bg-purple-50 text-purple-800 font-medium"
-                          : "border-gray-200 hover:border-gray-300 text-gray-600",
+                          ? "border-violet-500/50 bg-violet-500/10 text-violet-800 dark:text-violet-200 font-medium"
+                          : "border-border hover:border-foreground/30 text-muted-foreground",
                         (!config.pph21.enabled || saving) && "opacity-50 cursor-not-allowed"
                       )}
                     >
                       <div className="font-semibold">{m.label}</div>
-                      <div className="text-xs mt-0.5 opacity-70">{m.desc}</div>
+                      <div className="text-xs mt-0.5 opacity-80">{m.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="rounded-xl bg-purple-50 border border-purple-200 p-4">
-                <div className="flex items-start gap-2">
-                  <Info size={16} className="text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-purple-800">
-                    <p className="font-medium">PPh 21 dipotong dari payroll</p>
-                    <p className="text-purple-600 mt-1">Saat payroll diproses, sistem otomatis menghitung PPh 21 per karyawan berdasarkan status PTKP dan gaji pokok.</p>
-                    <p className="text-purple-600 mt-1">JE: Dr Beban Gaji / Cr Gaji Bersih + Cr Utang PPh 21</p>
-                  </div>
-                </div>
-              </div>
+              <InfoNote color="purple" title="PPh 21 dipotong dari payroll">
+                <p>Saat payroll diproses, sistem otomatis menghitung PPh 21 per karyawan berdasarkan status PTKP dan gaji pokok.</p>
+                <p>JE: Dr Beban Gaji / Cr Gaji Bersih + Cr Utang PPh 21</p>
+              </InfoNote>
             </div>
 
             <BracketsTable brackets={config.pph21.brackets} />
@@ -278,54 +281,35 @@ export default function TaxCenter() {
           {/* e-SPT PPh21 Export (Sprint G) */}
           <PPh21SPTExport />
 
-          <div data-testid="pph21-history-card" className="rounded-2xl border bg-white p-6">
-            <h4 className="font-semibold mb-4">Riwayat PPh 21 (Payroll)</h4>
-            <WithholdingSummaryTable year={curYear} />
-          </div>
+          <HistoryCard title="Riwayat PPh 21 (Payroll)" testId="pph21-history-card" year={curYear} />
         </div>
       )}
 
       {/* PPh 23 Panel */}
-      {activeTab === "pph23" && (
-        <div data-testid="pph23-panel" className="space-y-6">
-          <div data-testid="pph23-config-card" className="rounded-2xl border border-amber-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{PPH_LABELS.pph23.full}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{PPH_LABELS.pph23.law}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={cn("text-sm font-medium", config.pph23.enabled ? "text-amber-700" : "text-gray-400")}>
-                  {config.pph23.enabled ? "Aktif" : "Nonaktif"}
-                </span>
-                <ToggleSwitch data-testid="pph23-toggle" checked={config.pph23.enabled} onChange={v => toggleEnabled("pph23", v)} color="amber" disabled={saving} />
-              </div>
-            </div>
+      {current === "pph23" && (
+        <div data-testid="pph23-panel" className="space-y-3 lg:space-y-4">
+          <div data-testid="pph23-config-card" className="glass-card p-4">
+            <TaxCardHeader taxId="pph23" color="amber" enabled={config.pph23.enabled} saving={saving}
+              onToggle={(v) => toggleEnabled("pph23", v)} />
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-4">
               <div data-testid="pph23-rate-input">
                 <RateInput
                   label="Tarif Default PPh 23" keyName="TAX_PPH23_RATE"
                   value={localRates.TAX_PPH23_RATE}
                   onChange={(k, v) => { setLocalRates(p => ({...p, [k]: v})); saveRate(k, v); }}
                   disabled={!config.pph23.enabled || saving}
-                  hint="Rate per jenis transaksi lihat tabel kanan"
+                  hint="Tarif per jenis transaksi: lihat tabel di bawah"
                 />
               </div>
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
-                <div className="flex items-start gap-2">
-                  <Info size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Dipotong saat bayar vendor</p>
-                    <p className="text-amber-700 mt-1">Aktifkan per payment di form Pembayaran. Pilih "Jenis PPh 23" dan sistem otomatis memotong dan membuat JE ke Utang PPh 23.</p>
-                    <p className="text-amber-700 mt-1">JE: Dr Beban / Cr Bank (net) + Cr Utang PPh 23</p>
-                  </div>
-                </div>
-              </div>
+              <InfoNote color="amber" title="Dipotong saat bayar vendor">
+                <p>Aktifkan per payment di form Pembayaran. Pilih "Jenis PPh 23" dan sistem otomatis memotong dan membuat JE ke Utang PPh 23.</p>
+                <p>JE: Dr Beban / Cr Bank (net) + Cr Utang PPh 23</p>
+              </InfoNote>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-medium text-sm text-gray-700">Jenis Transaksi &amp; Tarif</h4>
+              <h4 className="text-xs md:text-sm font-medium text-muted-foreground">Jenis Transaksi &amp; Tarif</h4>
               <div data-testid="pph23-service-types">
                 <ServiceTypeList types={types.pph23_service_types || []} color="amber" />
               </div>
@@ -340,31 +324,18 @@ export default function TaxCenter() {
             />
           </div>
 
-          <div data-testid="pph23-history-card" className="rounded-2xl border bg-white p-6">
-            <h4 className="font-semibold mb-4">Riwayat PPh 23</h4>
-            <WithholdingSummaryTable year={curYear} />
-          </div>
+          <HistoryCard title="Riwayat PPh 23" testId="pph23-history-card" year={curYear} />
         </div>
       )}
 
       {/* PPh 4(2) Panel */}
-      {activeTab === "pph42" && (
-        <div data-testid="pph42-panel" className="space-y-6">
-          <div data-testid="pph42-config-card" className="rounded-2xl border border-rose-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{PPH_LABELS.pph42.full}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{PPH_LABELS.pph42.law}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={cn("text-sm font-medium", config.pph42.enabled ? "text-rose-700" : "text-gray-400")}>
-                  {config.pph42.enabled ? "Aktif" : "Nonaktif"}
-                </span>
-                <ToggleSwitch data-testid="pph42-toggle" checked={config.pph42.enabled} onChange={v => toggleEnabled("pph42", v)} color="rose" disabled={saving} />
-              </div>
-            </div>
+      {current === "pph42" && (
+        <div data-testid="pph42-panel" className="space-y-3 lg:space-y-4">
+          <div data-testid="pph42-config-card" className="glass-card p-4">
+            <TaxCardHeader taxId="pph42" color="rose" enabled={config.pph42.enabled} saving={saving}
+              onToggle={(v) => toggleEnabled("pph42", v)} />
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-4">
               <div data-testid="pph42-rate-input">
                 <RateInput
                   label="Tarif Default PPh 4(2)" keyName="TAX_PPH42_RATE"
@@ -374,20 +345,14 @@ export default function TaxCenter() {
                   hint="Default: 0.10 (10%) untuk sewa bangunan"
                 />
               </div>
-              <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-800">
-                <div className="flex items-start gap-2">
-                  <Info size={16} className="text-rose-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Pajak final — tidak dapat dikreditkan</p>
-                    <p className="text-rose-700 mt-1">PPh 4(2) adalah pajak final. Berlaku untuk sewa tanah/bangunan, jasa konstruksi, dll.</p>
-                    <p className="text-rose-700 mt-1">JE: Dr Beban Sewa / Cr Bank (net) + Cr Utang PPh 4(2)</p>
-                  </div>
-                </div>
-              </div>
+              <InfoNote color="rose" title="Pajak final — tidak dapat dikreditkan">
+                <p>PPh 4(2) adalah pajak final. Berlaku untuk sewa tanah/bangunan, jasa konstruksi, dll.</p>
+                <p>JE: Dr Beban Sewa / Cr Bank (net) + Cr Utang PPh 4(2)</p>
+              </InfoNote>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-medium text-sm text-gray-700">Jenis &amp; Tarif PPh 4(2)</h4>
+              <h4 className="text-xs md:text-sm font-medium text-muted-foreground">Jenis &amp; Tarif PPh 4(2)</h4>
               <div data-testid="pph42-service-types">
                 <ServiceTypeList types={types.pph42_service_types || []} color="rose" />
               </div>
@@ -402,10 +367,7 @@ export default function TaxCenter() {
             />
           </div>
 
-          <div data-testid="pph42-history-card" className="rounded-2xl border bg-white p-6">
-            <h4 className="font-semibold mb-4">Riwayat PPh 4(2)</h4>
-            <WithholdingSummaryTable year={curYear} />
-          </div>
+          <HistoryCard title="Riwayat PPh 4(2)" testId="pph42-history-card" year={curYear} />
         </div>
       )}
     </div>
@@ -442,54 +404,44 @@ function PPh21SPTExport() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      toast.error("Gagal mengunduh: " + (e.message || "Unknown error"));
+      toast.error("Gagal mengunduh: " + (e.message || "Kesalahan tidak diketahui"));
     } finally { setDownloading(false); }
   };
 
   return (
-    <div data-testid="pph21-spt-export" className="rounded-2xl border border-purple-100 bg-purple-50 p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <FileDown size={18} className="text-purple-600" />
-        <h4 className="font-semibold text-purple-900">Export SPT Masa PPh 21</h4>
-      </div>
-      <p className="text-sm text-purple-700 mb-4">
-        Export data pemotongan PPh 21 dari payroll cycle dalam format CSV (kompatibel e-SPT DJP).
+    <div data-testid="pph21-spt-export" className="glass-card p-4">
+      <h3 className="text-sm md:text-base font-semibold flex items-center gap-2 mb-1">
+        <FileDown className="h-4 w-4 text-violet-600 dark:text-violet-300" /> Ekspor SPT Masa PPh 21
+      </h3>
+      <p className="text-xs md:text-sm text-muted-foreground mb-3">
+        Ekspor data pemotongan PPh 21 dari payroll cycle dalam format CSV (kompatibel e-SPT DJP).
       </p>
-      <div className="flex items-end gap-3 flex-wrap">
+      <div className="flex items-end gap-2 flex-wrap">
         <div className="space-y-1">
-          <label className="text-xs text-purple-700 font-medium">Periode</label>
-          <input
+          <Label htmlFor="spt-period-input" className="text-xs md:text-sm font-medium">Periode</Label>
+          <Input
+            id="spt-period-input"
             data-testid="spt-period-input"
             type="month"
             value={period}
             onChange={e => { setPeriod(e.target.value); setSummary(null); }}
-            className="rounded-lg border border-purple-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="w-44"
           />
         </div>
-        <Button data-testid="spt-load-summary" variant="outline" size="sm" onClick={loadSummary} disabled={loading} className="border-purple-300">
-          {loading ? <RefreshCw size={14} className="animate-spin mr-1" /> : null}
-          Lihat Summary
+        <Button data-testid="spt-load-summary" variant="outline" onClick={loadSummary} disabled={loading}>
+          {loading && <RefreshCw className="animate-spin" />}
+          Lihat ringkasan
         </Button>
-        <Button data-testid="spt-download-csv" size="sm" onClick={handleDownload} disabled={downloading}
-                className="bg-purple-600 hover:bg-purple-700 text-white">
-          {downloading ? <RefreshCw size={14} className="animate-spin mr-1" /> : <FileDown size={14} className="mr-1" />}
-          Download CSV
+        <Button data-testid="spt-download-csv" onClick={handleDownload} disabled={downloading}>
+          {downloading ? <RefreshCw className="animate-spin" /> : <FileDown />}
+          Unduh CSV
         </Button>
       </div>
       {summary && (
-        <div data-testid="spt-summary-stats" className="mt-4 grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold text-purple-700">{summary.total_employees}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Total Karyawan</div>
-          </div>
-          <div className="bg-white rounded-xl p-3 text-center">
-            <div className="text-2xl font-bold text-purple-700">{summary.employees_with_pph21}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Wajib Potong PPh 21</div>
-          </div>
-          <div className="bg-white rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-purple-700">{fmtRp(summary.total_pph21)}</div>
-            <div className="text-xs text-gray-500 mt-0.5">Total PPh 21 Setor</div>
-          </div>
+        <div data-testid="spt-summary-stats" className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <CompactStatCard size="sm" label="Total karyawan" value={summary.total_employees} icon={Users} color="aurora-2" testId="spt-stat-employees" />
+          <CompactStatCard size="sm" label="Wajib potong PPh 21" value={summary.employees_with_pph21} icon={UserCheck} color="aurora-1" testId="spt-stat-withheld" />
+          <CompactStatCard size="sm" label="Total PPh 21 setor" value={fmtRp(summary.total_pph21)} icon={Wallet} color="aurora-5" testId="spt-stat-total" />
         </div>
       )}
     </div>

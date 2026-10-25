@@ -1,6 +1,4 @@
 /** BudgetManagement/constants.js */
-import { Send, Check, Lock, XCircle } from "lucide-react";
-
 const EMPTY_FORM = { name: "", period: new Date().toISOString().slice(0, 7), notes: "", lines: [], scope: "outlet", outlet_id: "", brand_id: "" };
 const CATEGORIES = [
   { code: "REV", name: "Revenue" },
@@ -12,12 +10,7 @@ const CATEGORIES = [
   { code: "TAX", name: "Tax Expense" },
 ];
 
-const APPROVAL_STATUS_LABELS = {
-  draft: { label: "Draft", variant: "secondary", icon: null },
-  submitted: { label: "Menunggu Approval", variant: "warning", icon: Send },
-  approved: { label: "Disetujui", variant: "success", icon: Check },
-  locked: { label: "Terkunci", variant: "default", icon: Lock },
-  rejected: { label: "Ditolak", variant: "destructive", icon: XCircle },
-};
+/** Status approval budget — label & warna dari kamus global StatusPill. */
+const APPROVAL_STATUSES = ["draft", "submitted", "approved", "locked", "rejected"];
 
-export { EMPTY_FORM, CATEGORIES, APPROVAL_STATUS_LABELS };
+export { EMPTY_FORM, CATEGORIES, APPROVAL_STATUSES };

@@ -57,7 +57,7 @@ function CharCounter({ value = "", min, max }) {
   const over = len > max;
   return (
     <span className={cn(
-      "text-[11px] font-mono ml-1",
+      "text-[11px] font-medium tabular-nums ml-1",
       ok ? "text-emerald-500" : over ? "text-red-500" : "text-amber-500"
     )}>
       {len}/{max}

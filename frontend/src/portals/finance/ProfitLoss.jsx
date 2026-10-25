@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,10 +19,18 @@ import { Button } from "@/components/ui/button";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import KpiCard from "@/components/shared/KpiCard";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
+
+const LABEL = "text-xs font-medium text-muted-foreground";
+
+/** Δ% vs periode sebelumnya (null bila tidak ada pembanding). */
+function deltaPct(value, compare) {
+  if (compare == null || compare === 0) return null;
+  return (((value || 0) - compare) / Math.abs(compare)) * 100;
+}
 
 const SECTION_LABELS = { revenue: "Revenue", cogs: "Cost of Goods Sold (COGS)", expense: "Operating Expenses" };
 
@@ -103,7 +111,7 @@ export default function ProfitLoss() {
       const res = await api.get("/finance/profit-loss", { params });
       setData(normalizeData(unwrap(res)));
     } catch (e) {
-      toast.error("Gagal load P&L");
+      toast.error("Gagal memuat Profit & Loss");
       setData(null);
     } finally { setLoading(false); }
   }
@@ -134,22 +142,22 @@ export default function ProfitLoss() {
   ) > 0;
 
   return (
-    <div data-testid="profit-loss-page" className="space-y-4">
-      <div data-testid="pl-filter-card" className="glass-card p-4 flex flex-wrap gap-3 items-end">
+    <div data-testid="profit-loss-page" className="space-y-3 lg:space-y-4">
+      <div data-testid="pl-filter-card" className="glass-card p-3 flex flex-wrap gap-3 items-end">
         <div className="min-w-[140px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Period</Label>
-          <Input type="month" value={period} onChange={e => setPeriod(e.target.value)}
+          <Label htmlFor="pl-period" className={LABEL}>Periode</Label>
+          <Input id="pl-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="pl-period" />
         </div>
         <div className="min-w-[180px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId}
+          <Label className={LABEL}>Outlet</Label>
+          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
             options={[{ value: "", label: "Consolidated" }, ...(scopedOutlets || []).map(o => ({ value: o.id, label: o.name }))]}
             placeholder="Consolidated"
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="pl-outlet" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="ml-auto rounded-full gap-2 h-10" data-testid="pl-export" disabled={!data}>
-          <Download className="h-4 w-4" /> CSV
+        <Button onClick={exportCsv} variant="outline" className="ml-auto" data-testid="pl-export" disabled={!data}>
+          <Download /> Ekspor CSV
         </Button>
       </div>
 
@@ -157,19 +165,19 @@ export default function ProfitLoss() {
 
       {!loading && data && (
         <>
-          <div data-testid="pl-summary-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <SummaryCard label="Revenue" value={data.totals.revenue} compare={data.compare?.revenue} positive />
-            <SummaryCard label="Gross Profit" value={data.totals.gross_profit} compare={data.compare?.gross_profit} positive
-              hint={`Margin ${data.totals.gross_margin_pct}%`} />
-            <SummaryCard label="Operating Expense" value={data.totals.expense} compare={data.compare?.expense} positive={false} />
-            <SummaryCard label="Net Income" value={data.totals.net_income} compare={data.compare?.net_income} positive
-              hint={`Margin ${data.totals.net_margin_pct}%`} />
+          <div data-testid="pl-summary-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <PlKpi label="Revenue" value={data.totals.revenue} compare={data.compare?.revenue} testId="pl-kpi-revenue" />
+            <PlKpi label="Gross Profit" value={data.totals.gross_profit} compare={data.compare?.gross_profit}
+              hint={`Margin ${data.totals.gross_margin_pct}%`} testId="pl-kpi-gross-profit" />
+            <PlKpi label="Operating Expense" value={data.totals.expense} compare={data.compare?.expense} invertDelta testId="pl-kpi-expense" />
+            <PlKpi label="Net Income" value={data.totals.net_income} compare={data.compare?.net_income}
+              hint={`Margin ${data.totals.net_margin_pct}%`} testId="pl-kpi-net-income" />
           </div>
 
           {!hasAnyData ? (
             <EmptyState
               title="Belum ada data P&L untuk periode ini"
-              description="Sales validation atau journal di periode ini belum diposting. Coba periode lain atau cek Daily Sales."
+              description="Validasi sales atau jurnal pada periode ini belum diposting. Coba periode lain atau cek Daily Sales."
             />
           ) : (
             ["revenue", "cogs", "expense"].map(sec => {
@@ -177,10 +185,10 @@ export default function ProfitLoss() {
               const total = items.reduce((s, r) => s + (r.amount || 0), 0);
               if (items.length === 0 && sec === "cogs") return null; // hide empty cogs entirely
               return (
-                <div key={sec} data-testid={`pl-section-${sec}`} className="glass-card p-5">
+                <div key={sec} data-testid={`pl-section-${sec}`} className="glass-card p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">{SECTION_LABELS[sec]}</h3>
-                    <span className="font-bold tabular-nums">{fmtRp(total)}</span>
+                    <h3 className="text-sm md:text-base font-semibold">{SECTION_LABELS[sec]}</h3>
+                    <span className="font-semibold tabular-nums">{fmtRp(total)}</span>
                   </div>
                   {items.length === 0 ? (
                     <div className="text-sm text-muted-foreground italic">—</div>
@@ -191,8 +199,8 @@ export default function ProfitLoss() {
                       rowTestIdPrefix={`pl-${sec}-row`}
                       empty={<div className="text-sm text-muted-foreground italic px-1 py-2">—</div>}
                       columns={[
-                        { key: "code", label: "Code", primary: true,
-                          render: (r) => <span className="font-mono text-xs text-muted-foreground">{r.code}</span> },
+                        { key: "code", label: "Kode", primary: true,
+                          render: (r) => <span className="text-xs font-medium tabular-nums text-muted-foreground">{r.code}</span> },
                         { key: "name", label: "Akun",
                           render: (r) => (
                             <Link to={`/finance/journals?period=${period}${r.coa_id ? `&coa_id=${r.coa_id}` : ""}`}
@@ -210,12 +218,12 @@ export default function ProfitLoss() {
             })
           )}
 
-          <div data-testid="pl-totals-card" className="glass-card p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div data-testid="pl-totals-card" className="glass-card p-4 grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 text-sm">
             <div className="flex justify-between font-semibold">
               <span>Gross Profit</span>
               <span className="tabular-nums">{fmtRp(data.totals.gross_profit)}</span>
             </div>
-            <div className="flex justify-between text-base font-bold">
+            <div className="flex justify-between text-base font-semibold">
               <span>Net Income</span>
               <span className="tabular-nums">{fmtRp(data.totals.net_income)}</span>
             </div>
@@ -226,25 +234,9 @@ export default function ProfitLoss() {
   );
 }
 
-function SummaryCard({ label, value, compare, hint, positive }) {
-  const v = value || 0;
-  const c = compare;
-  const delta = c != null ? v - c : null;
-  const deltaPct = c && c !== 0 ? ((v - c) / Math.abs(c)) * 100 : null;
-  const goodDirection = positive ? delta >= 0 : delta <= 0;
-  return (
-    <div className="glass-card p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="text-2xl font-bold tabular-nums mt-1">{fmtRp(v)}</div>
-      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
-      {delta != null && (
-        <div className={cn("text-xs flex items-center gap-1 mt-1",
-          goodDirection ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
-          {delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          {deltaPct != null ? `${deltaPct >= 0 ? "+" : ""}${deltaPct.toFixed(1)}%` : "—"}
-          <span className="text-muted-foreground ml-1">vs prev</span>
-        </div>
-      )}
-    </div>
-  );
+/** KPI P&L dengan delta vs periode lalu → shared KpiCard (bukan tile lokal). */
+function PlKpi({ label, value, compare, hint, testId, invertDelta }) {
+  const d = deltaPct(value, compare);
+  const deltaLabel = d != null ? (hint ? `vs bln lalu · ${hint}` : "vs bulan lalu") : hint;
+  return <KpiCard label={label} value={fmtRp(value || 0)} delta={d} deltaLabel={deltaLabel} invertDelta={invertDelta} testId={testId} />;
 }

@@ -103,7 +103,7 @@ const procurementPRListTour = {
     {
       target: "[data-testid='pr-table-card']",
       title: "Approve & Convert ke PO",
-      content: "Klik baris PR untuk detail. Dari detail: **Approve** PR lalu klik **Convert to PO** untuk buat PO ke vendor yang dipilih.",
+      content: "Klik baris PR untuk detail. Dari detail: **Setujui** PR lalu klik **Buat PO dari PR** untuk buat PO ke vendor yang dipilih.",
       placement: "top",
       variant: "tip",
     },
@@ -179,7 +179,7 @@ const procurementGRTour = {
     {
       target: "[data-testid='gr-table-card']",
       title: "Link ke JE",
-      content: "Icon journal entry (📒) di kolom kanan menunjukkan GR sudah ter-journalkan. Klik untuk lihat detail JE yang dibuat otomatis.",
+      content: "Ikon jurnal di kolom kanan menunjukkan GR sudah ter-journalkan. Klik untuk lihat detail JE yang dibuat otomatis.",
       placement: "top",
       variant: "tip",
     },

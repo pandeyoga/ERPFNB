@@ -42,12 +42,12 @@ const generalNavigationTour = {
 // APPROVAL CENTER (shared across all portals — /{portal}/approvals)
 // ============================================================
 const approvalCenterTour = {
-  name: "Approval Center",
+  name: "Pusat Persetujuan",
   description: "Inbox persetujuan terpusat + delegasi untuk semua dokumen.",
   steps: [
     {
       target: "[data-testid='approval-center']",
-      title: "Approval Center",
+      title: "Pusat Persetujuan",
       content:
         "**Satu inbox** untuk semua dokumen yang menunggu persetujuan Anda (PR, PO, Payment, Journal, Budget, dll) lintas modul.",
       placement: "center",

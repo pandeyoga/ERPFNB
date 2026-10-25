@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import {
   Receipt, Wallet, ShoppingBag, ClipboardCheck, ArrowRight,
   CheckCircle2, AlertTriangle, Clock, FileText, Plus,
-  ChefHat, Wine, CheckSquare, Store, Globe2,
+  ChefHat, Wine, CheckSquare, LayoutDashboard,
 } from "lucide-react";
 import { useOutletHome } from "@/hooks/useOutletDashboard";
-import KpiCard from "@/components/shared/KpiCard";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import PageHeader from "@/components/shared/PageHeader";
 import StatusPill from "@/components/shared/StatusPill";
 import OutletBudgetMiniWidget from "./OutletBudgetMiniWidget";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
@@ -57,70 +58,67 @@ export default function OutletHome() {
         ? `Semua ${scopeOutletCount} outlet dalam scope Anda`
         : "Tidak ada outlet";
 
+  const firstName = user?.full_name?.split(" ")[0] || "";
+
   return (
-    <div className="space-y-6" data-testid="outlet-home-page">
-      {/* Welcome */}
-      <div className="glass-card p-6 lg:p-8" data-testid="outlet-welcome">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <h2 className="text-xl font-bold mb-1">
-              Halo, {user?.full_name?.split(" ")[0]} — selamat datang di outlet hari ini.
-            </h2>
-            <p className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-              <span>Hari ini: <span className="font-medium">{fmtDate(today)}</span></span>
-              <span className="text-muted-foreground/50">·</span>
-              <span className="inline-flex items-center gap-1 font-medium text-foreground">
-                {currentOutlet ? <Store className="h-3.5 w-3.5" /> : <Globe2 className="h-3.5 w-3.5" />}
-                {scopeLabel}
+    <div className="space-y-3 lg:space-y-4" data-testid="outlet-home-page">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Overview"
+        subtitle={`Halo${firstName ? `, ${firstName}` : ""} — ringkasan operasional ${fmtDate(today)} · ${scopeLabel}`}
+        testId="outlet-welcome"
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            {isAggregate && scopeOutletCount > 1 && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
+                Data digabung
               </span>
-              {isAggregate && scopeOutletCount > 1 && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
-                  Data digabung
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
-              • Live
+            )}
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+              Live
             </span>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="outlet-kpi-strip">
-        <KpiCard
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="outlet-kpi-strip">
+        <CompactStatCard
           label="Sales Hari Ini"
           value={salesToday ? fmtRp(salesToday.grand_total || 0) : fmtRp(0)}
-          hint={
+          sub={
             salesToday
               ? `Status: ${formatStatus(salesToday.status)}${salesToday.is_aggregate ? ` (${salesToday.outlet_count} outlet)` : ""}`
               : "Belum ada draft hari ini"
           }
           icon={Receipt}
           color="aurora-1"
+          testId="kpi-sales-hari-ini"
         />
-        <KpiCard
+        <CompactStatCard
           label="Saldo Petty Cash"
           value={fmtRp(totalPC)}
-          hint={`${Object.keys(pcBalances).length} outlet`}
+          sub={`${Object.keys(pcBalances).length} outlet`}
           icon={Wallet}
           color="aurora-3"
+          testId="kpi-saldo-petty-cash"
         />
-        <KpiCard
+        <CompactStatCard
           label="Pending PR"
           value={home?.pending_pr_count ?? 0}
-          hint="Menunggu approval"
+          sub="Menunggu approval"
           icon={FileText}
           color="aurora-5"
+          testId="kpi-pending-pr"
         />
-        <KpiCard
+        <CompactStatCard
           label="Urgent Purchase Open"
           value={home?.open_urgent_purchase_count ?? 0}
-          hint="Perlu approval finance"
+          sub="Perlu approval finance"
           icon={ShoppingBag}
           color="aurora-6"
+          testId="kpi-urgent-purchase-open"
         />
       </div>
 
@@ -128,7 +126,7 @@ export default function OutletHome() {
       <OutletBudgetMiniWidget scope="monthly" />
 
       {/* Today task list */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" data-testid="outlet-today-tasks">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4" data-testid="outlet-today-tasks">
         <TodayTaskCard
           icon={Receipt}
           title="Daily Sales Hari Ini"
@@ -149,7 +147,7 @@ export default function OutletHome() {
                 }
               />
               <DataRow label="Grand Total" value={fmtRp(salesToday.grand_total || 0)} />
-              <DataRow label="Trx Count" value={salesToday.transaction_count || 0} />
+              <DataRow label="Jumlah Transaksi" value={salesToday.transaction_count || 0} />
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -163,7 +161,7 @@ export default function OutletHome() {
           title="Daily Sales Kemarin"
           status={salesYesterday?.status}
           accent="aurora-2"
-          actionLabel={salesYesterday?.id ? "Lihat" : "Tidak ada"}
+          actionLabel={salesYesterday?.id ? "Lihat detail" : "Tidak ada"}
           actionTo={salesYesterday?.id ? `/outlet/daily-sales/${salesYesterday.id}` : null}
           testId="task-daily-sales-yesterday"
         >
@@ -189,42 +187,38 @@ export default function OutletHome() {
       </div>
 
       {/* Quick actions */}
-      <div data-testid="outlet-quick-actions">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-          Quick Actions
-        </h3>
+      <section data-testid="outlet-quick-actions">
+        <h2 className="text-base md:text-lg font-semibold mb-2">Aksi Cepat</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <QuickActionTile to="/outlet/daily-sales/new" icon={Receipt} label="Daily Sales Baru" testId="qa-ds" />
           <QuickActionTile to="/outlet/petty-cash" icon={Wallet} label="Catat Petty Cash" testId="qa-pc" />
-          <QuickActionTile to="/outlet/kdo" icon={ChefHat} label="KDO Baru" testId="qa-kdo" />
-          <QuickActionTile to="/outlet/bdo" icon={Wine} label="BDO Baru" testId="qa-bdo" />
+          <QuickActionTile to="/outlet/daily-orders?type=kdo" icon={ChefHat} label="KDO Baru" testId="qa-kdo" />
+          <QuickActionTile to="/outlet/daily-orders?type=bdo" icon={Wine} label="BDO Baru" testId="qa-bdo" />
           <QuickActionTile to="/outlet/urgent-purchase" icon={ShoppingBag} label="Urgent Purchase" testId="qa-up" />
-          <QuickActionTile to="/outlet/daily-close" icon={CheckSquare} label="Daily Close" testId="qa-dc" />
+          <QuickActionTile to="/outlet/end-of-day" icon={CheckSquare} label="End of Day" testId="qa-dc" />
           <QuickActionTile to="/inventory/opname" icon={ClipboardCheck} label="Mulai Opname" testId="qa-opname" />
         </div>
-      </div>
+      </section>
 
       {/* Petty Cash per outlet */}
       {Object.keys(pcBalances).length > 0 && (
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
-            Saldo Petty Cash per Outlet
-          </h3>
+        <section className="glass-card p-4" data-testid="outlet-pc-balances">
+          <h2 className="text-base md:text-lg font-semibold mb-3">Saldo Petty Cash per Outlet</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {Object.entries(pcBalances).map(([oid, bal]) => {
               const low = bal < 500000;
               return (
-                <div key={oid} className="glass-input rounded-xl p-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-xs text-muted-foreground">{outletNames[oid] || oid}</div>
-                    <div className="text-lg font-bold tabular-nums">{fmtRp(bal)}</div>
+                <div key={oid} className="rounded-lg border border-border/60 p-3 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs text-muted-foreground truncate">{outletNames[oid] || oid}</div>
+                    <div className="text-base font-semibold tabular-nums">{fmtRp(bal)}</div>
                   </div>
                   {low ? (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1 shrink-0">
                       <AlertTriangle className="h-3 w-3" /> Saldo Rendah
                     </span>
                   ) : (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1">
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1 shrink-0">
                       <CheckCircle2 className="h-3 w-3" /> Cukup
                     </span>
                   )}
@@ -232,7 +226,7 @@ export default function OutletHome() {
               );
             })}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
@@ -251,16 +245,16 @@ function formatStatus(s) {
 
 function TodayTaskCard({ icon: Icon, title, status, accent, actionLabel, actionTo, children, testId }) {
   return (
-    <div className="glass-card p-5 flex flex-col gap-3" data-testid={testId}>
+    <div className="glass-card p-4 flex flex-col gap-3" data-testid={testId}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div
-            className="h-9 w-9 rounded-xl flex items-center justify-center"
+            className="h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center"
             style={{ background: `hsl(var(--${accent}) / 0.15)`, color: `hsl(var(--${accent}))` }}
           >
             <Icon className="h-4 w-4" />
           </div>
-          <h4 className="font-semibold">{title}</h4>
+          <h3 className="text-sm md:text-base font-semibold">{title}</h3>
         </div>
         {status && <StatusPill status={status} />}
       </div>
@@ -292,11 +286,11 @@ function QuickActionTile({ to, icon: Icon, label, testId }) {
   return (
     <Link
       to={to}
-      className="glass-card-hover p-4 group flex items-center gap-3"
+      className="glass-card-hover p-3 group flex items-center gap-3"
       data-testid={testId}
     >
-      <div className="h-10 w-10 rounded-xl grad-aurora-soft flex items-center justify-center">
-        <Icon className="h-4.5 w-4.5" />
+      <div className="h-9 w-9 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center shrink-0">
+        <Icon className="h-4 w-4" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold">{label}</div>

@@ -49,43 +49,46 @@ export default function LlmTestPanel() {
           <Brain className="h-4 w-4" />
         </span>
         <div>
-          <h3 className="font-semibold text-sm">Test LLM</h3>
-          <p className="text-[11px] text-muted-foreground">Verify API key, provider, model</p>
+          <h3 className="font-semibold text-sm">Tes LLM</h3>
+          <p className="text-[11px] text-muted-foreground">Verifikasi API key, provider, dan model</p>
         </div>
       </div>
 
       <div className="space-y-3">
         <div>
-          <Label className="text-xs">Test Prompt</Label>
+          <Label htmlFor="llm-test-prompt" className="text-xs md:text-sm font-medium">Prompt uji</Label>
           <div className="flex gap-1 flex-wrap mt-1 mb-1">
             {PROMPTS.map((p) => (
-              <button key={p} onClick={() => setPrompt(p)}
+              <button key={p} type="button" onClick={() => setPrompt(p)} title={p}
                       className="text-[11px] px-2 py-0.5 rounded-full bg-muted hover:bg-muted/70">
                 {p.slice(0, 24)}…
               </button>
             ))}
           </div>
-          <Textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}
+          <Textarea id="llm-test-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)}
                     rows={2} className="text-xs" data-testid="llm-test-prompt" />
         </div>
 
         <Button size="sm" onClick={() => test(false)} disabled={busy || !prompt.trim()}
-                className="w-full gap-1" data-testid="llm-test-saved">
-          <Sparkles className="h-3.5 w-3.5" />
-          {busy ? "Testing…" : "Test Saved Config"}
+                className="w-full" data-testid="llm-test-saved">
+          <Sparkles />
+          {busy ? "Menguji…" : "Tes Konfigurasi Tersimpan"}
         </Button>
 
         <details className="text-xs">
-          <summary className="cursor-pointer font-medium">Test ephemeral (no save)</summary>
+          <summary className="cursor-pointer font-medium">Tes key sementara (tidak disimpan)</summary>
           <div className="space-y-2 mt-2">
             <Input value={ephemKey} onChange={(e) => setEphemKey(e.target.value)}
-                   placeholder="sk-... (ephemeral key)" className="font-mono text-xs" />
+                   aria-label="API key sementara"
+                   placeholder="sk-... (key sementara)" className="font-mono text-xs" />
             <Input value={ephemProvider} onChange={(e) => setEphemProvider(e.target.value)}
-                   placeholder="provider (gemini/openai/anthropic)" className="font-mono text-xs" />
+                   aria-label="Provider"
+                   placeholder="provider (gemini/openai/anthropic)" className="text-xs" />
             <Input value={ephemModel} onChange={(e) => setEphemModel(e.target.value)}
-                   placeholder="model (gemini-2.5-flash)" className="font-mono text-xs" />
+                   aria-label="Model"
+                   placeholder="model (gemini-2.5-flash)" className="text-xs" />
             <Button size="sm" variant="outline" onClick={() => test(true)}
-                    disabled={busy} className="w-full">Test ephemeral</Button>
+                    disabled={busy} className="w-full">Tes key sementara</Button>
           </div>
         </details>
 
@@ -93,15 +96,15 @@ export default function LlmTestPanel() {
           <div className="space-y-2">
             {result.ok ? (
               <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-xs">
-                <div className="text-emerald-700 font-semibold mb-1">✓ OK ({result.elapsed_ms}ms)</div>
+                <div className="text-emerald-700 font-semibold mb-1">Berhasil ({result.elapsed_ms} ms)</div>
                 <div className="text-[11px] text-muted-foreground mb-1">
                   {result.provider} / {result.model}
                 </div>
-                <div className="font-mono text-xs">{result.response}</div>
+                <div className="text-xs">{result.response}</div>
               </div>
             ) : (
               <div className="p-2 rounded bg-rose-50 border border-rose-200 text-xs">
-                <div className="text-rose-700 font-semibold mb-1">✗ Failed</div>
+                <div className="text-rose-700 font-semibold mb-1">Gagal</div>
                 <div className="text-[11px]">{result.reason} {result.error}</div>
               </div>
             )}
@@ -109,7 +112,7 @@ export default function LlmTestPanel() {
         )}
 
         <p className="text-[11px] text-muted-foreground">
-          💡 Default pakai Emergent Universal Key. Set <code>OPENAI_API_KEY</code>/<code>ANTHROPIC_API_KEY</code>/<code>GEMINI_API_KEY</code>
+          Default memakai Emergent Universal Key. Set <code>OPENAI_API_KEY</code>/<code>ANTHROPIC_API_KEY</code>/<code>GEMINI_API_KEY</code>
           + ubah <code>LLM_PROVIDER_PRIMARY</code> untuk pakai key langsung.
         </p>
       </div>

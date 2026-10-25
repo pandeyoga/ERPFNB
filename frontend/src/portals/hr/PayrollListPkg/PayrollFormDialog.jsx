@@ -4,20 +4,11 @@
  * Tabs: Siklus Payroll | Salary Master
  * Features: BPJS breakdown, PPh21, payslip PDF, salary Excel import
  */
-import { useEffect, useState, useRef } from "react";
-import {
-  Plus, CalendarClock, ArrowUpCircle, FileText, Download,
-  Upload, Users, ChevronDown, ChevronUp, Wallet, Shield,
-  RefreshCw, AlertCircle, CheckCircle2, FileSpreadsheet, Edit3,
-  Save, X, Info
-} from "lucide-react";
-import { jsPDF } from "jspdf";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { RefreshCw, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from "@/components/ui/select";
@@ -25,30 +16,13 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import StatusPill from "@/components/shared/StatusPill";
-import EmptyState from "@/components/shared/EmptyState";
-import LoadingState from "@/components/shared/LoadingState";
-import { fmtRp, fmtDate } from "@/lib/format";
-import { validateNPWP } from "@/lib/utils";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth";
-import api, { unwrap, unwrapError } from "@/lib/api";
-import useOutletScope from "@/hooks/useOutletScope";
+import api, { unwrapError } from "@/lib/api";
 
-
-
-import { PTKP_OPTIONS, STD_COMPONENTS } from "@/lib/payroll";
 function currentPeriod() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
-
-function fmtPct(v) {
-  return `${(v * 100).toFixed(2)}%`;
-}
-
-// ── Payslip PDF generator ──────────────────────────────────────────────────────
 
 function PayrollFormDialog({ open, onOpenChange, outlets, onCreated }) {
   const [form, setForm] = useState({ period: currentPeriod(), outlet_id: "" });
@@ -83,15 +57,15 @@ function PayrollFormDialog({ open, onOpenChange, outlets, onCreated }) {
             </AlertDescription>
           </Alert>
           <div className="space-y-1">
-            <Label>Period *</Label>
-            <Input type="month" value={form.period}
+            <Label htmlFor="hr-payroll-period">Periode *</Label>
+            <Input id="hr-payroll-period" type="month" value={form.period}
                     onChange={(e) => setForm(f => ({ ...f, period: e.target.value }))}
                     data-testid="hr-payroll-period" />
           </div>
           <div className="space-y-1">
-            <Label>Outlet</Label>
+            <Label htmlFor="hr-payroll-outlet">Outlet</Label>
             <Select value={form.outlet_id || "all"} onValueChange={(v) => setForm(f => ({ ...f, outlet_id: v === "all" ? "" : v }))}>
-              <SelectTrigger data-testid="hr-payroll-outlet"><SelectValue placeholder="— Group-wide —" /></SelectTrigger>
+              <SelectTrigger id="hr-payroll-outlet" data-testid="hr-payroll-outlet"><SelectValue placeholder="— Group-wide —" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">— Group-wide —</SelectItem>
                 {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
@@ -100,10 +74,10 @@ function PayrollFormDialog({ open, onOpenChange, outlets, onCreated }) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="rounded-full"
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-payroll-submit">
-            {submitting ? <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Generating…</> : "Generate"}
+            {submitting ? <><RefreshCw className="animate-spin" />Memproses…</> : "Generate Payroll"}
           </Button>
         </DialogFooter>
       </DialogContent>

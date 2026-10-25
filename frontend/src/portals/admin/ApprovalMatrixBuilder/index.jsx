@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { fmtRp } from "@/lib/format";
+import PageHeader from "@/components/shared/PageHeader";
 
 import { MODE_META, emptyStep, emptyTier } from "./constants";
 import TierEditor from "./TierEditor";
@@ -211,7 +212,8 @@ export default function ApprovalMatrixBuilder() {
 
   if (loading) {
     return (
-      <div className="space-y-4" data-testid="approval-matrix-builder">
+      <div className="space-y-3" data-testid="approval-matrix-builder">
+        <PageHeader icon={GitBranch} title="Approval Matrix" subtitle="Memuat builder…" />
         <div className="py-10 text-center text-muted-foreground" data-testid="approval-matrix-builder-loading">
           Memuat builder…
         </div>
@@ -220,46 +222,43 @@ export default function ApprovalMatrixBuilder() {
   }
 
   return (
-    <div className="space-y-4" data-testid="approval-matrix-builder">
-      <div className="flex flex-col md:flex-row gap-2 md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <GitBranch className="h-6 w-6 text-aurora" />
-            Approval Matrix — Global Builder
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Konfigurasi alur approval per entity dengan 3 mode routing: <strong>Permission</strong>, <strong>Role</strong>, atau <strong>User Spesifik</strong>. Bisa kondisional per outlet / brand.
-          </p>
-        </div>
-        <Button onClick={save} disabled={saving || !selectedEntity} className="gap-2 pill-active" data-testid="btn-save-workflow">
-          <Save className="h-4 w-4" /> {saving ? "Menyimpan…" : "Simpan Workflow"}
-        </Button>
-      </div>
+    <div className="space-y-3" data-testid="approval-matrix-builder">
+      <PageHeader
+        icon={GitBranch}
+        title="Approval Matrix"
+        subtitle="Alur approval per entitas dengan 3 mode routing (Permission, Role, User Spesifik); bisa kondisional per outlet/brand."
+        actions={(
+          <Button onClick={save} disabled={saving || !selectedEntity} data-testid="btn-save-workflow">
+            <Save /> {saving ? "Menyimpan…" : "Simpan Workflow"}
+          </Button>
+        )}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-3 lg:gap-4 items-start">
         {/* Entity rail */}
-        <Card data-testid="entity-rail">
+        <Card data-testid="entity-rail" className="md:sticky md:top-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm uppercase tracking-wide text-muted-foreground">Entity</CardTitle>
+            <CardTitle>Jenis Entitas</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1">
+          <CardContent className="space-y-1 px-2 pb-2">
             {entityTypes.map((et) => (
               <button
                 key={et.value}
                 onClick={() => setSelectedEntity(et.value)}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between ${selectedEntity === et.value ? "bg-aurora/10 border border-aurora/30" : "hover:bg-foreground/5"}`}
+                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedEntity === et.value ? "bg-aurora/10 border-aurora/30" : "border-transparent hover:bg-foreground/5"}`}
+                aria-pressed={selectedEntity === et.value}
                 data-testid={`entity-btn-${et.value}`}
               >
                 <div>
                   <div className="font-medium">{et.label}</div>
-                  <div className="text-xs text-muted-foreground">{et.value}</div>
+                  <div className="text-xs font-medium tabular-nums text-muted-foreground">{et.value}</div>
                 </div>
                 {et.has_workflow ? (
                   <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[11px]">
                     v{et.version}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[11px]">none</Badge>
+                  <Badge variant="outline" className="text-[11px]">belum ada</Badge>
                 )}
               </button>
             ))}
@@ -270,19 +269,19 @@ export default function ApprovalMatrixBuilder() {
         <div className="space-y-4">
           {/* Workflow meta */}
           <Card>
-            <CardContent className="pt-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="wf-name">Nama Workflow</Label>
+                <Label htmlFor="wf-name" className="text-xs md:text-sm font-medium">Nama Workflow</Label>
                 <Input
                   id="wf-name" value={wfMeta.name}
                   onChange={(e) => setWfMeta((m) => ({ ...m, name: e.target.value }))}
-                  placeholder={`e.g. ${selectedEntity || "workflow"} workflow`}
+                  placeholder={`mis. ${selectedEntity || "workflow"} workflow`}
                   className="mt-1"
                   data-testid="input-wf-name"
                 />
               </div>
               <div>
-                <Label htmlFor="wf-desc">Deskripsi</Label>
+                <Label htmlFor="wf-desc" className="text-xs md:text-sm font-medium">Deskripsi</Label>
                 <Input
                   id="wf-desc" value={wfMeta.description}
                   onChange={(e) => setWfMeta((m) => ({ ...m, description: e.target.value }))}
@@ -296,17 +295,17 @@ export default function ApprovalMatrixBuilder() {
           <Tabs defaultValue="builder">
             <TabsList>
               <TabsTrigger value="builder" data-testid="tab-builder">
-                <Settings className="h-4 w-4 mr-1" /> Builder
+                <Settings /> Builder
               </TabsTrigger>
               <TabsTrigger value="preview" data-testid="tab-preview">
-                <Eye className="h-4 w-4 mr-1" /> Preview
+                <Eye /> Simulasi
               </TabsTrigger>
               <TabsTrigger value="diagram" data-testid="tab-diagram">
-                <GitBranch className="h-4 w-4 mr-1" /> Diagram
+                <GitBranch /> Diagram
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="builder" className="space-y-4 mt-4">
+            <TabsContent value="builder" className="space-y-3">
               {tiers.map((tier, ti) => (
                 <TierEditor
                   key={ti} idx={ti} tier={tier} total={tiers.length}
@@ -320,24 +319,25 @@ export default function ApprovalMatrixBuilder() {
                   outlets={outlets} brands={brands}
                 />
               ))}
-              <Button variant="outline" onClick={addTier} className="gap-2 w-full" data-testid="btn-add-tier">
-                <Plus className="h-4 w-4" /> Tambah Tier
+              <Button variant="outline" onClick={addTier} data-testid="btn-add-tier">
+                <Plus /> Tambah Tier
               </Button>
             </TabsContent>
 
-            <TabsContent value="preview" className="mt-4 space-y-4">
+            <TabsContent value="preview" className="space-y-3">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Simulasi Approval</CardTitle>
                   <CardDescription>
-                    Masukkan sample amount + outlet/brand untuk lihat tier mana yang ke-trigger dan siapa approver-nya.
+                    Masukkan contoh nominal + outlet/brand untuk melihat tier yang terpicu dan siapa approver-nya.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label>Amount (Rp)</Label>
+                      <Label htmlFor="preview-amount" className="text-xs md:text-sm font-medium">Nominal (Rp)</Label>
                       <Input
+                        id="preview-amount"
                         type="number" min="0" step="100000"
                         value={previewSample.amount}
                         onChange={(e) => setPreviewSample((s) => ({ ...s, amount: e.target.value }))}
@@ -345,14 +345,14 @@ export default function ApprovalMatrixBuilder() {
                       />
                     </div>
                     <div>
-                      <Label>Outlet (opsional)</Label>
+                      <Label htmlFor="preview-outlet" className="text-xs md:text-sm font-medium">Outlet (opsional)</Label>
                       <Select
                         value={previewSample.outlet_id || "none"}
                         onValueChange={(v) => setPreviewSample((s) => ({ ...s, outlet_id: v === "none" ? "" : v }))}
                       >
-                        <SelectTrigger className="mt-1"><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectTrigger id="preview-outlet" className="mt-1" data-testid="select-preview-outlet"><SelectValue placeholder="—" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">— None —</SelectItem>
+                          <SelectItem value="none">— Semua outlet —</SelectItem>
                           {outlets.map((o) => (
                             <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
                           ))}
@@ -360,14 +360,14 @@ export default function ApprovalMatrixBuilder() {
                       </Select>
                     </div>
                     <div>
-                      <Label>Brand (opsional)</Label>
+                      <Label htmlFor="preview-brand" className="text-xs md:text-sm font-medium">Brand (opsional)</Label>
                       <Select
                         value={previewSample.brand_id || "none"}
                         onValueChange={(v) => setPreviewSample((s) => ({ ...s, brand_id: v === "none" ? "" : v }))}
                       >
-                        <SelectTrigger className="mt-1"><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectTrigger id="preview-brand" className="mt-1" data-testid="select-preview-brand"><SelectValue placeholder="—" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">— None —</SelectItem>
+                          <SelectItem value="none">— Semua brand —</SelectItem>
                           {brands.map((b) => (
                             <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                           ))}
@@ -375,8 +375,8 @@ export default function ApprovalMatrixBuilder() {
                       </Select>
                     </div>
                   </div>
-                  <Button onClick={runPreview} disabled={previewLoading} className="gap-2 pill-active" data-testid="btn-run-preview">
-                    <Eye className="h-4 w-4" /> {previewLoading ? "Menjalankan…" : "Jalankan Simulasi"}
+                  <Button onClick={runPreview} disabled={previewLoading} data-testid="btn-run-preview">
+                    <Eye /> {previewLoading ? "Menjalankan…" : "Jalankan Simulasi"}
                   </Button>
                 </CardContent>
               </Card>
@@ -385,7 +385,7 @@ export default function ApprovalMatrixBuilder() {
               )}
             </TabsContent>
 
-            <TabsContent value="diagram" className="mt-4">
+            <TabsContent value="diagram">
               <DiagramView
                 tiers={tiers} entityType={selectedEntity}
                 usersById={usersById} rolesById={rolesById}

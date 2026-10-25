@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 // \u2500\u2500 Category config (mirrors backend) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 import { CATEGORY_ICONS, CATEGORY_COLORS } from "./constants";
@@ -106,7 +107,7 @@ function ImportTab({ collections, onSuccess }) {
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Upload zone */}
       <div
-        className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        className="glass-card border-2 border-dashed border-gray-300 p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
         onClick={() => fileRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); }}
         onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
@@ -135,8 +136,8 @@ function ImportTab({ collections, onSuccess }) {
 
       {/* Preview */}
       {preview && (
-        <div className="bg-white rounded-xl border p-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Preview File</h4>
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">Preview File</h3>
           {preview.type === "backup" ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -145,7 +146,7 @@ function ImportTab({ collections, onSuccess }) {
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {preview.collections.map(c => (
-                  <span key={c} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono">{c}</span>
+                  <span key={c} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium tabular-nums">{c}</span>
                 ))}
               </div>
               {preview.meta?.exported_at && (
@@ -159,7 +160,7 @@ function ImportTab({ collections, onSuccess }) {
               {preview.keys.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {preview.keys.map(k => (
-                    <span key={k} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-mono">{k}</span>
+                    <span key={k} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium tabular-nums">{k}</span>
                   ))}
                 </div>
               )}
@@ -171,8 +172,8 @@ function ImportTab({ collections, onSuccess }) {
       )}
 
       {/* Import options */}
-      <div className="bg-white rounded-xl border p-5 space-y-4">
-        <h3 className="font-medium text-sm text-gray-800">Opsi Import</h3>
+      <div className="glass-card p-4 space-y-3">
+        <h3 className="text-sm md:text-base font-semibold">Opsi Import</h3>
 
         {/* Mode */}
         <div className="space-y-2">
@@ -202,8 +203,9 @@ function ImportTab({ collections, onSuccess }) {
         {/* Target collection (single mode) */}
         {importMode === "single" && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600">Koleksi Target</label>
+            <label className="text-xs font-medium text-gray-600" id="import-target-label">Koleksi Target</label>
             <SimpleSelect
+              ariaLabel="Koleksi target"
               value={targetCollection}
               onValueChange={setTargetCollection}
               options={[{ value: "", label: "— Pilih koleksi —" }, ...allCollections.map(c => ({ value: c.name, label: `${c.name} (${c.count} records)` }))]}
@@ -254,18 +256,18 @@ function ImportTab({ collections, onSuccess }) {
         </div>
       )}
 
-      <button
+      <Button
         onClick={handleImport}
         disabled={importing || !file}
-        className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        className="w-full"
         data-testid="import-btn"
       >
         {importing ? (
-          <><div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> Importing...</>
+          <><div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> Mengimpor...</>
         ) : (
-          <><Upload className="w-4 h-4" /> Import Data</>
+          <><Upload className="w-4 h-4" /> Impor Data</>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

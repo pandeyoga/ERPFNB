@@ -1,6 +1,6 @@
 /** Cashflow report (Direct Method). */
 import { useEffect, useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, ArrowRight, Download } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Download, Landmark, Scale } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -45,15 +46,15 @@ export default function CashflowReport() {
   }
 
   return (
-    <div data-testid="cashflow-report-page" className="space-y-4">
-      <div data-testid="cf-filter-card" className="glass-card p-4 flex flex-wrap items-end gap-3">
+    <div data-testid="cashflow-report-page" className="space-y-3 lg:space-y-4">
+      <div data-testid="cf-filter-card" className="glass-card p-3 flex flex-wrap items-end gap-3">
         <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Period</Label>
-          <Input type="month" value={period} onChange={e => setPeriod(e.target.value)}
+          <Label htmlFor="cf-period" className="text-xs font-medium text-muted-foreground">Periode</Label>
+          <Input id="cf-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="cf-period" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="ml-auto rounded-full gap-2 h-10" data-testid="cf-export">
-          <Download className="h-4 w-4" /> CSV
+        <Button onClick={exportCsv} variant="outline" className="ml-auto" disabled={!data} data-testid="cf-export">
+          <Download /> Ekspor CSV
         </Button>
       </div>
 
@@ -61,20 +62,20 @@ export default function CashflowReport() {
       {!loading && data && (
         <>
           <div data-testid="cf-kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <KpiTile label="Opening balance" value={fmtRp(data.opening_balance)} />
-            <KpiTile label="Total inflow" value={fmtRp(sumInflow(data))} icon={TrendingUp} tone="emerald" />
-            <KpiTile label="Total outflow" value={fmtRp(sumOutflow(data))} icon={TrendingDown} tone="red" />
-            <KpiTile label="Closing balance" value={fmtRp(data.closing_balance)}
+            <CompactStatCard label="Opening balance" value={fmtRp(data.opening_balance)} icon={Landmark} color="aurora-1" testId="cf-kpi-opening" />
+            <CompactStatCard label="Total inflow" value={fmtRp(sumInflow(data))} icon={TrendingUp} tone="success" color="aurora-4" testId="cf-kpi-inflow" />
+            <CompactStatCard label="Total outflow" value={fmtRp(sumOutflow(data))} icon={TrendingDown} tone="danger" color="aurora-6" testId="cf-kpi-outflow" />
+            <CompactStatCard label="Closing balance" value={fmtRp(data.closing_balance)}
               sub={`Net ${data.net_flow >= 0 ? "+" : ""}${fmtRp(data.net_flow)}`}
-              tone={data.net_flow >= 0 ? "emerald" : "red"} />
+              icon={Scale} tone={data.net_flow >= 0 ? "success" : "danger"} color="aurora-2" testId="cf-kpi-closing" />
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-4">
+          <div className="grid lg:grid-cols-2 gap-3 lg:gap-4">
             <div data-testid="cf-by-category-card" className="glass-card p-4">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-3">By Category</div>
+              <h3 className="text-sm md:text-base font-semibold mb-3">Per kategori</h3>
               <div className="space-y-2">
                 {Object.entries(data.by_category).map(([key, cat]) => (
-                  <button key={key}
+                  <button key={key} type="button" aria-expanded={expandedCat === key}
                     onClick={() => setExpandedCat(expandedCat === key ? null : key)}
                     className={cn("w-full text-left p-3 rounded-lg border transition",
                       expandedCat === key ? "bg-foreground/5 border-foreground/30" : "border-border/30 hover:bg-foreground/5")}
@@ -86,9 +87,9 @@ export default function CashflowReport() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-1">
-                      <span>In: {fmtRp(cat.inflow)}</span>
-                      <span>Out: {fmtRp(cat.outflow)}</span>
-                      <span className="ml-auto">{cat.rows.length} txn</span>
+                      <span>Masuk: {fmtRp(cat.inflow)}</span>
+                      <span>Keluar: {fmtRp(cat.outflow)}</span>
+                      <span className="ml-auto">{cat.rows.length} transaksi</span>
                     </div>
                     {expandedCat === key && cat.rows.length > 0 && (
                       <div className="mt-2 pt-2 border-t border-border/30 space-y-1 text-xs">
@@ -96,7 +97,7 @@ export default function CashflowReport() {
                           <div key={r.je_id} className="flex items-center gap-2">
                             <span className="text-muted-foreground w-20">{fmtDate(r.entry_date)}</span>
                             <span className="flex-1 truncate">{r.description}</span>
-                            <span className={cn("font-mono tabular-nums", r.net >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
+                            <span className={cn("tabular-nums", r.net >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
                               {r.net >= 0 ? "+" : ""}{fmtRp(r.net)}
                             </span>
                           </div>
@@ -110,7 +111,7 @@ export default function CashflowReport() {
             </div>
 
             <div data-testid="cf-daily-chart-card" className="glass-card p-4">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-3">Daily Running Balance</div>
+              <h3 className="text-sm md:text-base font-semibold mb-3">Saldo harian berjalan</h3>
               {data.daily.length === 0
                 ? <EmptyState icon={Wallet} title="Tidak ada pergerakan cash bulan ini" description="Semua hari tanpa transaksi cash." />
                 : <DailyChart daily={data.daily} opening={data.opening_balance} />}
@@ -119,9 +120,9 @@ export default function CashflowReport() {
 
           {data.transactions.length > 0 && (
             <div data-testid="cf-transactions-card" className="glass-card overflow-hidden">
-              <div className="px-4 py-2 border-b border-border/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Recent Transactions (top 50)
-              </div>
+              <h3 className="px-4 py-3 border-b border-border/40 text-sm md:text-base font-semibold">
+                Transaksi terbaru (50 teratas)
+              </h3>
               <div className="max-h-[460px] overflow-y-auto">
                 <DataTable
                   rows={data.transactions.slice(0, 50)}
@@ -131,7 +132,7 @@ export default function CashflowReport() {
                     { key: "entry_date", label: "Date", sortable: true, primary: true,
                       render: (t) => fmtDate(t.entry_date) },
                     { key: "doc_no", label: "Doc No",
-                      render: (t) => <span className="font-mono text-xs">{t.doc_no}</span> },
+                      render: (t) => <span className="text-xs font-medium tabular-nums">{t.doc_no}</span> },
                     { key: "source_type", label: "Source",
                       render: (t) => <span className="text-muted-foreground">{t.source_type}</span> },
                     { key: "description", label: "Description", hideOnMobile: true,
@@ -153,20 +154,6 @@ export default function CashflowReport() {
 
 function sumInflow(d) { return Object.values(d.by_category).reduce((s, c) => s + c.inflow, 0); }
 function sumOutflow(d) { return Object.values(d.by_category).reduce((s, c) => s + c.outflow, 0); }
-
-function KpiTile({ label, value, sub, icon: Icon, tone = "neutral" }) {
-  const cls = { neutral: "", emerald: "text-emerald-700 dark:text-emerald-400", red: "text-red-700 dark:text-red-400" }[tone] || "";
-  return (
-    <div className="glass-card p-4">
-      <div className="flex items-center gap-2">
-        {Icon && <Icon className={cn("h-4 w-4", cls)} />}
-        <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      </div>
-      <div className={cn("text-xl font-bold tabular-nums mt-1", cls)}>{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
-    </div>
-  );
-}
 
 function DailyChart({ daily, opening }) {
   const balances = daily.map(d => d.balance);
@@ -191,13 +178,13 @@ function DailyChart({ daily, opening }) {
             <g key={d.date}>
               <line x1={prevX} y1={prevY} x2={x} y2={y} stroke="currentColor" strokeOpacity="0.5" strokeWidth="2" />
               <circle cx={x} cy={y} r={3} fill="currentColor" />
-              <text x={x} y={height + 16} fontSize="9" textAnchor="middle" fill="currentColor" opacity="0.6">{d.date.slice(-2)}</text>
+              <text x={x} y={height + 16} fontSize="11" textAnchor="middle" fill="currentColor" opacity="0.6">{d.date.slice(-2)}</text>
             </g>
           );
         })}
       </svg>
       <div className="text-[11px] text-muted-foreground mt-1">
-        Y-axis: Rp {(min / 1e6).toFixed(0)}jt — {(max / 1e6).toFixed(0)}jt · dashed = opening balance
+        Sumbu Y: Rp {(min / 1e6).toFixed(0)}jt — {(max / 1e6).toFixed(0)}jt · garis putus-putus = saldo awal
       </div>
     </div>
   );

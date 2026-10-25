@@ -80,14 +80,15 @@ export default function ExecutiveQA() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 flex flex-col h-[calc(100vh-180px)]" data-testid="executive-qa-page">
+    <div className="space-y-3 flex flex-col h-[calc(100vh-140px)] min-h-[420px]" data-testid="executive-qa-page">
       <PageHeader
         icon={Brain}
         title="Executive Q&A"
         subtitle="Tanya AI tentang performa bisnis Anda"
-        action={
-          <Button variant="ghost" size="sm" className="gap-2" onClick={() => setMessages(messages.slice(0, 1))}>
-            <History className="h-3.5 w-3.5" /> Reset
+        className="mb-0 md:mb-0"
+        actions={
+          <Button variant="outline" onClick={() => setMessages(messages.slice(0, 1))} disabled={messages.length <= 1} data-testid="qa-reset">
+            <History /> Mulai ulang
           </Button>
         }
       />
@@ -113,9 +114,10 @@ export default function ExecutiveQA() {
           <div className="flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button
+                type="button"
                 key={s}
                 onClick={() => ask(s)}
-                className="text-xs px-3 py-1.5 rounded-full glass-input hover:shadow-md transition"
+                className="text-xs md:text-[13px] px-3 h-8 rounded-full border border-border/60 bg-background/60 hover:bg-foreground/5 transition-colors"
                 data-testid="qa-suggestion"
               >
                 {s}
@@ -133,13 +135,14 @@ export default function ExecutiveQA() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Tanyakan apapun tentang bisnis Anda..."
-          className="flex-1 bg-transparent outline-none text-sm px-3 h-10"
+          placeholder="Tanyakan apa pun tentang bisnis Anda…"
+          aria-label="Pertanyaan untuk asisten AI"
+          className="flex-1 bg-transparent outline-none text-sm px-3 h-9"
           disabled={loading}
           data-testid="qa-input"
         />
-        <Button type="submit" disabled={loading || !input.trim()} className="rounded-full pill-active gap-2 h-10" data-testid="qa-send">
-          <Send className="h-4 w-4" /> Tanya
+        <Button type="submit" disabled={loading || !input.trim()} data-testid="qa-send">
+          <Send /> Tanya
         </Button>
       </form>
     </div>
@@ -163,7 +166,7 @@ function Bubble({ role, content, warning, sources, latency }) {
         <div className="whitespace-pre-line">{content}</div>
         {sources && sources.length > 0 && (
           <div className="mt-2 pt-2 border-t border-current/20 text-xs opacity-70">
-            <strong>Sources:</strong> {sources.slice(0, 3).map((s) => s.label || s.id).join(", ")}
+            <strong>Sumber:</strong> {sources.slice(0, 3).map((s) => s.label || s.id).join(", ")}
           </div>
         )}
         {latency && <div className="text-[11px] opacity-60 mt-1">{latency}ms</div>}

@@ -4,9 +4,9 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Users, Plus, FileText, Send, DollarSign, X, Loader2,
+  Users, Plus, FileText, Send, DollarSign, Loader2,
   Edit2, AlertTriangle, RefreshCw, Download, Bell,
-  TrendingDown, BarChart3, Eye,
+  TrendingDown, BarChart3, Eye, MoreHorizontal, Receipt, Wallet, Clock, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,35 +18,29 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
+import StatusPill, { statusLabel } from "@/components/shared/StatusPill";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency, formatDateID } from "@/lib/format";
 import { InvoiceCreateDialog, CustomerCreateDialog, ReceiptDialog, InvoiceDetailDialog, CustomerEditDialog, InvoiceEditDialog, ReminderDialog } from "../ARInvoiceDialogs";
-import { InlineHelp } from "@/components/shared/InlineHelp";
 import useExcelExport from "@/hooks/useExcelExport";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 // ── Status helpers ──────────────────────────────
 
-const STATUS_MAP = {
-  draft:       { label: "Draft",         variant: "secondary",    color: "" },
-  sent:        { label: "Terkirim",      variant: "default",      color: "" },
-  partial:     { label: "Sebagian",      variant: "outline",      color: "border-amber-500 text-amber-700" },
-  paid:        { label: "Lunas",         variant: "default",      color: "bg-green-600" },
-  overdue:     { label: "Jatuh Tempo",   variant: "destructive",  color: "" },
-  cancelled:   { label: "Dibatalkan",    variant: "secondary",    color: "" },
-  written_off: { label: "Write-off",     variant: "secondary",    color: "bg-zinc-300 text-zinc-700" },
-};
-
-function StatusBadge({ status }) {
-  const m = STATUS_MAP[status] || STATUS_MAP.draft;
-  return <Badge variant={m.variant} className={m.color}>{m.label}</Badge>;
-}
+// Status invoice AR — label & warna dari kamus global StatusPill.
+const AR_STATUSES = ["draft", "sent", "partial", "paid", "overdue", "cancelled", "written_off"];
 
 // ── Main Component ──────────────────────────────
 
-export default function ARInvoiceList() {
+export default function ARInvoiceList({ embedded = false }) {
   const [activeTab, setActiveTab] = useState("invoices");
 
   // filters
@@ -180,53 +174,46 @@ export default function ARInvoiceList() {
     }
   };
 
+  const subtitle = "Kelola invoice piutang, customer, aging, dan rekonsiliasi AR.";
+  const headerActions = (
+    <>
+      <Button variant="outline" onClick={() => setCustomerDialog(true)} data-testid="add-customer-btn">
+        <Plus className="h-4 w-4" /> Customer Baru
+      </Button>
+      <Button variant="outline"
+        onClick={() => exportXlsx("/ar/invoices/write-off/export/xlsx", "ar_writeoff.xlsx")}
+        disabled={downloading}
+        data-testid="ar-writeoff-export-xlsx"
+      >
+        <Download className="h-4 w-4" />
+        {downloading ? "Mengunduh..." : "Ekspor write-off"}
+      </Button>
+      <Button onClick={() => setInvoiceDialog(true)} data-testid="create-invoice-btn">
+        <Plus className="h-4 w-4" /> Invoice Baru
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-6" data-testid="ar-invoice-list">
+    <div className="space-y-3 lg:space-y-4" data-testid="ar-invoice-list">
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <Users className="h-6 w-6" /> AR Ledger
-          </h2>
-          <p className="text-muted-foreground text-sm">Kelola invoice piutang, customer, dan rekonsiliasi AR</p>
+      {embedded ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+          <div className="flex flex-wrap items-center gap-2">{headerActions}</div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setCustomerDialog(true)} data-testid="add-customer-btn">
-            <Plus className="h-4 w-4 mr-2" /> Customer Baru
-          </Button>
-          <Button variant="outline"
-            onClick={() => exportXlsx("/ar/invoices/write-off/export/xlsx", "ar_writeoff.xlsx")}
-            disabled={downloading}
-            data-testid="ar-writeoff-export-xlsx"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {downloading ? "Mengunduh..." : "Export Write-off"}
-          </Button>
-          <Button onClick={() => setInvoiceDialog(true)} data-testid="create-invoice-btn">
-            <Plus className="h-4 w-4 mr-2" /> Invoice Baru
-          </Button>
-        </div>
-      </div>
+      ) : (
+        <PageHeader icon={Users} title="AR Invoices" subtitle={subtitle} actions={headerActions} />
+      )}
 
       {/* KPI Strip */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="ar-kpi-strip">
-          <Card data-testid="ar-kpi-count"><CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Total Invoice</div>
-            <div className="text-xl font-bold">{summary.count}</div>
-          </CardContent></Card>
-          <Card data-testid="ar-kpi-total"><CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Total Tagihan</div>
-            <div className="text-xl font-bold">{formatCurrency(summary.total)}</div>
-          </CardContent></Card>
-          <Card data-testid="ar-kpi-outstanding"><CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Outstanding</div>
-            <div className="text-xl font-bold text-orange-600">{formatCurrency(summary.outstanding)}</div>
-          </CardContent></Card>
-          <Card data-testid="ar-kpi-overdue"><CardContent className="pt-4">
-            <div className="text-sm text-muted-foreground">Jatuh Tempo</div>
-            <div className="text-xl font-bold text-red-600">{summary.overdue}</div>
-          </CardContent></Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="ar-kpi-strip">
+          <CompactStatCard label="Total invoice" icon={FileText} color="aurora-1" value={summary.count} testId="ar-kpi-count" />
+          <CompactStatCard label="Total tagihan" icon={Receipt} color="aurora-2" value={formatCurrency(summary.total)} testId="ar-kpi-total" />
+          <CompactStatCard label="Outstanding" icon={Wallet} color="aurora-5" tone="warning" value={formatCurrency(summary.outstanding)} testId="ar-kpi-outstanding" />
+          <CompactStatCard label="Jatuh tempo" icon={AlertTriangle} color="aurora-6" tone={summary.overdue > 0 ? "danger" : "default"} value={summary.overdue}
+            sub="invoice lewat jatuh tempo" testId="ar-kpi-overdue" />
         </div>
       )}
 
@@ -234,28 +221,28 @@ export default function ARInvoiceList() {
         <TabsList>
           <TabsTrigger value="invoices" data-testid="tab-invoices">Invoices</TabsTrigger>
           <TabsTrigger value="customers" data-testid="tab-customers">Customers</TabsTrigger>
-          <TabsTrigger value="aging" data-testid="tab-aging">Aging Report</TabsTrigger>
-          <TabsTrigger value="recon" data-testid="tab-recon">Rekonsiliasi</TabsTrigger>
+          <TabsTrigger value="aging" data-testid="tab-aging">Aging report</TabsTrigger>
+          <TabsTrigger value="recon" data-testid="tab-recon">Reconciliation</TabsTrigger>
         </TabsList>
 
         {/* ── INVOICES TAB ──────────────────────────── */}
-        <TabsContent value="invoices" className="mt-4">
+        <TabsContent value="invoices">
           {/* Filters */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             <Input type="month" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)}
-              className="w-40" placeholder="Periode" data-testid="filter-period" />
+              className="w-44" placeholder="Periode" aria-label="Filter periode invoice" data-testid="filter-period" />
             <Select value={filterStatus || "all"} onValueChange={v => setFilterStatus(v === "all" ? "" : v)}>
-              <SelectTrigger className="w-44" data-testid="filter-status">
+              <SelectTrigger className="w-44" aria-label="Filter status invoice" data-testid="filter-status">
                 <SelectValue placeholder="Semua Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Status</SelectItem>
-                {Object.entries(STATUS_MAP).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                {AR_STATUSES.map((k) => (
+                  <SelectItem key={k} value={k}>{statusLabel(k)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={loadInvoices} data-testid="invoices-refresh">
+            <Button variant="outline" size="icon" onClick={loadInvoices} aria-label="Muat ulang invoice" title="Muat ulang" data-testid="invoices-refresh">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
@@ -268,18 +255,15 @@ export default function ARInvoiceList() {
                 loading={loading}
                 rowTestIdPrefix="invoice-row"
                 empty={(
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="mx-auto h-8 w-8 mb-2" />
-                    <p>Belum ada invoice</p>
-                    <Button variant="outline" size="sm" className="mt-3" onClick={() => setInvoiceDialog(true)}>
-                      Buat Invoice Pertama
-                    </Button>
-                  </div>
+                  <EmptyState icon={FileText} title="Belum ada invoice"
+                    description="Buat invoice AR untuk customer B2B, catering, atau aggregator."
+                    action={<Button variant="outline" size="sm" onClick={() => setInvoiceDialog(true)} data-testid="ar-empty-create-invoice">
+                      <Plus className="h-4 w-4" /> Buat Invoice Pertama</Button>} />
                 )}
                 rowClassName={(inv) => (inv.status === "overdue" ? "bg-red-50 dark:bg-red-950/20" : "")}
                 columns={[
                   { key: "invoice_no", label: "No Invoice", sortable: true, primary: true,
-                    render: (inv) => <span className="font-mono text-sm font-medium">{inv.invoice_no}</span> },
+                    render: (inv) => <span className="font-mono text-xs font-medium whitespace-nowrap">{inv.invoice_no}</span> },
                   { key: "customer_name", label: "Customer", sortable: true,
                     render: (inv) => (
                       <div>
@@ -288,68 +272,81 @@ export default function ARInvoiceList() {
                       </div>
                     ) },
                   { key: "invoice_date", label: "Tgl Invoice", sortable: true,
-                    render: (inv) => <span className="text-sm">{formatDateID(inv.invoice_date)}</span> },
+                    render: (inv) => <span className="text-sm whitespace-nowrap">{formatDateID(inv.invoice_date)}</span> },
                   { key: "due_date", label: "Jatuh Tempo", sortable: true,
-                    render: (inv) => <span className={`text-sm ${inv.status === "overdue" ? "text-red-600 font-medium" : ""}`}>{formatDateID(inv.due_date)}</span> },
+                    render: (inv) => <span className={`text-sm whitespace-nowrap ${inv.status === "overdue" ? "text-red-600 dark:text-red-400 font-medium" : ""}`}>{formatDateID(inv.due_date)}</span> },
                   { key: "total_amount", label: "Total", numeric: true, sortable: true,
-                    render: (inv) => <span className="text-sm font-semibold">{formatCurrency(inv.total_amount)}</span> },
+                    render: (inv) => <span className="text-sm font-semibold whitespace-nowrap">{formatCurrency(inv.total_amount)}</span> },
                   { key: "outstanding", label: "Outstanding", numeric: true, sortable: true,
                     render: (inv) => inv.outstanding > 0
-                      ? <span className="text-orange-600 font-medium">{formatCurrency(inv.outstanding)}</span>
-                      : <span className="text-green-600 text-sm">Lunas</span> },
+                      ? <span className="text-orange-600 dark:text-orange-400 font-medium whitespace-nowrap">{formatCurrency(inv.outstanding)}</span>
+                      : <span className="text-emerald-600 dark:text-emerald-400 text-sm">Lunas</span> },
                   { key: "status", label: "Status",
-                    render: (inv) => <StatusBadge status={inv.status} /> },
+                    render: (inv) => <StatusPill status={inv.status} /> },
                 ]}
-                rowAction={(inv) => (
-                  <div className="flex gap-1 justify-end">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="Detail" aria-label="Lihat detail invoice"
-                      onClick={() => setDetailDialog(inv)} data-testid={`view-invoice-${inv.invoice_no}`}>
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                    {inv.status === "draft" && (
-                      <Button size="icon" variant="ghost" className="h-7 w-7" title="Kirim" aria-label="Kirim invoice"
-                        onClick={() => handleSendInvoice(inv)} data-testid={`send-invoice-${inv.invoice_no}`}>
-                        <Send className="h-3 w-3" />
+                rowAction={(inv) => {
+                  const canRemind = inv.outstanding > 0 && inv.status !== "draft";
+                  const canWriteOff = inv.status === "overdue" || (inv.outstanding > 0 && inv.status !== "draft");
+                  return (
+                    <div className="flex items-center gap-1 justify-end">
+                      <Button size="icon-sm" variant="ghost" title="Detail" aria-label="Lihat detail invoice"
+                        onClick={() => setDetailDialog(inv)} data-testid={`view-invoice-${inv.invoice_no}`}>
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
-                    )}
-                    {inv.status === "draft" && (
-                      <Button size="icon" variant="ghost" className="h-7 w-7" title="Edit Invoice" aria-label="Edit invoice"
-                        onClick={() => setInvoiceEdit(inv)} data-testid={`edit-invoice-${inv.invoice_no}`}>
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                    {inv.outstanding > 0 && inv.status !== "draft" && (
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-amber-600" title="Kirim Pengingat Pembayaran" aria-label="Kirim pengingat"
-                        onClick={() => setReminderDialog(inv)} data-testid={`remind-invoice-${inv.invoice_no}`}>
-                        <Bell className="h-3 w-3" />
-                      </Button>
-                    )}
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="Download PDF" aria-label="Download PDF"
-                      onClick={() => handleDownloadPDF(inv)} data-testid={`pdf-invoice-${inv.invoice_no}`}>
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    {inv.outstanding > 0 && (
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-green-700" title="Catat Pembayaran" aria-label="Catat pembayaran"
-                        onClick={() => setReceiptDialog(inv)} data-testid={`record-payment-${inv.invoice_no}`}>
-                        <DollarSign className="h-3 w-3" />
-                      </Button>
-                    )}
-                    {(inv.status === "overdue" || (inv.outstanding > 0 && inv.status !== "draft")) && (
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" title="Write Off Piutang Tak Tertagih"
-                        onClick={() => { setWriteOffDialog(inv); setWriteOffReason(""); }}
-                        data-testid={`write-off-${inv.invoice_no}`}>
-                        <TrendingDown className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                )}
+                      {inv.status === "draft" && (
+                        <Button size="icon-sm" variant="ghost" title="Kirim invoice" aria-label="Kirim invoice"
+                          onClick={() => handleSendInvoice(inv)} data-testid={`send-invoice-${inv.invoice_no}`}>
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {inv.outstanding > 0 && (
+                        <Button size="icon-sm" variant="ghost" className="text-emerald-700 dark:text-emerald-400" title="Catat pembayaran" aria-label="Catat pembayaran"
+                          onClick={() => setReceiptDialog(inv)} data-testid={`record-payment-${inv.invoice_no}`}>
+                          <DollarSign className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon-sm" variant="ghost" aria-label="Aksi lain" title="Aksi lain" data-testid={`invoice-more-${inv.invoice_no}`}>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {inv.status === "draft" && (
+                            <DropdownMenuItem onSelect={() => setInvoiceEdit(inv)} data-testid={`edit-invoice-${inv.invoice_no}`}>
+                              <Edit2 className="h-3.5 w-3.5 mr-2" /> Edit invoice
+                            </DropdownMenuItem>
+                          )}
+                          {canRemind && (
+                            <DropdownMenuItem onSelect={() => setReminderDialog(inv)} data-testid={`remind-invoice-${inv.invoice_no}`}>
+                              <Bell className="h-3.5 w-3.5 mr-2" /> Kirim pengingat
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onSelect={() => handleDownloadPDF(inv)} data-testid={`pdf-invoice-${inv.invoice_no}`}>
+                            <Download className="h-3.5 w-3.5 mr-2" /> Unduh PDF
+                          </DropdownMenuItem>
+                          {canWriteOff && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600 focus:text-red-700"
+                                onSelect={() => { setWriteOffDialog(inv); setWriteOffReason(""); }}
+                                data-testid={`write-off-${inv.invoice_no}`}>
+                                <TrendingDown className="h-3.5 w-3.5 mr-2" /> Write-off piutang
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  );
+                }}
               />
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* ── CUSTOMERS TAB ──────────────────────────── */}
-        <TabsContent value="customers" className="mt-4">
+        <TabsContent value="customers">
           <Card data-testid="customers-table-card">
             <CardContent className="pt-4">
               <DataTable
@@ -358,13 +355,10 @@ export default function ARInvoiceList() {
                 loading={loading}
                 rowTestIdPrefix="customer-row"
                 empty={(
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="mx-auto h-8 w-8 mb-2" />
-                    <p>Belum ada customer AR</p>
-                    <Button variant="outline" size="sm" className="mt-3" onClick={() => setCustomerDialog(true)}>
-                      Tambah Customer
-                    </Button>
-                  </div>
+                  <EmptyState icon={Users} title="Belum ada customer AR"
+                    description="Tambahkan customer untuk mulai menerbitkan invoice."
+                    action={<Button variant="outline" size="sm" onClick={() => setCustomerDialog(true)} data-testid="ar-empty-add-customer">
+                      <Plus className="h-4 w-4" /> Tambah Customer</Button>} />
                 )}
                 columns={[
                   { key: "name", label: "Nama Customer", sortable: true, primary: true,
@@ -372,7 +366,7 @@ export default function ARInvoiceList() {
                   { key: "channel", label: "Channel",
                     render: (c) => <Badge variant="outline">{c.channel}</Badge> },
                   { key: "npwp", label: "NPWP",
-                    render: (c) => <span className="font-mono text-xs">{c.npwp || "-"}</span> },
+                    render: (c) => <span className="text-xs tabular-nums whitespace-nowrap">{c.npwp || "-"}</span> },
                   { key: "contact", label: "Kontak",
                     render: (c) => (
                       <div>
@@ -388,9 +382,9 @@ export default function ARInvoiceList() {
                       : <span className="text-muted-foreground">-</span>) },
                 ]}
                 rowAction={(c) => (
-                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Edit Customer" aria-label="Edit customer"
+                  <Button size="icon-sm" variant="ghost" title="Edit customer" aria-label="Edit customer"
                     onClick={() => setCustomerEdit(c)} data-testid={`edit-customer-${c.id}`}>
-                    <Edit2 className="h-3 w-3" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
               />
@@ -399,50 +393,44 @@ export default function ARInvoiceList() {
         </TabsContent>
 
         {/* ── AGING REPORT TAB ──────────────────────────── */}
-        <TabsContent value="aging" className="mt-4" data-testid="aging-tab">
+        <TabsContent value="aging" data-testid="aging-tab">
           {loading ? (
             <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : aging ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3 lg:space-y-4">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-lg font-semibold">AR Aging Report</h3>
-                  <p className="text-sm text-muted-foreground">Per tanggal: {formatDateID(aging.as_of)}</p>
+                  <h2 className="text-base md:text-lg font-semibold">AR aging report</h2>
+                  <p className="text-xs md:text-sm text-muted-foreground">Per tanggal: {formatDateID(aging.as_of)}</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={loadAging}>
-                  <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+                <Button variant="outline" size="sm" onClick={loadAging} data-testid="aging-refresh">
+                  <RefreshCw className="h-4 w-4" /> Muat ulang
                 </Button>
               </div>
 
               {/* Bucket Summary Cards */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-testid="aging-buckets">
                 {[
-                  { key: "current",  label: "Belum JT",    color: "text-green-600" },
-                  { key: "1_30",     label: "1-30 Hari",   color: "text-amber-500" },
-                  { key: "31_60",    label: "31-60 Hari",  color: "text-orange-500" },
-                  { key: "61_90",    label: "61-90 Hari",  color: "text-red-500" },
-                  { key: "over_90",  label: ">90 Hari",    color: "text-red-700" },
-                ].map(({ key, label, color }) => (
-                  <Card key={key}>
-                    <CardContent className="pt-4">
-                      <div className="text-xs text-muted-foreground">{label}</div>
-                      <div className={`text-lg font-bold mt-1 ${color}`}>
-                        {formatCurrency(aging.buckets[key] || 0)}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {aging.items[key]?.length || 0} invoice
-                      </div>
-                    </CardContent>
-                  </Card>
+                  { key: "current",  label: "Belum jatuh tempo", tone: "success", color: "aurora-4", icon: CheckCircle2 },
+                  { key: "1_30",     label: "1-30 hari",   tone: "warning", color: "aurora-5", icon: Clock },
+                  { key: "31_60",    label: "31-60 hari",  tone: "warning", color: "aurora-5", icon: Clock },
+                  { key: "61_90",    label: "61-90 hari",  tone: "danger",  color: "aurora-6", icon: AlertCircle },
+                  { key: "over_90",  label: ">90 hari",    tone: "danger",  color: "aurora-6", icon: AlertTriangle },
+                ].map(({ key, label, tone, color, icon }) => (
+                  <CompactStatCard key={key} label={label} icon={icon} color={color}
+                    tone={(aging.buckets[key] || 0) > 0 ? tone : "default"}
+                    value={formatCurrency(aging.buckets[key] || 0)}
+                    sub={`${aging.items[key]?.length || 0} invoice`}
+                    testId={`aging-bucket-${key}`} />
                 ))}
               </div>
 
               {/* Total */}
-              <Card className="bg-muted/40">
+              <Card data-testid="aging-total-card">
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
-                    <div className="font-semibold">Total Outstanding</div>
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="font-semibold">Total outstanding</div>
+                    <div className="text-xl font-semibold tabular-nums text-orange-600 dark:text-orange-400">
                       {formatCurrency(aging.total_outstanding)}
                     </div>
                   </div>
@@ -459,7 +447,7 @@ export default function ARInvoiceList() {
               {aging.by_customer?.length > 0 && (
                 <Card data-testid="aging-by-customer">
                   <CardHeader>
-                    <CardTitle className="text-base">Per Customer</CardTitle>
+                    <CardTitle>Per customer</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <DataTable
@@ -493,26 +481,23 @@ export default function ARInvoiceList() {
               )}
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <TrendingDown className="mx-auto h-8 w-8 mb-2" />
-              <p>Klik refresh untuk memuat aging report</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={loadAging}>
-                <RefreshCw className="h-4 w-4 mr-1" /> Muat Aging
-              </Button>
-            </div>
+            <EmptyState icon={TrendingDown} title="Aging report belum dimuat"
+              description="Klik muat ulang untuk mengambil aging report terbaru."
+              action={<Button variant="outline" size="sm" onClick={loadAging} data-testid="aging-load">
+                <RefreshCw className="h-4 w-4" /> Muat aging</Button>} />
           )}
         </TabsContent>
 
         {/* ── RECONCILIATION TAB ──────────────────────────── */}
-        <TabsContent value="recon" className="mt-4" data-testid="recon-tab">
-          <div className="flex items-end gap-3 mb-6">
+        <TabsContent value="recon" data-testid="recon-tab">
+          <div className="flex flex-wrap items-end gap-3 mb-3">
             <div className="space-y-1">
-              <Label>Periode</Label>
-              <Input type="month" value={reconPeriod} onChange={e => setReconPeriod(e.target.value)}
+              <Label htmlFor="recon-period-input">Periode</Label>
+              <Input id="recon-period-input" type="month" value={reconPeriod} onChange={e => setReconPeriod(e.target.value)}
                 className="w-44" data-testid="recon-period-input" />
             </div>
-            <Button onClick={() => reconQuery.refetch()} data-testid="load-recon-btn">
-              <BarChart3 className="h-4 w-4 mr-2" /> Muat Rekonsiliasi
+            <Button variant="outline" onClick={() => reconQuery.refetch()} data-testid="load-recon-btn">
+              <RefreshCw className="h-4 w-4" /> Muat ulang
             </Button>
           </div>
 
@@ -545,10 +530,8 @@ export default function ARInvoiceList() {
               </CardContent>
             </Card>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <BarChart3 className="mx-auto h-8 w-8 mb-2" />
-              <p>Pilih periode dan klik "Muat Rekonsiliasi"</p>
-            </div>
+            <EmptyState icon={BarChart3} title="Belum ada data rekonsiliasi"
+              description="Pilih periode lalu klik muat ulang." />
           )}
         </TabsContent>
       </Tabs>
@@ -587,7 +570,7 @@ export default function ARInvoiceList() {
       <Dialog open={!!writeOffDialog} onOpenChange={open => { if (!open) { setWriteOffDialog(null); setWriteOffReason(""); } }}>
         <DialogContent className="max-w-md" data-testid="write-off-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <TrendingDown className="h-5 w-5" /> Write Off Piutang
             </DialogTitle>
             <DialogDescription>
@@ -596,7 +579,7 @@ export default function ARInvoiceList() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+            <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-700 dark:text-red-400">
               Tindakan ini akan membuat jurnal: <strong>Dr Beban Piutang Tak Tertagih / Cr Piutang Usaha</strong>.
               Status invoice akan berubah menjadi <strong>Write-off</strong> dan tidak bisa dikembalikan.
             </div>

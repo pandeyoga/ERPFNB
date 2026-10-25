@@ -1,7 +1,7 @@
 /** Outlet Stock Transfers — inter-outlet transfer workflow (list/create/send/receive). */
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeftRight, RefreshCw, Plus, Send, PackageCheck, Trash2, X, Store,
+  ArrowLeftRight, ArrowRight, RefreshCw, Plus, Send, PackageCheck, Trash2, Truck, Wallet,
 } from "lucide-react";
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -14,21 +14,22 @@ import {
 } from "@/components/ui/select";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import StatusPill from "@/components/shared/StatusPill";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtRp, fmtDate, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { useOutletScopeCtx } from "../OutletScopeContext";
 
+// Label tab filter = label kamus StatusPill (satu kamus status untuk seluruh aplikasi).
 const STATUS_META = {
-  draft: { label: "Draft", tone: "bg-muted text-muted-foreground" },
-  sent: { label: "Dikirim", tone: "bg-sky-500/15 text-sky-700 dark:text-sky-400" },
-  received: { label: "Diterima", tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
-  cancelled: { label: "Dibatalkan", tone: "bg-rose-500/15 text-rose-700 dark:text-rose-400" },
+  draft: { label: "Draft" },
+  sent: { label: "Sent" },
+  received: { label: "Received" },
+  cancelled: { label: "Cancelled" },
 };
-
-function StatusBadge({ s }) {
-  const m = STATUS_META[s] || { label: s, tone: "bg-muted text-muted-foreground" };
-  return <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${m.tone}`}>{m.label}</span>;
-}
 
 export default function StockTransfers() {
   const { scopedOutlets, outletId } = useOutletScopeCtx();
@@ -85,68 +86,55 @@ export default function StockTransfers() {
   const statuses = ["all", "draft", "sent", "received"];
   const columns = [
     { key: "doc_no", label: "No. Transfer", primary: true,
-      render: (r) => <span className="font-mono text-xs font-semibold">{r.doc_no}</span> },
+      render: (r) => <span className="text-xs font-medium tabular-nums">{r.doc_no}</span> },
     { key: "route", label: "Rute",
       render: (r) => (
         <span className="text-sm inline-flex items-center gap-1.5">
-          {oname(r.from_outlet_id)} <ArrowLeftRight className="h-3 w-3 text-muted-foreground" /> {oname(r.to_outlet_id)}
+          {oname(r.from_outlet_id)} <ArrowRight className="h-3 w-3 text-muted-foreground" aria-label="ke" /> {oname(r.to_outlet_id)}
         </span>
       ) },
     { key: "transfer_date", label: "Tanggal", render: (r) => fmtDate(r.transfer_date) },
     { key: "items", label: "Item", numeric: true,
       render: (r) => <span className="tabular-nums">{(r.lines || []).length}</span> },
     { key: "total_value", label: "Nilai", numeric: true,
-      render: (r) => <span className="font-mono tabular-nums">{fmtRp(r.total_value || 0)}</span> },
-    { key: "status", label: "Status", render: (r) => <StatusBadge s={r.status} /> },
+      render: (r) => <span className="tabular-nums">{fmtRp(r.total_value || 0)}</span> },
+    { key: "status", label: "Status", render: (r) => <StatusPill status={r.status} /> },
   ];
 
   return (
-    <div className="p-1 sm:p-2 space-y-5" data-testid="outlet-stock-transfers">
-      <div className="glass-card p-5 lg:p-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold mb-1 flex items-center gap-2">
-              <ArrowLeftRight className="h-5 w-5" /> Stock Transfers
-            </h1>
-            <p className="text-sm text-muted-foreground">Transfer stok antar outlet — draft → kirim → terima</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={load} data-testid="transfers-refresh">
-              <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+    <div className="space-y-3 lg:space-y-4" data-testid="outlet-stock-transfers">
+      <PageHeader
+        icon={ArrowLeftRight}
+        title="Stock Transfers"
+        subtitle="Transfer stok antar outlet — draft → kirim → terima. Klik baris untuk detail & aksi."
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            <Button variant="outline" onClick={load} data-testid="transfers-refresh">
+              <RefreshCw className="h-4 w-4" /> Muat ulang
             </Button>
-            <Button size="sm" className="pill-active gap-1" onClick={() => setCreateOpen(true)} data-testid="transfers-new">
+            <Button onClick={() => setCreateOpen(true)} data-testid="transfers-new">
               <Plus className="h-4 w-4" /> Transfer Baru
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="glass-card p-4" data-testid="transfers-kpi-total">
-          <div className="text-xs text-muted-foreground">Total Transfer</div>
-          <div className="text-2xl font-bold tabular-nums">{fmtNumber(kpis.total)}</div>
-        </div>
-        <div className="glass-card p-4" data-testid="transfers-kpi-transit">
-          <div className="text-xs text-muted-foreground">Dalam Pengiriman</div>
-          <div className="text-2xl font-bold tabular-nums text-sky-600 dark:text-sky-400">{fmtNumber(kpis.inTransit)}</div>
-        </div>
-        <div className="glass-card p-4 col-span-2 lg:col-span-1" data-testid="transfers-kpi-value">
-          <div className="text-xs text-muted-foreground">Total Nilai Transfer</div>
-          <div className="text-2xl font-bold tabular-nums">{fmtRp(kpis.value)}</div>
-        </div>
+        <CompactStatCard label="Total Transfer" value={fmtNumber(kpis.total)} icon={ArrowLeftRight} color="aurora-1" loading={loading} testId="transfers-kpi-total" />
+        <CompactStatCard label="Dalam Pengiriman" value={fmtNumber(kpis.inTransit)} icon={Truck} color="aurora-4" tone={kpis.inTransit > 0 ? "info" : "default"} loading={loading} testId="transfers-kpi-transit" />
+        <CompactStatCard label="Total Nilai Transfer" value={fmtRp(kpis.value)} icon={Wallet} color="aurora-3" loading={loading} testId="transfers-kpi-value" className="col-span-2 lg:col-span-1" />
       </div>
 
-      <div className="glass-card p-3">
-        <div className="flex flex-wrap gap-2">
+      <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+        <TabsList aria-label="Filter status">
           {statuses.map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${statusFilter === s ? "pill-active" : "glass-input hover:bg-foreground/5"}`}
-              data-testid={`transfers-filter-${s}`}>
+            <TabsTrigger key={s} value={s} data-testid={`transfers-filter-${s}`}>
               {s === "all" ? "Semua" : (STATUS_META[s]?.label || s)}
-            </button>
+            </TabsTrigger>
           ))}
-        </div>
-      </div>
+        </TabsList>
+      </Tabs>
 
       <div className="glass-card">
         <DataTable
@@ -155,8 +143,9 @@ export default function StockTransfers() {
           keyField="_rk"
           loading={loading}
           onRowClick={(r) => setDetail(r)}
-          empty={<EmptyState icon={ArrowLeftRight} title="Belum ada transfer"
-            description="Buat transfer baru untuk memindahkan stok antar outlet." />}
+          empty={<EmptyState icon={ArrowLeftRight} title={statusFilter === "all" ? "Belum ada transfer" : "Tidak ada transfer dengan status ini"}
+            description="Buat transfer baru untuk memindahkan stok antar outlet."
+            action={<Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>Transfer Baru</Button>} />}
           rowTestIdPrefix="transfers-row"
         />
       </div>
@@ -168,14 +157,14 @@ export default function StockTransfers() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <span className="font-mono text-sm">{detail.doc_no}</span>
-                  <StatusBadge s={detail.status} />
+                  <span className="tabular-nums">{detail.doc_no}</span>
+                  <StatusPill status={detail.status} />
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between p-3 rounded-lg glass-input">
                   <div><div className="text-xs text-muted-foreground">Dari</div><div className="font-medium">{oname(detail.from_outlet_id)}</div></div>
-                  <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   <div className="text-right"><div className="text-xs text-muted-foreground">Ke</div><div className="font-medium">{oname(detail.to_outlet_id)}</div></div>
                 </div>
                 <div className="text-xs text-muted-foreground">Tanggal: {fmtDate(detail.transfer_date)}</div>
@@ -183,26 +172,26 @@ export default function StockTransfers() {
                   {(detail.lines || []).map((ln, i) => (
                     <div key={i} className="flex items-center justify-between p-2.5 text-sm">
                       <span>{ln.item_name || ln.item_id}</span>
-                      <span className="font-mono tabular-nums">{fmtNumber(ln.qty)} {ln.unit || ""} · {fmtRp(ln.total_cost || 0)}</span>
+                      <span className="tabular-nums">{fmtNumber(ln.qty)} {ln.unit || ""} · {fmtRp(ln.total_cost || 0)}</span>
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-between font-semibold">
-                  <span>Total</span><span className="font-mono tabular-nums">{fmtRp(detail.total_value || 0)}</span>
+                  <span>Total</span><span className="tabular-nums">{fmtRp(detail.total_value || 0)}</span>
                 </div>
               </div>
               <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setDetail(null)}>Tutup</Button>
                 {detail.status === "draft" && (
-                  <Button onClick={() => doAction(detail.id, "send")} disabled={busy} className="gap-1" data-testid="transfer-send">
+                  <Button onClick={() => doAction(detail.id, "send")} disabled={busy} data-testid="transfer-send">
                     <Send className="h-4 w-4" /> Kirim
                   </Button>
                 )}
                 {detail.status === "sent" && (
-                  <Button onClick={() => doAction(detail.id, "receive")} disabled={busy} className="gap-1" data-testid="transfer-receive">
+                  <Button onClick={() => doAction(detail.id, "receive")} disabled={busy} data-testid="transfer-receive">
                     <PackageCheck className="h-4 w-4" /> Terima
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setDetail(null)}>Tutup</Button>
               </DialogFooter>
             </>
           )}
@@ -273,38 +262,39 @@ function CreateTransferDialog({ open, onClose, outlets, onCreated }) {
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg" data-testid="transfer-create-dialog">
         <DialogHeader><DialogTitle>Transfer Baru</DialogTitle></DialogHeader>
+        <p className="text-sm text-muted-foreground -mt-1">Transfer dibuat sebagai draft; kirim dari detail transfer setelah dicek.</p>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Dari Outlet</label>
+              <Label htmlFor="transfer-from-trigger" className="text-xs md:text-sm font-medium mb-1 block">Dari outlet *</Label>
               <Select value={fromId} onValueChange={setFromId}>
-                <SelectTrigger className="glass-input" data-testid="transfer-from"><SelectValue placeholder="Pilih…" /></SelectTrigger>
+                <SelectTrigger id="transfer-from-trigger" className="glass-input" data-testid="transfer-from"><SelectValue placeholder="Pilih…" /></SelectTrigger>
                 <SelectContent>{outlets.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Ke Outlet</label>
+              <Label htmlFor="transfer-to-trigger" className="text-xs md:text-sm font-medium mb-1 block">Ke outlet *</Label>
               <Select value={toId} onValueChange={setToId}>
-                <SelectTrigger className="glass-input" data-testid="transfer-to"><SelectValue placeholder="Pilih…" /></SelectTrigger>
+                <SelectTrigger id="transfer-to-trigger" className="glass-input" data-testid="transfer-to"><SelectValue placeholder="Pilih…" /></SelectTrigger>
                 <SelectContent>{outlets.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs text-muted-foreground">Item</label>
-              <Button type="button" variant="ghost" size="sm" onClick={addLine} className="h-7 gap-1 text-xs"><Plus className="h-3 w-3" /> Tambah</Button>
+              <span className="text-xs md:text-sm font-medium">Item *</span>
+              <Button type="button" variant="outline" size="sm" onClick={addLine} data-testid="transfer-add-line"><Plus className="h-3.5 w-3.5" /> Tambah</Button>
             </div>
             {lines.map((l, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Select value={l.item_id} onValueChange={(v) => setLine(i, { item_id: v })}>
-                  <SelectTrigger className="glass-input flex-1" data-testid={`transfer-item-${i}`}><SelectValue placeholder="Pilih item…" /></SelectTrigger>
+                  <SelectTrigger className="glass-input flex-1" aria-label={`Item ${i + 1}`} data-testid={`transfer-item-${i}`}><SelectValue placeholder="Pilih item…" /></SelectTrigger>
                   <SelectContent>{items.map((it) => <SelectItem key={it.id} value={it.id}>{it.name}</SelectItem>)}</SelectContent>
                 </Select>
                 <Input type="number" min="1" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })}
-                  className="glass-input w-20" data-testid={`transfer-qty-${i}`} />
+                  className="glass-input w-20" aria-label={`Qty item ${i + 1}`} data-testid={`transfer-qty-${i}`} />
                 {lines.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => rmLine(i)}>
+                  <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => rmLine(i)} aria-label={`Hapus item ${i + 1}`}>
                     <Trash2 className="h-4 w-4 text-rose-500" />
                   </Button>
                 )}
@@ -314,7 +304,7 @@ function CreateTransferDialog({ open, onClose, outlets, onCreated }) {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={busy} className="pill-active" data-testid="transfer-create-submit">Buat Transfer</Button>
+          <Button onClick={submit} disabled={busy} data-testid="transfer-create-submit">Buat Transfer</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

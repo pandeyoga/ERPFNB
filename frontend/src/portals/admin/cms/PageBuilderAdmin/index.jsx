@@ -9,7 +9,7 @@ import {
   Save, Image, Type, Megaphone, Minus, LayoutTemplate, ExternalLink, Copy, RefreshCw, X,
   Images, UtensilsCrossed
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import EmptyState from "@/components/shared/EmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/api";
 import ImageUpload from "@/components/shared/ImageUpload";
@@ -154,45 +155,38 @@ export default function PageBuilder() {
   const previewUrl = `${backendUrl.replace("/api", "").replace("8001", "3000")}/pages/${form.slug}`;
 
   return (
-    <div className="space-y-5" data-testid="cms-page-builder">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <LayoutTemplate className="h-5 w-5 text-purple-600" />
-            Page Builder
-          </h3>
-          <p className="text-sm text-muted-foreground">Buat halaman kustom dengan blok konten yang fleksibel.</p>
-        </div>
+    <div className="space-y-3" data-testid="cms-page-builder">
+      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Buat halaman kustom dengan blok konten yang fleksibel.</p>
         <Button onClick={openCreate} data-testid="create-page-btn">
-          <Plus className="h-4 w-4 mr-2" /> Buat Halaman Baru
+          <Plus className="h-4 w-4" /> Buat Halaman Baru
         </Button>
       </div>
 
       {/* Page list */}
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : pages.length === 0 ? (
-        <div className="text-center py-16">
-          <LayoutTemplate className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-          <p className="text-muted-foreground">Belum ada halaman. Klik Buat Halaman Baru.</p>
+        <div className="glass-card">
+          <EmptyState icon={LayoutTemplate} title="Belum ada halaman" description="Klik Buat Halaman Baru untuk menyusun halaman kustom pertama." />
         </div>
       ) : (
         <div className="grid gap-3">
           {pages.map(page => (
             <div key={page.id}
-                 className="border rounded-xl p-4 flex items-start gap-4 bg-white hover:shadow-md transition-shadow"
+                 className="glass-card p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
                  data-testid={`page-row-${page.id}`}>
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                 <LayoutTemplate className="h-5 w-5 text-purple-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold">{page.title}</span>
+                  <h3 className="text-sm md:text-base font-semibold">{page.title}</h3>
                   <Badge variant={page.status === "published" ? "default" : "secondary"} className="text-xs">
                     {page.status === "published" ? "Published" : "Draft"}
                   </Badge>
-                  <span className="text-xs text-muted-foreground font-mono">/{page.slug}</span>
+                  <span className="text-xs text-muted-foreground font-medium tabular-nums">/{page.slug}</span>
                 </div>
                 {page.description && <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{page.description}</p>}
                 <p className="text-xs text-muted-foreground mt-1">
@@ -201,23 +195,23 @@ export default function PageBuilder() {
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {page.status === "published" && (
-                  <a href={`/pages/${page.slug}`} target="_blank" rel="noreferrer">
-                    <Button size="icon" variant="ghost" title="Lihat di publik">
+                  <Button asChild size="icon" variant="ghost" title="Lihat di publik" aria-label="Lihat di publik">
+                    <a href={`/pages/${page.slug}`} target="_blank" rel="noreferrer" aria-label="Lihat halaman di publik">
                       <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </a>
+                    </a>
+                  </Button>
                 )}
                 <Button size="icon" variant="ghost" onClick={() => handleToggleStatus(page)}
-                        title={page.status === "published" ? "Jadikan Draft" : "Publish"}>
+                        title={page.status === "published" ? "Jadikan Draft" : "Publish"} aria-label={page.status === "published" ? "Jadikan Draft" : "Publish"}>
                   {page.status === "published"
                     ? <Eye className="h-4 w-4 text-green-600" />
                     : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => openEdit(page)}
+                <Button size="icon" variant="ghost" onClick={() => openEdit(page)} aria-label="Edit halaman"
                         data-testid={`edit-page-${page.id}`}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-destructive"
+                <Button size="icon" variant="ghost" className="text-destructive" aria-label="Hapus halaman"
                         onClick={() => setDeleteId(page.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -230,16 +224,16 @@ export default function PageBuilder() {
       {/* Page Form Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-          <DialogHeader className="px-6 pt-6 pb-3 border-b">
-            <DialogTitle className="flex items-center justify-between">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b">
+            <DialogTitle className="flex items-center justify-between pr-6">
               <span>{editing ? "Edit Halaman" : "Buat Halaman Baru"}</span>
               <div className="flex items-center gap-2">
                 {editing && form.status === "published" && (
-                  <a href={`/pages/${form.slug}`} target="_blank" rel="noreferrer">
-                    <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                  <Button asChild variant="outline" size="sm">
+                    <a href={`/pages/${form.slug}`} target="_blank" rel="noreferrer">
                       <ExternalLink className="h-3.5 w-3.5" /> Preview
-                    </Button>
-                  </a>
+                    </a>
+                  </Button>
                 )}
               </div>
             </DialogTitle>
@@ -247,22 +241,24 @@ export default function PageBuilder() {
 
           <div className="flex-1 overflow-y-auto">
             <Tabs defaultValue="content" className="w-full">
-              <TabsList className="w-full px-6 pt-3 pb-0 h-auto bg-transparent border-b rounded-none justify-start gap-0">
-                <TabsTrigger value="content" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Konten &amp; Blok</TabsTrigger>
-                <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Pengaturan</TabsTrigger>
-                <TabsTrigger value="seo" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">SEO</TabsTrigger>
-              </TabsList>
+              <div className="px-5 pt-3">
+                <TabsList data-testid="page-form-tabs">
+                  <TabsTrigger value="content">Konten &amp; blok</TabsTrigger>
+                  <TabsTrigger value="settings">Pengaturan</TabsTrigger>
+                  <TabsTrigger value="seo">SEO</TabsTrigger>
+                </TabsList>
+              </div>
 
               {/* Content tab */}
-              <TabsContent value="content" className="p-6 space-y-4 mt-0">
+              <TabsContent value="content" className="p-5 space-y-3 mt-0">
                 <div className="space-y-1">
-                  <Label>Judul Halaman *</Label>
-                  <Input value={form.title} onChange={e => handleTitleChange(e.target.value)}
+                  <Label htmlFor="page-form-judul-halaman">Judul Halaman *</Label>
+                  <Input id="page-form-judul-halaman" value={form.title} onChange={e => handleTitleChange(e.target.value)}
                          placeholder="Halaman Promo Lebaran 2026" data-testid="page-title-input" />
                 </div>
                 <div className="space-y-1">
-                  <Label>Deskripsi (opsional)</Label>
-                  <Textarea rows={2} value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))}
+                  <Label htmlFor="page-form-deskripsi">Deskripsi (opsional)</Label>
+                  <Textarea id="page-form-deskripsi" rows={2} value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))}
                             placeholder="Deskripsi singkat halaman..." />
                 </div>
 
@@ -271,19 +267,19 @@ export default function PageBuilder() {
                 {/* Block list */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-semibold">Blok Konten ({(form.blocks || []).length})</Label>
+                    <h3 className="text-sm md:text-base font-semibold">Blok Konten ({(form.blocks || []).length})</h3>
                     <Button variant="outline" size="sm" onClick={() => setAddBlockOpen(true)}
                             data-testid="add-block-btn">
-                      <Plus className="h-3.5 w-3.5 mr-1.5" /> Tambah Blok
+                      <Plus className="h-3.5 w-3.5" /> Tambah Blok
                     </Button>
                   </div>
 
                   {(form.blocks || []).length === 0 && (
-                    <div className="border-2 border-dashed rounded-xl p-8 text-center">
+                    <div className="border-2 border-dashed rounded-xl p-4 text-center">
                       <LayoutTemplate className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-30" />
                       <p className="text-sm text-muted-foreground">Belum ada blok. Klik Tambah Blok untuk mulai membangun halaman.</p>
                       <Button className="mt-3" variant="outline" size="sm" onClick={() => setAddBlockOpen(true)}>
-                        <Plus className="h-3.5 w-3.5 mr-1.5" /> Tambah Blok Pertama
+                        <Plus className="h-3.5 w-3.5" /> Tambah Blok Pertama
                       </Button>
                     </div>
                   )}
@@ -304,40 +300,40 @@ export default function PageBuilder() {
               </TabsContent>
 
               {/* Settings tab */}
-              <TabsContent value="settings" className="p-6 space-y-4 mt-0">
+              <TabsContent value="settings" className="p-5 space-y-3 mt-0">
                 <div className="space-y-1">
-                  <Label>Slug URL *</Label>
+                  <Label htmlFor="page-form-slug-url">Slug URL *</Label>
                   <div className="flex gap-2 items-center">
                     <span className="text-sm text-muted-foreground">/pages/</span>
-                    <Input
+                    <Input id="page-form-slug-url"
                       value={form.slug}
                       onChange={e => { setSlugManual(true); setForm(f => ({...f, slug: e.target.value})); }}
                       placeholder="nama-halaman"
-                      className="flex-1 font-mono text-sm"
+                      className="flex-1 text-sm"
                       data-testid="page-slug-input"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">URL publik: /pages/{form.slug || "..."}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Label>Status</Label>
-                  <Switch checked={form.status === "published"}
+                  <Label htmlFor="page-form-status">Status</Label>
+                  <Switch id="page-form-status" checked={form.status === "published"}
                           onCheckedChange={v => setForm(f => ({...f, status: v ? "published" : "draft"}))} />
                   <span className="text-sm">{form.status === "published" ? "Published" : "Draft"}</span>
                 </div>
               </TabsContent>
 
               {/* SEO tab */}
-              <TabsContent value="seo" className="p-6 mt-0">
+              <TabsContent value="seo" className="p-5 mt-0">
                 <CMSSEOFields form={form} onChange={handleSEOChange} />
               </TabsContent>
             </Tabs>
           </div>
 
-          <DialogFooter className="px-6 py-4 border-t">
-            <Button variant="ghost" onClick={() => setFormOpen(false)}>Batal</Button>
+          <DialogFooter className="px-5 py-3 border-t">
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="save-page-btn">
-              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Simpan
             </Button>
           </DialogFooter>
@@ -355,7 +351,7 @@ export default function PageBuilder() {
             {BLOCK_TYPES.map(bt => {
               const Icon = bt.icon;
               return (
-                <button key={bt.id}
+                <button key={bt.id} type="button"
                         onClick={() => addBlock(bt.id)}
                         className="flex items-start gap-3 p-3 border rounded-lg hover:bg-muted/50 text-left transition-colors"
                         data-testid={`add-block-${bt.id}`}>
@@ -382,7 +378,7 @@ export default function PageBuilder() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -48,7 +48,7 @@ export default function IncentiveSchemeEditor(props) {
         return (
           <div className="space-y-4">
             <Tabs value={ruleType} onValueChange={(v) => set("rule_type", v)}>
-              <TabsList className="grid grid-cols-3" data-testid="incentive-rule-type-tabs">
+              <TabsList data-testid="incentive-rule-type-tabs">
                 <TabsTrigger value="pct_of_sales" data-testid="incentive-rule-pct">% Penjualan</TabsTrigger>
                 <TabsTrigger value="flat_per_target" data-testid="incentive-rule-flat">Flat / Target</TabsTrigger>
                 <TabsTrigger value="tiered_sales" data-testid="incentive-rule-tiered">Tier</TabsTrigger>
@@ -57,8 +57,9 @@ export default function IncentiveSchemeEditor(props) {
               <TabsContent value="pct_of_sales" className="pt-3 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Target Penjualan (Rp)</Label>
+                    <Label htmlFor="incentive-target-amount" className="text-xs md:text-sm font-medium">Target Penjualan (Rp)</Label>
                     <Input
+                      id="incentive-target-amount"
                       type="number"
                       min={0}
                       value={Number(ruleData.target_amount ?? 0)}
@@ -67,8 +68,9 @@ export default function IncentiveSchemeEditor(props) {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Insentif % dari Penjualan</Label>
+                    <Label htmlFor="incentive-pct" className="text-xs md:text-sm font-medium">Insentif % dari Penjualan</Label>
                     <Input
+                      id="incentive-pct"
                       type="number"
                       step="0.005"
                       min={0} max={1}
@@ -86,8 +88,9 @@ export default function IncentiveSchemeEditor(props) {
               <TabsContent value="flat_per_target" className="pt-3 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Target Penjualan (Rp)</Label>
+                    <Label htmlFor="incentive-flat-target" className="text-xs md:text-sm font-medium">Target Penjualan (Rp)</Label>
                     <Input
+                      id="incentive-flat-target"
                       type="number"
                       min={0}
                       value={Number(ruleData.target_amount ?? 0)}
@@ -96,8 +99,9 @@ export default function IncentiveSchemeEditor(props) {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Insentif Flat (Rp)</Label>
+                    <Label htmlFor="incentive-flat-amount" className="text-xs md:text-sm font-medium">Insentif Flat (Rp)</Label>
                     <Input
+                      id="incentive-flat-amount"
                       type="number"
                       min={0}
                       value={Number(ruleData.flat_amount ?? 0)}
@@ -137,6 +141,7 @@ export default function IncentiveSchemeEditor(props) {
                               set("tiers", next);
                             }}
                             placeholder="Min sales"
+                            aria-label={`Tier ${i + 1} — penjualan minimum`}
                           />
                           <Input
                             type="number"
@@ -148,6 +153,7 @@ export default function IncentiveSchemeEditor(props) {
                               set("tiers", next);
                             }}
                             placeholder="Max sales"
+                            aria-label={`Tier ${i + 1} — penjualan maksimum`}
                           />
                           <Input
                             type="number"
@@ -159,6 +165,7 @@ export default function IncentiveSchemeEditor(props) {
                               set("tiers", next);
                             }}
                             placeholder="Insentif (Rp)"
+                            aria-label={`Tier ${i + 1} — nominal insentif`}
                           />
                           <Input
                             className="col-span-2 h-8 text-xs"
@@ -168,10 +175,12 @@ export default function IncentiveSchemeEditor(props) {
                               next[i] = { ...t, notes: e.target.value };
                               set("tiers", next);
                             }}
-                            placeholder="Notes"
+                            placeholder="Catatan"
+                            aria-label={`Tier ${i + 1} — catatan`}
                           />
                           <Button
-                            size="icon" variant="ghost" className="col-span-1 h-8 w-8"
+                            size="icon-sm" variant="ghost" className="col-span-1"
+                            aria-label={`Hapus tier ${i + 1}`} title="Hapus tier"
                             onClick={() => set("tiers", tiers.filter((_, j) => j !== i))}
                             data-testid={`incentive-tier-remove-${i}`}
                           >
@@ -191,11 +200,12 @@ export default function IncentiveSchemeEditor(props) {
             </Tabs>
 
             <div className="glass-card p-3 space-y-2">
-              <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Eligibility</h5>
+              <h5 className="text-sm font-semibold">Eligibility</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Min Hari Kerja</Label>
+                  <Label htmlFor="incentive-min-days" className="text-xs md:text-sm font-medium">Min Hari Kerja</Label>
                   <Input
+                    id="incentive-min-days"
                     type="number"
                     min={0} max={31}
                     value={Number(eligibility.min_days_worked ?? 22)}
@@ -205,11 +215,12 @@ export default function IncentiveSchemeEditor(props) {
                 </div>
                 <div className="flex items-center gap-3 pt-5">
                   <Switch
+                    id="incentive-exclude-probation"
                     checked={eligibility.exclude_probation !== false}
                     onCheckedChange={(v) => setEli("exclude_probation", v)}
                     data-testid="incentive-exclude-probation"
                   />
-                  <Label className="text-xs">Tidak termasuk probation</Label>
+                  <Label htmlFor="incentive-exclude-probation" className="text-xs md:text-sm font-medium">Tidak termasuk probation</Label>
                 </div>
               </div>
             </div>

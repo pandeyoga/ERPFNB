@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  Plus, Trophy, Calculator, ArrowUpCircle,
+  Plus, Trophy, Calculator,
 } from "lucide-react";
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -34,7 +36,8 @@ function currentPeriod() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export default function IncentiveList() {
+/** @param {{ embedded?: boolean }} props — embedded=true saat dirender sebagai tab di CompensationHub (tanpa PageHeader). */
+export default function IncentiveList({ embedded = false }) {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState("runs");
@@ -81,8 +84,23 @@ export default function IncentiveList() {
     load();
   }, []);
 
+  const primaryAction = tab === "schemes" ? (
+    <Button onClick={() => setShowSchemeForm(true)} data-testid="hr-inc-scheme-create">
+      <Plus /> Tambah Scheme
+    </Button>
+  ) : (
+    <Button onClick={() => setShowCalc(true)} data-testid="hr-inc-calc-btn">
+      <Calculator /> Hitung Insentif
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="hr-incentive-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="hr-incentive-page">
+      {!embedded && (
+        <PageHeader icon={Trophy} title="Incentive"
+          subtitle="Program insentif & bonus karyawan berbasis scheme"
+          actions={primaryAction} />
+      )}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
@@ -93,30 +111,17 @@ export default function IncentiveList() {
             {tab === "runs" && <InlineHelp id="hr-incentive-runs" size="sm" />}
             {tab === "schemes" && <InlineHelp id="hr-incentive-schemes" size="sm" />}
           </div>
-          <div className="flex items-center gap-2">
-            {tab === "schemes" && (
-              <Button onClick={() => setShowSchemeForm(true)} className="rounded-full"
-                      data-testid="hr-inc-scheme-create">
-                <Plus className="h-4 w-4 mr-2" /> New Scheme
-              </Button>
-            )}
-            {tab === "runs" && (
-              <Button onClick={() => setShowCalc(true)} className="rounded-full"
-                      data-testid="hr-inc-calc-btn">
-                <Calculator className="h-4 w-4 mr-2" /> Run Calculation
-              </Button>
-            )}
-          </div>
+          {embedded && <div className="flex items-center gap-2">{primaryAction}</div>}
         </div>
-        <TabsContent value="runs" className="mt-4">
+        <TabsContent value="runs">
           <div className="glass-card" data-testid="hr-inc-runs-card">
             <DataTable
               columns={[
                 { key: "doc_no", label: "Doc No", primary: true, sortable: true, render: r => <span className="font-mono text-xs">{r.doc_no}</span> },
                 { key: "period", label: "Period", sortable: true, render: r => <span className="font-mono">{r.period}</span> },
                 { key: "scheme_name", label: "Scheme", sortable: true },
-                { key: "base_sales", label: "Base Sales", numeric: true, sortable: true, render: r => fmtRp(r.base_sales) },
-                { key: "total_amount", label: "Total", numeric: true, sortable: true, render: r => <span className="font-semibold">{fmtRp(r.total_amount)}</span> },
+                { key: "base_sales", label: "Base Sales", numeric: true, sortable: true, render: r => <span className="whitespace-nowrap">{fmtRp(r.base_sales)}</span> },
+                { key: "total_amount", label: "Total", numeric: true, sortable: true, render: r => <span className="font-semibold whitespace-nowrap">{fmtRp(r.total_amount)}</span> },
                 { key: "status", label: "Status", align: "center", sortable: true, render: r => <StatusPill status={r.status} /> },
               ]}
               rows={runs}
@@ -124,7 +129,7 @@ export default function IncentiveList() {
               defaultSort={{ key: "period", dir: "desc" }}
               onRowClick={(r) => setDetailRunId(r.id)}
               empty={<EmptyState icon={Trophy} title="Belum ada incentive run"
-                description="Tekan Run Calculation untuk men-generate incentive berdasarkan scheme." />}
+                description="Tekan Hitung Insentif untuk men-generate insentif berdasarkan scheme." />}
               rowAction={(r) => canApprove && r.total_amount > 0 ? (
                 <WorkflowButton base="/hr/incentive-runs" item={r} testPrefix="hr-inc" onDone={load} />
               ) : null}
@@ -132,7 +137,7 @@ export default function IncentiveList() {
             />
           </div>
         </TabsContent>
-        <TabsContent value="schemes" className="mt-4">
+        <TabsContent value="schemes">
           <div className="glass-card" data-testid="hr-inc-schemes-card">
             <DataTable
               columns={[
@@ -150,7 +155,8 @@ export default function IncentiveList() {
               rows={schemes}
               loading={loading}
               empty={<EmptyState icon={Trophy} title="Belum ada incentive scheme"
-                description="Buat scheme dengan rule (pct_of_sales / flat_per_target / tiered_sales)." />}
+                description="Buat scheme dengan rule % of sales atau flat per target."
+                action={<Button size="sm" onClick={() => setShowSchemeForm(true)}><Plus /> Tambah Scheme</Button>} />}
               rowTestIdPrefix="hr-inc-scheme"
             />
           </div>
@@ -217,29 +223,29 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto" data-testid="hr-inc-scheme-dialog">
-        <DialogHeader>
+      <DialogContent className="max-w-xl flex flex-col gap-0 p-0 overflow-hidden" data-testid="hr-inc-scheme-dialog">
+        <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle>Incentive Scheme Baru</DialogTitle>
           <DialogDescription>Tetapkan rule + daftar karyawan target.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Code *</Label>
-              <Input value={form.code} onChange={(e) => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+              <Label htmlFor="hr-inc-scheme-code">Code *</Label>
+              <Input id="hr-inc-scheme-code" value={form.code} onChange={(e) => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                       placeholder="PCT-1" data-testid="hr-inc-scheme-code" />
             </div>
             <div className="space-y-1">
-              <Label>Name *</Label>
-              <Input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+              <Label htmlFor="hr-inc-scheme-name">Nama *</Label>
+              <Input id="hr-inc-scheme-name" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="1% of Sales" data-testid="hr-inc-scheme-name" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Scope Type</Label>
+              <Label htmlFor="hr-inc-scheme-scope">Scope</Label>
               <Select value={form.scope_type} onValueChange={(v) => setForm(f => ({ ...f, scope_type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="hr-inc-scheme-scope" data-testid="hr-inc-scheme-scope"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="global">Global</SelectItem>
                   <SelectItem value="outlet">Outlet</SelectItem>
@@ -248,9 +254,9 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
             </div>
             {form.scope_type === "outlet" && (
               <div className="space-y-1">
-                <Label>Outlet</Label>
+                <Label htmlFor="hr-inc-scheme-outlet">Outlet</Label>
                 <Select value={form.scope_id} onValueChange={(v) => setForm(f => ({ ...f, scope_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
+                  <SelectTrigger id="hr-inc-scheme-outlet" data-testid="hr-inc-scheme-outlet"><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
                   <SelectContent>
                     {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
                   </SelectContent>
@@ -259,9 +265,9 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
             )}
           </div>
           <div className="space-y-1">
-            <Label>Rule Type</Label>
+            <Label htmlFor="hr-inc-scheme-rule-type">Rule Type</Label>
             <Select value={form.rule_type} onValueChange={(v) => setForm(f => ({ ...f, rule_type: v }))}>
-              <SelectTrigger data-testid="hr-inc-scheme-rule-type"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="hr-inc-scheme-rule-type" data-testid="hr-inc-scheme-rule-type"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pct_of_sales">% of sales</SelectItem>
                 <SelectItem value="flat_per_target">Flat per target</SelectItem>
@@ -270,8 +276,8 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
           </div>
           {form.rule_type === "pct_of_sales" && (
             <div className="space-y-1">
-              <Label>Persentase (decimal, e.g. 0.01)</Label>
-              <Input type="number" min="0" max="1" step="0.001" value={form.pct}
+              <Label htmlFor="hr-inc-scheme-pct">Persentase (desimal, mis. 0.01 = 1%)</Label>
+              <Input id="hr-inc-scheme-pct" type="number" min="0" max="1" step="0.001" value={form.pct}
                       onChange={(e) => setForm(f => ({ ...f, pct: e.target.value }))}
                       data-testid="hr-inc-scheme-pct" />
             </div>
@@ -279,20 +285,23 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
           {form.rule_type === "flat_per_target" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Target Sales</Label>
-                <Input type="number" value={form.target_sales}
-                        onChange={(e) => setForm(f => ({ ...f, target_sales: e.target.value }))} />
+                <Label htmlFor="hr-inc-scheme-target">Target Sales</Label>
+                <Input id="hr-inc-scheme-target" type="number" value={form.target_sales}
+                        onChange={(e) => setForm(f => ({ ...f, target_sales: e.target.value }))}
+                        data-testid="hr-inc-scheme-target" />
               </div>
               <div className="space-y-1">
-                <Label>Flat Amount</Label>
-                <Input type="number" value={form.flat_amount}
-                        onChange={(e) => setForm(f => ({ ...f, flat_amount: e.target.value }))} />
+                <Label htmlFor="hr-inc-scheme-flat">Nominal Flat (Rp)</Label>
+                <Input id="hr-inc-scheme-flat" type="number" value={form.flat_amount}
+                        onChange={(e) => setForm(f => ({ ...f, flat_amount: e.target.value }))}
+                        data-testid="hr-inc-scheme-flat" />
               </div>
             </div>
           )}
           <div className="space-y-1">
-            <Label>Karyawan ({form.employee_ids.length} dipilih)</Label>
-            <div className="glass-card-hover p-2 max-h-48 overflow-y-auto space-y-1"
+            <Label id="hr-inc-scheme-emp-label">Karyawan ({form.employee_ids.length} dipilih)</Label>
+            <div className="rounded-md border border-input p-2 max-h-48 overflow-y-auto space-y-1"
+                  role="group" aria-labelledby="hr-inc-scheme-emp-label"
                   data-testid="hr-inc-scheme-emp-picker">
               {employees.map(e => (
                 <label key={e.id} className="flex items-center gap-2 px-2 py-1 hover:bg-white/5 rounded cursor-pointer">
@@ -304,9 +313,9 @@ function SchemeFormDialog({ open, onOpenChange, employees, outlets, onCreated })
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="rounded-full"
+        <DialogFooter className="px-5 py-3 border-t border-border/60">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-inc-scheme-submit">
             {submitting ? "Menyimpan…" : "Simpan Scheme"}
           </Button>
@@ -340,28 +349,29 @@ function RunCalcDialog({ open, onOpenChange, schemes, onCalculated }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="hr-inc-calc-dialog">
         <DialogHeader>
-          <DialogTitle>Run Incentive Calculation</DialogTitle>
+          <DialogTitle>Hitung Insentif</DialogTitle>
+          <DialogDescription>Hitung alokasi insentif per karyawan untuk scheme & periode terpilih.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Scheme *</Label>
+            <Label htmlFor="hr-inc-calc-scheme">Scheme *</Label>
             <Select value={form.scheme_id} onValueChange={(v) => setForm(f => ({ ...f, scheme_id: v }))}>
-              <SelectTrigger data-testid="hr-inc-calc-scheme"><SelectValue placeholder="Pilih scheme" /></SelectTrigger>
+              <SelectTrigger id="hr-inc-calc-scheme" data-testid="hr-inc-calc-scheme"><SelectValue placeholder="Pilih scheme" /></SelectTrigger>
               <SelectContent>
                 {schemes.map(s => (<SelectItem key={s.id} value={s.id}>{s.name} ({s.code})</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>Period</Label>
-            <Input type="month" value={form.period}
+            <Label htmlFor="hr-inc-calc-period">Periode *</Label>
+            <Input id="hr-inc-calc-period" type="month" value={form.period}
                     onChange={(e) => setForm(f => ({ ...f, period: e.target.value }))}
                     data-testid="hr-inc-calc-period" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="rounded-full"
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-inc-calc-submit">
             {submitting ? "Menghitung…" : "Hitung"}
           </Button>
@@ -400,26 +410,21 @@ function RunDetailDialog({ runId, open, onOpenChange, canApprove, onPosted }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" data-testid="hr-inc-run-detail">
-        <DialogHeader>
-          <DialogTitle>Incentive Run Detail</DialogTitle>
+      <DialogContent className="max-w-2xl flex flex-col gap-0 p-0 overflow-hidden" data-testid="hr-inc-run-detail">
+        <DialogHeader className="px-5 pt-5 pb-3">
+          <DialogTitle>Detail Incentive Run</DialogTitle>
           {data && (
             <DialogDescription>
               {data.scheme_name} · Period <span className="font-mono">{data.period}</span> · <StatusPill status={data.status} />
             </DialogDescription>
           )}
         </DialogHeader>
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-4">
         {!data ? (<LoadingState rows={5} />) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="glass-card-hover p-3">
-                <div className="text-[11px] uppercase text-muted-foreground">Base Sales</div>
-                <div className="text-base font-bold tabular-nums">{fmtRp(data.base_sales)}</div>
-              </div>
-              <div className="glass-card p-3 ring-1 ring-aurora">
-                <div className="text-[11px] uppercase text-muted-foreground">Total Incentive</div>
-                <div className="text-base font-bold tabular-nums">{fmtRp(data.total_amount)}</div>
-              </div>
+              <CompactStatCard size="sm" label="Base Sales" value={fmtRp(data.base_sales)} testId="hr-inc-detail-base" />
+              <CompactStatCard size="sm" label="Total Incentive" value={fmtRp(data.total_amount)} tone="success" testId="hr-inc-detail-total" />
             </div>
             <div className="glass-card overflow-hidden">
               <table className="w-full text-sm">
@@ -443,18 +448,19 @@ function RunDetailDialog({ runId, open, onOpenChange, canApprove, onPosted }) {
             </div>
           </div>
         )}
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Tutup</Button>
+        </div>
+        <DialogFooter className="px-5 py-3 border-t border-border/60">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Tutup</Button>
           {canApprove && data?.status === "calculated" && data.total_amount > 0 && (
-            <Button onClick={() => handleAction("approve")} disabled={busy} className="rounded-full"
+            <Button onClick={() => handleAction("approve")} disabled={busy}
                     data-testid="hr-inc-detail-approve">
-              {busy ? "Memproses…" : "Approve"}
+              {busy ? "Memproses…" : "Setujui"}
             </Button>
           )}
           {canApprove && data?.status === "approved" && data.total_amount > 0 && (
-            <Button onClick={() => handleAction("post")} disabled={busy} className="rounded-full"
+            <Button onClick={() => handleAction("post")} disabled={busy}
                     data-testid="hr-inc-detail-post">
-              {busy ? "Posting…" : "Post ke Journal"}
+              {busy ? "Memposting…" : "Posting ke Jurnal"}
             </Button>
           )}
         </DialogFooter>

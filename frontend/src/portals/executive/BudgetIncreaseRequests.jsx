@@ -4,10 +4,10 @@
  * Outlets submit increase requests with reason; Executive approves/rejects.
  * Approved increase amount is added to bucket immediately.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Bell, CheckCircle, XCircle, RefreshCw, Filter, ClipboardCheck,
-  AlertTriangle, MessageSquare, ArrowRight,
+  Bell, CheckCircle, XCircle, RefreshCw, ClipboardCheck,
+  AlertTriangle, MessageSquare, Wallet, Inbox,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -22,12 +22,18 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
+import LoadingState from "@/components/shared/LoadingState";
+import StatusPill from "@/components/shared/StatusPill";
 import { fmtRp } from "@/lib/format";
 import {
   fetchIncreaseRequests, approveIncrease, rejectIncrease,
   BUCKET_COLORS,
 } from "@/lib/outletBudgetApi";
 import dayjs from "dayjs";
+
+const STATUS_LABEL = { pending: "Menunggu", approved: "Disetujui", rejected: "Ditolak" };
 
 export default function BudgetIncreaseRequests() {
   const navigate = useNavigate();
@@ -89,7 +95,7 @@ export default function BudgetIncreaseRequests() {
       if (decision.kind === "approve") {
         const amt = parseFloat(approvedAmount);
         if (!amt || amt <= 0) {
-          toast.error("Approved amount harus > 0");
+          toast.error("Jumlah disetujui harus lebih dari 0");
           setSubmitting(false);
           return;
         }
@@ -113,59 +119,54 @@ export default function BudgetIncreaseRequests() {
     }
   };
 
-  const counts = useMemo(() => {
-    const c = { pending: 0, approved: 0, rejected: 0 };
-    for (const it of items) if (c[it.status] !== undefined) c[it.status] += 1;
-    return c;
-  }, [items]);
-
   return (
-    <div className="space-y-6" data-testid="budget-increase-requests">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <ClipboardCheck className="h-6 w-6 text-aurora" />
-            Request Penambahan Budget
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Outlet meminta tambahan budget operasional dengan reason; Anda yang memutuskan.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={load} className="gap-2">
-            <RefreshCw className="h-4 w-4" /> Refresh
-          </Button>
-          <Button
-            variant="outline" size="sm"
-            onClick={() => navigate("/executive/outlet-budgets")}
-            className="gap-2"
-          >
-            Set Budget <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="budget-increase-requests">
+      <PageHeader
+        icon={ClipboardCheck}
+        title="Increase Requests"
+        subtitle="Outlet meminta tambahan budget operasional beserta alasannya; Anda yang memutuskan."
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            <Button variant="outline" onClick={load} data-testid="increase-refresh">
+              <RefreshCw /> Muat ulang
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/executive/outlet-budgets")}
+              data-testid="increase-go-allocation"
+            >
+              <Wallet /> Budget Allocation
+            </Button>
+          </>
+        }
+      />
 
       <Tabs value={status} onValueChange={setStatus}>
         <TabsList>
           <TabsTrigger value="pending" data-testid="tab-pending">
-            <Bell className="h-4 w-4 mr-1" /> Menunggu
+            <Bell /> Menunggu
           </TabsTrigger>
           <TabsTrigger value="approved" data-testid="tab-approved">
-            <CheckCircle className="h-4 w-4 mr-1" /> Disetujui
+            <CheckCircle /> Disetujui
           </TabsTrigger>
           <TabsTrigger value="rejected" data-testid="tab-rejected">
-            <XCircle className="h-4 w-4 mr-1" /> Ditolak
+            <XCircle /> Ditolak
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div className="grid grid-cols-1 gap-3">
         {loading ? (
-          <Card><CardContent className="py-10 text-center text-muted-foreground">Memuat…</CardContent></Card>
+          <LoadingState rows={3} />
         ) : items.length === 0 ? (
-          <Card><CardContent className="py-10 text-center text-muted-foreground">
-            Tidak ada request dengan status "{status}".
-          </CardContent></Card>
+          <Card>
+            <EmptyState
+              icon={Inbox}
+              title={`Tidak ada request berstatus ${STATUS_LABEL[status] || status}`}
+              description={status === "pending" ? "Semua permintaan penambahan budget sudah diproses." : undefined}
+            />
+          </Card>
         ) : (
           items.map((req) => (
             <RequestCard
@@ -184,7 +185,7 @@ export default function BudgetIncreaseRequests() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {decision?.kind === "approve" ? "Approve Request" : "Reject Request"}
+              {decision?.kind === "approve" ? "Setujui Request" : "Tolak Request"}
             </DialogTitle>
             <DialogDescription>
               {decision?.kind === "approve"
@@ -216,7 +217,7 @@ export default function BudgetIncreaseRequests() {
               </div>
               {decision.kind === "approve" && (
                 <div>
-                  <Label htmlFor="approved-amount">Approved Amount (Rp)</Label>
+                  <Label htmlFor="approved-amount" className="text-xs md:text-sm font-medium">Jumlah disetujui (Rp) <span className="text-rose-600">*</span></Label>
                   <Input
                     id="approved-amount"
                     type="number" min="0" step="100000"
@@ -228,8 +229,10 @@ export default function BudgetIncreaseRequests() {
                 </div>
               )}
               <div>
-                <Label htmlFor="decision-note">
-                  Catatan {decision.kind === "reject" ? "(wajib)" : "(opsional)"}
+                <Label htmlFor="decision-note" className="text-xs md:text-sm font-medium">
+                  {decision.kind === "reject"
+                    ? <>Alasan penolakan <span className="text-rose-600">*</span></>
+                    : "Catatan (opsional)"}
                 </Label>
                 <Textarea
                   id="decision-note" value={note} onChange={(e) => setNote(e.target.value)}
@@ -244,11 +247,10 @@ export default function BudgetIncreaseRequests() {
             <Button variant="outline" onClick={() => setDecision(null)} disabled={submitting}>Batal</Button>
             <Button
               onClick={submitDecision} disabled={submitting}
-              className={decision?.kind === "approve" ? "pill-active" : ""}
               variant={decision?.kind === "approve" ? "default" : "destructive"}
               data-testid="btn-decision-submit"
             >
-              {submitting ? "Memproses…" : decision?.kind === "approve" ? "Approve & Tambahkan" : "Reject"}
+              {submitting ? "Memproses…" : decision?.kind === "approve" ? "Setujui & Tambahkan" : "Tolak Request"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -262,17 +264,14 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
   const requester = usersById[req.requested_by];
   const decider = usersById[req.decided_by];
   const isPending = req.status === "pending";
-  const statusBadge = req.status === "pending"
-    ? <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">Menunggu</Badge>
-    : req.status === "approved"
-      ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">Disetujui</Badge>
-      : <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30">Ditolak</Badge>;
+  // StatusPill shared untuk warna; label disamakan dengan label tab (Menunggu/Disetujui/Ditolak).
+  const statusBadge = <StatusPill status={req.status} label={STATUS_LABEL[req.status]} />;
   return (
     <Card className="hover:border-aurora/40 transition-colors" data-testid={`request-${req.id}`}>
-      <CardHeader className="pb-3">
+      <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <Badge variant="outline" style={{ borderColor: req.bucket === "combined" ? "#0ea5e9" : BUCKET_COLORS[req.bucket] }} className="font-mono">
                 {req.bucket === "combined" ? "GABUNGAN" : req.bucket.toUpperCase()}
               </Badge>
@@ -284,7 +283,7 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
             </CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-lg font-bold tabular-nums" style={{ color: req.bucket === "combined" ? "#0ea5e9" : BUCKET_COLORS[req.bucket] }}>
+            <div className="text-lg font-semibold tabular-nums" style={{ color: req.bucket === "combined" ? "#0ea5e9" : BUCKET_COLORS[req.bucket] }}>
               {fmtRp(req.requested_amount)}
             </div>
             <div className="mt-1">{statusBadge}</div>
@@ -305,31 +304,32 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
         {!isPending && (
           <div className="rounded-md bg-muted/30 p-2 text-xs">
             <div>
-              <strong>{req.status === "approved" ? "Approved" : "Rejected"}:</strong>{" "}
+              <strong>{req.status === "approved" ? "Disetujui" : "Ditolak"}:</strong>{" "}
               {req.decided_at && dayjs(req.decided_at).format("DD MMM YYYY HH:mm")}
               {decider && <> oleh {decider.name || decider.email}</>}
             </div>
             {req.status === "approved" && req.approved_amount != null && (
-              <div>Approved amount: <strong>{fmtRp(req.approved_amount)}</strong></div>
+              <div>Jumlah disetujui: <strong>{fmtRp(req.approved_amount)}</strong></div>
             )}
             {req.decision_note && <div className="italic mt-1">"{req.decision_note}"</div>}
           </div>
         )}
         {isPending && (
-          <div className="flex gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button
-              size="sm" className="gap-1 pill-active flex-1"
-              onClick={() => onApprove(req)}
-              data-testid={`btn-approve-${req.id}`}
-            >
-              <CheckCircle className="h-4 w-4" /> Approve
-            </Button>
-            <Button
-              size="sm" variant="destructive" className="gap-1 flex-1"
+              size="sm" variant="outline"
+              className="text-rose-600 hover:text-rose-700"
               onClick={() => onReject(req)}
               data-testid={`btn-reject-${req.id}`}
             >
-              <XCircle className="h-4 w-4" /> Reject
+              <XCircle /> Tolak
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onApprove(req)}
+              data-testid={`btn-approve-${req.id}`}
+            >
+              <CheckCircle /> Setujui
             </Button>
           </div>
         )}

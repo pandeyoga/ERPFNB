@@ -3,30 +3,13 @@
  * CMS E-Menu — Admin CMS for managing brand menu items, categories, and PDF menus.
  * Uses new admin_menu.py API: /api/admin/cms/menu/items|categories|pdfs|upload-image|upload-pdf
  */
-import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Plus, Edit2, Trash2, UtensilsCrossed, Upload, FileText,
-  Tag, Image as ImageIcon, Loader2, X, ChevronDown, Eye, EyeOff,
-  Download, Star, AlertCircle, Search, Filter
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { UtensilsCrossed, FileText, Tag, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -55,22 +38,19 @@ export default function CMSMenu() {
   }, []);
 
   return (
-    <div className="space-y-4" data-testid="cms-emenu-page">
-      {/* Header */}
+    <div className="space-y-3" data-testid="cms-emenu-page">
+      {/* Toolbar: deskripsi seksi + pemilih brand (judul sudah di PageHeader/tab CMS Studio) */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-xl font-bold">E-Menu Management</h3>
-          <p className="text-sm text-muted-foreground">
-            Kelola menu items, kategori, dan PDF per brand untuk ditampilkan di website.
-          </p>
-        </div>
-        <div className="flex items-center gap-3" data-testid="admin-menu-brand-group">
-          <Label className="text-sm font-medium whitespace-nowrap">Brand:</Label>
+        <p className="text-sm text-muted-foreground">
+          Kelola menu items, kategori, dan PDF per brand untuk ditampilkan di website.
+        </p>
+        <div className="flex items-center gap-2" data-testid="admin-menu-brand-group">
+          <Label htmlFor="cms-menu-brand" className="text-xs md:text-sm font-medium whitespace-nowrap">Brand</Label>
           {brandsLoading ? (
             <Skeleton className="h-9 w-40" />
           ) : (
             <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
-              <SelectTrigger className="w-44" data-testid="brand-selector">
+              <SelectTrigger id="cms-menu-brand" className="w-44" data-testid="brand-selector">
                 <SelectValue placeholder="Pilih brand..." />
               </SelectTrigger>
               <SelectContent>
@@ -89,7 +69,7 @@ export default function CMSMenu() {
       </div>
 
       {!selectedBrandId && !brandsLoading && (
-        <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           Pilih brand terlebih dahulu untuk mengelola menu.
         </div>
@@ -97,25 +77,25 @@ export default function CMSMenu() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full max-w-sm" data-testid="admin-menu-tabs">
+        <TabsList data-testid="admin-menu-tabs">
           <TabsTrigger value="items" data-testid="tab-items">
-            <UtensilsCrossed className="h-4 w-4 mr-1.5" /> Items
+            <UtensilsCrossed /> Items
           </TabsTrigger>
           <TabsTrigger value="categories" data-testid="tab-categories">
-            <Tag className="h-4 w-4 mr-1.5" /> Kategori
+            <Tag /> Kategori
           </TabsTrigger>
           <TabsTrigger value="pdf" data-testid="tab-pdf">
-            <FileText className="h-4 w-4 mr-1.5" /> PDF Menu
+            <FileText /> PDF menu
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="items" className="mt-4">
+        <TabsContent value="items">
           <ItemsTab brands={brands} selectedBrandId={selectedBrandId} onBrandChange={setSelectedBrandId} />
         </TabsContent>
-        <TabsContent value="categories" className="mt-4">
+        <TabsContent value="categories">
           <CategoriesTab brands={brands} selectedBrandId={selectedBrandId} />
         </TabsContent>
-        <TabsContent value="pdf" className="mt-4">
+        <TabsContent value="pdf">
           <PdfTab brands={brands} selectedBrandId={selectedBrandId} />
         </TabsContent>
       </Tabs>

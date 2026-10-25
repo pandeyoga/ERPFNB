@@ -1,17 +1,27 @@
 /** Comparatives — MoM/YoY metric comparison with rolling 12m sparkline. */
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarDays, History } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import LoadingState from "@/components/shared/LoadingState";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 
 import { fetchAll } from "@/lib/api";
+
+const LABEL = "text-xs font-medium text-muted-foreground";
+
+/** Label metrik ringkas: "Sales (validated daily_sales grand_total)" → "Sales". */
+function shortMetricLabel(m) {
+  if (!m) return "";
+  return String(m.label || m.key || "").split(" (")[0];
+}
+
 export default function Comparatives() {
   const [catalog, setCatalog] = useState(null);
   const [brands, setBrands] = useState([]);
@@ -41,7 +51,7 @@ export default function Comparatives() {
       const r = await api.get("/reports/comparatives", { params });
       setData(unwrap(r));
     } catch (e) {
-      toast.error("Gagal load comparatives: " + (e.response?.data?.errors?.[0]?.message || e.message));
+      toast.error("Gagal memuat perbandingan periode: " + (e.response?.data?.errors?.[0]?.message || e.message));
     } finally { setLoading(false); }
   }
   useEffect(() => { if (catalog) load(); }, [metric, period, compareTo, outletId, brandId, catalog]); // eslint-disable-line
@@ -54,31 +64,31 @@ export default function Comparatives() {
 
   const isCount = metric === "transaction_count" || metric === "po_count" || metric === "gr_count";
   const fmt = isCount ? fmtNumber : fmtRp;
+  const metricName = shortMetricLabel(catalog.metrics.find(m => m.key === metric)) || metric;
 
   return (
-    <div className="space-y-4" data-testid="comparatives-page">
-      <div className="glass-card p-4 grid grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+    <div className="space-y-3 lg:space-y-4" data-testid="comparatives-page">
+      <div className="glass-card p-3 grid grid-cols-2 lg:grid-cols-5 gap-3 items-end">
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Metric</Label>
-          <SimpleSelect value={metric} onValueChange={setMetric}
-            options={catalog.metrics.map(m => ({ value: m.key, label: m.key }))}
+          <Label className={LABEL}>Metrik</Label>
+          <SimpleSelect value={metric} onValueChange={setMetric} ariaLabel="Metrik"
+            options={catalog.metrics.map(m => ({ value: m.key, label: shortMetricLabel(m) }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-metric" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Period</Label>
-          <Input type="month" value={period} onChange={e => setPeriod(e.target.value)}
+          <Label htmlFor="comp-period" className={LABEL}>Periode</Label>
+          <Input id="comp-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="comp-period" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Compare</Label>
-          <div className="flex gap-1 mt-1">
+          <Label className={LABEL}>Pembanding</Label>
+          <div role="group" aria-label="Pembanding"
+            className="mt-1 flex w-full items-center gap-1 rounded-[calc(var(--radius)-2px)] border border-border/60 bg-white/35 dark:bg-white/5 p-px">
             {["mom", "yoy"].map(c => (
-              <button key={c} onClick={() => setCompareTo(c)}
+              <button key={c} type="button" onClick={() => setCompareTo(c)} aria-pressed={compareTo === c}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-semibold flex-1 transition-colors",
-                  compareTo === c
-                    ? "grad-aurora text-white"
-                    : "bg-muted/30 text-muted-foreground hover:text-foreground",
+                  "h-8 flex-1 rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] font-medium transition-colors",
+                  compareTo === c ? "pill-active" : "text-muted-foreground hover:text-foreground",
                 )}
                 data-testid={`comp-${c}`}>
                 {c.toUpperCase()}
@@ -87,17 +97,17 @@ export default function Comparatives() {
           </div>
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId}
-            options={[{ value: "", label: "All outlets" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="All outlets"
+          <Label className={LABEL}>Outlet</Label>
+          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
+            options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+            placeholder="Semua outlet"
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-outlet" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Brand</Label>
-          <SimpleSelect value={brandId} onValueChange={setBrandId}
-            options={[{ value: "", label: "All brands" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
-            placeholder="All brands"
+          <Label className={LABEL}>Brand</Label>
+          <SimpleSelect value={brandId} onValueChange={setBrandId} ariaLabel="Brand"
+            options={[{ value: "", label: "Semua brand" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
+            placeholder="Semua brand"
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-brand" />
         </div>
       </div>
@@ -106,50 +116,30 @@ export default function Comparatives() {
 
       {!loading && data && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <KpiCard label={`Period ${data.period}`} value={fmt(data.current)} highlight testid="comp-current" />
-            <KpiCard label={`Previous ${data.previous_period}`} value={fmt(data.previous)} testid="comp-previous" />
-            <DeltaCard delta={data.delta} pct={data.delta_pct} fmt={fmt} compareTo={data.compare_to} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <CompactStatCard label={`Periode ${data.period}`} value={fmt(data.current)} icon={CalendarDays}
+              color="aurora-1" active testId="comp-current" />
+            <CompactStatCard label={`Sebelumnya ${data.previous_period}`} value={fmt(data.previous)} icon={History}
+              color="aurora-3" testId="comp-previous" />
+            <CompactStatCard
+              label={`Δ ${data.compare_to.toUpperCase()}`}
+              value={data.delta_pct == null ? "—" : `${data.delta_pct >= 0 ? "+" : ""}${data.delta_pct}%`}
+              sub={`${data.delta >= 0 ? "+" : ""}${fmt(data.delta)}`}
+              icon={data.delta > 0 ? TrendingUp : data.delta < 0 ? TrendingDown : Minus}
+              tone={data.delta > 0 ? "success" : data.delta < 0 ? "danger" : "default"}
+              color={data.delta > 0 ? "aurora-4" : data.delta < 0 ? "aurora-6" : "aurora-1"}
+              testId="comp-delta" />
           </div>
 
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Rolling 12 months — {metric}</h3>
+              <h3 className="text-sm md:text-base font-semibold">Rolling 12 bulan — {metricName}</h3>
               <span className="text-xs text-muted-foreground">{data.compare_to.toUpperCase()}</span>
             </div>
             <Sparkline data={data.rolling_12m || []} fmt={fmt} highlightPeriod={data.period} />
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function KpiCard({ label, value, highlight, testid }) {
-  return (
-    <div className={cn("glass-card p-5", highlight && "border-2 border-primary/30")} data-testid={testid}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="text-2xl lg:text-3xl font-bold tabular-nums mt-2">{value}</div>
-    </div>
-  );
-}
-
-function DeltaCard({ delta, pct, fmt, compareTo }) {
-  const positive = delta > 0;
-  const negative = delta < 0;
-  const Icon = positive ? TrendingUp : negative ? TrendingDown : Minus;
-  const color = positive ? "text-emerald-700 dark:text-emerald-400"
-    : negative ? "text-red-700 dark:text-red-400" : "text-muted-foreground";
-  return (
-    <div className="glass-card p-5" data-testid="comp-delta">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">Δ {compareTo.toUpperCase()}</div>
-      <div className={cn("text-2xl lg:text-3xl font-bold tabular-nums mt-2 flex items-center gap-2", color)}>
-        <Icon className="h-6 w-6" />
-        {pct == null ? "—" : `${pct >= 0 ? "+" : ""}${pct}%`}
-      </div>
-      <div className="text-sm mt-1 text-muted-foreground tabular-nums">
-        {delta >= 0 ? "+" : ""}{fmt(delta)}
-      </div>
     </div>
   );
 }

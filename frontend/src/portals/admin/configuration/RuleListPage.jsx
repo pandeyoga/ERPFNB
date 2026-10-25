@@ -124,7 +124,7 @@ export default function RuleListPage({
     try {
       setSeeding(true);
       await api.post("/admin/business-rules/seed-defaults", { rule_type: "config" });
-      toast.success("Default policies dibuat");
+      toast.success("Aturan default dibuat");
       load();
     } catch (e) { toast.error(unwrapError(e)); }
     finally { setSeeding(false); }
@@ -133,33 +133,31 @@ export default function RuleListPage({
   const Editor = EditorComponent;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <div className="lg:col-span-8 space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4">
+      <div className="lg:col-span-8 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold" data-testid={`${testIdPrefix}-page-title`}>{title}</h2>
+          <div className="min-w-0">
+            <h2 className="text-base md:text-lg font-semibold" data-testid={`${testIdPrefix}-page-title`}>{title}</h2>
             {description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{description}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
               onClick={seedDefaults}
               disabled={seeding}
+              title="Buat aturan default jika belum ada"
               data-testid={`${testIdPrefix}-seed-defaults-btn`}
             >
-              <Sparkles className="h-3.5 w-3.5 mr-1" />
-              {seeding ? "Memproses…" : "Seed Default"}
+              <Sparkles />
+              {seeding ? "Memproses…" : "Buat Default"}
             </Button>
             <Button
-              size="sm"
               onClick={openCreate}
-              className="rounded-full"
               data-testid={`${testIdPrefix}-create-rule-button`}
             >
-              <Plus className="h-3.5 w-3.5 mr-1" /> Buat Aturan
+              <Plus /> Buat Aturan
             </Button>
           </div>
         </div>
@@ -168,13 +166,14 @@ export default function RuleListPage({
           <div className="flex flex-wrap gap-2">
             <Input
               placeholder="Cari aturan…"
+              aria-label="Cari aturan"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-xs"
               data-testid="config-list-search-input"
             />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px]" data-testid="config-list-status-filter">
+              <SelectTrigger className="w-[160px]" aria-label="Filter status aturan" data-testid="config-list-status-filter">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -185,8 +184,8 @@ export default function RuleListPage({
                 <SelectItem value="disabled">Diarsipkan</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="ghost" size="sm" onClick={load} className="ml-auto" data-testid="config-list-reload-btn">
-              <RefreshCw className="h-3.5 w-3.5 mr-1" /> Muat Ulang
+            <Button variant="ghost" onClick={load} className="ml-auto" data-testid="config-list-reload-btn">
+              <RefreshCw /> Muat ulang
             </Button>
           </div>
         </div>
@@ -210,8 +209,8 @@ export default function RuleListPage({
               title={emptyTitle}
               description={emptyDescription}
               action={(
-                <Button onClick={openCreate} className="rounded-full" data-testid={`${testIdPrefix}-empty-create-btn`}>
-                  <Plus className="h-4 w-4 mr-1" /> Buat Aturan
+                <Button onClick={openCreate} data-testid={`${testIdPrefix}-empty-create-btn`}>
+                  <Plus /> Buat Aturan
                 </Button>
               )}
             />
@@ -232,7 +231,7 @@ export default function RuleListPage({
                   </div>
                 ) },
                 { key: "version", label: "Versi", render: (r) => (
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-foreground/[0.04]">v{r.version}</span>
+                  <span className="text-xs tabular-nums px-2 py-0.5 rounded-full bg-foreground/[0.04]">v{r.version}</span>
                 ) },
                 { key: "effective", label: "Periode Berlaku", render: (r) => (
                   <span className="text-xs text-muted-foreground">{effectiveText(r)}</span>
@@ -242,36 +241,36 @@ export default function RuleListPage({
               rowAction={(r) => (
                 <div className="flex items-center justify-end gap-1">
                   <Button
-                    size="icon" variant="ghost" className="h-8 w-8"
+                    size="icon-sm" variant="ghost"
                     onClick={() => openEdit(r)}
                     data-testid={`config-rule-edit-${r.id}`}
-                    title="Edit"
+                    title="Edit" aria-label={`Edit aturan ${r.name || r.rule_type}`}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   <Button
-                    size="icon" variant="ghost" className="h-8 w-8"
+                    size="icon-sm" variant="ghost"
                     onClick={() => duplicate(r)}
                     data-testid={`config-rule-duplicate-${r.id}`}
-                    title="Duplikasi"
+                    title="Duplikasi" aria-label={`Duplikasi aturan ${r.name || r.rule_type}`}
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                   {r.active ? (
                     <Button
-                      size="icon" variant="ghost" className="h-8 w-8"
+                      size="icon-sm" variant="ghost"
                       onClick={() => archive(r)}
                       data-testid={`config-rule-archive-${r.id}`}
-                      title="Arsipkan"
+                      title="Arsipkan" aria-label={`Arsipkan aturan ${r.name || r.rule_type}`}
                     >
                       <Archive className="h-3.5 w-3.5" />
                     </Button>
                   ) : (
                     <Button
-                      size="icon" variant="ghost" className="h-8 w-8"
+                      size="icon-sm" variant="ghost"
                       onClick={() => activate(r)}
                       data-testid={`config-rule-activate-${r.id}`}
-                      title="Aktifkan"
+                      title="Aktifkan" aria-label={`Aktifkan aturan ${r.name || r.rule_type}`}
                     >
                       <Power className="h-3.5 w-3.5" />
                     </Button>

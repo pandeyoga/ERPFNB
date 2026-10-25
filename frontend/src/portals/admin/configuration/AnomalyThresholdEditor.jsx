@@ -154,7 +154,7 @@ export default function AnomalyThresholdEditor(props) {
 function Section({ icon, title, hint, enabled, onToggle, children, testid }) {
   return (
     <div
-      className="rounded-xl border border-border/40 p-3"
+      className="rounded-[calc(var(--radius)-2px)] border border-border/40 p-3"
       data-testid={testid}
     >
       <div className="flex items-start justify-between mb-3 gap-2">
@@ -170,7 +170,7 @@ function Section({ icon, title, hint, enabled, onToggle, children, testid }) {
             <p className="text-[11px] text-muted-foreground">{hint}</p>
           </div>
         </div>
-        <Switch checked={enabled} onCheckedChange={onToggle} data-testid={`${testid}-enabled`} />
+        <Switch checked={enabled} onCheckedChange={onToggle} aria-label={`${enabled ? "Nonaktifkan" : "Aktifkan"} ${title}`} data-testid={`${testid}-enabled`} />
       </div>
       {enabled && children}
     </div>
@@ -180,8 +180,9 @@ function Section({ icon, title, hint, enabled, onToggle, children, testid }) {
 function NumField({ label, value, onChange, step = 1, min = 0, max, testid }) {
   return (
     <div>
-      <Label className="text-xs">{label}</Label>
+      <Label htmlFor={testid} className="text-xs md:text-sm font-medium">{label}</Label>
       <Input
+        id={testid}
         type="number"
         step={step}
         min={min}

@@ -126,11 +126,11 @@ export default function CMSWorkflow({
         <div className="flex gap-1">
           <Button size="sm" variant="outline" className="h-6 text-xs text-green-600 border-green-300 hover:bg-green-50"
                   onClick={() => { setComment(""); setApproveOpen(true); }} data-testid={`cms-workflow-approve-compact-${itemId}`}>
-            <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+            <CheckCircle2 className="h-3 w-3" /> Approve
           </Button>
           <Button size="sm" variant="outline" className="h-6 text-xs text-red-600 border-red-300 hover:bg-red-50"
                   onClick={() => { setComment(""); setRejectOpen(true); }} data-testid={`cms-workflow-reject-compact-${itemId}`}>
-            <XCircle className="h-3 w-3 mr-1" /> Reject
+            <XCircle className="h-3 w-3" /> Reject
           </Button>
         </div>
       )}
@@ -140,7 +140,7 @@ export default function CMSWorkflow({
                 disabled={loading}
                 onClick={doSubmit}
                 data-testid={`cms-workflow-submit-compact-${itemId}`}>
-          <Send className="h-3 w-3 mr-1" /> Submit
+          <Send className="h-3 w-3" /> Submit
         </Button>
       )}
 
@@ -161,9 +161,9 @@ export default function CMSWorkflow({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setApproveOpen(false)} data-testid="cms-workflow-approve-cancel">Batal</Button>
+            <Button variant="outline" onClick={() => setApproveOpen(false)} data-testid="cms-workflow-approve-cancel">Batal</Button>
             <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={doApprove} disabled={loading} data-testid="cms-workflow-approve-confirm">
-              <CheckCircle2 className="h-4 w-4 mr-2" /> Setujui & Publish
+              <CheckCircle2 className="h-4 w-4" /> Setujui & Publish
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -186,9 +186,9 @@ export default function CMSWorkflow({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setRejectOpen(false)} data-testid="cms-workflow-reject-cancel">Batal</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)} data-testid="cms-workflow-reject-cancel">Batal</Button>
             <Button variant="destructive" onClick={doReject} disabled={loading} data-testid="cms-workflow-reject-confirm">
-              <XCircle className="h-4 w-4 mr-2" /> Tolak
+              <XCircle className="h-4 w-4" /> Tolak
             </Button>
           </DialogFooter>
         </DialogContent>

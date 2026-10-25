@@ -1,4 +1,5 @@
-/** Petty Cash list + balance widget + create dialog with AI GL Suggestion. */
+/** Petty Cash list + balance widget + create dialog with AI GL Suggestion.
+ *  `embedded` = dirender di dalam langkah End of Day → tanpa PageHeader. */
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -15,7 +16,10 @@ import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import DataTable from "@/components/shared/DataTable";
+import StatusPill from "@/components/shared/StatusPill";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import VendorAutocomplete from "@/components/shared/VendorAutocomplete";
 import GLSuggestion from "@/components/shared/GLSuggestion";
@@ -27,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
 import { fetchAll } from "@/lib/api";
-export default function PettyCashList() {
+export default function PettyCashList({ embedded = false }) {
   const { scopedOutlets, outletId, currentOutlet, setOutletId } = useOutletScopeCtx();
   const [showForm, setShowForm] = useState(false);
   const [pickOutlet, setPickOutlet] = useState(false);
@@ -107,58 +111,55 @@ export default function PettyCashList() {
 
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 20)));
 
+  const lowBalance = !aggregateMode && balance > 0 && balance < 500000;
+  const newButton = (
+    <Button
+      onClick={() => (outletId ? setShowForm(true) : setPickOutlet(true))}
+      disabled={scopedOutlets.length === 0}
+      data-testid="pc-new"
+      title={!outletId ? "Pilih outlet untuk transaksi" : ""}
+    >
+      <Plus className="h-4 w-4" /> Transaksi Baru
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="petty-cash-page">
-      {/* Balance KPI + New button. Outlet picker is in global header. */}
-      <div className="glass-card p-5">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-3 sm:flex-wrap">
-          <div className="flex-1 sm:min-w-[220px]">
-            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
-              {aggregateMode
-                ? `Saldo Total (${scopedOutlets.length} outlet)`
-                : `Saldo Petty Cash · ${currentOutlet?.name || "—"}`}
-            </Label>
-            <div className="glass-input rounded-lg px-4 h-10 mt-1 flex items-center justify-between">
-              <span className="font-bold text-lg tabular-nums" data-testid="pc-balance">{fmtRp(balance)}</span>
-              {!aggregateMode && balance < 500000 && balance > 0 && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" /> Saldo Rendah
-                </span>
-              )}
-              {!aggregateMode && balance >= 500000 && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" /> Cukup
-                </span>
-              )}
-              {aggregateMode && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
-                  Agregat
-                </span>
-              )}
-            </div>
-          </div>
-          <Button
-            onClick={() => (outletId ? setShowForm(true) : setPickOutlet(true))}
-            disabled={scopedOutlets.length === 0}
-            className="rounded-full pill-active gap-2 h-10 px-5 w-full sm:w-auto" data-testid="pc-new"
-            title={!outletId ? "Pilih outlet untuk transaksi" : ""}
-          >
-            <Plus className="h-4 w-4" /> Transaksi Baru
-          </Button>
-        </div>
-        {aggregateMode && Object.keys(balances).length > 0 && (
-          <div className="mt-3 pt-3 border-t border-border/50">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">Saldo per Outlet</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-              {Object.entries(balances).map(([oid, bal]) => (
-                <div key={oid} className="glass-input rounded-lg p-2 text-xs">
-                  <div className="text-muted-foreground truncate">{outletMap[oid]?.name || oid}</div>
-                  <div className="font-bold tabular-nums">{fmtRp(bal)}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+    <div className="space-y-3 lg:space-y-4" data-testid="petty-cash-page">
+      {!embedded && (
+        <PageHeader
+          icon={Wallet}
+          title="Petty Cash"
+          subtitle="Kas kecil outlet — catat pengeluaran, replenish, dan penyesuaian saldo."
+          actions={newButton}
+          className="mb-0 md:mb-0"
+        />
+      )}
+
+      {/* Saldo — total + per outlet (agregat) atau satu outlet. Outlet picker ada di header. */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-testid="pc-balance-strip">
+        <CompactStatCard
+          label={aggregateMode ? `Saldo Total (${scopedOutlets.length} outlet)` : `Saldo · ${currentOutlet?.name || "—"}`}
+          value={<span data-testid="pc-balance">{fmtRp(balance)}</span>}
+          sub={aggregateMode ? "Agregat semua outlet" : lowBalance ? "Saldo rendah" : balance >= 500000 ? "Saldo cukup" : undefined}
+          tone={lowBalance ? "warning" : "default"}
+          icon={lowBalance ? AlertTriangle : Wallet}
+          color="aurora-3"
+          loading={balanceQuery.isLoading}
+          testId="pc-balance-card"
+          className="col-span-2 md:col-span-1"
+        />
+        {aggregateMode && Object.entries(balances).map(([oid, bal]) => (
+          <CompactStatCard
+            key={oid}
+            label={outletMap[oid]?.name || oid}
+            value={fmtRp(bal)}
+            tone={bal > 0 && bal < 500000 ? "warning" : "default"}
+            sub={bal > 0 && bal < 500000 ? "Saldo rendah" : undefined}
+            size="sm"
+            testId={`pc-balance-${oid}`}
+          />
+        ))}
+        {embedded && <div className="col-span-2 md:col-span-1 flex items-center">{newButton}</div>}
       </div>
 
       {/* Responsive list */}
@@ -182,7 +183,7 @@ export default function PettyCashList() {
               ),
             },
             {
-              key: "amount", label: "Amount", numeric: true,
+              key: "amount", label: "Nominal", numeric: true,
               render: t => (
                 <span className={cn(
                   "font-semibold",
@@ -199,13 +200,14 @@ export default function PettyCashList() {
             {
               key: "status", label: "Status",
               render: t => t.status === "pending_approval" ? (
-                <Button size="sm" variant="outline" className="rounded-full h-7 text-xs"
+                <Button size="sm" variant="outline"
                   data-testid={`pc-approve-${t.id}`}
+                  title="Menunggu approval — klik untuk menyetujui"
                   onClick={async () => {
                     try { await api.post(`/outlet/petty-cash/${t.id}/approve`); toast.success("Disetujui & dijurnal"); loadList(); }
                     catch (e) { toast.error(e.response?.data?.errors?.[0]?.message || "Gagal approve"); }
-                  }}>Menunggu · Approve</Button>
-              ) : <span className="text-xs text-muted-foreground">{t.status === "posted" ? "Posted" : t.status}</span>,
+                  }}>Setujui</Button>
+              ) : <StatusPill status={t.status} />,
             },
           ]}
           rows={items}
@@ -217,17 +219,18 @@ export default function PettyCashList() {
               description={aggregateMode
                 ? "Pilih outlet spesifik di header untuk mulai mencatat petty cash, atau lanjut catat dari outlet manapun."
                 : "Mulai catat pengeluaran kecil di sini."}
+              action={<Button size="sm" variant="outline" onClick={() => (outletId ? setShowForm(true) : setPickOutlet(true))} disabled={scopedOutlets.length === 0}>Transaksi Baru</Button>}
             />
           }
           rowTestIdPrefix="pc"
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman sebelumnya">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman berikutnya">Next</button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="pc-page-prev">Sebelumnya</Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="pc-page-next">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -269,6 +272,9 @@ function OutletPickDialog({ open, outlets, onClose, onPick }) {
             </button>
           ))}
         </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -306,7 +312,7 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
 
   const submit = async () => {
     if (!form.description) { toast.error("Deskripsi wajib"); return; }
-    if (!form.amount || Number(form.amount) <= 0) { toast.error("Amount harus > 0"); return; }
+    if (!form.amount || Number(form.amount) <= 0) { toast.error("Nominal harus > 0"); return; }
     setSaving(true);
     try {
       const payload = {
@@ -367,13 +373,13 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-xl">
         <DialogHeader>
-          <DialogTitle>Transaksi Petty Cash</DialogTitle>
+          <DialogTitle>Transaksi Petty Cash Baru</DialogTitle>
           <DialogDescription>Catat pengeluaran/replenish kas kecil. AI akan membantu kategorisasi GL.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Tipe transaksi">
             {[
               { v: "purchase",   l: "Pengeluaran", Icon: ArrowDownCircle },
               { v: "replenish",  l: "Replenish",   Icon: ArrowUpCircle },
@@ -383,9 +389,12 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
               return (
                 <button
                   key={t.v}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.type === t.v}
                   onClick={() => setForm(f => ({ ...f, type: t.v }))}
                   className={cn(
-                    "glass-input rounded-xl px-3 py-2.5 text-sm flex items-center gap-2 transition-colors",
+                    "glass-input rounded-lg h-9 px-3 text-sm flex items-center justify-center gap-2 transition-colors",
                     form.type === t.v ? "pill-active" : "hover:bg-foreground/5",
                   )}
                   data-testid={`pc-type-${t.v}`}
@@ -398,26 +407,28 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
           </div>
 
           {form.type === "adjustment" && (
-            <div className="flex gap-2" data-testid="pc-direction">
+            <div className="flex gap-2" data-testid="pc-direction" role="radiogroup" aria-label="Arah penyesuaian">
               {[{ v: "in", l: "Masuk (+)" }, { v: "out", l: "Keluar (−)" }].map(d => (
-                <button key={d.v} type="button" onClick={() => setForm(f => ({ ...f, direction: d.v }))}
-                  className={cn("glass-input rounded-xl px-3 py-1.5 text-xs", (form.direction || "in") === d.v ? "pill-active" : "")}
+                <button key={d.v} type="button" role="radio" aria-checked={(form.direction || "in") === d.v} onClick={() => setForm(f => ({ ...f, direction: d.v }))}
+                  className={cn("glass-input rounded-lg h-8 px-2.5 text-[13px]", (form.direction || "in") === d.v ? "pill-active" : "")}
                   data-testid={`pc-direction-${d.v}`}>{d.l}</button>
               ))}
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tanggal</Label>
+              <Label htmlFor="pc-date-input" className="text-xs md:text-sm font-medium">Tanggal *</Label>
               <Input
+                id="pc-date-input"
                 type="date" value={form.txn_date}
                 onChange={e => setForm(f => ({ ...f, txn_date: e.target.value }))}
                 className="glass-input mt-1" data-testid="pc-date"
               />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Amount *</Label>
+              <Label htmlFor="pc-amount-input" className="text-xs md:text-sm font-medium">Nominal *</Label>
               <Input
+                id="pc-amount-input"
                 type="number" min="0" value={form.amount}
                 onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
                 className="glass-input mt-1 tabular-nums" data-testid="pc-amount"
@@ -426,8 +437,9 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
           </div>
 
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Deskripsi *</Label>
+            <Label htmlFor="pc-desc-input" className="text-xs md:text-sm font-medium">Deskripsi *</Label>
             <Input
+              id="pc-desc-input"
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="mis: Beli galon untuk operational"
@@ -446,7 +458,7 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
               />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Item (opsional)</Label>
+                  <Label className="text-xs md:text-sm font-medium">Item (opsional)</Label>
                   <ItemAutocomplete
                     value={form.item_text}
                     onChange={(v) => setForm(f => ({ ...f, item_text: v, item_id: null }))}
@@ -455,7 +467,7 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Vendor (opsional)</Label>
+                  <Label className="text-xs md:text-sm font-medium">Vendor (opsional)</Label>
                   <VendorAutocomplete
                     value={form.vendor_text}
                     onChange={(v) => setForm(f => ({ ...f, vendor_text: v, vendor_id: null }))}
@@ -481,13 +493,14 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
               />
 
               <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">GL Account *</Label>
+                <Label className="text-xs md:text-sm font-medium">Akun GL *</Label>
                 <SimpleSelect
                   value={form.gl_account_id}
                   onValueChange={v => setForm(f => ({ ...f, gl_account_id: v }))}
                   options={[{ value: "", label: "-- pilih GL --" }, ...coas.map(c => ({ value: c.id, label: `${c.code} — ${c.name}` }))]}
                   placeholder="-- pilih GL --"
-                  className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+                  className="glass-input w-full mt-1"
+                  ariaLabel="Akun GL"
                   testId="pc-gl"
                 />
               </div>
@@ -495,8 +508,9 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
           )}
 
           <div>
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Notes</Label>
+            <Label htmlFor="pc-notes-input" className="text-xs md:text-sm font-medium">Catatan</Label>
             <Textarea
+              id="pc-notes-input"
               value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               className="glass-input mt-1 min-h-[60px]"
@@ -505,8 +519,8 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="pc-save">
-            {saving ? "…" : "Simpan"}
+          <Button onClick={submit} disabled={saving} data-testid="pc-save">
+            {saving ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>
       </DialogContent>

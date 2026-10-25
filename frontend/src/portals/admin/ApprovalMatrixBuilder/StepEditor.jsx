@@ -39,21 +39,22 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
   return (
     <div className="rounded-lg border border-border/40 p-3 space-y-3" data-testid={`tier-${tierIdx}-step-${idx}`}>
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className="font-mono">Step {idx + 1}</Badge>
+        <Badge variant="outline" className="shrink-0">Step {idx + 1}</Badge>
         <Input
           value={step.label || ""}
           onChange={(e) => onChange({ label: e.target.value })}
           placeholder="Label step (mis: Finance Manager Approval)"
+          aria-label={`Label step ${idx + 1}`}
           className="h-8 flex-1"
           data-testid={`step-${tierIdx}-${idx}-label`}
         />
-        <Button size="icon" variant="ghost" onClick={onRemove} title="Hapus step" aria-label="Hapus step ini">
-          <X className="h-4 w-4" />
+        <Button size="icon-sm" variant="ghost" onClick={onRemove} title="Hapus step" aria-label="Hapus step ini">
+          <X />
         </Button>
       </div>
 
       {/* Mode toggle */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Mode routing approver">
         {Object.entries(MODE_META).map(([key, meta]) => {
           const Icon = meta.icon;
           const isActive = mode === key;
@@ -62,7 +63,8 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
               key={key}
               type="button"
               onClick={() => onChange({ match_mode: key })}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition-colors ${isActive ? "bg-aurora/15 border-aurora/40 text-foreground" : "border-border/40 text-muted-foreground hover:bg-foreground/5"}`}
+              aria-pressed={isActive}
+              className={`h-8 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium border flex items-center gap-1.5 transition-colors ${isActive ? "pill-active border-transparent" : "border-border/40 text-muted-foreground hover:text-foreground hover:bg-foreground/5"}`}
               data-testid={`step-${tierIdx}-${idx}-mode-${key}`}
             >
               <Icon className="h-3.5 w-3.5" /> {meta.label}
@@ -78,7 +80,7 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
           options={users.map((u) => ({ value: u.id, label: `${u.full_name} (${u.email})` }))}
           selected={step.any_of_user_ids || []}
           onChange={(v) => onChange({ any_of_user_ids: v })}
-          placeholder="Search user…"
+          placeholder="Cari user…"
           searchable
           testId={`step-${tierIdx}-${idx}-users`}
         />
@@ -89,7 +91,7 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
           options={roles.map((r) => ({ value: r.id, label: `${r.name} (${r.perm_count} perms)` }))}
           selected={step.any_of_role_ids || []}
           onChange={(v) => onChange({ any_of_role_ids: v })}
-          placeholder="Search role…"
+          placeholder="Cari role…"
           searchable
           testId={`step-${tierIdx}-${idx}-roles`}
         />
@@ -100,7 +102,7 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
           options={perms.map((p) => ({ value: p.code, label: `${p.code} — ${p.label}` }))}
           selected={step.any_of_perms || []}
           onChange={(v) => onChange({ any_of_perms: v })}
-          placeholder="Search permission…"
+          placeholder="Cari permission…"
           searchable
           testId={`step-${tierIdx}-${idx}-perms`}
         />
@@ -108,13 +110,15 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
 
       {/* Deadline */}
       <div>
-        <Label className="text-xs">Deadline (jam, opsional)</Label>
+        <Label htmlFor={`step-${tierIdx}-${idx}-deadline`} className="text-xs md:text-sm font-medium">Deadline (jam, opsional)</Label>
         <Input
+          id={`step-${tierIdx}-${idx}-deadline`}
+          data-testid={`step-${tierIdx}-${idx}-deadline`}
           type="number" min="1"
           value={step.deadline_hours ?? ""}
           onChange={(e) => onChange({ deadline_hours: e.target.value === "" ? null : Number(e.target.value) })}
           placeholder="Mis: 24"
-          className="mt-1 h-8 max-w-[140px]"
+          className="mt-1 max-w-[140px]"
         />
       </div>
     </div>
@@ -150,10 +154,14 @@ function MultiSelectChips({ label, options, selected, onChange, placeholder, sea
 
   return (
     <div data-testid={testId}>
-      {label && <Label className="text-xs">{label}</Label>}
+      {label && <Label className="text-xs md:text-sm font-medium">{label}</Label>}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`${label || "Pilih"}: ${selected.length} dipilih — klik untuk ubah`}
         onClick={() => setOpen(true)}
-        className="mt-1 min-h-[36px] rounded-md border border-input bg-background px-2 py-1.5 flex flex-wrap gap-1 cursor-text"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(true); } }}
+        className="mt-1 min-h-[36px] rounded-md border border-input bg-background px-2 py-1.5 flex flex-wrap gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {selected.length === 0 && (
           <span className="text-sm text-muted-foreground">{placeholder || "Pilih…"}</span>
@@ -168,6 +176,7 @@ function MultiSelectChips({ label, options, selected, onChange, placeholder, sea
               type="button"
               onClick={(e) => { e.stopPropagation(); remove(v); }}
               className="hover:text-red-500"
+              aria-label={`Hapus ${optionsById[v]?.label || v}`}
             >
               <X className="h-3 w-3" />
             </button>
@@ -187,6 +196,7 @@ function MultiSelectChips({ label, options, selected, onChange, placeholder, sea
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari…"
+                aria-label={`Cari ${label || "opsi"}`}
                 className="pl-9"
               />
             </div>
@@ -200,7 +210,7 @@ function MultiSelectChips({ label, options, selected, onChange, placeholder, sea
                   onClick={() => toggle(o.value)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 ${isSelected ? "bg-aurora/10" : "hover:bg-foreground/5"}`}
                 >
-                  <input type="checkbox" checked={isSelected} readOnly />
+                  <input type="checkbox" checked={isSelected} readOnly tabIndex={-1} aria-hidden="true" />
                   <span>{o.label}</span>
                 </button>
               );
@@ -226,14 +236,14 @@ function PreviewResult({ result, usersById, rolesById }) {
   if (!result.has_workflow) {
     return (
       <Card><CardContent className="py-6 text-center text-muted-foreground">
-        Workflow belum disimpan untuk entity ini.
+        Workflow belum disimpan untuk entitas ini.
       </CardContent></Card>
     );
   }
   if (!result.tier) {
     return (
       <Card><CardContent className="py-6 text-center text-muted-foreground">
-        Tidak ada tier yang match untuk amount {fmtRp(result.amount)}.
+        Tidak ada tier yang cocok untuk nominal {fmtRp(result.amount)}.
       </CardContent></Card>
     );
   }
@@ -246,8 +256,8 @@ function PreviewResult({ result, usersById, rolesById }) {
         </CardTitle>
         <CardDescription>
           Range: {fmtRp(result.tier.min_amount)} → {result.tier.max_amount ? fmtRp(result.tier.max_amount) : "∞"}
-          {result.tier.condition_outlet_ids?.length > 0 && ` • condition outlets: ${result.tier.condition_outlet_ids.length}`}
-          {result.tier.condition_brand_ids?.length > 0 && ` • condition brands: ${result.tier.condition_brand_ids.length}`}
+          {result.tier.condition_outlet_ids?.length > 0 && ` • kondisi outlet: ${result.tier.condition_outlet_ids.length}`}
+          {result.tier.condition_brand_ids?.length > 0 && ` • kondisi brand: ${result.tier.condition_brand_ids.length}`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -257,18 +267,18 @@ function PreviewResult({ result, usersById, rolesById }) {
             <div key={i} className="rounded-md border border-border/40 p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono">Step {i + 1}</Badge>
+                  <Badge variant="outline">Step {i + 1}</Badge>
                   <Icon className="h-4 w-4" style={{ color: MODE_META[s.match_mode]?.color }} />
                   <span className="font-medium">{s.label}</span>
                   <Badge variant="outline" className="text-[11px]">{s.match_mode}</Badge>
                 </div>
                 <Badge variant="outline" className={s.approvers_count > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}>
-                  {s.approvers_count} approver{s.approvers_count !== 1 ? "s" : ""}
+                  {s.approvers_count} approver
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground">
                 {s.approvers_count === 0 ? (
-                  <span className="text-red-500">⚠️ Tidak ada user yang match — step ini akan stuck.</span>
+                  <span className="text-red-500 inline-flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> Tidak ada user yang cocok — step ini akan macet.</span>
                 ) : (
                   <div className="flex flex-wrap gap-1">
                     {s.approvers.map((a) => (
@@ -296,13 +306,13 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
     );
   }
   return (
-    <div className="space-y-4" data-testid="diagram-view">
+    <div className="space-y-3" data-testid="diagram-view">
       {tiers.map((tier, ti) => (
         <Card key={ti} className="border-aurora/20">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="bg-aurora/10 border-aurora/30">Tier {ti + 1}</Badge>
-              <CardTitle className="text-sm">{tier.label || "(no label)"}</CardTitle>
+              <CardTitle className="text-sm">{tier.label || "(tanpa label)"}</CardTitle>
               <Badge variant="outline" className="text-xs ml-auto">
                 {fmtRp(tier.min_amount || 0)} → {tier.max_amount ? fmtRp(tier.max_amount) : "∞"}
               </Badge>
@@ -335,7 +345,7 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
                         <Icon className="h-3.5 w-3.5" style={{ color }} />
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">{step.match_mode}</span>
                       </div>
-                      <div className="text-sm font-medium mt-0.5">{step.label || `(no label)`}</div>
+                      <div className="text-sm font-medium mt-0.5">{step.label || `(tanpa label)`}</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">
                         {step.match_mode === "user" && `${step.any_of_user_ids?.length || 0} user`}
                         {step.match_mode === "role" && `${step.any_of_role_ids?.length || 0} role`}

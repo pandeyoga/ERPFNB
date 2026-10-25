@@ -12,10 +12,10 @@
  * Old routes /outlet/kdo, /outlet/bdo, /outlet/fdo remain working but now
  * redirect to this hub (via OutletPortal.jsx route config).
  */
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ChefHat, Wine, Utensils } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
+import { ChefHat, Wine, Utensils, ClipboardList } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
 import KdoBdoList from "./KdoBdoList";
 import FdoPage from "./FdoPage";
 
@@ -27,7 +27,6 @@ const TABS = [
 
 export default function DailyOrdersHub() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const type = (searchParams.get("type") || "kdo").toLowerCase();
   const activeTab = TABS.find(t => t.id === type) || TABS[0];
 
@@ -36,68 +35,34 @@ export default function DailyOrdersHub() {
   };
 
   return (
-    <div className="space-y-4" data-testid="daily-orders-hub">
-      {/* Hub header + tabs */}
-      <div className="glass-card overflow-hidden">
-        <div className="px-5 pt-5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl grad-aurora-soft flex items-center justify-center">
-              <activeTab.icon className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold leading-tight">Daily Orders</h2>
-              <p className="text-xs text-muted-foreground">
-                Permintaan harian per station — Kitchen / Bar / Floor
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-orders-hub">
+      <PageHeader
+        icon={ClipboardList}
+        title="Daily Orders"
+        subtitle="Permintaan harian per station — Kitchen (KDO), Bar (BDO), Floor (FDO)."
+        className="mb-0 md:mb-0"
+      />
 
-        {/* Tabs */}
-        <div
-          className="flex items-center gap-1 px-5 pt-4 border-b border-border/40 -mb-px overflow-x-auto"
-          data-testid="daily-orders-tabs"
-          role="tablist"
-          aria-label="Station"
-        >
+      {/* Station tabs (URL ?type=kdo|bdo|fdo) */}
+      <Tabs value={activeTab.id} onValueChange={setTab}>
+        <TabsList aria-label="Station" data-testid="daily-orders-tabs">
           {TABS.map((t) => {
-            const isActive = t.id === activeTab.id;
             const Icon = t.icon;
             return (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "relative inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap",
-                  isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                data-testid={`tab-${t.id}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{t.name}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="daily-orders-tab-underline"
-                    className="absolute inset-x-0 -bottom-px h-0.5 bg-foreground"
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
-                )}
-              </button>
+              <TabsTrigger key={t.id} value={t.id} data-testid={`tab-${t.id}`}>
+                <Icon /> {t.name}
+              </TabsTrigger>
             );
           })}
-        </div>
-      </div>
+        </TabsList>
+      </Tabs>
 
       {/* Active tab content */}
       <div data-testid={`daily-orders-content-${activeTab.id}`}>
         {activeTab.id === "fdo" ? (
           <FdoPage />
         ) : (
-          <KdoBdoList kind={activeTab.id} />
+          <KdoBdoList key={activeTab.id} kind={activeTab.id} />
         )}
       </div>
     </div>

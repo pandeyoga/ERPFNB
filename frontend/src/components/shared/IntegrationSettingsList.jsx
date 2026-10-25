@@ -125,7 +125,7 @@ export default function IntegrationSettingsList({ items, onChange }) {
               <div className="flex items-center gap-2 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => startEdit(item)}
                         data-testid={`integration-edit-${item.key}`} className="gap-1">
-                  <Edit3 className="h-3.5 w-3.5" /> {item.is_set ? "Update" : "Set"}
+                  <Edit3 className="h-3.5 w-3.5" /> {item.is_set ? "Ubah" : "Atur"}
                 </Button>
                 {item.is_set && item.source === "database" && (
                   <Button size="sm" variant="ghost" onClick={() => remove(item)}

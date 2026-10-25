@@ -7,7 +7,6 @@ import TopNav from "./TopNav";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
 import GlobalSearch from "@/components/shared/GlobalSearch";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
 export default function AppShell() {
@@ -117,7 +116,6 @@ export default function AppShell() {
         </div>
         
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <Toaster position="top-right" />
       </div>
     </NavigationProvider>
   );

@@ -7,6 +7,7 @@ import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { promptDialog } from "@/components/shared/confirmDialog";
 
 export default function TelegramTestPanel({ onReload }) {
   const [busy, setBusy] = useState(false);
@@ -29,18 +30,26 @@ export default function TelegramTestPanel({ onReload }) {
   }
 
   async function setupWebhook() {
-    if (!webhookUrl.trim()) {
+    // URL dipakai langsung dari variabel lokal — sebelumnya nilai hasil prompt di-set ke state
+    // lalu request tetap memakai state lama (kosong), sehingga URL yang diketik tidak terkirim.
+    let url = webhookUrl.trim();
+    if (!url) {
       const baseHint = window.location.origin.replace(/\/$/, "");
-      const url = window.prompt(
-        "Masukkan public backend URL (mis. https://app.example.com).\nPath '/api/telegram/webhook' akan otomatis ditambahkan.",
-        baseHint || "",
-      );
-      if (!url) return;
+      const entered = await promptDialog({
+        title: "Daftarkan webhook Telegram",
+        description: "Masukkan URL backend publik. Path '/api/telegram/webhook' akan ditambahkan otomatis.",
+        label: "URL backend publik",
+        placeholder: "https://app.example.com",
+        defaultValue: baseHint || "",
+        confirmText: "Daftarkan",
+      });
+      if (!entered || !entered.trim()) return;
+      url = entered.trim();
       setWebhookUrl(url);
     }
     setBusy(true);
     try {
-      const r = await api.post("/system-settings/telegram/set-webhook", { url: webhookUrl.trim() || undefined });
+      const r = await api.post("/system-settings/telegram/set-webhook", { url: url || undefined });
       const res = unwrap(r);
       if (res.ok) {
         toast.success(`Webhook terdaftar: ${res.url}`);
@@ -60,25 +69,26 @@ export default function TelegramTestPanel({ onReload }) {
           <MessageSquare className="h-4 w-4" />
         </span>
         <div>
-          <h3 className="font-semibold text-sm">Test Telegram</h3>
-          <p className="text-[11px] text-muted-foreground">Panggil getMe & setup webhook</p>
+          <h3 className="font-semibold text-sm">Tes Telegram</h3>
+          <p className="text-[11px] text-muted-foreground">Panggil getMe & daftarkan webhook</p>
         </div>
       </div>
 
       <div className="space-y-3">
         <div>
-          <Label className="text-xs">Verify saved token</Label>
+          <p className="text-xs md:text-sm font-medium">Verifikasi token tersimpan</p>
           <Button
             size="sm" onClick={() => test(false)} disabled={busy}
-            className="w-full gap-1 mt-1" data-testid="telegram-test-saved">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {busy ? "Testing…" : "Test Saved Token"}
+            className="w-full mt-1" data-testid="telegram-test-saved">
+            <CheckCircle2 />
+            {busy ? "Menguji…" : "Tes Token Tersimpan"}
           </Button>
         </div>
 
         <div>
-          <Label className="text-xs">Test ephemeral token (no save)</Label>
+          <Label htmlFor="telegram-ephemeral-input" className="text-xs md:text-sm font-medium">Tes token sementara (tidak disimpan)</Label>
           <Input
+            id="telegram-ephemeral-input"
             value={ephemToken} onChange={(e) => setEphemToken(e.target.value)}
             placeholder="123456:ABC-..."
             className="font-mono text-xs mt-1"
@@ -88,21 +98,23 @@ export default function TelegramTestPanel({ onReload }) {
             size="sm" variant="outline" onClick={() => test(true)}
             disabled={busy || !ephemToken.trim()}
             className="w-full mt-2" data-testid="telegram-test-ephemeral">
-            Test (don’t save)
+            Tes (tanpa simpan)
           </Button>
         </div>
 
         <div>
-          <Label className="text-xs">Public webhook URL (optional)</Label>
+          <Label htmlFor="telegram-webhook-url" className="text-xs md:text-sm font-medium">URL webhook publik (opsional)</Label>
           <Input
+            id="telegram-webhook-url"
             value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)}
             placeholder="https://app.example.com"
-            className="font-mono text-xs mt-1"
+            className="text-xs mt-1"
+            data-testid="telegram-webhook-url"
           />
           <Button
             size="sm" variant="outline" onClick={setupWebhook} disabled={busy}
-            className="w-full mt-2 gap-1" data-testid="telegram-setup-webhook">
-            <ExternalLink className="h-3.5 w-3.5" /> Setup Webhook
+            className="w-full mt-2" data-testid="telegram-setup-webhook">
+            <ExternalLink /> Daftarkan Webhook
           </Button>
         </div>
 
@@ -113,7 +125,7 @@ export default function TelegramTestPanel({ onReload }) {
         )}
 
         <p className="text-[11px] text-muted-foreground">
-          💡 Cara dapat token: chat <a className="underline" href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a> → /newbot
+          Cara dapat token: chat <a className="underline" href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a> → /newbot
         </p>
       </div>
     </div>

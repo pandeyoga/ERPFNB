@@ -5,7 +5,7 @@
  * DP/Downpayment: amount, status, payment_method, dp_deadline, dp_reference, dp_paid_at
  */
 import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Calendar, Clock, Users, Phone, Plus, Search, Filter,
   CheckCircle2, XCircle, Eye, RefreshCw, CalendarCheck, Loader2,
@@ -23,6 +23,9 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import api from "@/lib/api";
@@ -35,10 +38,11 @@ import { STATUS_CONFIG, SOURCE_LABELS, DEPOSIT_CONFIG, fmtRp, fmtDate } from "./
 import StatusBadge from "./StatusBadge";
 import DepositPanel from "./DepositPanel";
 import RescheduleDialog from "./RescheduleDialog";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
 export default function ReservationList() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   // ── Outlet Scope ──
@@ -58,8 +62,6 @@ export default function ReservationList() {
   const [statusLoading, setStatusLoading] = useState(false);
 
   // Dialogs
-  const [cancelOpen, setCancelOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
 
   const today = new Date().toISOString().split("T")[0];
@@ -93,6 +95,17 @@ export default function ReservationList() {
   // Reset page when outlet scope changes
   useEffect(() => { setPage(1); }, [outletId]);
 
+  // Deep link dari CRM Hub ("Lihat detail" → state.openId): buka dialog detail reservasi.
+  // Sebelumnya state ini diabaikan sehingga tombol hanya membuka daftar.
+  useEffect(() => {
+    const openId = location.state?.openId;
+    if (!openId) return;
+    api.get(`/reservations/${openId}`)
+      .then(r => { if (r.data?.success) { setSelected(r.data.data); setDetailOpen(true); } })
+      .catch(() => toast.error("Gagal memuat detail reservasi"))
+      .finally(() => navigate(location.pathname, { replace: true, state: null }));
+  }, [location.state]); // eslint-disable-line
+
   // ── Status Change ──
   const handleStatusChange = async (id, status, reason) => {
     setStatusLoading(true);
@@ -108,8 +121,25 @@ export default function ReservationList() {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengubah status");
     } finally {
       setStatusLoading(false);
-      setCancelOpen(false);
     }
+  };
+
+  // Pembatalan memakai promptDialog global (alasan opsional).
+  const handleCancel = async (r) => {
+    if (!r) return;
+    const reason = await promptDialog({
+      title: "Batalkan Reservasi",
+      description: `Reservasi atas nama ${r.customer_name || "-"} akan dibatalkan. DP yang sudah dibayar akan otomatis di-refund.`,
+      label: "Alasan pembatalan",
+      placeholder: "Opsional",
+      required: false,
+      multiline: true,
+      destructive: true,
+      confirmText: "Ya, Batalkan",
+      cancelText: "Kembali",
+    });
+    if (reason === null) return;
+    handleStatusChange(r.id, "cancelled", reason);
   };
 
   const handleDetailUpdate = (updated) => {
@@ -136,66 +166,46 @@ export default function ReservationList() {
   const todayCount      = reservations.filter(r => r.reservation_date === today).length;
 
   return (
-    <div className="p-6 space-y-5" data-testid="reservation-list-page">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Manajemen Reservasi</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            {outletId && currentOutlet
-              ? `Outlet: ${currentOutlet.name}`
-              : "Semua Outlet"}
-          </p>
-        </div>
-        <div className="flex gap-2 items-center">
-          {/* Outlet switcher — visible when user has access to multiple outlets */}
-          {scopedOutlets.length > 1 && (
-            <Select value={outletId || "all"} onValueChange={v => setOutletId(v === "all" ? "" : v)}>
-              <SelectTrigger className="w-48" data-testid="outlet-scope-select">
-                <SelectValue placeholder="Pilih Outlet..." />
-              </SelectTrigger>
-              <SelectContent>
-                {allowAllOption && <SelectItem value="all">Semua Outlet</SelectItem>}
-                {scopedOutlets.map(o => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Button variant="outline" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
-          <Button onClick={() => navigate("/outlet/reservations/new")} data-testid="btn-new-reservation">
-            <Plus className="h-4 w-4 mr-2" /> Buat Reservasi
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="reservation-list-page">
+      {/* Outlet dipilih lewat header Outlet Aktif (tidak ada picker kedua di halaman). */}
+      <PageHeader
+        icon={CalendarCheck}
+        title="Reservations"
+        subtitle={`Kelola reservasi, waitlist, jadwal ulang & DP · ${outletId && currentOutlet ? currentOutlet.name : "Semua Outlet"}`}
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            <Button variant="outline" onClick={load} data-testid="reservation-refresh">
+              <RefreshCw className="h-4 w-4" /> Muat ulang
+            </Button>
+            <Button onClick={() => navigate("/outlet/reservations/new")} data-testid="btn-new-reservation">
+              <Plus className="h-4 w-4" /> Buat Reservasi
+            </Button>
+          </>
+        }
+      />
 
-      {/* Status KPI strip */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5" data-testid="reservation-kpi-strip">
-        {[
-          { label: "Total", val: total, cls: "text-foreground" },
-          { label: "Menunggu", val: pendingCount, cls: "text-amber-600" },
-          { label: "Waitlist", val: waitlistCount, cls: "text-teal-600" },
-          { label: "Dikonfirmasi", val: confirmedCount, cls: "text-blue-600" },
-          { label: "Dijadwal Ulang", val: rescheduledCount, cls: "text-indigo-600" },
-        ].map(s => (
-          <div key={s.label} className="glass-card p-3 text-center">
-            <p className={`text-xl font-bold tabular-nums ${s.cls}`}>{s.val}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-          </div>
-        ))}
+      {/* Status KPI strip — Total = semua hasil filter; angka status dihitung dari halaman yang tampil. */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-testid="reservation-kpi-strip">
+        <CompactStatCard label="Total" value={total} icon={CalendarCheck} color="aurora-1" size="sm" loading={loading} testId="reservation-kpi-total" />
+        <CompactStatCard label="Menunggu" value={pendingCount} tone={pendingCount > 0 ? "warning" : "default"} icon={Clock} color="aurora-3" size="sm" loading={loading} testId="reservation-kpi-pending" />
+        <CompactStatCard label="Waitlist" value={waitlistCount} icon={ListOrdered} color="aurora-2" size="sm" loading={loading} testId="reservation-kpi-waitlist" />
+        <CompactStatCard label="Dikonfirmasi" value={confirmedCount} tone="info" icon={CheckCircle2} color="aurora-4" size="sm" loading={loading} testId="reservation-kpi-confirmed" />
+        <CompactStatCard label="Dijadwal Ulang" value={rescheduledCount} icon={CalendarClock} color="aurora-5" size="sm" loading={loading} testId="reservation-kpi-rescheduled" />
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-4" data-testid="reservation-filters">
+      <div className="glass-card p-3" data-testid="reservation-filters">
         <div className="flex flex-wrap gap-2.5">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Cari nama / nomor HP..." value={filters.search}
+              aria-label="Cari nama atau nomor HP"
               onChange={e => { setFilters(f => ({ ...f, search: e.target.value })); setPage(1); }}
-              className="pl-9" />
+              className="pl-9" data-testid="filter-search-input" />
           </div>
           <Select value={filters.status || "all"} onValueChange={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }}>
-            <SelectTrigger className="w-44" data-testid="filter-status-select">
+            <SelectTrigger className="w-44" aria-label="Filter status" data-testid="filter-status-select">
               <SelectValue placeholder="Semua Status" />
             </SelectTrigger>
             <SelectContent>
@@ -207,10 +217,15 @@ export default function ReservationList() {
           </Select>
           <Input type="date" value={filters.date_from}
             onChange={e => { setFilters(f => ({ ...f, date_from: e.target.value })); setPage(1); }}
-            className="w-36" placeholder="Dari" />
+            className="w-40" aria-label="Dari tanggal" title="Dari tanggal" data-testid="filter-date-from" />
           <Input type="date" value={filters.date_to}
             onChange={e => { setFilters(f => ({ ...f, date_to: e.target.value })); setPage(1); }}
-            className="w-36" placeholder="Sampai" />
+            className="w-40" aria-label="Sampai tanggal" title="Sampai tanggal" data-testid="filter-date-to" />
+          {(filters.status || filters.search || filters.date_from || filters.date_to) && (
+            <Button variant="ghost" onClick={() => { setFilters({ status: "", search: "", date_from: "", date_to: "" }); setPage(1); }} data-testid="filter-reset">
+              <X className="h-4 w-4" /> Reset
+            </Button>
+          )}
         </div>
       </div>
 
@@ -225,13 +240,16 @@ export default function ReservationList() {
           onRowClick={(r) => { setSelected(r); setDetailOpen(true); }}
           rowClassName={(r) => r.reservation_date === today ? "bg-blue-50/30" : ""}
           empty={(
-            <div className="text-center py-16 text-muted-foreground">
-              <CalendarCheck className="h-12 w-12 mx-auto mb-3 opacity-25" />
-              <p>Belum ada reservasi</p>
-              <Button className="mt-4" onClick={() => navigate("/outlet/reservations/new")}>
-                <Plus className="h-4 w-4 mr-2" /> Buat Reservasi Baru
-              </Button>
-            </div>
+            <EmptyState
+              icon={CalendarCheck}
+              title="Belum ada reservasi"
+              description="Reservasi dari telepon, walk-in, WhatsApp, atau website akan tampil di sini."
+              action={
+                <Button size="sm" variant="outline" onClick={() => navigate("/outlet/reservations/new")}>
+                  <Plus className="h-4 w-4" /> Buat Reservasi
+                </Button>
+              }
+            />
           )}
           columns={[
             { key: "customer_name", label: "Tamu", primary: true, sortable: true,
@@ -288,13 +306,16 @@ export default function ReservationList() {
           rowAction={(r) => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Aksi lebih lanjut" className="h-8 w-8">
+                <Button variant="ghost" size="icon-sm" aria-label="Aksi lebih lanjut">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => { setSelected(r); setDetailOpen(true); }}>
-                  <Eye className="h-4 w-4 mr-2" /> Detail
+                  <Eye className="h-4 w-4 mr-2" /> Lihat detail
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/outlet/reservations/${r.id}/edit`)}>
+                  <Edit2 className="h-4 w-4 mr-2" /> Ubah
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {r.status === "pending" && (
@@ -335,7 +356,7 @@ export default function ReservationList() {
                 <DropdownMenuSeparator />
                 {["pending", "waitlist", "confirmed", "rescheduled"].includes(r.status) && (
                   <DropdownMenuItem className="text-destructive"
-                    onClick={() => { setSelected(r); setCancelOpen(true); }}>
+                    onClick={() => handleCancel(r)}>
                     <XCircle className="h-4 w-4 mr-2" /> Batalkan
                   </DropdownMenuItem>
                 )}
@@ -353,11 +374,11 @@ export default function ReservationList() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">Total {total} reservasi</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+            <Button variant="outline" size="icon-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm">{page} / {totalPages}</span>
-            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+            <span className="text-sm tabular-nums">{page} / {totalPages}</span>
+            <Button variant="outline" size="icon-sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -367,9 +388,9 @@ export default function ReservationList() {
       {/* ── Detail Dialog ── */}
       {selected && (
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
+              <DialogTitle className="flex items-center justify-between gap-3 pr-6">
                 <span>Detail Reservasi</span>
                 <span className="text-xs font-normal text-muted-foreground">#{selected.id?.slice(-8).toUpperCase()}</span>
               </DialogTitle>
@@ -379,43 +400,43 @@ export default function ReservationList() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={selected.status} />
               {selected.status === "pending" && (
-                <Button size="sm" className="h-7 text-xs" onClick={() => handleStatusChange(selected.id, "confirmed")} disabled={statusLoading}>
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Konfirmasi
+                <Button size="sm" onClick={() => handleStatusChange(selected.id, "confirmed")} disabled={statusLoading}>
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Konfirmasi
                 </Button>
               )}
               {selected.status === "pending" && (
-                <Button size="sm" variant="outline" className="h-7 text-xs text-teal-700 border-teal-300"
+                <Button size="sm" variant="outline" className="text-teal-700 border-teal-300 dark:text-teal-300"
                   onClick={() => handleStatusChange(selected.id, "waitlist")} disabled={statusLoading}>
-                  <ListOrdered className="h-3.5 w-3.5 mr-1" /> Waitlist
+                  <ListOrdered className="h-3.5 w-3.5" /> Waitlist
                 </Button>
               )}
               {(selected.status === "waitlist" || selected.status === "rescheduled") && (
-                <Button size="sm" className="h-7 text-xs" onClick={() => handleStatusChange(selected.id, "confirmed")} disabled={statusLoading}>
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Konfirmasi
+                <Button size="sm" onClick={() => handleStatusChange(selected.id, "confirmed")} disabled={statusLoading}>
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Konfirmasi
                 </Button>
               )}
               {selected.status === "confirmed" && (
                 <>
-                  <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                  <Button size="sm"
                     onClick={() => handleStatusChange(selected.id, "completed")} disabled={statusLoading}>
-                    <UserCheck className="h-3.5 w-3.5 mr-1" /> Selesai
+                    <UserCheck className="h-3.5 w-3.5" /> Selesai
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs"
+                  <Button size="sm" variant="outline"
                     onClick={() => handleStatusChange(selected.id, "no_show")} disabled={statusLoading}>
-                    <CalendarX className="h-3.5 w-3.5 mr-1" /> Tidak Hadir
+                    <CalendarX className="h-3.5 w-3.5" /> Tidak Hadir
                   </Button>
                 </>
               )}
               {["pending", "waitlist", "confirmed", "rescheduled"].includes(selected.status) && (
-                <Button size="sm" variant="outline" className="h-7 text-xs text-indigo-700 border-indigo-300"
+                <Button size="sm" variant="outline" className="text-indigo-700 border-indigo-300 dark:text-indigo-300"
                   onClick={() => setRescheduleTarget(selected)} disabled={statusLoading}>
-                  <CalendarClock className="h-3.5 w-3.5 mr-1" /> Jadwal Ulang
+                  <CalendarClock className="h-3.5 w-3.5" /> Jadwal Ulang
                 </Button>
               )}
               {["pending","waitlist","confirmed","rescheduled"].includes(selected.status) && (
-                <Button size="sm" variant="destructive" className="h-7 text-xs"
-                  onClick={() => setCancelOpen(true)} disabled={statusLoading}>
-                  <XCircle className="h-3.5 w-3.5 mr-1" /> Batalkan
+                <Button size="sm" variant="destructive"
+                  onClick={() => handleCancel(selected)} disabled={statusLoading}>
+                  <XCircle className="h-3.5 w-3.5" /> Batalkan
                 </Button>
               )}
             </div>
@@ -437,9 +458,9 @@ export default function ReservationList() {
             </div>
 
             {selected.special_requests?.type && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-xs font-semibold text-amber-700 mb-1">Permintaan Khusus: {selected.special_requests.type}</p>
-                {selected.special_requests.notes && <p className="text-sm text-amber-800">{selected.special_requests.notes}</p>}
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">Permintaan Khusus: {selected.special_requests.type}</p>
+                {selected.special_requests.notes && <p className="text-sm text-amber-800 dark:text-amber-200">{selected.special_requests.notes}</p>}
               </div>
             )}
             {selected.notes && (
@@ -451,13 +472,13 @@ export default function ReservationList() {
 
             {/* Reschedule history */}
             {selected.reschedule_history?.length > 0 && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                <p className="text-xs font-semibold text-indigo-700 mb-2 flex items-center gap-1">
+              <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-2 flex items-center gap-1">
                   <History className="h-3.5 w-3.5" /> Riwayat Penjadwalan Ulang ({selected.reschedule_history.length}x)
                 </p>
                 <div className="space-y-1">
                   {selected.reschedule_history.map((h, i) => (
-                    <p key={i} className="text-xs text-indigo-600">
+                    <p key={i} className="text-xs text-indigo-600 dark:text-indigo-300">
                       {fmtDate(h.changed_at)}: <span className="line-through text-indigo-400">{h.old_date} {h.old_time}</span> → {h.new_date} {h.new_time}
                       {h.reason && <span className="text-indigo-500"> · {h.reason}</span>}
                     </p>
@@ -470,31 +491,22 @@ export default function ReservationList() {
 
             {/* DP Panel */}
             <DepositPanel reservation={selected} onUpdated={handleDetailUpdate} />
+
+            <DialogFooter className="gap-2 sm:justify-between">
+              <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(selected.id)} data-testid="btn-delete-reservation">
+                <Trash2 className="h-4 w-4" /> Hapus
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDetailOpen(false)}>Tutup</Button>
+                <Button variant="outline" onClick={() => navigate(`/outlet/reservations/${selected.id}/edit`)} data-testid="btn-edit-reservation">
+                  <Edit2 className="h-4 w-4" /> Ubah
+                </Button>
+              </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
 
-      {/* ── Cancel Dialog ── */}
-      <Dialog open={cancelOpen} onOpenChange={v => { setCancelOpen(v); if (!v) setCancelReason(""); }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Batalkan Reservasi</DialogTitle>
-            <DialogDescription>Reservasi atas nama <strong>{selected?.customer_name}</strong> akan dibatalkan. DP yang sudah dibayar akan otomatis di-refund.</DialogDescription>
-          </DialogHeader>
-          <textarea rows={3} value={cancelReason} onChange={e => setCancelReason(e.target.value)}
-            placeholder="Alasan pembatalan (opsional)..."
-            className="w-full border rounded-lg px-3 py-2 text-sm resize-none bg-background" />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCancelOpen(false)}>Kembali</Button>
-            <Button variant="destructive" disabled={statusLoading}
-              onClick={() => handleStatusChange(selected?.id, "cancelled", cancelReason)}
-              data-testid="btn-confirm-cancel">
-              {statusLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Ya, Batalkan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* ── Reschedule Dialog ── */}
       <RescheduleDialog

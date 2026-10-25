@@ -228,6 +228,7 @@ export default function DataTable({
                   <th
                     key={c.key}
                     scope="col"
+                    aria-sort={c.sortable ? (active ? (sort.dir === "asc" ? "ascending" : "descending") : "none") : undefined}
                     className={cn(
                       "px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground border-b border-border/60 bg-card/80",
                       stickyHeader && "sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-card/70",
@@ -237,11 +238,12 @@ export default function DataTable({
                     {c.sortable ? (
                       <span className="inline-flex items-center gap-1">
                         <button
+                          type="button"
                           onClick={() => cycleSort(c.key)}
                           className={cn(
                             // preflight me-reset text-transform pada <button> → set ulang agar
                             // header yang bisa di-sort sama kapitalnya dengan header lain.
-                            "inline-flex items-center gap-1 uppercase tracking-[0.06em] font-semibold hover:text-foreground transition-colors group/sort",
+                            "inline-flex items-center gap-1 rounded-sm uppercase tracking-[0.06em] font-semibold hover:text-foreground transition-colors group/sort focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             c.numeric && "flex-row-reverse",
                             active && "text-foreground",
                           )}

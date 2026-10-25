@@ -32,8 +32,9 @@ export default function ServiceChargePolicyEditor(props) {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs">Service Charge %</Label>
+                <Label htmlFor="sc-service-charge-pct" className="text-xs md:text-sm font-medium">Service Charge %</Label>
                 <Input
+                  id="sc-service-charge-pct"
                   type="number"
                   step="0.005"
                   min={0}
@@ -45,8 +46,9 @@ export default function ServiceChargePolicyEditor(props) {
                 <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(sc * 100).toFixed(2)}% dari penjualan</p>
               </div>
               <div>
-                <Label className="text-xs">Potongan L&amp;B %</Label>
+                <Label htmlFor="sc-lb-pct" className="text-xs md:text-sm font-medium">Potongan L&amp;B %</Label>
                 <Input
+                  id="sc-lb-pct"
                   type="number"
                   step="0.005"
                   min={0}
@@ -58,8 +60,9 @@ export default function ServiceChargePolicyEditor(props) {
                 <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(lb * 100).toFixed(2)}% potongan loss/breakage</p>
               </div>
               <div>
-                <Label className="text-xs">Potongan L&amp;D %</Label>
+                <Label htmlFor="sc-ld-pct" className="text-xs md:text-sm font-medium">Potongan L&amp;D %</Label>
                 <Input
+                  id="sc-ld-pct"
                   type="number"
                   step="0.005"
                   min={0}
@@ -73,8 +76,9 @@ export default function ServiceChargePolicyEditor(props) {
             </div>
 
             <div>
-              <Label className="text-xs">Metode Alokasi</Label>
+              <Label id="sc-method-label" className="text-xs md:text-sm font-medium">Metode Alokasi</Label>
               <RadioGroup
+                aria-labelledby="sc-method-label"
                 value={method}
                 onValueChange={(v) => setField("allocation_method", v)}
                 className="mt-2 grid grid-cols-1 gap-2"
@@ -97,8 +101,9 @@ export default function ServiceChargePolicyEditor(props) {
             </div>
 
             <div>
-              <Label className="text-xs">Default Hari Kerja per Bulan</Label>
+              <Label htmlFor="sc-days-input" className="text-xs md:text-sm font-medium">Default Hari Kerja per Bulan</Label>
               <Input
+                id="sc-days-input"
                 type="number"
                 min={1}
                 max={31}
@@ -127,7 +132,7 @@ export default function ServiceChargePolicyEditor(props) {
         const ldAmt = gross * ld;
         const net = gross - lbAmt - ldAmt;
         return (
-          <div className="text-xs font-mono space-y-1 tabular-nums" data-testid="sc-preview">
+          <div className="text-xs space-y-1 tabular-nums" data-testid="sc-preview">
             <div>Penjualan contoh: {fmtRp(sample)}</div>
             <div>SC ({(sc * 100).toFixed(2)}%): {fmtRp(gross)}</div>
             <div>L&amp;B ({(lb * 100).toFixed(2)}%): − {fmtRp(lbAmt)}</div>

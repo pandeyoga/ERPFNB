@@ -194,33 +194,33 @@ const financeJournalsTour = {
 
 // ─── Payment Request List ────────────────────────────────────────
 const financePaymentRequestsTour = {
-  name: "Payment Requests — Tagihan ke Finance",
-  description: "Daftar semua payment request yang diajukan ke Finance.",
+  name: "Payments — Pembayaran ke Vendor",
+  description: "Daftar pembayaran (PAY) dari pengajuan sampai dibayar.",
   steps: [
     {
-      target: "[data-testid='payment-request-list-page']",
-      title: "Payment Requests",
-      content: "Daftar semua **payment request** dari outlet dan procurement. Finance memproses pembayaran setelah request diapprove.",
+      target: "[data-testid='payment-list-page']",
+      title: "Payments",
+      content: "Daftar semua **payment (PAY)** ke vendor/karyawan. Finance memproses pembayaran setelah PAY disetujui.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='pr-stats-cards']",
-      title: "Stats Overview",
-      content: "Ringkasan: **Total Pending** (menunggu approval), **Approved** (siap bayar), **Paid MTD**, dan **Total Outstanding**.",
+      target: "[data-testid='pay-kpi-strip']",
+      title: "Ringkasan",
+      content: "Ringkasan jumlah PAY per status: menunggu approval, siap bayar, dan nominal yang sudah dibayar.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='pr-filter-card']",
-      title: "Filter Requests",
-      content: "Filter berdasarkan **status** (Pending/Approved/Paid/Rejected), tanggal, dan outlet. Berguna untuk daily reconciliation.",
+      target: "[data-testid='pay-toolbar']",
+      title: "Filter",
+      content: "Filter berdasarkan **status** dan cari nomor dokumen/payee. Berguna untuk rekonsiliasi harian.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='pr-create']",
-      title: "Buat Payment Request",
-      content: "Klik **+ Buat** untuk request pembayaran baru. Link ke AP/GR untuk full traceability. Request masuk approval workflow sebelum diproses.",
+      target: "[data-testid='pay-new-btn']",
+      title: "Buat Payment",
+      content: "Klik **Buat Payment** untuk pembayaran baru. Tautkan ke GR/AP untuk traceability penuh; PAY masuk approval sebelum dibayar.",
       placement: "bottom",
       variant: "tip",
     },
@@ -261,7 +261,7 @@ const financePaymentsTour = {
     {
       target: "[data-testid='pay-table-card']",
       title: "Aksi per Payment",
-      content: "Di tabel: klik **Approve** (jika punya izin) atau **View** untuk lihat detail. Setelah paid, **JE otomatis ter-post** di accounts payable.",
+      content: "Di tabel: klik **Setujui** (jika punya izin) atau **Lihat detail**. Setelah paid, **JE otomatis ter-post** di accounts payable.",
       placement: "top",
       variant: "tip",
     },
@@ -587,7 +587,7 @@ const financePeriodsLockingTour = {
     {
       target: "[data-testid='period-refresh']",
       title: "Muat Ulang Periode",
-      content: "Klik **Refresh** untuk memuat status terbaru. Tombol **Lock** pada tiap baris periode mencegah backdated journal entries — enforcement aktif di seluruh sistem.",
+      content: "Klik **Muat ulang** untuk memuat status terbaru. Tombol **Lock** pada tiap baris periode mencegah backdated journal entries — enforcement aktif di seluruh sistem.",
       placement: "left",
       variant: "tip",
     },
@@ -649,14 +649,14 @@ const financePaymentsHubTour = {
       variant: "hero",
     },
     {
-      target: "[data-testid='payments-tab-payment-requests']",
-      title: "Payment Requests",
+      target: "[data-testid='payments-tab-payments']",
+      title: "Payments",
       content: "Mulai dari **pengajuan pembayaran** → approve → bayar. Titik awal workflow kas keluar.",
       placement: "bottom",
     },
     {
       target: "[data-testid='payments-tab-ap-aging']",
-      title: "Accounts Payable",
+      title: "AP aging",
       content: "Pantau **aging hutang** ke vendor — yang jatuh tempo & overdue.",
       placement: "bottom",
     },
@@ -720,8 +720,8 @@ const financeTaxHubTour = {
     },
     {
       target: "[data-testid='tax-tab-tax']",
-      title: "Tax Center",
-      content: "Ringkasan PPN keluaran/masukan & PPh — basis perhitungan setoran pajak.",
+      title: "PPN & PPh",
+      content: "Tab PPN, PPh 21, PPh 23 dan PPh 4(2): aktifkan pajak, atur tarif dan hitung setoran per masa pajak.",
       placement: "bottom",
     },
     {

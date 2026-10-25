@@ -78,9 +78,10 @@ async def lifespan(_: FastAPI):
         from utils.number_series import ensure_dedicated_series
         await migrate_employee_salary_to_master()
         await ensure_dedicated_series()
-        from services.data_migrations import customer_identity_keys, unify_journal_schema
+        from services.data_migrations import customer_identity_keys, legacy_seed_field_names, unify_journal_schema
         await unify_journal_schema()
         await customer_identity_keys()
+        await legacy_seed_field_names()
     except Exception:  # noqa: BLE001
         logger.exception("salary_migration_failed")
 

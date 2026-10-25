@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import KpiCard from "@/components/shared/KpiCard";
+import PageHeader from "@/components/shared/PageHeader";
 import DataTable from "@/components/shared/DataTable";
 import WaterfallChart from "@/components/shared/charts/WaterfallChart";
 import {
@@ -84,7 +85,8 @@ function StageBreakdown({ stage }) {
   );
 }
 
-export default function ProfitWalk() {
+/** ProfitWalk — `embedded` = dirender sebagai tab di Performance Analytics (tanpa <h1>). */
+export default function ProfitWalk({ embedded = false }) {
   const [period, setPeriod] = useState("mtd");
   const [compare, setCompare] = useState("lmtd");
   const [data, setData] = useState(null);
@@ -96,7 +98,7 @@ export default function ProfitWalk() {
       const r = await api.get("/executive/profit-walk", { params: { period_kind: period, compare_kind: compare } });
       setData(unwrap(r));
     } catch (e) {
-      toast.error("Gagal load profit walk");
+      toast.error("Gagal memuat profit walk");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [period, compare]);
@@ -135,49 +137,58 @@ export default function ProfitWalk() {
     { key: "running", label: "Running", numeric: true, render: (s) => <span className="font-mono text-xs text-muted-foreground">{fmtRp(s.running)}</span> },
   ], []);
 
+  const subtitle = "Revenue → COGS → GP → OPEX → Service → Net Profit";
+  const controls = (
+    <div className="flex items-center gap-2 flex-wrap">
+      <Select value={period} onValueChange={setPeriod}>
+        <SelectTrigger className="w-[180px]" data-testid="profit-period-select" aria-label="Periode"><SelectValue /></SelectTrigger>
+        <SelectContent>{PERIODS.map((p) => <SelectItem key={p.v} value={p.v}>{p.l}</SelectItem>)}</SelectContent>
+      </Select>
+      <span className="text-xs text-muted-foreground">vs</span>
+      <Select value={compare} onValueChange={setCompare}>
+        <SelectTrigger className="w-[180px]" data-testid="profit-compare-select" aria-label="Periode pembanding"><SelectValue /></SelectTrigger>
+        <SelectContent>{PERIODS.map((p) => <SelectItem key={p.v} value={p.v}>{p.l}</SelectItem>)}</SelectContent>
+      </Select>
+      <Button variant="outline" onClick={load} data-testid="profit-refresh">
+        <RefreshCw /> Muat ulang
+      </Button>
+    </div>
+  );
+  const periodLine = data && (
+    <span className="text-xs text-muted-foreground">
+      Periode <span className="font-mono font-semibold text-foreground">{data.period?.label}</span>
+      {data.compare?.label && <> vs <span className="font-mono font-semibold text-foreground">{data.compare.label}</span></>}
+    </span>
+  );
+  const header = embedded ? (
+    <div className="glass-card p-3 flex items-center justify-between flex-wrap gap-3" data-testid="profit-walk-controls">
+      <div className="min-w-0">
+        <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+        {periodLine}
+      </div>
+      {controls}
+    </div>
+  ) : (
+    <div data-testid="profit-walk-controls">
+      <PageHeader icon={TrendingUp} title="Profit Walk" subtitle={subtitle} actions={controls} className="mb-0 md:mb-0">
+        {periodLine}
+      </PageHeader>
+    </div>
+  );
+
   if (loading || !data) return (
-    <div className="space-y-6" data-testid="profit-walk-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="profit-walk-page">
+      {header}
       <LoadingState variant="page" />
     </div>
   );
 
   return (
-    <div className="space-y-6" data-testid="profit-walk-page">
-      {/* Controls */}
-      <div className="glass-card p-5" data-testid="profit-walk-controls">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="h-9 w-9 rounded-xl grad-aurora text-white flex items-center justify-center shrink-0">
-              <TrendingUp className="h-4 w-4" />
-            </span>
-            <div>
-              <h2 className="font-bold leading-tight">Profit Walk</h2>
-              <p className="text-xs text-muted-foreground">Revenue → COGS → GP → OPEX → Service → Net Profit</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-[160px]" data-testid="profit-period-select"><SelectValue /></SelectTrigger>
-              <SelectContent>{PERIODS.map((p) => <SelectItem key={p.v} value={p.v}>{p.l}</SelectItem>)}</SelectContent>
-            </Select>
-            <span className="text-xs text-muted-foreground">vs</span>
-            <Select value={compare} onValueChange={setCompare}>
-              <SelectTrigger className="w-[160px]" data-testid="profit-compare-select"><SelectValue /></SelectTrigger>
-              <SelectContent>{PERIODS.map((p) => <SelectItem key={p.v} value={p.v}>{p.l}</SelectItem>)}</SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={load} className="gap-1" data-testid="profit-refresh">
-              <RefreshCw className="h-3.5 w-3.5" /> Refresh
-            </Button>
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground mt-2">
-          Period <span className="font-mono font-semibold text-foreground">{data.period?.label}</span>
-          {data.compare?.label && <> vs <span className="font-mono font-semibold text-foreground">{data.compare.label}</span></>}
-        </div>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="profit-walk-page">
+      {header}
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="profit-kpi-cards">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="profit-kpi-cards">
         <KpiCard label="Revenue" value={fmtRp(summary.revenue || 0)} icon={Wallet} color="aurora-1"
                  delta={stageByLabel["Revenue"]?.delta_pct} deltaLabel="vs compare" />
         <KpiCard label="Gross Profit" value={fmtRp(summary.gross_profit || 0)} icon={BarChart3} color="aurora-2"
@@ -194,18 +205,18 @@ export default function ProfitWalk() {
       </div>
 
       {/* Waterfall */}
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Waterfall</h3>
+          <h3 className="text-sm md:text-base font-semibold">Waterfall</h3>
           <span className="text-xs text-muted-foreground">Floating bars · label = kontribusi tahap</span>
         </div>
-        <WaterfallChart stages={data.stages || []} height={380} valueFormatter={fmtRp} />
+        <WaterfallChart stages={data.stages || []} height={340} valueFormatter={fmtRp} />
       </div>
 
       {/* Detail per stage — expandable */}
       <div className="glass-card overflow-hidden">
-        <div className="flex items-center justify-between p-5 pb-3">
-          <h3 className="font-semibold">Detail per Stage</h3>
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <h3 className="text-sm md:text-base font-semibold">Detail per Stage</h3>
           <span className="text-xs text-muted-foreground">Klik baris untuk rincian akun</span>
         </div>
         <DataTable
@@ -214,14 +225,14 @@ export default function ProfitWalk() {
           keyField="label"
           rowTestIdPrefix="stage"
           renderExpanded={(s) => <StageBreakdown stage={s} />}
-          empty={<div className="p-6"><EmptyState title="Tidak ada data" /></div>}
+          empty={<EmptyState title="Tidak ada data" />}
         />
       </div>
 
       {/* Top drivers */}
       {data.top_drivers?.length > 0 && (
-        <div className="glass-card p-5">
-          <h3 className="font-semibold mb-3">Top Drivers</h3>
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">Top Drivers</h3>
           <ul className="space-y-1.5">
             {data.top_drivers.map((d, i) => (
               <li key={i} className="flex items-center justify-between gap-3 text-sm py-2 px-2 rounded-lg hover:bg-foreground/[0.04]">

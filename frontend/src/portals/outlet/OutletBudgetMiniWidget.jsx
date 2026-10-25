@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from "react";
 import { Wallet, ArrowRight, AlertCircle, Globe2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { fmtRp } from "@/lib/format";
@@ -18,7 +18,6 @@ import {
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
 export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
-  const navigate = useNavigate();
   const { outletId: scopeOutletId, currentOutlet } = useOutletScopeCtx();
   const [data, setData] = useState(null);
   const [allItems, setAllItems] = useState([]);
@@ -50,16 +49,17 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
   const mode = current?.budget_mode || "per_bucket";
 
   return (
+    // Satu target klik yang jelas (link ke Outlet Budget) — bisa difokus keyboard.
+    <Link to="/outlet/budget" className="block rounded-[var(--radius)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Buka Outlet Budget">
     <Card
-      className="cursor-pointer hover:border-aurora/40 transition-colors"
-      onClick={() => navigate("/outlet/budget")}
+      className="hover:border-aurora/40 transition-colors"
       data-testid="outlet-budget-mini"
     >
-      <CardContent className="pt-4 pb-4">
+      <CardContent className="pt-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className="flex items-center gap-2 text-sm md:text-base font-semibold flex-wrap">
             <Wallet className="h-4 w-4 text-aurora" />
-            Budget {scope === "weekly" ? "Minggu Ini" : "Bulan Ini"}
+            Outlet Budget · {scope === "weekly" ? "Minggu Ini" : "Bulan Ini"}
             {data?.outlet_name && (
               <span className="text-xs font-normal text-muted-foreground">
                 · {data.outlet_name}
@@ -75,9 +75,9 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </div>
         {!current ? (
-          <div className="flex items-center gap-2 text-amber-500 text-sm">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-sm">
             <AlertCircle className="h-4 w-4" />
-            Belum di-set Executive
+            Budget belum ditetapkan Executive
           </div>
         ) : mode === "combined" ? (
           <CombinedGauge current={current} />
@@ -88,7 +88,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
               return (
                 <div key={bk}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] uppercase tracking-wide font-mono" style={{ color: BUCKET_COLORS[bk] }}>
+                    <span className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: BUCKET_COLORS[bk] }}>
                       {bk}
                     </span>
                     <span className={`text-[11px] font-semibold ${paceColor(cell.status)}`}>
@@ -109,6 +109,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
         )}
       </CardContent>
     </Card>
+    </Link>
   );
 }
 
@@ -117,10 +118,10 @@ function CombinedGauge({ current }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[11px] uppercase tracking-wide font-mono text-muted-foreground">
+        <span className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
           Gabungan KDO + FDO + BDO
         </span>
-        <span className={`text-sm font-bold ${paceColor(cell.status)}`}>
+        <span className={`text-sm font-semibold ${paceColor(cell.status)}`}>
           {(cell.pct_used || 0).toFixed(0)}%
         </span>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Calendar, Play, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Play, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
 
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -67,14 +67,12 @@ export default function SchedulerView() {
   if (error) return <ErrorState message={error} onRetry={load} />;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 lg:space-y-4">
+      {/* Toolbar (judul seksi = tab "Scheduler" di hub Monitoring) */}
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Calendar className="h-5 w-5" /> Background Jobs</h2>
-          <p className="text-xs text-muted-foreground">{jobs.length} job terjadwal · TZ Asia/Jakarta</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={load}>
-          <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
+        <p className="text-sm text-muted-foreground">Background jobs — {jobs.length} job terjadwal · TZ Asia/Jakarta</p>
+        <Button variant="outline" onClick={load} data-testid="scheduler-refresh">
+          <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
         </Button>
       </div>
 
@@ -85,7 +83,7 @@ export default function SchedulerView() {
             <div key={j.id} className="glass-card p-4 flex flex-col gap-3" data-testid={`job-${j.id}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
                     {j.name}
                     {j.enabled ? (
                       <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">enabled</span>
@@ -96,8 +94,8 @@ export default function SchedulerView() {
                   <p className="text-xs text-muted-foreground mt-1">{j.description}</p>
                 </div>
                 <Button size="sm" disabled={running === j.id} onClick={() => trigger(j)}
-                        className="rounded-full" data-testid={`job-run-${j.id}`}>
-                  <Play className="h-3.5 w-3.5 mr-1.5" /> {running === j.id ? "Running…" : "Run"}
+                        data-testid={`job-run-${j.id}`}>
+                  <Play className="h-3.5 w-3.5" /> {running === j.id ? "Menjalankan…" : "Jalankan"}
                 </Button>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -107,7 +105,7 @@ export default function SchedulerView() {
                 </div>
                 <div className="rounded bg-muted/50 px-2.5 py-1.5">
                   <div className="text-muted-foreground">Next Run</div>
-                  <div className="font-mono text-[11px]">{j.next_run ? fmtDateTime(j.next_run) : "-"}</div>
+                  <div className="text-[11px] tabular-nums">{j.next_run ? fmtDateTime(j.next_run) : "-"}</div>
                 </div>
               </div>
               {lastRun && (
@@ -130,19 +128,19 @@ export default function SchedulerView() {
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold">Recent Runs</h3>
+          <h2 className="text-base md:text-lg font-semibold">Recent Runs</h2>
           <span className="text-xs text-muted-foreground">
-            Total: {meta.total} · Page {page} / {meta.total_pages}
+            Total: {meta.total} · Halaman {page} / {meta.total_pages}
           </span>
         </div>
         <div className="glass-card overflow-hidden">
           <div className="max-h-[400px] overflow-auto">
             <DataTable
               columns={[
-                { key: "started_at", label: "Started", primary: true, sortable: true, render: (r) => <span className="font-mono text-xs whitespace-nowrap">{fmtDateTime(r.started_at)}</span> },
-                { key: "job_id", label: "Job", sortable: true, render: (r) => <span className="font-mono text-xs">{r.job_id}</span> },
+                { key: "started_at", label: "Started", primary: true, sortable: true, render: (r) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(r.started_at)}</span> },
+                { key: "job_id", label: "Job", sortable: true, render: (r) => <span className="text-xs font-medium tabular-nums">{r.job_id}</span> },
                 { key: "status", label: "Status", sortable: true, render: (r) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === "success" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : r.status === "failed" ? "bg-red-500/15 text-red-700 dark:text-red-400" : "bg-blue-500/15 text-blue-700 dark:text-blue-400"}`}>{r.status}</span> },
-                { key: "result", label: "Result / Error", render: (r) => <span className="text-xs text-muted-foreground font-mono">{r.error || JSON.stringify(r.result || {}).slice(0, 200)}</span> },
+                { key: "result", label: "Result / Error", render: (r) => <span className="font-mono text-xs text-muted-foreground break-all">{r.error || JSON.stringify(r.result || {}).slice(0, 200)}</span> },
               ]}
               rows={runs}
               defaultSort={{ key: "started_at", dir: "desc" }}
@@ -158,7 +156,7 @@ export default function SchedulerView() {
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page <= 1 || loading}
               data-testid="scheduler-runs-prev"
-            >Prev</Button>
+            >Sebelumnya</Button>
             <span className="text-xs text-muted-foreground tabular-nums" data-testid="scheduler-runs-page-info">
               {page} / {meta.total_pages}
             </span>
@@ -167,7 +165,7 @@ export default function SchedulerView() {
               onClick={() => setPage(p => Math.min(meta.total_pages, p + 1))}
               disabled={page >= meta.total_pages || loading}
               data-testid="scheduler-runs-next"
-            >Next</Button>
+            >Berikutnya</Button>
           </div>
         )}
       </div>

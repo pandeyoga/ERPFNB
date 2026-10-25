@@ -28,6 +28,9 @@ export default function OutletScopePicker({
   className,
   placeholder = "Semua Outlet",
   "data-testid": testId = "outlet-scope-picker",
+  id,
+  ariaLabel = "Pilih outlet",
+  triggerClassName,
 }) {
   const showAllOption = isFullAccess && allowAll;
 
@@ -48,7 +51,7 @@ export default function OutletScopePicker({
       )}
 
       <Select value={value || "__all__"} onValueChange={(v) => onChange?.(v === "__all__" ? "" : v)}>
-        <SelectTrigger className="glass-input min-w-[200px]" data-testid={testId}>
+        <SelectTrigger id={id} aria-label={ariaLabel} className={cn("glass-input min-w-[180px]", triggerClassName)} data-testid={testId}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

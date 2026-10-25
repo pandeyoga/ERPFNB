@@ -1,8 +1,8 @@
 /** PaymentRunDetail.jsx — Detail, confirm, post (execute), cancel. */
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, CheckCircle2, Play, X, AlertTriangle, FileText, Banknote,
+  ArrowLeft, CheckCircle2, Play, X, AlertTriangle, FileText, Banknote, Layers, Receipt, User, StickyNote,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,26 +11,17 @@ import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import StatusPill from "@/components/shared/StatusPill";
+import EmptyState from "@/components/shared/EmptyState";
 
-const STATUS_BADGE = {
-  draft: "bg-slate-500/15 text-slate-700 dark:text-slate-300",
-  confirmed: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
-  posted: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  cancelled: "bg-zinc-500/15 text-zinc-500 dark:text-zinc-400",
-};
-
-const STATUS_LABELS = {
-  draft: "Draft",
-  confirmed: "Confirmed",
-  posted: "Posted",
-  cancelled: "Cancelled",
-};
+const BACK_PATH = "/finance/payments-hub?tab=payment-runs";
 
 export default function PaymentRunDetail() {
   const { id } = useParams();
@@ -61,7 +52,7 @@ export default function PaymentRunDetail() {
       const res = await api.post(`/finance/payment-runs/${id}/${endpoint}`, body);
       const updated = unwrap(res);
       setRun(updated);
-      toast.success(`Aksi '${endpoint}' berhasil`);
+      toast.success({ confirm: "Payment run dikonfirmasi", post: "Payment run dieksekusi & dijurnal", cancel: "Payment run dibatalkan" }[endpoint] || "Berhasil");
       setShowConfirm(false);
       setShowPost(false);
       setShowCancel(false);
@@ -71,56 +62,56 @@ export default function PaymentRunDetail() {
   }
 
   if (loading) return <LoadingState rows={6} />;
-  if (!run) return <div className="p-8 text-center text-muted-foreground">Payment Run tidak ditemukan.</div>;
+  if (!run) return (
+    <div className="glass-card" data-testid="prn-not-found">
+      <EmptyState icon={Layers} title="Payment run tidak ditemukan"
+        description="Payment run mungkin sudah dihapus atau tautannya salah."
+        action={<Button variant="outline" size="sm" onClick={() => navigate(BACK_PATH)} data-testid="prn-notfound-back">
+          <ArrowLeft className="h-4 w-4" />Kembali ke Payment Runs</Button>} />
+    </div>
+  );
 
   const canConfirm = run.status === "draft";
   const canPost = run.status === "confirmed";
   const canCancel = ["draft", "confirmed"].includes(run.status);
 
   return (
-    <div className="space-y-5" data-testid="payment-run-detail-page">
-      {/* Header */}
-      <div className="flex items-start gap-3" data-testid="prn-detail-header">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/finance/payment-runs")}
-          data-testid="prn-back-btn" aria-label="Kembali ke daftar payment run">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-lg font-bold font-mono" data-testid="prn-doc-no">{run.doc_no}</h2>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[run.status] || ""}`}
-              data-testid="prn-status-badge">
-              {STATUS_LABELS[run.status] || run.status}
-            </span>
-          </div>
-          <div className="text-sm text-muted-foreground mt-1">
-            Payment date: <strong>{fmtDate(run.payment_date)}</strong>
-            {" · "}Bank: <strong>{run.bank_account_name || run.bank_account_id}</strong>
-          </div>
-        </div>
-        {/* Actions */}
-        <div className="flex gap-2 flex-wrap" data-testid="prn-action-bar">
-          {canConfirm && (
-            <Button onClick={() => setShowConfirm(true)} variant="outline"
-              className="gap-2" data-testid="prn-confirm-btn" disabled={acting}>
-              <CheckCircle2 className="h-4 w-4" />Konfirmasi
-            </Button>
-          )}
-          {canPost && (
-            <Button onClick={() => setShowPost(true)}
-              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-              data-testid="prn-post-btn" disabled={acting}>
-              <Play className="h-4 w-4" />Eksekusi (Post)
-            </Button>
-          )}
-          {canCancel && (
-            <Button onClick={() => setShowCancel(true)} variant="outline"
-              className="gap-2 text-red-600 hover:text-red-700 hover:border-red-400"
-              data-testid="prn-cancel-btn" disabled={acting}>
-              <X className="h-4 w-4" />Batalkan
-            </Button>
-          )}
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="payment-run-detail-page">
+      <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate(BACK_PATH)}
+        data-testid="prn-back-btn">
+        <ArrowLeft className="h-4 w-4" />Kembali ke Payment Runs
+      </Button>
+      <div data-testid="prn-detail-header">
+        <PageHeader
+          icon={Layers}
+          title={<span data-testid="prn-doc-no">{run.doc_no}</span>}
+          subtitle={<>Payment date: <strong>{fmtDate(run.payment_date)}</strong>{" · "}Bank: <strong>{run.bank_account_name || run.bank_account_id}</strong></>}
+          actions={
+            <div className="flex gap-2 flex-wrap" data-testid="prn-action-bar">
+              {canCancel && (
+                <Button onClick={() => setShowCancel(true)} variant="outline"
+                  className="text-red-600 hover:text-red-700"
+                  data-testid="prn-cancel-btn" disabled={acting}>
+                  <X className="h-4 w-4" />Batalkan
+                </Button>
+              )}
+              {canConfirm && (
+                <Button onClick={() => setShowConfirm(true)}
+                  data-testid="prn-confirm-btn" disabled={acting}>
+                  <CheckCircle2 className="h-4 w-4" />Konfirmasi
+                </Button>
+              )}
+              {canPost && (
+                <Button onClick={() => setShowPost(true)}
+                  data-testid="prn-post-btn" disabled={acting}>
+                  <Play className="h-4 w-4" />Eksekusi (Post)
+                </Button>
+              )}
+            </div>
+          }
+        >
+          <span data-testid="prn-status-badge"><StatusPill status={run.status} /></span>
+        </PageHeader>
       </div>
 
       {/* Posted banner */}
@@ -135,14 +126,14 @@ export default function PaymentRunDetail() {
                 {run.payments?.length || 0} payment di-posting pada {fmtDateTime(run.posted_at)}
                 {run.je_ids && run.je_ids.length > 0 ? (
                   <span> · JE: {run.je_ids.map((jid, idx) => (
-                    <a key={jid} href={`/finance/journals/${jid}`}
-                      className="text-primary hover:underline font-mono text-xs ml-1"
+                    <Link key={jid} to={`/finance/journals/${jid}`}
+                      className="text-primary hover:underline font-medium ml-1"
                       data-testid={`prn-je-link-${idx}`}>
                       {idx === 0 ? "Batch JE" : `WHT JE #${idx}`}
-                    </a>
+                    </Link>
                   ))}</span>
                 ) : run.je_id && (
-                  <> · JE: <a href={`/finance/journals/${run.je_id}`} className="text-primary hover:underline font-mono text-xs" data-testid="prn-je-link">Lihat Journal Entry</a></>
+                  <> · JE: <Link to={`/finance/journals/${run.je_id}`} className="text-primary hover:underline font-medium" data-testid="prn-je-link">Lihat journal entry</Link></>
                 )}
               </div>
             </div>
@@ -169,18 +160,18 @@ export default function PaymentRunDetail() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="prn-summary-grid">
-        <SummaryCard label="Total Gross" value={fmtRp(run.total_amount)} tone="strong" testid="prn-total-amount" />
+        <CompactStatCard label="Total gross" icon={Banknote} color="aurora-1" value={fmtRp(run.total_amount)} testId="prn-total-amount" />
         {run.total_wht > 0 ? (
           <>
-            <SummaryCard label="Total WHT (PPh)" value={fmtRp(run.total_wht)} tone="wht" testid="prn-total-wht" />
-            <SummaryCard label="Net ke Bank" value={fmtRp(run.net_amount ?? (run.total_amount - (run.total_wht || 0)))} tone="strong" testid="prn-net-amount" />
+            <CompactStatCard label="Total WHT (PPh)" icon={Receipt} color="aurora-5" tone="warning" value={fmtRp(run.total_wht)} testId="prn-total-wht" />
+            <CompactStatCard label="Net ke bank" icon={Banknote} color="aurora-4" value={fmtRp(run.net_amount ?? (run.total_amount - (run.total_wht || 0)))} testId="prn-net-amount" />
           </>
         ) : (
-          <SummaryCard label="Jumlah Payment" value={`${run.payments?.length || run.pay_count || 0} items`} testid="prn-pay-count" />
+          <CompactStatCard label="Jumlah payment" icon={Layers} color="aurora-2" value={`${run.payments?.length || run.pay_count || 0} PAY`} testId="prn-pay-count" />
         )}
-        <SummaryCard label="Dibuat oleh" value={run.created_by_name || "-"} testid="prn-created-by" />
-        {run.total_wht > 0 && <SummaryCard label="Jumlah Payment" value={`${run.payments?.length || run.pay_count || 0} items`} testid="prn-pay-count" />}
-        {!run.total_wht && <SummaryCard label="Catatan" value={run.notes || "—"} testid="prn-notes" />}
+        <CompactStatCard label="Dibuat oleh" icon={User} color="aurora-3" size="sm" value={run.created_by_name || "-"} testId="prn-created-by" />
+        {run.total_wht > 0 && <CompactStatCard label="Jumlah payment" icon={Layers} color="aurora-2" value={`${run.payments?.length || run.pay_count || 0} PAY`} testId="prn-pay-count" />}
+        {!run.total_wht && <CompactStatCard label="Catatan" icon={StickyNote} color="aurora-6" size="sm" value={run.notes || "—"} testId="prn-notes" />}
       </div>
       {/* WHT info banner */}
       {run.total_wht > 0 && (
@@ -197,8 +188,8 @@ export default function PaymentRunDetail() {
 
       {/* Payment table */}
       <div className="glass-card overflow-hidden" data-testid="prn-payments-card">
-        <div className="px-5 py-3 border-b border-border/40">
-          <h3 className="font-semibold text-sm flex items-center gap-2">
+        <div className="px-4 py-3 border-b border-border/40">
+          <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
             <Banknote className="h-4 w-4" />
             Daftar Payment ({run.payments?.length || 0})
             <span className="ml-auto text-muted-foreground font-normal tabular-nums">
@@ -220,9 +211,9 @@ export default function PaymentRunDetail() {
                 render: (p) => {
                   const hasWht = p.wh_type && parseFloat(p.wh_amount || 0) > 0;
                   return (
-                    <span className="font-mono text-xs">
+                    <span className="font-mono text-xs whitespace-nowrap">
                       {p.doc_no}
-                      {hasWht && <span className="ml-1 px-1 rounded text-[11px] bg-amber-500/15 text-amber-700">WHT</span>}
+                      {hasWht && <span className="ml-1 px-1 rounded text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400">WHT</span>}
                     </span>
                   );
                 } },
@@ -244,13 +235,7 @@ export default function PaymentRunDetail() {
                 } },
               { key: "status", label: "Status",
                 render: (p) => (
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium
-                    ${p.status === "paid" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                      : p.status === "approved" ? "bg-sky-500/15 text-sky-700"
-                      : "bg-muted text-muted-foreground"}`}
-                    data-testid={`prn-pay-status-${p.doc_no}`}>
-                    {p.status}
-                  </span>
+                  <span data-testid={`prn-pay-status-${p.doc_no}`}><StatusPill status={p.status} /></span>
                 ) },
             ]}
           />
@@ -258,8 +243,8 @@ export default function PaymentRunDetail() {
       </div>
 
       {/* Timeline / audit */}
-      <div className="glass-card p-5" data-testid="prn-timeline">
-        <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
+      <div className="glass-card p-4" data-testid="prn-timeline">
+        <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
           <FileText className="h-4 w-4" />Riwayat
         </h3>
         <ol className="space-y-3 text-sm">
@@ -334,7 +319,6 @@ export default function PaymentRunDetail() {
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowPost(false)} data-testid="prn-post-cancel">Batal</Button>
             <Button onClick={() => doAction("post")} disabled={acting}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
               data-testid="prn-post-ok">
               {acting ? "Memproses..." : "Eksekusi Sekarang"}
             </Button>
@@ -351,8 +335,8 @@ export default function PaymentRunDetail() {
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">Payment run akan dibatalkan. Payments yang terpilih kembali ke status approved.</p>
             <div className="space-y-1.5">
-              <Label>Alasan pembatalan (opsional)</Label>
-              <Input value={cancelReason} onChange={e => setCancelReason(e.target.value)}
+              <Label htmlFor="prn-cancel-reason">Alasan pembatalan (opsional)</Label>
+              <Input id="prn-cancel-reason" value={cancelReason} onChange={e => setCancelReason(e.target.value)}
                 placeholder="Alasan..." className="glass-input" data-testid="prn-cancel-reason" />
             </div>
           </div>
@@ -365,19 +349,6 @@ export default function PaymentRunDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function SummaryCard({ label, value, tone = "normal", testid }) {
-  return (
-    <div className="glass-card p-4" data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-semibold truncate ${
-        tone === "strong" ? "text-lg tabular-nums"
-        : tone === "wht" ? "text-amber-600 dark:text-amber-400 tabular-nums"
-        : "text-sm"
-      }`}>{value}</div>
     </div>
   );
 }

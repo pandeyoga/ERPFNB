@@ -3,10 +3,13 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import {
-  CalendarDays, Plus, Loader2, CheckCircle, XCircle, Clock, User, ChevronDown,
+  CalendarDays, Plus, Loader2, CheckCircle, XCircle, User, Send,
 } from "lucide-react";
 import { InlineHelp } from "@/components/shared/InlineHelp";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
+import LoadingState from "@/components/shared/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import StatusPill from "@/components/shared/StatusPill";
@@ -82,8 +85,16 @@ export default function LeaveRequests() {
     try {
       const res = await api.get("/hr/leaves?pending=true&per_page=100");
       if (res.data.success) setPendingLeaves(res.data.data.items || []);
-    } catch { toast.error("Gagal memuat pending approval"); }
+    } catch { toast.error("Gagal memuat antrean persetujuan"); }
     finally { setLoading(false); }
+  }, []);
+
+  // Prefetch antrean persetujuan (diam-diam) supaya badge jumlah di tab
+  // "Menunggu persetujuan" sudah tampil sebelum tab dibuka.
+  useEffect(() => {
+    api.get("/hr/leaves?pending=true&per_page=100")
+      .then((res) => { if (res.data.success) setPendingLeaves(res.data.data.items || []); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -129,119 +140,114 @@ export default function LeaveRequests() {
   };
 
   return (
-    <div className="space-y-6" data-testid="leave-requests">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <CalendarDays className="h-6 w-6" /> Leave Management
-            <InlineHelp id="hr-leaves-page" size="xs" placement="right" />
-          </h2>
-          <p className="text-sm text-muted-foreground">Kelola pengajuan cuti karyawan</p>
-        </div>
-        <Button onClick={() => setCreateDialog(true)} data-testid="create-leave-btn">
-          <Plus className="h-4 w-4 mr-2" /> Ajukan Cuti
-        </Button>
-      </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="leave-requests">
+      <PageHeader
+        icon={CalendarDays}
+        title="Leave Requests"
+        subtitle="Pengajuan cuti Anda & antrean persetujuan cuti karyawan"
+        actions={
+          <>
+            <InlineHelp id="hr-leaves-page" size="sm" />
+            <Button onClick={() => setCreateDialog(true)} data-testid="create-leave-btn">
+              <Plus /> Ajukan Cuti
+            </Button>
+          </>
+        }
+      />
 
       {/* Leave Summary */}
       {leaveSummary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="leave-summary">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4" data-testid="leave-summary">
           {["annual", "sick", "personal", "emergency"].map(lt => (
-            <Card key={lt}>
-              <CardContent className="pt-3 pb-3">
-                <div className="text-xs text-muted-foreground">{LEAVE_TYPE_LABELS[lt]}</div>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="text-xl font-bold">
-                    {leaveSummary[lt]?.used || 0}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    / {leaveSummary[lt]?.quota || 0} hari
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Sisa: {leaveSummary[lt]?.remaining || 0} hari
-                </div>
-              </CardContent>
-            </Card>
+            <CompactStatCard
+              key={lt}
+              size="sm"
+              label={LEAVE_TYPE_LABELS[lt]}
+              value={`${leaveSummary[lt]?.used || 0} / ${leaveSummary[lt]?.quota || 0} hari`}
+              sub={`Sisa: ${leaveSummary[lt]?.remaining || 0} hari`}
+              testId={`leave-summary-${lt}`}
+            />
           ))}
         </div>
       )}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="my" data-testid="tab-my-leaves">Cuti Saya</TabsTrigger>
+          <TabsTrigger value="my" data-testid="tab-my-leaves">Cuti saya</TabsTrigger>
           <TabsTrigger value="approval" data-testid="tab-approval-queue">
-            Pending Persetujuan
+            Menunggu persetujuan
             {pendingLeaves.length > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs px-1.5 py-0">{pendingLeaves.length}</Badge>
+              <Badge variant="destructive" className="ml-1 text-[11px] px-1.5 py-0">{pendingLeaves.length}</Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
         {/* ── MY LEAVES ─────────────────────────────────── */}
-        <TabsContent value="my" className="mt-4">
+        <TabsContent value="my">
           {loading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin" /></div>
+            <LoadingState rows={5} />
           ) : leaves.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center py-12 text-muted-foreground">
-                <CalendarDays className="h-10 w-10 mb-2" />
-                <p>Belum ada pengajuan cuti</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => setCreateDialog(true)}>
-                  Ajukan Cuti Pertama
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="glass-card">
+              <EmptyState icon={CalendarDays} title="Belum ada pengajuan cuti"
+                description="Ajukan cuti untuk diproses oleh atasan / HR."
+                action={<Button size="sm" variant="outline" onClick={() => setCreateDialog(true)}><Plus /> Ajukan Cuti</Button>} />
+            </div>
           ) : (
+            <div className="glass-card">
             <DataTable
               rows={leaves}
               keyField="doc_no"
               rowTestIdPrefix="leave-row"
               columns={[
-                { key: "doc_no", label: "No", primary: true, render: (lr) => <span className="font-mono text-xs">{lr.doc_no}</span> },
+                { key: "doc_no", label: "No", primary: true, render: (lr) => <span className="font-mono text-xs whitespace-nowrap">{lr.doc_no}</span> },
                 { key: "leave_type", label: "Jenis", render: (lr) => LEAVE_TYPE_LABELS[lr.leave_type] || lr.leave_type },
                 { key: "start_date", label: "Mulai", render: (lr) => formatDateID(lr.start_date) },
                 { key: "end_date", label: "Selesai", render: (lr) => formatDateID(lr.end_date) },
                 { key: "days_count", label: "Hari", align: "center", render: (lr) => <span className="font-semibold">{lr.days_count}</span> },
-                { key: "status", label: "Status", render: (lr) => <LeaveStatusBadge status={lr.status} /> },
+                { key: "status", label: "Status", render: (lr) => (
+                  <div className="flex flex-col items-start gap-0.5">
+                    <LeaveStatusBadge status={lr.status} />
+                    {lr.rejection_reason && (
+                      <span className="text-xs text-muted-foreground max-w-48 truncate" title={lr.rejection_reason}
+                            data-testid={`leave-reject-reason-${lr.id}`}>
+                        Alasan: {lr.rejection_reason}
+                      </span>
+                    )}
+                  </div>
+                ) },
               ]}
               rowAction={(lr) => (
                 <div className="flex gap-1 justify-end">
                   {lr.status === "draft" && (
-                    <Button size="sm" variant="outline" className="text-xs h-7"
+                    <Button size="sm" variant="outline"
                       onClick={() => handleSubmit(lr.id)} data-testid={`submit-leave-${lr.id}`}>
-                      Ajukan
+                      <Send /> Ajukan
                     </Button>
                   )}
                   {["draft", "submitted"].includes(lr.status) && (
-                    <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500"
+                    <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive"
                       onClick={() => handleCancel(lr.id)} data-testid={`cancel-leave-${lr.id}`}>
                       Batalkan
-                    </Button>
-                  )}
-                  {lr.rejection_reason && (
-                    <Button size="sm" variant="ghost" className="text-xs h-7" title={lr.rejection_reason}>
-                      <ChevronDown className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
               )}
             />
+            </div>
           )}
         </TabsContent>
 
         {/* ── APPROVAL QUEUE ─────────────────────────────── */}
-        <TabsContent value="approval" className="mt-4">
+        <TabsContent value="approval">
           {loading ? (
-            <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin" /></div>
+            <LoadingState rows={5} />
           ) : pendingLeaves.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center py-12 text-muted-foreground">
-                <CheckCircle className="h-10 w-10 mb-2 text-green-500" />
-                <p>Tidak ada cuti yang menunggu persetujuan</p>
-              </CardContent>
-            </Card>
+            <div className="glass-card">
+              <EmptyState icon={CheckCircle} title="Tidak ada cuti yang menunggu persetujuan"
+                description="Semua pengajuan cuti sudah diproses." />
+            </div>
           ) : (
+            <div className="glass-card">
             <DataTable
               rows={pendingLeaves}
               keyField="id"
@@ -253,12 +259,12 @@ export default function LeaveRequests() {
                       <User className="h-3 w-3 text-muted-foreground" />
                       <span className="font-medium">{lr.employee_name}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">{lr.doc_no}</div>
+                    <div className="text-xs text-muted-foreground font-mono whitespace-nowrap">{lr.doc_no}</div>
                   </div>
                 ) },
                 { key: "leave_type", label: "Jenis Cuti", render: (lr) => LEAVE_TYPE_LABELS[lr.leave_type] || lr.leave_type },
                 { key: "periode", label: "Periode", render: (lr) => (
-                  <span className="text-sm">{formatDateID(lr.start_date)} — {formatDateID(lr.end_date)}</span>
+                  <span className="text-sm whitespace-nowrap">{formatDateID(lr.start_date)} — {formatDateID(lr.end_date)}</span>
                 ) },
                 { key: "days_count", label: "Hari", align: "center", render: (lr) => <span className="font-semibold">{lr.days_count}</span> },
                 { key: "notes", label: "Catatan", render: (lr) => (
@@ -268,19 +274,20 @@ export default function LeaveRequests() {
               ]}
               rowAction={(lr) => (
                 <div className="flex gap-1 justify-end">
-                  <Button size="sm" variant="default" className="text-xs h-7"
+                  <Button size="sm" variant="default"
                     onClick={() => setApproveDialog({ id: lr.id, employee_name: lr.employee_name })}
                     data-testid={`approve-leave-${lr.id}`}>
-                    <CheckCircle className="h-3 w-3 mr-1" /> Setujui
+                    <CheckCircle /> Setujui
                   </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-7 text-destructive hover:text-destructive"
-                    onClick={() => setRejectDialog({ id: lr.id, employee_name: lr.employee_name })}
+                  <Button size="sm" variant="outline" className="text-destructive hover:text-destructive"
+                    onClick={() => { setRejectReason(""); setRejectDialog({ id: lr.id, employee_name: lr.employee_name }); }}
                     data-testid={`reject-leave-${lr.id}`}>
-                    <XCircle className="h-3 w-3 mr-1" /> Tolak
+                    <XCircle /> Tolak
                   </Button>
                 </div>
               )}
             />
+            </div>
           )}
         </TabsContent>
       </Tabs>
@@ -295,7 +302,7 @@ export default function LeaveRequests() {
 
       {/* Approve Dialog */}
       <Dialog open={!!approveDialog} onOpenChange={o => !o && setApproveDialog(null)}>
-        <DialogContent data-testid="approve-leave-dialog">
+        <DialogContent className="max-w-md" data-testid="approve-leave-dialog">
           <DialogHeader>
             <DialogTitle>Setujui Cuti</DialogTitle>
             <DialogDescription>
@@ -306,7 +313,7 @@ export default function LeaveRequests() {
             <Button variant="outline" onClick={() => setApproveDialog(null)}>Batal</Button>
             <Button variant="default" onClick={handleApproveConfirm}
               data-testid="confirm-approve-leave">
-              <CheckCircle className="h-4 w-4 mr-2" /> Ya, Setujui
+              <CheckCircle /> Ya, Setujui
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -314,16 +321,16 @@ export default function LeaveRequests() {
 
       {/* Reject Dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={o => !o && setRejectDialog(null)}>
-        <DialogContent data-testid="reject-leave-dialog">
+        <DialogContent className="max-w-md" data-testid="reject-leave-dialog">
           <DialogHeader>
             <DialogTitle>Tolak Cuti</DialogTitle>
             <DialogDescription>
               Penolakan cuti untuk {rejectDialog?.employee_name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label>Alasan Penolakan *</Label>
-            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)}
+          <div className="space-y-1">
+            <Label htmlFor="leave-reject-reason">Alasan penolakan *</Label>
+            <Textarea id="leave-reject-reason" value={rejectReason} onChange={e => setRejectReason(e.target.value)}
               placeholder="Jelaskan alasan penolakan..." rows={3}
               data-testid="leave-reject-reason" />
           </div>
@@ -385,12 +392,13 @@ function CreateLeaveDialog({ open, onOpenChange, onCreated, currentUserId }) {
       <DialogContent className="max-w-md" data-testid="create-leave-dialog">
         <DialogHeader>
           <DialogTitle>Ajukan Cuti Baru</DialogTitle>
+          <DialogDescription>Simpan sebagai draft atau langsung ajukan ke atasan.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Jenis Cuti *</Label>
+            <Label htmlFor="leave-type">Jenis Cuti *</Label>
             <Select value={form.leave_type} onValueChange={v => setForm(f => ({ ...f, leave_type: v }))}>
-              <SelectTrigger data-testid="leave-type-select"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="leave-type" data-testid="leave-type-select"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(LEAVE_TYPE_LABELS).map(([k, v]) => (
                   <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -400,32 +408,33 @@ function CreateLeaveDialog({ open, onOpenChange, onCreated, currentUserId }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Tanggal Mulai *</Label>
-              <Input type="date" value={form.start_date}
+              <Label htmlFor="leave-start-date">Tanggal Mulai *</Label>
+              <Input id="leave-start-date" type="date" value={form.start_date}
                 onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
                 data-testid="leave-start-date" />
             </div>
             <div className="space-y-1">
-              <Label>Tanggal Selesai</Label>
-              <Input type="date" value={form.end_date} min={form.start_date}
+              <Label htmlFor="leave-end-date">Tanggal Selesai</Label>
+              <Input id="leave-end-date" type="date" value={form.end_date} min={form.start_date}
                 onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
                 data-testid="leave-end-date" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Jumlah Hari</Label>
-            <Input type="number" value={form.days_count} readOnly className="bg-muted/50"
-              placeholder="Otomatis dihitung" />
+            <Label htmlFor="leave-days-count">Jumlah Hari</Label>
+            <Input id="leave-days-count" type="number" value={form.days_count} readOnly className="bg-muted/50"
+              placeholder="Otomatis dihitung" data-testid="leave-days-count" />
           </div>
           <div className="space-y-1">
-            <Label>Catatan / Keterangan</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            <Label htmlFor="leave-notes">Catatan / Keterangan</Label>
+            <Textarea id="leave-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Jelaskan keperluan cuti..." rows={2}
               data-testid="leave-notes" />
           </div>
           <div className="flex items-center gap-2">
-            <input type="checkbox" id="auto-submit" checked={form.auto_submit}
-              onChange={e => setForm(f => ({ ...f, auto_submit: e.target.checked }))} />
+            <input type="checkbox" id="auto-submit" className="h-4 w-4" checked={form.auto_submit}
+              onChange={e => setForm(f => ({ ...f, auto_submit: e.target.checked }))}
+              data-testid="leave-auto-submit" />
             <label htmlFor="auto-submit" className="text-sm cursor-pointer">
               Langsung ajukan ke atasan
             </label>
@@ -434,7 +443,7 @@ function CreateLeaveDialog({ open, onOpenChange, onCreated, currentUserId }) {
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
           <Button onClick={handleSubmit} disabled={submitting} data-testid="confirm-create-leave">
-            {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {submitting && <Loader2 className="animate-spin" />}
             {form.auto_submit ? "Simpan & Ajukan" : "Simpan Draft"}
           </Button>
         </DialogFooter>

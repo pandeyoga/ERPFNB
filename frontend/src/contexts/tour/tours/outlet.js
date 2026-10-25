@@ -301,7 +301,7 @@ const outletPettyCashTour = {
     {
       target: "body",
       title: "Kategori & Bukti",
-      content: "Kategori yang tersedia:\n\n• **Operasional** — sabun, tisu, dll\n• **Darurat** — pembelian mendadak\n• **Transport** — ongkir\n• **Lain-lain** — wajib ada keterangan\n\n📸 Selalu upload foto nota!",
+      content: "Kategori yang tersedia:\n\n• **Operasional** — sabun, tisu, dll\n• **Darurat** — pembelian mendadak\n• **Transport** — ongkir\n• **Lain-lain** — wajib ada keterangan\n\nSelalu upload foto nota!",
       placement: "center",
       variant: "tip",
     },

@@ -76,47 +76,26 @@ export default function KdoBdoList({ kind = "kdo" }) {
   const totalPages = Math.max(1, Math.ceil((pageMeta.total || 0) / (pageMeta.per_page || 20)));
 
   return (
-    <div className="space-y-4">
-      {/* Header card */}
-      <div className={cn(
-        "glass-card p-4 sm:p-5 bg-gradient-to-br",
-        meta.accent,
-      )}>
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-start gap-3">
-            <div className="h-11 w-11 rounded-xl grad-aurora-soft flex items-center justify-center shrink-0">
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-base font-bold">{meta.title}</div>
-              <div className="text-xs text-muted-foreground max-w-xl">{meta.description}</div>
-            </div>
+    <div className="space-y-3">
+      {/* Section toolbar: judul station + filter status + aksi buat.
+          Outlet picker ada di header Outlet Aktif. */}
+      <div className="glass-card p-3 flex flex-col sm:flex-row sm:items-center gap-3" data-testid={`${kind}-toolbar`}>
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center shrink-0">
+            <Icon className="h-4 w-4" />
           </div>
-          <Button
-            onClick={() => setShowForm(true)}
-            className="rounded-full pill-active gap-2 h-10 px-5 touch-target"
-            data-testid={`${kind}-new`}
-          >
-            <Plus className="h-4 w-4" /> {meta.docPrefix} Baru
-          </Button>
+          <div className="min-w-0">
+            <h2 className="text-base md:text-lg font-semibold leading-tight">{meta.title}</h2>
+            <p className="text-xs text-muted-foreground">{meta.description}</p>
+          </div>
         </div>
-      </div>
-
-      {/* Filters — outlet picker lives in global Outlet Portal header */}
-      <div className="glass-card p-4">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-          <div className="sm:min-w-[180px] flex-1">
-            <Label
-              className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold"
-              htmlFor={`${kind}-status-filter`}
-            >
-              Status
-            </Label>
+        <div className="flex items-center gap-2">
+          <div className="w-full sm:w-48">
             <SimpleSelect
               value={status}
               onValueChange={(v) => { setStatus(v); setPage(1); }}
               options={[
-                { value: "", label: "Semua" },
+                { value: "", label: "Semua status" },
                 { value: "draft", label: "Draft" },
                 { value: "submitted", label: "Submitted" },
                 { value: "awaiting_approval", label: "Menunggu Approval" },
@@ -124,11 +103,19 @@ export default function KdoBdoList({ kind = "kdo" }) {
                 { value: "rejected", label: "Rejected" },
                 { value: "converted", label: "Converted" },
               ]}
-              placeholder="Semua"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              placeholder="Semua status"
+              className="glass-input w-full"
+              ariaLabel="Filter status"
               testId={`${kind}-status`}
             />
           </div>
+          <Button
+            onClick={() => setShowForm(true)}
+            className="shrink-0"
+            data-testid={`${kind}-new`}
+          >
+            <Plus className="h-4 w-4" /> {meta.docPrefix} Baru
+          </Button>
         </div>
       </div>
 
@@ -138,7 +125,7 @@ export default function KdoBdoList({ kind = "kdo" }) {
           columns={[
             {
               key: "doc_no", label: "No Dokumen", primary: true,
-              render: pr => <span className="font-mono text-xs">{pr.doc_no || pr.id.slice(0, 8)}</span>,
+              render: pr => <span className="text-xs font-medium tabular-nums">{pr.doc_no || pr.id.slice(0, 8)}</span>,
             },
             { key: "request_date", label: "Tanggal", render: pr => fmtDate(pr.request_date) },
             {
@@ -156,19 +143,20 @@ export default function KdoBdoList({ kind = "kdo" }) {
           empty={
             <EmptyState
               icon={Icon}
-              title={`Belum ada ${meta.docPrefix}`}
-              description={`Buat ${meta.docPrefix} pertama — cepat, mobile-friendly.`}
+              title={status ? `Tidak ada ${meta.docPrefix} dengan status ini` : `Belum ada ${meta.docPrefix}`}
+              description={`Buat ${meta.docPrefix} untuk mengajukan kebutuhan bahan harian ke purchasing.`}
+              action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>{meta.docPrefix} Baru</Button>}
             />
           }
           rowTestIdPrefix={kind}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {pageMeta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Next</button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya">Sebelumnya</Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya">Berikutnya</Button>
             </div>
           </div>
         )}
@@ -262,7 +250,9 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
     });
   };
 
-  const submit = async () => {
+  // Status dikirim sebagai argumen: sebelumnya `setStatusToSet("draft"); setTimeout(submit)`
+  // memakai closure lama sehingga "Simpan Draft" tetap mengirim status "submitted".
+  const submit = async (targetStatus = statusToSet) => {
     if (!form.outlet_id) { toast.error("Outlet wajib"); return; }
     const validLines = form.lines.filter(l => (l.name || l.item_id) && Number(l.qty) > 0);
     if (validLines.length === 0) { toast.error("Tambahkan minimal 1 item dengan qty > 0"); return; }
@@ -273,7 +263,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         request_date: form.request_date,
         needed_by: form.needed_by || null,
         notes: form.notes || null,
-        status: statusToSet,
+        status: targetStatus,
         lines: validLines.map(l => ({
           name: l.name,
           item_id: l.item_id || null,
@@ -283,7 +273,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         })),
       };
       await api.post(meta.apiPath, payload);
-      toast.success(`${meta.docPrefix} ${statusToSet === "draft" ? "disimpan sebagai draft" : "berhasil di-submit"}`);
+      toast.success(`${meta.docPrefix} ${targetStatus === "draft" ? "disimpan sebagai draft" : "berhasil di-submit"}`);
       onSaved();
     } catch (e) {
       const errs = e.response?.data?.errors || [];
@@ -317,7 +307,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-2xl max-h-[92vh] overflow-y-auto">
+      <DialogContent className="glass-card max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className="h-4 w-4" />
@@ -329,19 +319,21 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         {/* Header inputs */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Outlet *</Label>
+            <Label className="text-xs md:text-sm font-medium">Outlet *</Label>
             <SimpleSelect
               value={form.outlet_id}
               onValueChange={(v) => setForm(f => ({ ...f, outlet_id: v }))}
               options={[{ value: "", label: "-- pilih --" }, ...userOutlets.map(o => ({ value: o.id, label: o.name }))]}
               placeholder="-- pilih --"
-              className="glass-input rounded-lg w-full px-3 h-10 text-sm mt-1"
+              className="glass-input w-full mt-1"
+              ariaLabel="Outlet"
               testId={`${kind}-form-outlet`}
             />
           </div>
           <div>
-            <Label className="text-xs uppercase text-muted-foreground">Tanggal *</Label>
+            <Label htmlFor={`${kind}-form-date-input`} className="text-xs md:text-sm font-medium">Tanggal *</Label>
             <Input
+              id={`${kind}-form-date-input`}
               type="date"
               value={form.request_date}
               onChange={(e) => setForm(f => ({ ...f, request_date: e.target.value }))}
@@ -350,8 +342,9 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
             />
           </div>
           <div className="col-span-2">
-            <Label className="text-xs uppercase text-muted-foreground">Dibutuhkan Pada (opsional)</Label>
+            <Label htmlFor={`${kind}-form-needed-input`} className="text-xs md:text-sm font-medium">Dibutuhkan pada (opsional)</Label>
             <Input
+              id={`${kind}-form-needed-input`}
               type="date"
               value={form.needed_by}
               onChange={(e) => setForm(f => ({ ...f, needed_by: e.target.value }))}
@@ -365,7 +358,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
           <div className="mt-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Star className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-semibold uppercase text-muted-foreground">
+              <span className="text-xs md:text-sm font-medium">
                 Sering dipesan (30 hari terakhir)
               </span>
             </div>
@@ -375,7 +368,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
                   key={fav.key}
                   type="button"
                   onClick={() => addFromFav(fav)}
-                  className="glass-input rounded-full px-3 py-1.5 text-xs hover:bg-foreground/10 inline-flex items-center gap-1.5 touch-target"
+                  className="glass-input rounded-full h-8 px-2.5 text-xs hover:bg-foreground/10 inline-flex items-center gap-1.5"
                   data-testid={`${kind}-fav-${fav.key.slice(0, 16)}`}
                 >
                   <Plus className="h-3 w-3" />
@@ -397,13 +390,12 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         {/* Items grid */}
         <div className="mt-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold">Items</h4>
+            <h3 className="text-sm md:text-base font-semibold">Item</h3>
             <Button
               type="button"
               onClick={addLine}
               variant="outline"
               size="sm"
-              className="rounded-full gap-1"
               data-testid={`${kind}-add-line`}
             >
               <Plus className="h-3.5 w-3.5" /> Tambah
@@ -442,21 +434,23 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
                 step="0.01"
                 value={ln.qty}
                 onChange={(e) => setLine(i, "qty", e.target.value)}
-                className="glass-input col-span-4 sm:col-span-2 h-10 text-right tabular-nums"
+                className="glass-input col-span-4 sm:col-span-2 text-right tabular-nums"
                 placeholder="Qty"
+                aria-label={`Qty item ${i + 1}`}
                 data-testid={`${kind}-line-qty-${i}`}
               />
               <Input
                 value={ln.unit}
                 onChange={(e) => setLine(i, "unit", e.target.value)}
-                className="glass-input col-span-4 sm:col-span-2 h-10"
+                className="glass-input col-span-4 sm:col-span-2"
                 placeholder="unit"
+                aria-label={`Satuan item ${i + 1}`}
                 data-testid={`${kind}-line-unit-${i}`}
               />
               <button
                 type="button"
                 onClick={() => removeLine(i)}
-                className="col-span-4 sm:col-span-1 h-10 w-full rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center"
+                className="col-span-4 sm:col-span-1 h-9 w-full rounded-md hover:bg-destructive/10 hover:text-destructive flex items-center justify-center"
                 aria-label="Hapus baris"
                 data-testid={`${kind}-line-remove-${i}`}
               >
@@ -467,8 +461,9 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         </div>
 
         <div className="mt-3">
-          <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
+          <Label htmlFor={`${kind}-form-notes-input`} className="text-xs md:text-sm font-medium">Catatan</Label>
           <Textarea
+            id={`${kind}-form-notes-input`}
             value={form.notes}
             onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
             className="glass-input mt-1 min-h-[60px]"
@@ -484,7 +479,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
           <div className="flex gap-2 sm:ml-auto">
             <Button
               variant="outline"
-              onClick={() => { setStatusToSet("draft"); setTimeout(submit, 0); }}
+              onClick={() => { setStatusToSet("draft"); submit("draft"); }}
               disabled={saving}
               className="gap-2"
               data-testid={`${kind}-save-draft`}
@@ -492,9 +487,8 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
               <Save className="h-4 w-4" /> Simpan Draft
             </Button>
             <Button
-              onClick={() => { setStatusToSet("submitted"); setTimeout(submit, 0); }}
+              onClick={() => { setStatusToSet("submitted"); submit("submitted"); }}
               disabled={saving}
-              className="pill-active gap-2"
               data-testid={`${kind}-submit`}
             >
               <Send className="h-4 w-4" /> Submit

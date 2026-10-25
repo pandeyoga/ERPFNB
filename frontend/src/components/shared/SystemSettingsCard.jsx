@@ -15,7 +15,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import { fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
 const CATEGORY_LABEL = {
   telegram: "Telegram",
@@ -103,10 +103,15 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
 
   async function setupWebhook() {
     const baseHint = window.location.origin.replace(window.location.host, "").replace("//:", "//");
-    const url = window.prompt(
-      "Masukkan public backend URL (mis. https://app.example.com). Path '/api/telegram/webhook' akan otomatis ditambahkan.",
-      baseHint || "",
-    );
+    const url = await promptDialog({
+      title: "Daftarkan Webhook Telegram",
+      description: "Path '/api/telegram/webhook' akan otomatis ditambahkan ke URL ini.",
+      label: "Public backend URL",
+      placeholder: "https://app.example.com",
+      defaultValue: baseHint || "",
+      confirmText: "Daftarkan",
+      testId: "telegram-webhook-dialog",
+    });
     if (!url) return;
     setBusyKey("setup_webhook");
     try {

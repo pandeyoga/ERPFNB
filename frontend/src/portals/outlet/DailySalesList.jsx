@@ -1,11 +1,15 @@
-/** Daily Sales — list view with filter (mobile-card on sm). 7E polish. */
+/** Daily Sales — list view with filter (mobile-card on sm). 7E polish.
+ *  `embedded` = dirender di dalam langkah End of Day → tanpa PageHeader (satu <h1> per halaman). */
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, Calendar, Receipt, Eye } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
@@ -21,7 +25,8 @@ const STATUS_TABS = [
   { key: "rejected",  label: "Rejected" },
 ];
 
-export default function DailySalesList() {
+export default function DailySalesList({ embedded = false }) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { outletId, scopedOutlets } = useOutletScopeCtx();
   const [items, setItems] = useState([]);
@@ -88,81 +93,86 @@ export default function DailySalesList() {
     },
   ];
 
+  const newButton = (
+    <Button asChild>
+      <Link to="/outlet/daily-sales/new" data-testid="ds-new">
+        <Plus className="h-4 w-4" /> Daily Sales Baru
+      </Link>
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="daily-sales-list-page">
-      {/* Toolbar — only Date filters + New button. Outlet filter is in global header. */}
-      <div className="glass-card p-4">
+    <div className="space-y-3 lg:space-y-4" data-testid="daily-sales-list-page">
+      {!embedded && (
+        <PageHeader
+          icon={Receipt}
+          title="Daily Sales"
+          subtitle="Rekap penjualan harian per outlet — draft, submit, lalu divalidasi finance."
+          actions={newButton}
+          className="mb-0 md:mb-0"
+        />
+      )}
+
+      {/* Toolbar — date filters (outlet filter ada di header Outlet Aktif). */}
+      <div className="glass-card p-3">
         <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
-          <div className="sm:min-w-[160px] flex-1">
-            <label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold" htmlFor="ds-date-from">
-              <Calendar className="inline h-3 w-3 mr-1" /> Dari Tanggal
-            </label>
+          <div className="sm:min-w-[160px] flex-1 space-y-1">
+            <Label className="text-xs md:text-sm font-medium inline-flex items-center gap-1" htmlFor="ds-date-from">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" /> Dari tanggal
+            </Label>
             <Input
               id="ds-date-from"
               type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
-              className="glass-input mt-1 h-10" data-testid="ds-filter-date-from"
+              className="glass-input" data-testid="ds-filter-date-from"
             />
           </div>
-          <div className="sm:min-w-[160px] flex-1">
-            <label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold" htmlFor="ds-date-to">
-              <Calendar className="inline h-3 w-3 mr-1" /> Sampai Tanggal
-            </label>
+          <div className="sm:min-w-[160px] flex-1 space-y-1">
+            <Label className="text-xs md:text-sm font-medium inline-flex items-center gap-1" htmlFor="ds-date-to">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" /> Sampai tanggal
+            </Label>
             <Input
               id="ds-date-to"
               type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1); }}
-              className="glass-input mt-1 h-10" data-testid="ds-filter-date-to"
+              className="glass-input" data-testid="ds-filter-date-to"
             />
           </div>
-          <Link to="/outlet/daily-sales/new" className="sm:ml-auto">
-            <Button className="rounded-full pill-active gap-2 h-10 px-5 w-full sm:w-auto" data-testid="ds-new">
-              <Plus className="h-4 w-4" /> Daily Sales Baru
-            </Button>
-          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+            disabled={!dateFrom && !dateTo}
+            data-testid="ds-filter-all-dates"
+          >
+            Semua tanggal
+          </Button>
+          {embedded && newButton}
         </div>
         {/* Active range indicator — makes the default 14-day window explicit so the
             shown count is never mistaken for the full dataset. */}
-        <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between gap-3 flex-wrap text-xs">
-          <span className="text-muted-foreground">
-            {dateFrom || dateTo ? (
-              <>Menampilkan <b className="text-foreground tabular-nums">{meta.total ?? 0}</b> entri
-                {" "}dalam rentang{" "}
-                <b className="text-foreground">{dateFrom ? fmtDate(dateFrom) : "awal"}</b>
-                {" – "}
-                <b className="text-foreground">{dateTo ? fmtDate(dateTo) : "kini"}</b>
-              </>
-            ) : (
-              <>Menampilkan <b className="text-foreground tabular-nums">{meta.total ?? 0}</b> entri · semua tanggal</>
-            )}
-          </span>
-          <button
-            type="button"
-            onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-            disabled={!dateFrom && !dateTo}
-            className="px-3 py-1 rounded-full glass-input disabled:opacity-40 hover:bg-foreground/5 transition-colors"
-            data-testid="ds-filter-all-dates"
-          >
-            Semua Tanggal
-          </button>
+        <div className="mt-2 text-xs text-muted-foreground">
+          {dateFrom || dateTo ? (
+            <>Menampilkan <b className="text-foreground tabular-nums">{meta.total ?? 0}</b> entri
+              {" "}dalam rentang{" "}
+              <b className="text-foreground">{dateFrom ? fmtDate(dateFrom) : "awal"}</b>
+              {" – "}
+              <b className="text-foreground">{dateTo ? fmtDate(dateTo) : "kini"}</b>
+            </>
+          ) : (
+            <>Menampilkan <b className="text-foreground tabular-nums">{meta.total ?? 0}</b> entri · semua tanggal</>
+          )}
         </div>
       </div>
 
-      {/* Status tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1" role="tablist" aria-label="Filter status">
-        {STATUS_TABS.map(t => (
-          <button
-            key={t.key || "all"}
-            role="tab"
-            aria-selected={status === t.key}
-            onClick={() => { setStatus(t.key); setPage(1); }}
-            className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-target ${
-              status === t.key ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground"
-            }`}
-            data-testid={`ds-tab-${t.key || "all"}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Status filter */}
+      <Tabs value={status || "all"} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
+        <TabsList aria-label="Filter status">
+          {STATUS_TABS.map(t => (
+            <TabsTrigger key={t.key || "all"} value={t.key || "all"} data-testid={`ds-tab-${t.key || "all"}`}>
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Responsive list */}
       <div className="glass-card">
@@ -170,17 +180,17 @@ export default function DailySalesList() {
           columns={columns}
           rows={items}
           keyField="id"
-          onRowClick={(s) => { window.location.assign(`/outlet/daily-sales/${s.id}`); }}
+          onRowClick={(s) => navigate(`/outlet/daily-sales/${s.id}`)}
           loading={loading}
           empty={
             <EmptyState
               icon={Receipt}
               title="Belum ada daily sales"
-              description="Buat draft daily sales untuk hari ini."
+              description={status ? "Tidak ada daily sales dengan status ini pada rentang tanggal terpilih." : "Buat draft daily sales untuk hari ini."}
               action={
-                <Link to="/outlet/daily-sales/new">
-                  <Button className="pill-active rounded-full">Buat Daily Sales</Button>
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/outlet/daily-sales/new">Buat Daily Sales</Link>
+                </Button>
               }
             />
           }
@@ -198,12 +208,12 @@ export default function DailySalesList() {
           rowTestIdPrefix="ds"
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman sebelumnya">Prev</button>
-              <span className="px-2 py-1" aria-current="page">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" aria-label="Halaman berikutnya">Next</button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="ds-page-prev">Sebelumnya</Button>
+              <span className="px-1 tabular-nums" aria-current="page">{page}/{totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="ds-page-next">Berikutnya</Button>
             </div>
           </div>
         )}

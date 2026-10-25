@@ -205,7 +205,7 @@ export const inlineHelpRegistry = {
   },
   "approval-urgency": {
     title: "Prioritas Approval",
-    content: "• 🔴 **Merah** — sudah >2 hari menunggu atau nilai >50 juta\n• 🟡 **Kuning** — >1 hari atau nilai 10–50 juta\n• 🟢 **Hijau** — baru, nilai normal\n\nApproval dari Owner diperlukan untuk PR/PO di atas threshold.",
+    content: "• **Merah** — sudah >2 hari menunggu atau nilai >50 juta\n• **Kuning** — >1 hari atau nilai 10–50 juta\n• **Hijau** — baru, nilai normal\n\nApproval dari Owner diperlukan untuk PR/PO di atas threshold.",
   },
 
   // ===================== ADMIN =====================
@@ -236,7 +236,7 @@ export const inlineHelpRegistry = {
 
   // ===================== HR (EXPANDED) =====================
   "hr-leaves-page": {
-    title: "Leave Management",
+    title: "Leave Requests",
     content: "Kelola **cuti dan absensi** karyawan:\n\n• **Cuti Saya** — pengajuan cuti sendiri\n• **Approval Queue** — approve cuti bawahan\n\nSaldo cuti otomatis dihitung dari tanggal bergabung dan dipotong saat disetujui.",
   },
   "hr-leaves-balance": {
@@ -266,11 +266,11 @@ export const inlineHelpRegistry = {
     content: "Master komponen gaji per karyawan:\n\n• **Gaji Pokok** — basic salary\n• **Tunjangan** — jabatan, makan, transport, kesehatan\n• **BPJS** — enrolled/tidak + employee share\n• **PTKP Status** — untuk kalkulasi PPh21\n\nImport via Excel untuk bulk update atau edit manual satu-satu.",
   },
   "hr-compensation-hub": {
-    title: "Compensation & Benefits Hub",
+    title: "Compensation",
     content: "Workspace terpusat untuk semua jenis kompensasi karyawan:\n\n• **Payroll** — gaji bulanan\n• **Service Charge** — distribusi SC dari penjualan\n• **Incentive** — bonus & insentif program\n• **Voucher** — voucher internal karyawan\n• **FOC** — meal allowance gratis\n• **Advances** — kasbon\n• **LB Fund** — Lebaran & bonus fund\n\nSemua komponen tercatat untuk audit & rekonsiliasi.",
   },
   "hr-job-applications": {
-    title: "Manajemen Lamaran Kerja",
+    title: "Job Applications",
     content: "Kelola lamaran masuk dari portal karir public:\n\n• **Filter** — per status (New, Reviewed, Shortlisted, Rejected, Hired)\n• **Status Update** — ubah status kandidat\n• **Catatan Internal** — notes untuk tim HR\n• **Cover Letter** — lihat motivasi pelamar\n\nData terintegrasi dari form /careers di website public.",
   },
   "hr-job-application-status": {
@@ -306,12 +306,12 @@ export const inlineHelpRegistry = {
     content: "4 angka paling penting untuk owner:\n\n• **Cash Today** — total kas group saat ini\n• **MTD Revenue** — pendapatan bulan ini\n• **AP 7 Days** — hutang jatuh tempo 7 hari ke depan\n• **Anomalies** — alert AI yang perlu perhatian\n\nKlik kartu untuk masuk ke detail.",
   },
   "owner-daily-briefing": {
-    title: "Daily Briefing AI",
+    title: "AI Daily Briefing",
     content: "Ringkasan bisnis harian yang di-generate AI setiap pagi pukul 07.00 WIB.\n\nMencakup:\n• Sales kemarin vs target\n• Outlet terbaik & terburuk\n• Anomali yang perlu ditindaklanjuti\n• Pending approvals hari ini\n\nBisa juga dikirim ke Telegram otomatis.",
   },
   "owner-quick-approvals": {
     title: "Quick Approvals",
-    content: "Approve atau reject langsung dari cockpit:\n\n• 🔴 **Prioritas tinggi** — >2 hari atau >Rp50 juta\n• 🟡 **Sedang** — >1 hari atau Rp10–50 juta\n• 🟢 **Normal** — baru masuk\n\nKlik **Approve** / **Reject** tanpa perlu masuk ke halaman detail.",
+    content: "Approve atau reject langsung dari cockpit:\n\n• **Prioritas tinggi** — >2 hari atau >Rp50 juta\n• **Sedang** — >1 hari atau Rp10–50 juta\n• **Normal** — baru masuk\n\nKlik **Approve** / **Reject** tanpa perlu masuk ke halaman detail.",
   },
 
   // ===================== FINANCE REPORTS HUB =====================

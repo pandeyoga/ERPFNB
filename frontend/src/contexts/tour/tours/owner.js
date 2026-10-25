@@ -29,8 +29,8 @@ const ownerHomeTour = {
     },
     {
       target: "[data-testid='owner-bottom-row']",
-      title: "Full Analytics",
-      content: "Klik **Full Analytics** untuk masuk ke Executive Dashboard dengan view lebih lengkap dan filter yang lebih detail.",
+      title: "Sales Analytics",
+      content: "Klik **Sales Analytics** untuk analisis lengkap dengan filter periode, brand, dan outlet.",
       placement: "top",
       variant: "tip",
     },
@@ -88,7 +88,7 @@ const ownerApprovalsTour = {
     {
       target: "[data-testid='owner-mid-row']",
       title: "Approve & Reject",
-      content: "Klik **Approve** atau **Reject** langsung dari daftar. Bisa tambah catatan jika reject. Owner mendapat notifikasi Telegram otomatis untuk item urgent.",
+      content: "Klik **Setujui** atau **Tolak** langsung dari daftar. Bisa tambah catatan jika reject. Owner mendapat notifikasi Telegram otomatis untuk item urgent.",
       placement: "top",
       variant: "tip",
     },
@@ -97,7 +97,7 @@ const ownerApprovalsTour = {
 
 // ─── Owner Daily Briefing ─────────────────────────────────────────────────
 const ownerBriefingTour = {
-  name: "Daily Briefing AI",
+  name: "AI Daily Briefing",
   description: "Ringkasan bisnis harian otomatis dengan AI analysis.",
   steps: [
     {
@@ -161,7 +161,7 @@ const ownerDigestSettingsTour = {
     {
       target: "[data-testid='digest-settings-page']",
       title: "Pengaturan Briefing",
-      content: "Konfigurasi **Daily Briefing AI** — ringkasan bisnis harian dikirim otomatis ke Anda.",
+      content: "Konfigurasi **AI Daily Briefing** — ringkasan bisnis harian dikirim otomatis ke Anda.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",

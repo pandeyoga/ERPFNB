@@ -6,7 +6,6 @@ import { confirmDialog } from "@/components/shared/confirmDialog";
 import { Button } from "@/components/ui/button";
 import LoadingState from "@/components/shared/LoadingState";
 import ErrorState from "@/components/shared/ErrorState";
-import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { toast } from "sonner";
 import { fmtNumber, fmtDateTime } from "@/lib/format";
@@ -56,23 +55,19 @@ export default function ArchivalView() {
   if (error) return <ErrorState message={error} onRetry={load} />;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 lg:space-y-4">
+      {/* Toolbar (judul seksi = tab "Archival" di hub Monitoring) */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <ArchiveIcon className="h-5 w-5" /> Data Archival
-          </h2>
-          <p className="text-xs text-muted-foreground">Per-collection retention windows. Konfigurasi via env (RETENTION_*_DAYS).</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Retention per koleksi. Konfigurasi via env (RETENTION_*_DAYS).</p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => run(true)} disabled={running} data-testid="archival-dry-run">
-            <ArchiveIcon className="h-3.5 w-3.5 mr-2" /> Dry Run
-          </Button>
-          <Button size="sm" onClick={() => run(false)} disabled={running} className="rounded-full" data-testid="archival-run">
-            <Trash2 className="h-3.5 w-3.5 mr-2" /> {running ? "Running…" : "Run Archival"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={load}>
+          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="archival-refresh">
             <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="outline" onClick={() => run(true)} disabled={running} data-testid="archival-dry-run">
+            <ArchiveIcon className="h-3.5 w-3.5" /> Dry run
+          </Button>
+          <Button onClick={() => run(false)} disabled={running} data-testid="archival-run">
+            <Trash2 className="h-3.5 w-3.5" /> {running ? "Menjalankan…" : "Jalankan Archival"}
           </Button>
         </div>
       </div>
@@ -80,16 +75,16 @@ export default function ArchivalView() {
       <div className="glass-card p-4 flex items-start gap-3 border-l-4 border-amber-500">
         <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
         <div className="text-sm">
-          <p><strong>Best practice:</strong> Run “Dry Run” dulu untuk lihat berapa dokumen yang akan dipindah, baru jalankan archival real. Job ini juga otomatis dijadwalkan setiap Minggu jam 02:00 WIB.</p>
+          <p><strong>Saran:</strong> jalankan “Dry run” dulu untuk melihat berapa dokumen yang akan dipindah, baru jalankan archival sebenarnya. Job ini juga otomatis dijadwalkan setiap Minggu jam 02:00 WIB.</p>
         </div>
       </div>
 
       <div className="glass-card overflow-hidden">
         <DataTable
           columns={[
-            { key: "coll", label: "Collection", primary: true, sortable: true, render: (r) => <span className="font-mono text-xs">{r.coll}</span> },
+            { key: "coll", label: "Collection", primary: true, sortable: true, render: (r) => <span className="text-xs font-medium tabular-nums">{r.coll}</span> },
             { key: "retention_days", label: "Retention (days)", numeric: true, sortable: true, render: (r) => r.retention_days },
-            { key: "cutoff", label: "Cutoff", render: (r) => <span className="font-mono text-xs whitespace-nowrap">{fmtDateTime(r.cutoff)}</span> },
+            { key: "cutoff", label: "Cutoff", render: (r) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(r.cutoff)}</span> },
             { key: "total", label: "Total", numeric: true, sortable: true, render: (r) => fmtNumber(r.total) },
             { key: "eligible_for_archive", label: "Eligible", numeric: true, sortable: true, render: (r) => <span className={r.eligible_for_archive > 0 ? "font-semibold text-amber-700 dark:text-amber-400" : "font-semibold"}>{fmtNumber(r.eligible_for_archive)}</span> },
             { key: "already_archived", label: "Already Archived", numeric: true, sortable: true, render: (r) => <span className="text-muted-foreground">{fmtNumber(r.already_archived)}</span> },
@@ -103,7 +98,7 @@ export default function ArchivalView() {
 
       {lastResult && (
         <div className="glass-card p-4">
-          <h3 className="text-sm font-semibold mb-2">Last Run Result</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-2">Hasil Run Terakhir</h3>
           <pre className="text-xs font-mono bg-muted/40 p-3 rounded overflow-auto max-h-[280px]">{JSON.stringify(lastResult, null, 2)}</pre>
         </div>
       )}

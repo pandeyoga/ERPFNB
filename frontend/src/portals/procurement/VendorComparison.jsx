@@ -16,6 +16,8 @@ import {
   TrendingUp as TrendUp,
   Package,
   RefreshCw,
+  Scale,
+  Check,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -23,11 +25,11 @@ import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import VendorComparisonPanel from "@/components/shared/VendorComparisonPanel";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
-import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
-
 import { fetchAll } from "@/lib/api";
 export default function VendorComparison() {
   const [items, setItems] = useState([]);
@@ -63,7 +65,7 @@ export default function VendorComparison() {
       const exists = prev.some(x => x.id === it.id);
       if (exists) return prev.filter(x => x.id !== it.id);
       if (prev.length >= 10) {
-        toast.info("Max 10 item dapat dipilih sekaligus");
+        toast.info("Maksimal 10 item dapat dipilih sekaligus");
         return prev;
       }
       return [...prev, it];
@@ -80,47 +82,47 @@ export default function VendorComparison() {
       const res = await api.get(`/procurement/vendors/${vid}/scorecard`, { params: { days } });
       setScorecard(unwrap(res));
     } catch (e) {
-      toast.error("Gagal load scorecard");
+      toast.error("Gagal memuat scorecard vendor");
     } finally { setScorecardLoading(false); }
   }
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto" data-testid="vendor-comparison-page">
-      <div className="glass-card p-5" data-testid="vc-header-card">
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div>
-            <h2 className="text-lg font-bold">Vendor Comparison</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Bandingkan harga vendor untuk multi-item, atau lihat performance scorecard per vendor.
-            </p>
-          </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="vendor-comparison-page">
+      <PageHeader
+        icon={Scale}
+        title="Vendor Comparison"
+        subtitle="Bandingkan harga vendor untuk beberapa item sekaligus, lalu lihat scorecard performa vendor."
+        actions={
           <SimpleSelect
             value={days}
             onValueChange={(v) => setDays(Number(v))}
             options={[
-              { value: 30, label: "30 hari" },
-              { value: 90, label: "90 hari" },
-              { value: 180, label: "180 hari" },
-              { value: 365, label: "365 hari" },
+              { value: 30, label: "30 hari terakhir" },
+              { value: 90, label: "90 hari terakhir" },
+              { value: 180, label: "180 hari terakhir" },
+              { value: 365, label: "365 hari terakhir" },
             ]}
             ariaLabel="Periode"
-            className="glass-input rounded-lg h-9 text-xs"
+            className="glass-input w-[170px]"
             testId="vc-days"
           />
-        </div>
+        }
+      />
 
+      <div className="glass-card p-4" data-testid="vc-header-card">
         {/* Item search */}
         <div className="space-y-2" data-testid="vc-search-section">
-          <Label className="text-xs uppercase font-semibold text-muted-foreground">
-            Cari Item (<span data-testid="vc-selected-count">{items.length}</span>/10 selected)
+          <Label htmlFor="vc-search" className="text-xs md:text-sm font-medium">
+            Cari item (<span data-testid="vc-selected-count">{items.length}</span>/10 dipilih)
           </Label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
+              id="vc-search"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Ketik nama / kode item…"
-              className="glass-input pl-9 pr-3 h-10"
+              className="glass-input pl-9 pr-3"
               data-testid="vc-search"
             />
           </div>
@@ -129,16 +131,17 @@ export default function VendorComparison() {
               {filtered.map(it => {
                 const sel = items.some(x => x.id === it.id);
                 return (
-                  <button
+                  <Button
                     key={it.id}
+                    type="button"
+                    size="sm"
+                    variant={sel ? "default" : "outline"}
+                    aria-pressed={sel}
                     onClick={() => toggleItem(it)}
-                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                      sel ? "pill-active" : "glass-input hover:bg-foreground/10"
-                    }`}
                     data-testid={`vc-search-item-${it.id}`}
                   >
-                    {sel && "✓ "}{it.name}
-                  </button>
+                    {sel && <Check />}{it.name}
+                  </Button>
                 );
               })}
             </div>
@@ -147,21 +150,19 @@ export default function VendorComparison() {
 
         {items.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-3 border-t border-border/40" data-testid="vc-selected-items">
-            <span className="text-[11px] text-muted-foreground mr-1">Selected:</span>
+            <span className="text-xs text-muted-foreground mr-1">Dipilih:</span>
             {items.map(it => (
               <span key={it.id}
-                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-foreground/10"
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-foreground/10"
                 data-testid={`vc-selected-${it.id}`}>
                 {it.name}
-                <button onClick={() => toggleItem(it)} className="hover:opacity-60" data-testid={`vc-remove-${it.id}`} aria-label="Remove">
+                <button type="button" onClick={() => toggleItem(it)} className="hover:opacity-60" data-testid={`vc-remove-${it.id}`} aria-label={`Hapus ${it.name} dari perbandingan`}>
                   <X className="h-3 w-3" />
                 </button>
               </span>
             ))}
-            <Button onClick={clearAll} variant="ghost" size="sm"
-              className="ml-1 h-6 text-[11px] rounded-full px-2"
-              data-testid="vc-clear">
-              Clear
+            <Button onClick={clearAll} variant="ghost" size="sm" className="ml-1" data-testid="vc-clear">
+              Hapus semua
             </Button>
           </div>
         )}
@@ -169,7 +170,7 @@ export default function VendorComparison() {
 
       {/* Comparison panel */}
       {items.length === 0 ? (
-        <div className="glass-card p-10" data-testid="vc-empty-prompt">
+        <div className="glass-card" data-testid="vc-empty-prompt">
           <EmptyState
             icon={Package}
             title="Pilih item untuk mulai membandingkan"
@@ -188,22 +189,22 @@ export default function VendorComparison() {
 
       {/* Scorecard panel */}
       {selectedVendor && (
-        <div className="glass-card p-5" data-testid="vc-scorecard">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-foreground/70" />
-              <h3 className="font-bold text-base">
-                Vendor Performance Scorecard
-              </h3>
+        <div className="glass-card p-4" data-testid="vc-scorecard">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Award className="h-4 w-4 text-foreground/70 shrink-0" />
+              <h2 className="text-base md:text-lg font-semibold">
+                Scorecard performa vendor
+              </h2>
               <span className="text-sm text-muted-foreground" data-testid="vc-scorecard-name">
                 · {vendors.find(v => v.id === selectedVendor)?.name || "—"}
               </span>
             </div>
             <Button onClick={() => loadScorecard(selectedVendor)} size="sm"
-              variant="outline" className="rounded-full gap-1" disabled={scorecardLoading}
+              variant="outline" disabled={scorecardLoading}
               data-testid="vc-scorecard-refresh">
-              <RefreshCw className={`h-3.5 w-3.5 ${scorecardLoading ? "animate-spin" : ""}`} />
-              Refresh
+              <RefreshCw className={scorecardLoading ? "animate-spin" : ""} />
+              Muat ulang
             </Button>
           </div>
           {scorecardLoading ? (
@@ -217,36 +218,38 @@ export default function VendorComparison() {
   );
 }
 
+const TONE_MAP = { green: "success", amber: "warning", red: "danger", muted: "default" };
+
 function ScorecardGrid({ scorecard: s }) {
   const tiles = [
     {
-      label: "Avg Lead Time",
+      label: "Rata-rata lead time",
       value: s.avg_lead_time_days != null ? `${s.avg_lead_time_days} hari` : "—",
       icon: Truck,
       tone: s.avg_lead_time_days == null ? "muted" :
             s.avg_lead_time_days <= 3 ? "green" :
             s.avg_lead_time_days <= 7 ? "amber" : "red",
-      hint: "Dari order_date sampai receive_date",
+      hint: "Dari tanggal order sampai diterima",
     },
     {
-      label: "On-Time Delivery",
+      label: "On-time delivery",
       value: s.on_time_pct != null ? `${s.on_time_pct}%` : "—",
       icon: ShieldCheck,
       tone: s.on_time_pct == null ? "muted" :
             s.on_time_pct >= 90 ? "green" :
             s.on_time_pct >= 70 ? "amber" : "red",
-      hint: "vs expected_delivery_date",
+      hint: "Dibanding estimasi tiba di PO",
     },
     {
-      label: "Defect / Variance",
+      label: "Defect / selisih",
       value: `${s.defect_rate_pct}%`,
       icon: Award,
       tone: s.defect_rate_pct <= 1 ? "green" :
             s.defect_rate_pct <= 5 ? "amber" : "red",
-      hint: "Qty tidak diterima vs ordered",
+      hint: "Qty tidak diterima vs dipesan",
     },
     {
-      label: "Price Stability",
+      label: "Stabilitas harga",
       value: s.price_stability_pct != null ? `${s.price_stability_pct}%` : "—",
       icon: TrendUp,
       tone: s.price_stability_pct == null ? "muted" :
@@ -255,35 +258,20 @@ function ScorecardGrid({ scorecard: s }) {
       hint: "Rendah = harga sering berubah",
     },
   ];
-  const toneCls = {
-    green: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    amber: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    red: "bg-red-500/10 text-red-700 dark:text-red-400",
-    muted: "bg-foreground/5 text-foreground/60",
-  };
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {tiles.map(t => {
-          const Icon = t.icon;
-          return (
-            <div key={t.label} className={`rounded-xl p-4 ${toneCls[t.tone]}`}>
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Icon className="h-4 w-4" />
-                <span className="text-[11px] uppercase tracking-wide font-semibold">{t.label}</span>
-              </div>
-              <div className="text-2xl font-extrabold tabular-nums">{t.value}</div>
-              <div className="text-[11px] mt-0.5 opacity-70">{t.hint}</div>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="vc-scorecard-kpis">
+        {tiles.map(t => (
+          <CompactStatCard key={t.label} label={t.label} value={t.value} sub={t.hint}
+            icon={t.icon} tone={TONE_MAP[t.tone]} testIdPrefix="vc-score" />
+        ))}
       </div>
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-        <Field label="PO Count" value={s.po_count} />
-        <Field label="GR Count" value={s.gr_count} />
-        <Field label="Total Qty Ordered" value={s.total_qty_ordered} />
-        <Field label="Total Qty Received" value={s.total_qty_received} />
+      <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <Field label="Jumlah PO" value={s.po_count} />
+        <Field label="Jumlah GR" value={s.gr_count} />
+        <Field label="Total qty dipesan" value={s.total_qty_ordered} />
+        <Field label="Total qty diterima" value={s.total_qty_received} />
       </div>
     </>
   );

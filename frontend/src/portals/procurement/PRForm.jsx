@@ -4,12 +4,13 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Save, Send, Plus, Trash2, Sparkles } from "lucide-react";
-import api, { unwrap } from "@/lib/api";
+import { ArrowLeft, Save, Send, Plus, Trash2, Sparkles, FileText } from "lucide-react";
+import api, { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SimpleSelect from "@/components/shared/SimpleSelect";
+import PageHeader from "@/components/shared/PageHeader";
 import { Textarea } from "@/components/ui/textarea";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import DataTable from "@/components/shared/DataTable";
@@ -72,8 +73,11 @@ export default function PRForm() {
     toast.success(`Form di-prefill dari ${data.source === "low_stock" ? "Low Stock Alert" : "halaman lain"} (${data.lines.length} item)`);
   }, [searchParams]);
 
+  // Opsi Brand (sebelumnya tidak pernah dimuat → dropdown selalu kosong)
   useEffect(() => {
-    // outlets loaded via useOutletScope hook
+    fetchAll("/master/brands", { active: true })
+      .then(r => setBrands(unwrap(r) || []))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -139,20 +143,27 @@ export default function PRForm() {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-testid="pr-form-page">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2" data-testid="pr-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
+    <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto" data-testid="pr-form-page">
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 mb-1" data-testid="pr-back">
+          <ArrowLeft /> Kembali
         </Button>
-        <h2 className="text-xl font-bold">PR Baru</h2>
-        <div className="ml-auto flex items-center gap-2">
-          <Button onClick={() => save(false)} disabled={saving} variant="outline" className="rounded-full gap-2" data-testid="pr-save-draft">
-            <Save className="h-4 w-4" /> Simpan Draft
-          </Button>
-          <Button onClick={() => save(true)} disabled={saving} className="rounded-full pill-active gap-2" data-testid="pr-submit">
-            <Send className="h-4 w-4" /> Submit
-          </Button>
-        </div>
+        <PageHeader
+          icon={FileText}
+          title="PR Baru"
+          subtitle="Ajukan permintaan pembelian. Simpan sebagai draft atau langsung ajukan untuk approval."
+          className="mb-0 md:mb-0"
+          actions={
+            <>
+              <Button onClick={() => save(false)} disabled={saving} variant="outline" data-testid="pr-save-draft">
+                <Save /> Simpan draft
+              </Button>
+              <Button onClick={() => save(true)} disabled={saving} data-testid="pr-submit">
+                <Send /> Ajukan PR
+              </Button>
+            </>
+          }
+        />
       </div>
 
       {prefillBanner && (
@@ -166,31 +177,33 @@ export default function PRForm() {
         </div>
       )}
 
-      <div className="glass-card p-5 grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="pr-form-header-card">
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Outlet *</Label>
+      <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4" data-testid="pr-form-header-card">
+        <div className="space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Outlet *</Label>
           <SimpleSelect
             value={form.outlet_id}
             onValueChange={(v) => setForm(f => ({ ...f, outlet_id: v }))}
-            options={[{ value: "", label: "-- pilih --" }, ...userOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="-- pilih --"
-            className="glass-input rounded-lg w-full h-10 text-sm mt-1"
+            options={[{ value: "", label: "Pilih outlet" }, ...userOutlets.map(o => ({ value: o.id, label: o.name }))]}
+            placeholder="Pilih outlet"
+            ariaLabel="Outlet"
+            className="glass-input w-full"
             testId="pr-outlet"
           />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Brand</Label>
+        <div className="space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Brand</Label>
           <SimpleSelect
             value={form.brand_id}
             onValueChange={(v) => setForm(f => ({ ...f, brand_id: v }))}
-            options={[{ value: "", label: "-- (opsional) --" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
-            placeholder="-- (opsional) --"
-            className="glass-input rounded-lg w-full h-10 text-sm mt-1"
+            options={[{ value: "", label: "Tanpa brand (opsional)" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
+            placeholder="Tanpa brand (opsional)"
+            ariaLabel="Brand"
+            className="glass-input w-full"
             testId="pr-brand"
           />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Source</Label>
+        <div className="space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Source</Label>
           <SimpleSelect
             value={form.source}
             onValueChange={(v) => setForm(f => ({ ...f, source: v }))}
@@ -199,29 +212,30 @@ export default function PRForm() {
               { value: "KDO", label: "KDO (Kebutuhan Direksi/Operasional)" },
               { value: "BDO", label: "BDO (Bahan Direksi/Operasional)" },
             ]}
-            className="glass-input rounded-lg w-full h-10 text-sm mt-1"
+            ariaLabel="Source"
+            className="glass-input w-full"
             testId="pr-source"
           />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Tanggal Request</Label>
-          <Input type="date" value={form.request_date}
+        <div className="space-y-1">
+          <Label htmlFor="pr-request-date" className="text-xs md:text-sm font-medium">Tanggal request</Label>
+          <Input id="pr-request-date" type="date" value={form.request_date}
             onChange={e => setForm(f => ({ ...f, request_date: e.target.value }))}
-            className="glass-input mt-1" data-testid="pr-request-date" />
+            className="glass-input" data-testid="pr-request-date" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Needed By</Label>
-          <Input type="date" value={form.needed_by}
+        <div className="space-y-1">
+          <Label htmlFor="pr-needed-by" className="text-xs md:text-sm font-medium">Dibutuhkan tanggal</Label>
+          <Input id="pr-needed-by" type="date" value={form.needed_by}
             onChange={e => setForm(f => ({ ...f, needed_by: e.target.value }))}
-            className="glass-input mt-1" data-testid="pr-needed-by" />
+            className="glass-input" data-testid="pr-needed-by" />
         </div>
       </div>
 
-      <div className="glass-card p-5" data-testid="pr-lines-card">
+      <div className="glass-card p-4" data-testid="pr-lines-card">
         <div className="flex items-center justify-between mb-3" data-testid="pr-lines-toolbar">
-          <h3 className="font-semibold">Line Items</h3>
-          <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1" data-testid="pr-add-line">
-            <Plus className="h-3.5 w-3.5" /> Tambah
+          <h3 className="text-sm md:text-base font-semibold">Item yang diminta</h3>
+          <Button onClick={addLine} variant="outline" size="sm" data-testid="pr-add-line">
+            <Plus /> Tambah item
           </Button>
         </div>
         <DataTable
@@ -257,6 +271,7 @@ export default function PRForm() {
             { key: "qty", label: "Qty", numeric: true,
               render: (ln) => (
                 <Input type="number" min="0" value={ln.qty}
+                  aria-label={`Qty baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "qty", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-24"
                   data-testid={`pr-line-qty-${ln._idx}`} />
@@ -264,12 +279,14 @@ export default function PRForm() {
             { key: "unit", label: "Unit",
               render: (ln) => (
                 <Input value={ln.unit}
+                  aria-label={`Unit baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "unit", e.target.value)}
                   className="glass-input h-9 w-20" data-testid={`pr-line-unit-${ln._idx}`} />
               ) },
-            { key: "est_cost", label: "Est. Cost", numeric: true,
+            { key: "est_cost", label: "Est. harga", numeric: true,
               render: (ln) => (
                 <Input type="number" min="0" value={ln.est_cost}
+                  aria-label={`Estimasi harga baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "est_cost", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-32" data-testid={`pr-line-est-cost-${ln._idx}`} />
               ) },
@@ -281,6 +298,7 @@ export default function PRForm() {
             { key: "notes", label: "Catatan",
               render: (ln) => (
                 <Input value={ln.notes || ""}
+                  aria-label={`Catatan baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "notes", e.target.value)}
                   className="glass-input h-9" placeholder="—" data-testid={`pr-line-notes-${ln._idx}`} />
               ) },
@@ -296,9 +314,12 @@ export default function PRForm() {
                   }}
                 />
               )}
-              <button onClick={() => removeLine(ln._idx)} className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center" data-testid={`pr-line-remove-${ln._idx}`}>
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <Button variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)}
+                className="hover:bg-destructive/10 hover:text-destructive"
+                aria-label={`Hapus baris ${ln._idx + 1}`}
+                data-testid={`pr-line-remove-${ln._idx}`}>
+                <Trash2 />
+              </Button>
             </div>
           )}
           footer={
@@ -311,11 +332,11 @@ export default function PRForm() {
         />
       </div>
 
-      <div className="glass-card p-5" data-testid="pr-notes-card">
-        <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-        <Textarea value={form.notes}
+      <div className="glass-card p-4 space-y-1" data-testid="pr-notes-card">
+        <Label htmlFor="pr-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+        <Textarea id="pr-notes" value={form.notes}
           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-          className="glass-input mt-1 min-h-[80px]" data-testid="pr-notes" />
+          className="glass-input min-h-[80px]" data-testid="pr-notes" />
       </div>
     </div>
   );

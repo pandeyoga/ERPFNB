@@ -5,14 +5,14 @@
  *  Smart Procurement: Adds vendor availability check, market ref price, alt vendor suggestion.
  *  Outlet Scope: auto-selects user default outlet; restricted staff see only their outlets. */
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Save, Plus, Trash2, AlertTriangle, TrendingUp, TrendingDown, RefreshCw, XCircle, CheckCircle, ChevronRight } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Save, Plus, Trash2, AlertTriangle, XCircle, ChevronRight, FileCheck } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import PageHeader from "@/components/shared/PageHeader";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import VendorAutocomplete from "@/components/shared/VendorAutocomplete";
 import VendorComparisonPanel from "@/components/shared/VendorComparisonPanel";
@@ -26,7 +26,7 @@ import { fmtRp, todayJakartaISO, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+  Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
 
 import { fetchAll } from "@/lib/api";
@@ -36,6 +36,7 @@ export default function POForm() {
   const navigate = useNavigate();
   const [search] = useSearchParams();
   const fromPRIds = search.getAll("pr");
+  const qVendorId = search.get("vendor_id") || "";
   const { can } = useAuth();
 
   const { outletId, setOutletId, scopedOutlets, isFullAccess, isRestricted, loaded: outletsLoaded } = useOutletScope();
@@ -123,6 +124,36 @@ export default function POForm() {
         if (matched[0]?.outlet_id) setOutletId(matched[0].outlet_id);
       }).catch(() => {});
   }, [fromPRIds.length]); // eslint-disable-line
+
+  // Prefill dari PR Consolidation: ?prefill=<base64 JSON {lines, pr_ids, note}>
+  // (sebelumnya param ini dikirim tapi tidak pernah dibaca → form PO kosong)
+  useEffect(() => {
+    const raw = search.get("prefill");
+    if (!raw) return;
+    let data = null;
+    try { data = JSON.parse(decodeURIComponent(escape(atob(raw)))); } catch { data = null; }
+    if (!data || !Array.isArray(data.lines) || data.lines.length === 0) return;
+    setForm(f => ({
+      ...f,
+      pr_ids: Array.isArray(data.pr_ids) ? data.pr_ids : f.pr_ids,
+      notes: data.note || f.notes,
+      lines: data.lines.map(l => ({
+        item_name: l.item_name || "", item_id: l.item_id || null,
+        qty: Number(l.qty || 1), unit: l.unit || "pcs",
+        unit_cost: Number(l.unit_cost || 0),
+        discount: 0, tax_rate: 0,
+        availability_status: null, ref_price: null, ref_quarter: null,
+      })),
+    }));
+    toast.success(`Form PO diisi dari konsolidasi (${data.lines.length} item)`);
+  }, []); // eslint-disable-line
+
+  // Deep-link dari Vendor Recommendation: ?vendor_id=<id> memilih vendor otomatis
+  useEffect(() => {
+    if (!qVendorId || form.vendor_id) return;
+    const v = vendors.find(x => x.id === qVendorId);
+    if (v) setForm(f => ({ ...f, vendor_id: v.id, vendor_name: v.name }));
+  }, [qVendorId, vendors]); // eslint-disable-line
 
   // Fetch vendor catalog when vendor changes
   useEffect(() => {
@@ -261,27 +292,32 @@ export default function POForm() {
 
   return (
     <>
-    <div className="space-y-5 max-w-7xl mx-auto" data-testid="po-form-page">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2" data-testid="po-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
+    <div className="space-y-3 lg:space-y-4 max-w-7xl mx-auto" data-testid="po-form-page">
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 mb-1" data-testid="po-back">
+          <ArrowLeft /> Kembali
         </Button>
-        <h2 className="text-xl font-bold">PO Baru</h2>
-        <div className="ml-auto">
-          <Button onClick={save} disabled={saving} className="rounded-full pill-active gap-2" data-testid="po-save">
-            <Save className="h-4 w-4" /> {saving ? "…" : "Simpan"}
-          </Button>
-        </div>
+        <PageHeader
+          icon={FileCheck}
+          title="PO Baru"
+          subtitle="Pilih vendor, isi item & harga. PO tersimpan sebagai draft sebelum diajukan/dikirim."
+          className="mb-0 md:mb-0"
+          actions={
+            <Button onClick={save} disabled={saving} data-testid="po-save">
+              <Save /> {saving ? "Menyimpan…" : "Simpan PO"}
+            </Button>
+          }
+        />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 2xl:grid-cols-3 gap-3 lg:gap-4">
         {/* MAIN COLUMN */}
-        <div className="space-y-5 xl:col-span-2">
+        <div className="space-y-3 lg:space-y-4 2xl:col-span-2">
 
-      <div className="glass-card p-5 grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="po-form-header-card">
-        <div className="md:col-span-2">
-          <Label className="text-xs uppercase text-muted-foreground">Vendor *</Label>
-          <div className="flex items-center gap-2 mt-1">
+      <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4" data-testid="po-form-header-card">
+        <div className="md:col-span-2 space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Vendor *</Label>
+          <div className="flex items-center gap-2">
             <div className="flex-1">
               <VendorAutocomplete
                 value={form.vendor_name}
@@ -313,9 +349,9 @@ export default function POForm() {
             )}
           </div>
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Delivery Outlet</Label>
-          <div className="mt-1">
+        <div className="space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Outlet tujuan</Label>
+          <div>
             <OutletScopePicker
               value={form.outlet_id}
               onChange={(id) => {
@@ -326,42 +362,48 @@ export default function POForm() {
               isFullAccess={isFullAccess}
               allowAll={false}
               placeholder="Central / Belum ditentukan"
+              className="[&>button]:min-w-0 [&>button]:flex-1"
               data-testid="po-outlet"
             />
           </div>
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Order Date</Label>
-          <Input type="date" value={form.order_date}
+        <div className="space-y-1">
+          <Label htmlFor="po-order-date" className="text-xs md:text-sm font-medium">Tanggal order</Label>
+          <Input id="po-order-date" type="date" value={form.order_date}
             onChange={e => setForm(f => ({ ...f, order_date: e.target.value }))}
-            className="glass-input mt-1" data-testid="po-order-date" />
+            className="glass-input" data-testid="po-order-date" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Expected Delivery</Label>
-          <Input type="date" value={form.expected_delivery_date}
+        <div className="space-y-1">
+          <Label htmlFor="po-expected-delivery" className="text-xs md:text-sm font-medium">Estimasi tiba</Label>
+          <Input id="po-expected-delivery" type="date" value={form.expected_delivery_date}
             onChange={e => setForm(f => ({ ...f, expected_delivery_date: e.target.value }))}
-            className="glass-input mt-1" data-testid="po-expected-delivery" />
+            className="glass-input" data-testid="po-expected-delivery" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Payment Terms (hari)</Label>
-          <Input type="number" min="0" value={form.payment_terms_days}
+        <div className="space-y-1">
+          <Label htmlFor="po-payment-terms" className="text-xs md:text-sm font-medium">Termin pembayaran (hari)</Label>
+          <Input id="po-payment-terms" type="number" min="0" value={form.payment_terms_days}
             onChange={e => setForm(f => ({ ...f, payment_terms_days: e.target.value }))}
-            className="glass-input mt-1" data-testid="po-payment-terms" />
+            className="glass-input" data-testid="po-payment-terms" />
         </div>
       </div>
 
       {form.pr_ids.length > 0 && (
-        <div className="glass-card p-4 text-sm" data-testid="po-source-prs">
-          <strong>Source PR:</strong>{" "}
-          {form.pr_ids.map(p => <code key={p} className="text-xs mr-2">{p.slice(0, 8)}</code>)}
+        <div className="glass-card p-3 text-sm flex flex-wrap items-center gap-x-3 gap-y-1" data-testid="po-source-prs">
+          <span className="font-medium">Dari {form.pr_ids.length} PR:</span>
+          {form.pr_ids.map(p => (
+            <Link key={p} to={`/procurement/pr/${p}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-primary hover:underline" data-testid={`po-source-pr-${p}`}>
+              PR {p.slice(0, 8)}
+            </Link>
+          ))}
         </div>
       )}
 
-      <div className="glass-card p-5" data-testid="po-lines-card">
+      <div className="glass-card p-4" data-testid="po-lines-card">
         <div className="flex items-center justify-between mb-3" data-testid="po-lines-toolbar">
-          <h3 className="font-semibold">Line Items</h3>
-          <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1" data-testid="po-add-line">
-            <Plus className="h-3.5 w-3.5" /> Tambah
+          <h3 className="text-sm md:text-base font-semibold">Item</h3>
+          <Button onClick={addLine} variant="outline" size="sm" data-testid="po-add-line">
+            <Plus /> Tambah item
           </Button>
         </div>
         <DataTable
@@ -423,8 +465,8 @@ export default function POForm() {
                         <span className="text-xs text-red-600 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" />Tidak tersedia dari vendor ini
                         </span>
-                        <Button size="sm" variant="ghost" className="h-5 text-xs text-blue-600 hover:text-blue-800 px-1" onClick={() => openAltVendor(i)}>
-                          Cari Alt. Vendor →
+                        <Button size="sm" variant="link" className="h-auto p-0 text-xs" onClick={() => openAltVendor(i)} data-testid={`po-line-alt-link-${i}`}>
+                          Cari vendor alternatif
                         </Button>
                       </div>
                     )}
@@ -446,20 +488,20 @@ export default function POForm() {
               } },
             { key: "qty", label: "Qty", numeric: true,
               render: (ln) => (
-                <Input type="number" min="0" value={ln.qty} onChange={e => setLine(ln._idx, "qty", e.target.value)}
+                <Input type="number" min="0" value={ln.qty} aria-label={`Qty baris ${ln._idx + 1}`} onChange={e => setLine(ln._idx, "qty", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-20" data-testid={`po-line-qty-${ln._idx}`} />
               ) },
             { key: "unit", label: "Unit",
               render: (ln) => (
-                <Input value={ln.unit} onChange={e => setLine(ln._idx, "unit", e.target.value)} className="glass-input h-9 w-20" data-testid={`po-line-unit-${ln._idx}`} />
+                <Input value={ln.unit} aria-label={`Unit baris ${ln._idx + 1}`} onChange={e => setLine(ln._idx, "unit", e.target.value)} className="glass-input h-9 w-20" data-testid={`po-line-unit-${ln._idx}`} />
               ) },
-            { key: "unit_cost", label: "Unit Cost", numeric: true,
+            { key: "unit_cost", label: "Harga satuan", numeric: true,
               render: (ln) => {
                 const i = ln._idx;
                 const vendorItem = ln.item_id ? vendorCatalog[ln.item_id] : null;
                 return (
                   <div className="relative group">
-                    <Input type="number" min="0" value={ln.unit_cost} onChange={e => setLine(i, "unit_cost", e.target.value)}
+                    <Input type="number" min="0" value={ln.unit_cost} aria-label={`Harga satuan baris ${i + 1}`} onChange={e => setLine(i, "unit_cost", e.target.value)}
                       className="glass-input h-9 text-right tabular-nums w-32" data-testid={`po-line-unit-cost-${i}`} />
                     {vendorItem?.last_unit_cost && (
                       <div className="absolute hidden group-hover:block z-50 bottom-full right-0 mb-1 w-56 bg-gray-900 text-white rounded-lg shadow-xl p-3 text-xs text-left">
@@ -486,14 +528,14 @@ export default function POForm() {
                   </div>
                 );
               } },
-            { key: "discount", label: "Disc", numeric: true,
+            { key: "discount", label: "Diskon", numeric: true,
               render: (ln) => (
-                <Input type="number" min="0" value={ln.discount} onChange={e => setLine(ln._idx, "discount", e.target.value)}
+                <Input type="number" min="0" value={ln.discount} aria-label={`Diskon baris ${ln._idx + 1}`} onChange={e => setLine(ln._idx, "discount", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-24" data-testid={`po-line-discount-${ln._idx}`} />
               ) },
-            { key: "tax_rate", label: "Tax%", numeric: true,
+            { key: "tax_rate", label: "Pajak", numeric: true,
               render: (ln) => (
-                <Input type="number" step="0.01" min="0" value={ln.tax_rate} onChange={e => setLine(ln._idx, "tax_rate", e.target.value)}
+                <Input type="number" step="0.01" min="0" value={ln.tax_rate} aria-label={`Tarif pajak baris ${ln._idx + 1}`} onChange={e => setLine(ln._idx, "tax_rate", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-20" data-testid={`po-line-tax-${ln._idx}`} />
               ) },
             { key: "subtotal", label: "Subtotal", numeric: true,
@@ -510,43 +552,50 @@ export default function POForm() {
             return (
               <div className="flex gap-1 justify-end">
                 {ln.item_id && form.vendor_id && !isUnavailable && (
-                  <button onClick={() => handleMarkUnavailable(i, ln.item_id)}
-                    className="h-9 w-9 rounded-lg hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-gray-400" title="Tandai tidak tersedia">
-                    <XCircle className="h-3.5 w-3.5" />
-                  </button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => handleMarkUnavailable(i, ln.item_id)}
+                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    title="Tandai tidak tersedia" aria-label={`Tandai item baris ${i + 1} tidak tersedia dari vendor`}
+                    data-testid={`po-line-unavailable-${i}`}>
+                    <XCircle />
+                  </Button>
                 )}
                 {ln.item_id && isUnavailable && (
-                  <button onClick={() => openAltVendor(i)}
-                    className="h-9 w-9 rounded-lg hover:bg-blue-50 hover:text-blue-500 flex items-center justify-center text-orange-500" title="Cari vendor alternatif">
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => openAltVendor(i)}
+                    className="text-orange-500"
+                    title="Cari vendor alternatif" aria-label={`Cari vendor alternatif untuk baris ${i + 1}`}
+                    data-testid={`po-line-alt-${i}`}>
+                    <ChevronRight />
+                  </Button>
                 )}
-                <button onClick={() => removeLine(i)} className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center" data-testid={`po-line-remove-${i}`}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                <Button variant="ghost" size="icon-sm" onClick={() => removeLine(i)}
+                  className="hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={`Hapus baris ${i + 1}`}
+                  data-testid={`po-line-remove-${i}`}>
+                  <Trash2 />
+                </Button>
               </div>
             );
           }}
         />
         <div className="mt-4 max-w-sm ml-auto space-y-1.5 text-sm" data-testid="po-totals">
           <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="tabular-nums" data-testid="po-subtotal">{fmtRp(totals.subtotal)}</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span className="tabular-nums" data-testid="po-tax">{fmtRp(totals.tax)}</span></div>
-          <div className="flex justify-between pt-2 border-t border-border/50 text-base font-bold"><span>Grand Total</span><span className="tabular-nums" data-testid="po-grand-total">{fmtRp(totals.grand)}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Pajak</span><span className="tabular-nums" data-testid="po-tax">{fmtRp(totals.tax)}</span></div>
+          <div className="flex justify-between pt-2 border-t border-border/50 text-base font-semibold"><span>Grand Total</span><span className="tabular-nums" data-testid="po-grand-total">{fmtRp(totals.grand)}</span></div>
         </div>
       </div>
 
-      <div className="glass-card p-5" data-testid="po-notes-card">
-        <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-        <Textarea value={form.notes}
+      <div className="glass-card p-4 space-y-1" data-testid="po-notes-card">
+        <Label htmlFor="po-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+        <Textarea id="po-notes" value={form.notes}
           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-          className="glass-input mt-1 min-h-[80px]" data-testid="po-notes" />
+          className="glass-input min-h-[80px]" data-testid="po-notes" />
       </div>
         </div>
         {/* /MAIN COLUMN */}
 
         {/* RIGHT COLUMN — Vendor Comparison Panel */}
-        <div className="xl:col-span-1">
-          <div className="xl:sticky xl:top-4">
+        <div className="2xl:col-span-1">
+          <div className="2xl:sticky 2xl:top-4">
             <VendorComparisonPanel
               itemIds={selectedItemIds}
               days={180}

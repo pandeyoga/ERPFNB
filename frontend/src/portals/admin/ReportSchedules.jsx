@@ -22,6 +22,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { confirmDialog } from "@/components/shared/confirmDialog";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
 
 const CHANNEL_ICONS = {
   email: <Mail className="h-4 w-4" />,
@@ -55,7 +57,7 @@ const BLANK = {
   enabled: true,
 };
 
-export default function ReportSchedules() {
+export default function ReportSchedules({ embedded = false }) {
   const [schedules, setSchedules] = useState([]);
   const [reportTypes, setReportTypes] = useState([]);
   const [runs, setRuns] = useState([]);
@@ -182,22 +184,28 @@ export default function ReportSchedules() {
     }
   };
 
+  const intro = "Kirim ringkasan otomatis via Email, Telegram, atau WhatsApp.";
+  const headerActions = (
+    <>
+      <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="report-schedules-refresh">
+        <RefreshCw className="h-4 w-4" />
+      </Button>
+      <Button onClick={openCreate} data-testid="create-schedule-btn">
+        <Plus className="h-4 w-4" />Tambah Jadwal
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-6 p-6" data-testid="report-schedules-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Laporan Terjadwal</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Kirim ringkasan otomatis via Email, Telegram, atau WhatsApp
-          </p>
+    <div className="space-y-3" data-testid="report-schedules-page">
+      {embedded ? (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-muted-foreground">{intro}</p>
+          <div className="flex gap-2">{headerActions}</div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={load} data-testid="report-schedules-refresh"><RefreshCw className="h-4 w-4" /></Button>
-          <Button onClick={openCreate} data-testid="create-schedule-btn">
-            <Plus className="h-4 w-4 mr-2" />Tambah Jadwal
-          </Button>
-        </div>
-      </div>
+      ) : (
+        <PageHeader icon={CalendarDays} title="Report Schedules" subtitle={intro} actions={headerActions} />
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList data-testid="report-schedules-tabs">
@@ -205,33 +213,33 @@ export default function ReportSchedules() {
           <TabsTrigger value="runs" data-testid="tab-runs">Riwayat Kirim ({runs.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="schedules" className="mt-4">
+        <TabsContent value="schedules">
           {loading ? (
             <div className="flex justify-center py-12" data-testid="schedules-loading">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : schedules.length === 0 ? (
             <Card data-testid="schedules-empty">
-              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <Bell className="h-10 w-10 text-muted-foreground/40" />
-                <p className="font-medium">Belum ada jadwal laporan</p>
-                <p className="text-sm text-muted-foreground">Klik "Tambah Jadwal" untuk mulai</p>
-                <Button onClick={openCreate} data-testid="schedules-empty-create-btn"><Plus className="h-4 w-4 mr-2" />Tambah Jadwal</Button>
-              </CardContent>
+              <EmptyState
+                icon={Bell}
+                title="Belum ada jadwal laporan"
+                description="Klik Tambah Jadwal untuk mulai mengirim laporan otomatis."
+                action={<Button onClick={openCreate} data-testid="schedules-empty-create-btn"><Plus className="h-4 w-4" />Tambah Jadwal</Button>}
+              />
             </Card>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-testid="schedules-grid">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="schedules-grid">
               {schedules.map(sched => (
                 <Card key={sched.id} className={`transition-opacity ${!sched.enabled ? "opacity-60" : ""}`} data-testid={`schedule-card-${sched.id}`}>
-                  <CardHeader className="pb-3">
+                  <CardHeader>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <CardTitle className="text-base truncate">{sched.name}</CardTitle>
+                        <CardTitle className="truncate">{sched.name}</CardTitle>
                         <CardDescription className="text-xs mt-0.5">
                           {reportTypes.find(rt => rt.id === sched.report_type)?.description || sched.report_type}
                         </CardDescription>
                       </div>
-                      <Switch checked={sched.enabled} onCheckedChange={() => handleToggle(sched)} data-testid={`schedule-toggle-${sched.id}`} />
+                      <Switch checked={sched.enabled} onCheckedChange={() => handleToggle(sched)} aria-label={sched.enabled ? "Nonaktifkan jadwal" : "Aktifkan jadwal"} data-testid={`schedule-toggle-${sched.id}`} />
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -265,19 +273,19 @@ export default function ReportSchedules() {
                     <Separator />
                     <div className="flex gap-1" data-testid={`schedule-actions-${sched.id}`}>
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => handlePreview(sched)} data-testid={`schedule-preview-${sched.id}`}>
-                        <Eye className="h-3.5 w-3.5 mr-1" />Preview
+                        <Eye className="h-3.5 w-3.5" />Preview
                       </Button>
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRunNow(sched)}
                         disabled={runningId === sched.id} data-testid={`schedule-run-${sched.id}`}>
                         {runningId === sched.id
-                          ? <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
-                          : <Play className="h-3.5 w-3.5 mr-1" />}
+                          ? <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          : <Play className="h-3.5 w-3.5" />}
                         Kirim Sekarang
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => openEdit(sched)} data-testid={`schedule-edit-${sched.id}`}>
+                      <Button size="icon-sm" variant="outline" onClick={() => openEdit(sched)} aria-label="Edit jadwal" title="Edit" data-testid={`schedule-edit-${sched.id}`}>
                         <Edit2 className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(sched.id)} data-testid={`schedule-delete-${sched.id}`}>
+                      <Button size="icon-sm" variant="destructive" onClick={() => handleDelete(sched.id)} aria-label="Hapus jadwal" title="Hapus" data-testid={`schedule-delete-${sched.id}`}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -288,7 +296,7 @@ export default function ReportSchedules() {
           )}
         </TabsContent>
 
-        <TabsContent value="runs" className="mt-4">
+        <TabsContent value="runs">
           <Card data-testid="runs-card">
             <CardContent className="p-0">
               <div className="divide-y">
@@ -321,14 +329,14 @@ export default function ReportSchedules() {
           <DialogHeader>
             <DialogTitle>{editId ? "Edit Jadwal" : "Tambah Jadwal Laporan"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label>Tipe Laporan *</Label>
+              <Label htmlFor="schedule-form-tipe-laporan">Tipe Laporan *</Label>
               <Select value={form.report_type} onValueChange={v => {
                 const rt = reportTypes.find(r => r.id === v);
                 setForm(f => ({ ...f, report_type: v, name: rt?.name || f.name, frequency: rt?.default_frequency || f.frequency, run_time: rt?.default_time || f.run_time }));
               }}>
-                <SelectTrigger data-testid="schedule-form-report-type"><SelectValue placeholder="Pilih tipe laporan..." /></SelectTrigger>
+                <SelectTrigger id="schedule-form-tipe-laporan" data-testid="schedule-form-report-type"><SelectValue placeholder="Pilih tipe laporan..." /></SelectTrigger>
                 <SelectContent>
                   {reportTypes.map(rt => (
                     <SelectItem key={rt.id} value={rt.id}>
@@ -343,15 +351,15 @@ export default function ReportSchedules() {
             </div>
 
             <div className="space-y-1">
-              <Label>Nama Jadwal</Label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Mis: Owner Daily Digest" data-testid="schedule-form-name" />
+              <Label htmlFor="schedule-form-nama-jadwal">Nama Jadwal</Label>
+              <Input id="schedule-form-nama-jadwal" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Mis: Owner Daily Digest" data-testid="schedule-form-name" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Frekuensi</Label>
+                <Label htmlFor="schedule-form-frekuensi">Frekuensi</Label>
                 <Select value={form.frequency} onValueChange={v => setForm(f => ({ ...f, frequency: v }))}>
-                  <SelectTrigger data-testid="schedule-form-frequency"><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="schedule-form-frekuensi" data-testid="schedule-form-frequency"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="daily">Harian</SelectItem>
                     <SelectItem value="weekly">Mingguan</SelectItem>
@@ -360,9 +368,9 @@ export default function ReportSchedules() {
               </div>
               {form.frequency === "weekly" && (
                 <div className="space-y-1">
-                  <Label>Hari</Label>
+                  <Label htmlFor="schedule-form-hari">Hari</Label>
                   <Select value={String(form.day_of_week ?? 0)} onValueChange={v => setForm(f => ({ ...f, day_of_week: Number(v) }))}>
-                    <SelectTrigger data-testid="schedule-form-day"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="schedule-form-hari" data-testid="schedule-form-day"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {DAY_NAMES.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}
                     </SelectContent>
@@ -370,15 +378,15 @@ export default function ReportSchedules() {
                 </div>
               )}
               <div className="space-y-1">
-                <Label>Jam Kirim (WIB)</Label>
-                <Input type="time" value={form.run_time} onChange={e => setForm(f => ({ ...f, run_time: e.target.value }))} data-testid="schedule-form-time" />
+                <Label htmlFor="schedule-form-jam-kirim">Jam Kirim (WIB)</Label>
+                <Input id="schedule-form-jam-kirim" type="time" value={form.run_time} onChange={e => setForm(f => ({ ...f, run_time: e.target.value }))} data-testid="schedule-form-time" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Channel</Label>
+              <Label htmlFor="schedule-form-channel">Channel</Label>
               <Select value={form.channel} onValueChange={v => setForm(f => ({ ...f, channel: v }))}>
-                <SelectTrigger data-testid="schedule-form-channel"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="schedule-form-channel" data-testid="schedule-form-channel"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">Email</SelectItem>
                   <SelectItem value="telegram">Telegram</SelectItem>
@@ -388,8 +396,8 @@ export default function ReportSchedules() {
             </div>
 
             <div className="space-y-1">
-              <Label>Penerima *</Label>
-              <Input
+              <Label htmlFor="schedule-form-penerima">Penerima *</Label>
+              <Input id="schedule-form-penerima"
                 value={form.recipients}
                 onChange={e => setForm(f => ({ ...f, recipients: e.target.value }))}
                 placeholder={form.channel === "email" ? "email@contoh.com, email2@contoh.com" : "chat_id atau nomor HP, pisahkan koma"}
@@ -399,14 +407,14 @@ export default function ReportSchedules() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Switch checked={form.enabled} onCheckedChange={v => setForm(f => ({ ...f, enabled: v }))} data-testid="schedule-form-enabled" />
-              <Label>Aktifkan jadwal ini</Label>
+              <Switch id="schedule-form-enabled" checked={form.enabled} onCheckedChange={v => setForm(f => ({ ...f, enabled: v }))} data-testid="schedule-form-enabled" />
+              <Label htmlFor="schedule-form-enabled">Aktifkan jadwal ini</Label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} data-testid="schedule-form-cancel">Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="schedule-form-save">
-              {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
+              {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
               {editId ? "Simpan Perubahan" : "Buat Jadwal"}
             </Button>
           </DialogFooter>
@@ -430,7 +438,7 @@ export default function ReportSchedules() {
                 </div>
                 <div className="rounded-md bg-muted/30 px-4 py-3">
                   <p className="text-xs font-medium text-muted-foreground mb-2">Isi Pesan (plain text)</p>
-                  <pre className="whitespace-pre-wrap text-sm font-mono" data-testid="schedule-preview-text">{previewData.text}</pre>
+                  <pre className="whitespace-pre-wrap text-sm font-sans" data-testid="schedule-preview-text">{previewData.text}</pre>
                 </div>
               </div>
             </ScrollArea>

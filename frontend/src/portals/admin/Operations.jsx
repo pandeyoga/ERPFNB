@@ -1,7 +1,15 @@
-import { useLocation, Link, Navigate } from "react-router-dom";
-import { Activity, ScrollText as LogIcon, Calendar as CalIcon, Archive as ArchiveIcon, Gauge, CalendarClock, Database, MousePointerClick } from "lucide-react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+/** Operations — hub "Monitoring" (nav Admin › Monitoring).
+ *
+ * UI pass: PageHeader (satu-satunya <h1>, judul = nama nav "Monitoring") + Tabs terpadu
+ * yang di-route per sub-path (/admin/operations/<tab>). Sub-halaman yang juga punya
+ * route mandiri (ReportSchedules, DataManagement, TourAnalytics) dirender dengan
+ * `embedded` agar tidak menampilkan judul halaman kedua.
+ * data-testid lama (operations-tab-<label lama>, operations-content-<label lama>) dipertahankan.
+ */
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { Activity } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
 
 import MetricsView from "./operations/MetricsView";
 import LogsView from "./operations/LogsView";
@@ -13,86 +21,63 @@ import DataManagement from "./DataManagement";
 import TourAnalytics from "./TourAnalytics";
 
 const SUB_PAGES = [
-  { path: "", exact: true, label: "Metrics", icon: Gauge, render: () => <MetricsView /> },
-  { path: "logs", label: "Logs", icon: LogIcon, render: () => <LogsView /> },
-  { path: "scheduler", label: "Scheduler", icon: CalIcon, render: () => <SchedulerView /> },
-  { path: "archival", label: "Archival", icon: ArchiveIcon, render: () => <ArchivalView /> },
-  { path: "rate-limits", label: "Rate Limits", icon: Activity, render: () => <RateLimitsView /> },
-  { path: "report-schedules", label: "Laporan Terjadwal", icon: CalendarClock, render: () => <ReportSchedules /> },
-  { path: "data-management", label: "Manajemen Data", icon: Database, render: () => <DataManagement /> },
-  { path: "tour-analytics", label: "Tour Analytics", icon: MousePointerClick, render: () => <TourAnalytics /> },
+  { path: "", exact: true, label: "Metrics", tid: "metrics", render: () => <MetricsView /> },
+  { path: "logs", label: "Logs", tid: "logs", render: () => <LogsView /> },
+  { path: "scheduler", label: "Scheduler", tid: "scheduler", render: () => <SchedulerView /> },
+  { path: "archival", label: "Archival", tid: "archival", render: () => <ArchivalView /> },
+  { path: "rate-limits", label: "Rate limits", tid: "rate-limits", render: () => <RateLimitsView /> },
+  { path: "report-schedules", label: "Report schedules", tid: "laporan-terjadwal", render: () => <ReportSchedules embedded /> },
+  { path: "data-management", label: "Data management", tid: "manajemen-data", render: () => <DataManagement embedded /> },
+  { path: "tour-analytics", label: "Tour analytics", tid: "tour-analytics", render: () => <TourAnalytics embedded /> },
 ];
 
 export default function Operations() {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+
   // Match /admin/operations or /admin/operations/xxx
   const match = location.pathname.match(/^\/admin\/operations\/?(.*)$/);
-  const subPath = match ? match[1] : "";
-  
-  // Find active page
-  const activePage = SUB_PAGES.find(p => {
-    if (p.exact) return subPath === "";
-    return subPath === p.path;
-  });
+  const subPath = match ? match[1].replace(/\/$/, "") : "";
+
+  const activePage = SUB_PAGES.find(p => (p.exact ? subPath === "" : subPath === p.path));
 
   // Redirect to default if no match
   if (!activePage) {
     return <Navigate to="/admin/operations" replace />;
   }
 
+  const tabValue = activePage.path || "index";
+
   return (
-    <div className="space-y-5" data-testid="operations-page">
-      {/* SubNav Tabs */}
-      <div className="glass-card overflow-hidden">
-        <div className="px-5 pt-4 pb-0 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl grad-aurora-soft flex items-center justify-center">
-            <Gauge className="h-4 w-4" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-base font-semibold leading-tight">Operations & Monitoring</h2>
-            <p className="text-[11px] text-muted-foreground">
-              System metrics, logs, scheduler, dan archival management
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 px-3 pt-3 -mb-px overflow-x-auto border-b border-border/40" role="tablist">
-          {SUB_PAGES.map((page) => {
-            const isActive = activePage.path === page.path;
-            const Icon = page.icon;
-            const targetPath = page.exact ? "/admin/operations" : `/admin/operations/${page.path}`;
-            
-            return (
-              <Link
-                key={page.path || "index"}
-                to={targetPath}
-                role="tab"
-                aria-selected={isActive}
-                className={cn(
-                  "relative inline-flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-                data-testid={`operations-tab-${page.label.toLowerCase().replace(/\s+/g, "-")}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{page.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="operations-tab-underline"
-                    className="absolute inset-x-0 -bottom-px h-0.5 bg-foreground"
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+    <div data-testid="operations-page">
+      <PageHeader
+        icon={Activity}
+        title="Monitoring"
+        subtitle="Metrics, logs, scheduler, archival, rate limit, laporan terjadwal, manajemen data, dan tour analytics."
+      />
+
+      <Tabs
+        value={tabValue}
+        onValueChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
+      >
+        <TabsList data-testid="operations-tabs">
+          {SUB_PAGES.map((page) => (
+            <TabsTrigger
+              key={page.path || "index"}
+              value={page.path || "index"}
+              data-testid={`operations-tab-${page.tid}`}
+            >
+              {page.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Render active component with key to force remount on navigation */}
-      <div 
-        key={activePage.path || "index"}
-        data-testid={`operations-content-${activePage.label.toLowerCase().replace(/\s+/g, "-")}`}
+      <div
+        key={tabValue}
+        className="mt-3"
+        data-testid={`operations-content-${activePage.tid}`}
       >
         {activePage.render()}
       </div>

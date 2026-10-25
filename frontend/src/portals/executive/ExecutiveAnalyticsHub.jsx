@@ -2,20 +2,24 @@
  * ExecutiveAnalyticsHub — Unified executive performance analytics (plan.md Phase 2g).
  * Brand Mix + Profit Walk + Period Compare in one tabbed page so the Executive
  * sidebar stays <=12 items. URL param: ?tab=brand (default).
+ *
+ * Halaman tab dirender dengan prop `embedded` → mereka tidak menampilkan <h1>
+ * sendiri (hanya satu PageHeader per halaman).
  */
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Star, TrendingUp, GitCompareArrows, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Star, TrendingUp, GitCompareArrows, LineChart } from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import BrandMixOverview from "./BrandMixOverview";
 import ProfitWalk from "./ProfitWalk";
 import PeriodCompare from "./PeriodCompare";
 
 const TABS = [
-  { id: "brand",          label: "Brand Mix",      short: "Brand",   icon: Star,             component: BrandMixOverview },
-  { id: "profit-walk",    label: "Profit Walk",    short: "Profit",  icon: TrendingUp,       component: ProfitWalk },
-  { id: "period-compare", label: "Period Compare", short: "Compare", icon: GitCompareArrows, component: PeriodCompare },
+  { id: "brand",          label: "Brand Mix",      icon: Star,             component: BrandMixOverview },
+  { id: "profit-walk",    label: "Profit Walk",    icon: TrendingUp,       component: ProfitWalk },
+  { id: "period-compare", label: "Period Compare", icon: GitCompareArrows, component: PeriodCompare },
 ];
 
 export default function ExecutiveAnalyticsHub() {
@@ -32,52 +36,41 @@ export default function ExecutiveAnalyticsHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const ActiveComponent = TABS.find(t => t.id === activeTab)?.component || TABS[0].component;
+  const current = TABS.find(t => t.id === activeTab) || TABS[0];
 
   return (
-    <div className="space-y-0" data-testid="executive-analytics-hub">
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-bold">Performance Analytics</h2>
-        <div className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
-          <span className="text-muted-foreground/60">Analytics</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium">{TABS.find(t => t.id === activeTab)?.label}</span>
+    <div className="space-y-3 lg:space-y-4" data-testid="executive-analytics-hub">
+      <PageHeader
+        icon={LineChart}
+        title="Performance Analytics"
+        subtitle="Brand mix, profit walk & perbandingan periode untuk seluruh group"
+        className="mb-0 md:mb-0"
+      />
+
+      <Tabs value={current.id} onValueChange={handleTabChange}>
+        <TabsList data-testid="exec-analytics-tabs">
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.id} value={tab.id} data-testid={`exec-analytics-tab-${tab.id}`}>
+                <Icon /> {tab.label}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        <div data-testid="exec-analytics-content">
+          {/* Radix hanya me-mount TabsContent yang aktif */}
+          {TABS.map(tab => {
+            const Comp = tab.component;
+            return (
+              <TabsContent key={tab.id} value={tab.id}>
+                <Comp embedded />
+              </TabsContent>
+            );
+          })}
         </div>
-      </div>
-
-      <div
-        className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-border/50 mb-5"
-        data-testid="exec-analytics-tabs"
-        role="tablist"
-      >
-        {TABS.map(tab => {
-          const Icon = tab.icon;
-          const active = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={active}
-              data-testid={`exec-analytics-tab-${tab.id}`}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-all whitespace-nowrap",
-                active
-                  ? "border-aurora text-aurora bg-aurora/5"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-foreground/5",
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.short}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div data-testid="exec-analytics-content" role="tabpanel">
-        <ActiveComponent />
-      </div>
+      </Tabs>
     </div>
   );
 }

@@ -40,7 +40,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
         toast.warning("Tidak ada akun di-update, lihat detail error");
       }
     } catch (e) {
-      toast.error(e?.response?.data?.errors?.[0]?.message || "Upload gagal");
+      toast.error(e?.response?.data?.errors?.[0]?.message || "Unggah gagal");
     } finally {
       setBusy(false);
     }
@@ -60,7 +60,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-4 w-4" /> Upload Cash Balance CSV
+            <FileSpreadsheet className="h-4 w-4" /> Unggah CSV Saldo Kas
           </DialogTitle>
         </DialogHeader>
 
@@ -70,16 +70,19 @@ export default function CashCsvUploader({ onClose, onDone }) {
               <div className="text-xs text-muted-foreground">
                 Format: <code className="text-foreground">account_code,balance,recorded_at(opt),notes(opt)</code>
               </div>
-              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-1">
-                <Download className="h-3 w-3" /> Download Template
+              <Button variant="outline" size="sm" onClick={downloadTemplate} data-testid="cash-csv-template">
+                <Download /> Unduh template
               </Button>
               <div className="border-2 border-dashed rounded-lg p-4 text-center">
                 <Upload className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
+                <label htmlFor="cash-csv-file" className="block text-sm font-medium mb-1.5">Pilih file CSV *</label>
                 <input
+                  id="cash-csv-file"
                   type="file"
                   accept=".csv"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="text-sm"
+                  className="text-sm file:mr-3 file:h-8 file:px-3 file:rounded-md file:border file:border-border file:bg-transparent file:text-sm file:font-medium"
+                  data-testid="cash-csv-file"
                 />
                 {file && (
                   <div className="mt-2 text-xs font-medium">{file.name} ({(file.size / 1024).toFixed(1)} KB)</div>
@@ -89,7 +92,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>Batal</Button>
               <Button onClick={upload} disabled={!file || busy}>
-                {busy ? "Memproses…" : "Upload & Apply"}
+                {busy ? "Memproses…" : "Unggah & terapkan"}
               </Button>
             </DialogFooter>
           </>
@@ -122,8 +125,8 @@ export default function CashCsvUploader({ onClose, onDone }) {
                   columns={[
                     { key: "row", label: "Row", primary: true },
                     { key: "code", label: "Code" },
-                    { key: "prev", label: "Prev", numeric: true, render: (r) => <span className="font-mono">{fmtRp(r.prev)}</span> },
-                    { key: "new", label: "New", numeric: true, render: (r) => <span className="font-mono font-semibold">{fmtRp(r.new)}</span> },
+                    { key: "prev", label: "Sebelumnya", numeric: true, render: (r) => <span className="font-mono">{fmtRp(r.prev)}</span> },
+                    { key: "new", label: "Baru", numeric: true, render: (r) => <span className="font-mono font-semibold">{fmtRp(r.new)}</span> },
                     { key: "delta", label: "Delta", numeric: true, render: (r) => (
                       <span className={cn("font-mono", r.delta > 0 ? "text-emerald-600" : r.delta < 0 ? "text-rose-600" : "")}>
                         {r.delta > 0 ? "+" : ""}{fmtRp(r.delta)}
@@ -144,7 +147,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
               </div>
             )}
             <DialogFooter>
-              <Button onClick={() => { setResult(null); setFile(null); }}>Upload Lagi</Button>
+              <Button onClick={() => { setResult(null); setFile(null); }}>Unggah lagi</Button>
               <Button variant="default" onClick={onDone}>Selesai</Button>
             </DialogFooter>
           </>

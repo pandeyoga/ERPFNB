@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 
 export default function VendorAutocomplete({
   value, onChange, onSelect, placeholder = "Cari vendor…", className, dataTestId,
+  // id / ariaLabel diteruskan ke <Input> agar bisa dihubungkan dengan <Label htmlFor>.
+  id, ariaLabel,
 }) {
   const [query, setQuery] = useState(value || "");
   const [results, setResults] = useState([]);
@@ -44,6 +46,9 @@ export default function VendorAutocomplete({
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
         className="glass-input"
+        id={id}
+        aria-label={ariaLabel}
+        autoComplete="off"
         data-testid={dataTestId}
       />
       {open && (results.length > 0 || loading) && (

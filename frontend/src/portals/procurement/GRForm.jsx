@@ -4,12 +4,13 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, PackageOpen } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import PageHeader from "@/components/shared/PageHeader";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import VendorAutocomplete from "@/components/shared/VendorAutocomplete";
 import DataTable from "@/components/shared/DataTable";
@@ -82,11 +83,17 @@ export default function GRForm() {
               if (l.po_line_index != null) received[l.po_line_index] = (received[l.po_line_index] || 0) + Number(l.qty_received || 0);
             }));
         } catch { /* ignore */ }
+        // Nama vendor untuk field vendor yang terkunci (dokumen PO hanya menyimpan vendor_id)
+        let vendorName = po.vendor_name || "";
+        if (!vendorName && po.vendor_id) {
+          try { vendorName = unwrap(await api.get(`/master/vendors/${po.vendor_id}`))?.name || ""; } catch { /* ignore */ }
+        }
         setPoInfo(po);
         setForm(f => ({
           ...f,
           po_id: po.id,
           vendor_id: po.vendor_id,
+          vendor_name: vendorName,
           outlet_id: po.outlet_id || "",
           payment_terms_days: po.payment_terms_days || 30,
           tax_rate: (po.lines || [])[0]?.tax_rate || 0,
@@ -165,20 +172,29 @@ export default function GRForm() {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-testid="gr-form-page">
-      <div className="flex items-center gap-3 flex-wrap" data-testid="gr-form-header">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2" data-testid="gr-form-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
+    <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto" data-testid="gr-form-page">
+      <div data-testid="gr-form-header">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 mb-1" data-testid="gr-form-back">
+          <ArrowLeft /> Kembali
         </Button>
-        <h2 className="text-xl font-bold">Posting Goods Receipt</h2>
-        {poInfo && (
-          <span className="text-xs px-2 py-1 rounded-full glass-input" data-testid="gr-form-po-badge">PO {poInfo.doc_no || poInfo.id.slice(0, 8)}</span>
-        )}
-        <div className="ml-auto">
-          <Button onClick={save} disabled={saving || periodLocked} className="rounded-full pill-active gap-2" data-testid="gr-save">
-            <Save className="h-4 w-4" /> {saving ? "…" : "Post GR"}
-          </Button>
-        </div>
+        <PageHeader
+          icon={PackageOpen}
+          title="Posting Goods Receipt"
+          subtitle={poInfo ? undefined : "Catat barang yang diterima dari vendor. Stok & jurnal AP terbentuk otomatis."}
+          className="mb-0 md:mb-0"
+          testId="gr-form-page-header"
+          actions={
+            <Button onClick={save} disabled={saving || periodLocked} data-testid="gr-save">
+              <Save /> {saving ? "Memposting…" : "Posting GR"}
+            </Button>
+          }
+        >
+          {poInfo && (
+            <span className="inline-flex items-center text-xs px-2 py-1 rounded-full glass-input" data-testid="gr-form-po-badge">
+              Dari PO {poInfo.doc_no || poInfo.id.slice(0, 8)}
+            </span>
+          )}
+        </PageHeader>
       </div>
 
       <PeriodLockBanner
@@ -187,11 +203,11 @@ export default function GRForm() {
         onLockState={({ locked, closed }) => setPeriodLocked(locked || closed)}
       />
 
-      <div className="glass-card p-5 grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="gr-form-header-card">
-        <div className="md:col-span-2">
-          <Label className="text-xs uppercase text-muted-foreground">Vendor *</Label>
+      <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4" data-testid="gr-form-header-card">
+        <div className="md:col-span-2 space-y-1">
+          <Label htmlFor="gr-vendor-input" className="text-xs md:text-sm font-medium">Vendor *</Label>
           {fromPO ? (
-            <Input disabled value={form.vendor_name || form.vendor_id} className="glass-input mt-1" data-testid="gr-vendor-locked" />
+            <Input id="gr-vendor-input" disabled value={form.vendor_name || (loadingPO ? "Memuat…" : "—")} className="glass-input" data-testid="gr-vendor-locked" />
           ) : (
             <VendorAutocomplete
               value={form.vendor_name}
@@ -202,62 +218,61 @@ export default function GRForm() {
             />
           )}
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Outlet (destinasi) *</Label>
-          <div className="mt-1">
-            <OutletScopePicker
-              value={form.outlet_id}
-              onChange={(id) => {
-                setOutletId(id);
-                setForm(f => ({ ...f, outlet_id: id }));
-              }}
-              outlets={scopedOutlets}
-              isFullAccess={isFullAccess}
-              allowAll={false}
-              placeholder="-- pilih outlet --"
-              data-testid="gr-outlet"
-            />
-          </div>
+        <div className="space-y-1">
+          <Label className="text-xs md:text-sm font-medium">Outlet tujuan *</Label>
+          <OutletScopePicker
+            value={form.outlet_id}
+            onChange={(id) => {
+              setOutletId(id);
+              setForm(f => ({ ...f, outlet_id: id }));
+            }}
+            outlets={scopedOutlets}
+            isFullAccess={isFullAccess}
+            allowAll={false}
+            placeholder="Pilih outlet"
+            className="[&>button]:min-w-0 [&>button]:flex-1"
+            data-testid="gr-outlet"
+          />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Receive Date</Label>
-          <Input type="date" value={form.receive_date}
+        <div className="space-y-1">
+          <Label htmlFor="gr-receive-date" className="text-xs md:text-sm font-medium">Tanggal terima</Label>
+          <Input id="gr-receive-date" type="date" value={form.receive_date}
             onChange={e => setForm(f => ({ ...f, receive_date: e.target.value }))}
-            className="glass-input mt-1" data-testid="gr-receive-date" />
+            className="glass-input" data-testid="gr-receive-date" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Invoice No</Label>
-          <Input value={form.invoice_no}
+        <div className="space-y-1">
+          <Label htmlFor="gr-invoice-no" className="text-xs md:text-sm font-medium">No. invoice</Label>
+          <Input id="gr-invoice-no" value={form.invoice_no}
             onChange={e => setForm(f => ({ ...f, invoice_no: e.target.value }))}
             placeholder="INV-2026-001"
-            className="glass-input mt-1" data-testid="gr-invoice-no" />
+            className="glass-input" data-testid="gr-invoice-no" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Invoice Date</Label>
-          <Input type="date" value={form.invoice_date}
+        <div className="space-y-1">
+          <Label htmlFor="gr-invoice-date" className="text-xs md:text-sm font-medium">Tanggal invoice</Label>
+          <Input id="gr-invoice-date" type="date" value={form.invoice_date}
             onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))}
-            className="glass-input mt-1" data-testid="gr-invoice-date" />
+            className="glass-input" data-testid="gr-invoice-date" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Tax Rate (e.g. 0.11)</Label>
-          <Input type="number" step="0.01" min="0" value={form.tax_rate}
+        <div className="space-y-1">
+          <Label htmlFor="gr-tax-rate" className="text-xs md:text-sm font-medium">Tarif pajak (desimal, mis. 0.11)</Label>
+          <Input id="gr-tax-rate" type="number" step="0.01" min="0" value={form.tax_rate}
             onChange={e => setForm(f => ({ ...f, tax_rate: e.target.value }))}
-            className="glass-input mt-1" data-testid="gr-tax-rate" />
+            className="glass-input" data-testid="gr-tax-rate" />
         </div>
-        <div>
-          <Label className="text-xs uppercase text-muted-foreground">Payment Terms (hari)</Label>
-          <Input type="number" min="0" value={form.payment_terms_days}
+        <div className="space-y-1">
+          <Label htmlFor="gr-terms-days" className="text-xs md:text-sm font-medium">Termin pembayaran (hari)</Label>
+          <Input id="gr-terms-days" type="number" min="0" value={form.payment_terms_days}
             onChange={e => setForm(f => ({ ...f, payment_terms_days: e.target.value }))}
-            className="glass-input mt-1" data-testid="gr-terms-days" />
+            className="glass-input" data-testid="gr-terms-days" />
         </div>
       </div>
 
-      <div className="glass-card p-5" data-testid="gr-lines-card">
+      <div className="glass-card p-4" data-testid="gr-lines-card">
         <div className="flex items-center justify-between mb-3" data-testid="gr-lines-toolbar">
-          <h3 className="font-semibold">Line Items {fromPO && <span className="text-xs text-muted-foreground">(prefilled dari PO)</span>}</h3>
+          <h3 className="text-sm md:text-base font-semibold">Item diterima {fromPO && <span className="text-xs font-normal text-muted-foreground">(dari PO)</span>}</h3>
           {!fromPO && (
-            <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1" data-testid="gr-add-line">
-              <Plus className="h-3.5 w-3.5" /> Tambah
+            <Button onClick={addLine} variant="outline" size="sm" data-testid="gr-add-line">
+              <Plus /> Tambah item
             </Button>
           )}
         </div>
@@ -294,15 +309,17 @@ export default function GRForm() {
                 const variance = Number(ln.qty_ordered || 0) - Number(ln.qty_received || 0);
                 return (
                   <Input type="number" min="0" value={ln.qty_received}
+                    aria-label={`Qty diterima baris ${ln._idx + 1}`}
                     onChange={e => setLine(ln._idx, "qty_received", e.target.value)}
                     className={`glass-input h-9 text-right tabular-nums w-24 ${variance !== 0 ? "ring-1 ring-amber-500/50" : ""}`}
                     data-testid={`gr-line-qty-${ln._idx}`} />
                 );
               } },
             { key: "unit", label: "Unit", render: (ln) => <span className="text-muted-foreground">{ln.unit}</span> },
-            { key: "unit_cost", label: "Unit Cost", numeric: true,
+            { key: "unit_cost", label: "Harga satuan", numeric: true,
               render: (ln) => (
                 <Input type="number" min="0" value={ln.unit_cost}
+                  aria-label={`Harga satuan baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "unit_cost", e.target.value)}
                   className="glass-input h-9 text-right tabular-nums w-32" data-testid={`gr-line-cost-${ln._idx}`} />
               ) },
@@ -311,32 +328,35 @@ export default function GRForm() {
                 const total = Number(ln.qty_received || 0) * Number(ln.unit_cost || 0);
                 return <span className="font-medium" data-testid={`gr-line-total-${ln._idx}`}>{fmtRp(total)}</span>;
               } },
-            { key: "note", label: "Note",
+            { key: "note", label: "Catatan",
               render: (ln) => (
                 <Input value={ln.condition_note || ""}
+                  aria-label={`Catatan kondisi baris ${ln._idx + 1}`}
                   onChange={e => setLine(ln._idx, "condition_note", e.target.value)}
-                  className="glass-input h-9" placeholder="e.g. rusak ringan" data-testid={`gr-line-note-${ln._idx}`} />
+                  className="glass-input h-9" placeholder="mis. rusak ringan" data-testid={`gr-line-note-${ln._idx}`} />
               ) },
           ]}
           rowAction={(ln) => !fromPO ? (
-            <button onClick={() => removeLine(ln._idx)} className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center"
+            <Button variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)}
+              className="hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`Hapus baris ${ln._idx + 1}`}
               data-testid={`gr-line-remove-${ln._idx}`}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+              <Trash2 />
+            </Button>
           ) : null}
         />
         <div className="mt-3 max-w-sm ml-auto space-y-1 text-sm" data-testid="gr-totals">
           <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="tabular-nums" data-testid="gr-subtotal">{fmtRp(totals.subtotal)}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Tax ({(Number(form.tax_rate) * 100).toFixed(1)}%)</span><span className="tabular-nums" data-testid="gr-tax-amount">{fmtRp(totals.tax)}</span></div>
-          <div className="flex justify-between pt-2 border-t border-border/50 text-base font-bold"><span>Grand Total</span><span className="tabular-nums" data-testid="gr-grand-total">{fmtRp(totals.grand)}</span></div>
+          <div className="flex justify-between pt-2 border-t border-border/50 text-base font-semibold"><span>Grand Total</span><span className="tabular-nums" data-testid="gr-grand-total">{fmtRp(totals.grand)}</span></div>
         </div>
       </div>
 
-      <div className="glass-card p-5" data-testid="gr-notes-card">
-        <Label className="text-xs uppercase text-muted-foreground">Catatan</Label>
-        <Textarea value={form.notes}
+      <div className="glass-card p-4 space-y-1" data-testid="gr-notes-card">
+        <Label htmlFor="gr-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+        <Textarea id="gr-notes" value={form.notes}
           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-          className="glass-input mt-1 min-h-[80px]" data-testid="gr-notes" />
+          className="glass-input min-h-[80px]" data-testid="gr-notes" />
       </div>
     </div>
   );

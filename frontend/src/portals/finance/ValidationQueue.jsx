@@ -1,17 +1,17 @@
 /** Sales Validation Queue — Finance approves submitted DS → generates JE. */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ClipboardCheck, CheckCircle2, XCircle, Eye, Clock } from "lucide-react";
+import { ClipboardCheck, CheckCircle2, XCircle, Eye, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
-import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, fmtRelative } from "@/lib/format";
 import { toast } from "sonner";
 import { confirmDialog } from "@/components/shared/confirmDialog";
@@ -32,21 +32,21 @@ export default function ValidationQueue() {
       setItems(unwrap(res) || []);
       setMeta(res.data?.meta || {});
     } catch (e) {
-      toast.error("Gagal load validation queue");
+      toast.error("Gagal memuat antrian validasi");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [page]);
 
   async function validate(ds) {
     if (actingId) return; // RC-12/POS-03: one in-flight action at a time (no double-posting)
-    if (!(await confirmDialog(`Validate daily sales ${fmtDate(ds.sales_date)} di ${ds.outlet_name}? Jurnal akan dibuat.`))) return;
+    if (!(await confirmDialog(`Validasi daily sales ${fmtDate(ds.sales_date)} di ${ds.outlet_name}? Jurnal akan dibuat.`))) return;
     setActingId(ds.id);
     try {
       await api.post(`/outlet/daily-sales/${ds.id}/validate`);
-      toast.success("Validated. Jurnal dibuat.");
+      toast.success("Daily sales tervalidasi. Jurnal dibuat.");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal validate");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal memvalidasi");
     } finally {
       setActingId(null);
     }
@@ -58,11 +58,11 @@ export default function ValidationQueue() {
     setActingId(reject.id);
     try {
       await api.post(`/outlet/daily-sales/${reject.id}/reject`, { reason });
-      toast.success("Rejected. Outlet manager akan diberi tahu.");
+      toast.success("Daily sales ditolak. Outlet manager akan diberi tahu.");
       setReject(null); setReason("");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal reject");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menolak");
     } finally {
       setActingId(null);
     }
@@ -71,17 +71,18 @@ export default function ValidationQueue() {
   const totalPages = Math.max(1, Math.ceil((meta.total || 0) / (meta.per_page || 50)));
 
   return (
-    <div data-testid="validation-queue-page" className="space-y-4">
-      <div data-testid="vq-header-card" className="glass-card p-4 flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">Sales Validation Queue</h3>
-          <p className="text-xs text-muted-foreground">
-            Daily sales yang submitted dari outlet. Validate untuk meng-generate jurnal.
-          </p>
-        </div>
-        <div className="text-sm font-semibold tabular-nums">
-          {meta.total} pending
-        </div>
+    <div data-testid="validation-queue-page" className="space-y-3 lg:space-y-4">
+      <div data-testid="vq-header-card">
+        <PageHeader
+          icon={ClipboardCheck}
+          title="Sales Validation"
+          subtitle="Daily sales yang sudah di-submit outlet. Validasi untuk membuat jurnal otomatis, atau tolak agar outlet memperbaiki."
+          actions={
+            <span className="inline-flex items-center h-8 px-3 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-semibold tabular-nums" data-testid="vq-pending-count">
+              {meta.total || 0} menunggu
+            </span>
+          }
+        />
       </div>
 
       <div data-testid="vq-table-card" className="glass-card overflow-hidden">
@@ -99,7 +100,7 @@ export default function ValidationQueue() {
               render: (ds) => <span className="font-semibold">{fmtRp(ds.grand_total || 0)}</span> },
             { key: "transaction_count", label: "Trx", numeric: true,
               render: (ds) => <span className="text-muted-foreground">{ds.transaction_count || 0}</span> },
-            { key: "submitted_at", label: "Submitted",
+            { key: "submitted_at", label: "Diajukan",
               render: (ds) => (
                 <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                   <Clock className="h-3 w-3" />{ds.submitted_at ? fmtRelative(ds.submitted_at) : "—"}
@@ -108,42 +109,51 @@ export default function ValidationQueue() {
           ]}
           rowAction={(ds) => (
             <div className="inline-flex items-center gap-1.5">
-              <Link to={`/outlet/daily-sales/${ds.id}`} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-full glass-input" data-testid={`fin-vq-view-${ds.id}`}>
-                <Eye className="h-3 w-3" /> Detail
-              </Link>
-              <Button onClick={() => setReject(ds)} size="sm" variant="outline" className="rounded-full gap-1 h-7 px-3 text-red-600 hover:bg-red-500/10" data-testid={`fin-vq-reject-${ds.id}`}>
-                <XCircle className="h-3 w-3" /> Reject
+              <Button asChild size="sm" variant="ghost">
+                <Link to={`/outlet/daily-sales/${ds.id}`} data-testid={`fin-vq-view-${ds.id}`}>
+                  <Eye className="h-3.5 w-3.5" /> Detail
+                </Link>
               </Button>
-              <Button onClick={() => validate(ds)} disabled={!!actingId} size="sm" className="rounded-full pill-active gap-1 h-7 px-3" data-testid={`fin-vq-validate-${ds.id}`}>
-                <CheckCircle2 className="h-3 w-3" /> Validate
+              <Button onClick={() => setReject(ds)} size="sm" variant="outline" className="text-red-600 hover:text-red-700" data-testid={`fin-vq-reject-${ds.id}`}>
+                <XCircle className="h-3.5 w-3.5" /> Tolak
+              </Button>
+              <Button onClick={() => validate(ds)} disabled={!!actingId} size="sm" data-testid={`fin-vq-validate-${ds.id}`}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> Validasi
               </Button>
             </div>
           )}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="vq-pagination">
             <span>Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Prev</button>
-              <span className="px-2 py-1">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} aria-label="Halaman sebelumnya" data-testid="vq-page-prev">
+                <ChevronLeft className="h-4 w-4" />Sebelumnya
+              </Button>
+              <span className="px-1 tabular-nums">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} aria-label="Halaman berikutnya" data-testid="vq-page-next">
+                Berikutnya<ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}
       </div>
 
       <Dialog open={!!reject} onOpenChange={(o) => !o && setReject(null)}>
-        <DialogContent data-testid="vq-reject-dialog" className="glass-card max-w-md">
+        <DialogContent data-testid="vq-reject-dialog" className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Reject Daily Sales?</DialogTitle>
+            <DialogTitle>Tolak daily sales?</DialogTitle>
             <DialogDescription>
               {reject ? `${fmtDate(reject.sales_date)} · ${reject.outlet_name} · ${fmtRp(reject.grand_total || 0)}` : ""}
             </DialogDescription>
           </DialogHeader>
-          <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Alasan reject (mis: total pembayaran tidak balance)" className="glass-input min-h-[100px]" data-testid="fin-vq-reject-reason" />
+          <div className="space-y-1.5">
+            <Label htmlFor="fin-vq-reject-reason">Alasan penolakan <span className="text-red-500">*</span></Label>
+            <Textarea id="fin-vq-reject-reason" value={reason} onChange={e => setReason(e.target.value)} placeholder="Mis: total pembayaran tidak balance" className="glass-input min-h-[100px]" data-testid="fin-vq-reject-reason" />
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReject(null)}>Batal</Button>
-            <Button onClick={rejectSubmit} className="pill-active" data-testid="fin-vq-reject-confirm">Reject</Button>
+            <Button variant="outline" onClick={() => setReject(null)} data-testid="fin-vq-reject-cancel">Batal</Button>
+            <Button onClick={rejectSubmit} variant="destructive" disabled={!reason.trim() || !!actingId} data-testid="fin-vq-reject-confirm">Tolak</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

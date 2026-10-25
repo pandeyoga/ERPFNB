@@ -36,7 +36,7 @@ const SUGGESTIONS_EXEC = [
   "Berapa item yang stoknya di bawah par?",
 ];
 
-export default function ConversationalQA({ scopeLabel, showKpi = true, collapsible = false }) {
+export default function ConversationalQA({ scopeLabel, showKpi = true, collapsible = false, hideHeader = false }) {
   const { user, can } = useAuth();
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState([]);
@@ -129,10 +129,10 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
         </span>
       </button>
     ) : (
-    <div className={cn("glass-card p-4 flex flex-col", collapsible ? "h-[460px]" : "h-[560px]")} data-testid="exec-qa">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h3 className="font-semibold inline-flex items-center gap-2">
+    <div className={cn("glass-card p-4 flex flex-col", collapsible ? "h-[340px] max-h-[45vh] min-h-[300px]" : "h-[calc(100vh-180px)] min-h-[420px]")} data-testid="exec-qa">
+      <div className={cn("flex items-center justify-between mb-3", hideHeader && "justify-end")}>
+        <div className={cn(hideHeader && "hidden")}>
+          <h3 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-violet-500" /> Asisten AI {scopeLabel || "Eksekutif"}
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -142,14 +142,14 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
         <div className="flex items-center gap-2">
           {history.length > 0 && (
             <Button size="sm" variant="outline"
-              onClick={reset} className="h-8 rounded-full gap-1"
+              onClick={reset}
               data-testid="exec-qa-reset">
               <RotateCcw className="h-3 w-3" /> Sesi Baru
             </Button>
           )}
           {collapsible && (
             <Button size="sm" variant="ghost"
-              onClick={toggleCollapsed} className="h-8 rounded-full gap-1"
+              onClick={toggleCollapsed}
               data-testid="exec-qa-collapse">
               <ChevronUp className="h-3 w-3" /> Tutup
             </Button>
@@ -257,13 +257,13 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder={isOwner ? "Tanya apapun, atau klik mic untuk voice..." : "Tanya KPI, performa brand, vendor, anomali..."}
-          className="glass-input flex-1 h-10 px-3 rounded-full text-sm"
+          className="glass-input flex-1 h-9 px-3 rounded-md text-sm"
           disabled={busy}
+          aria-label="Pertanyaan untuk asisten AI"
           data-testid="exec-qa-input"
         />
         <VoiceInputButton onTranscript={handleVoiceTranscript} disabled={busy} />
         <Button type="submit" disabled={busy || !question.trim()}
-          className="rounded-full pill-active gap-1.5 h-10 px-4"
           data-testid="exec-qa-send">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           Kirim

@@ -45,7 +45,7 @@ export default function OutletScopeHeader() {
         className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-3"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
           <Store className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ export default function OutletScopeHeader() {
         className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3 border-amber-500/30"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -95,7 +95,7 @@ export default function OutletScopeHeader() {
       data-testid="outlet-scope-header"
     >
       <div className="flex items-center gap-2.5 flex-shrink-0">
-        <div className="h-8 w-8 rounded-lg grad-aurora-soft flex items-center justify-center">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center">
           {currentOutlet ? (
             <Store className="h-4 w-4" />
           ) : (
@@ -127,6 +127,7 @@ export default function OutletScopeHeader() {
       >
         <SelectTrigger
           className="glass-input min-w-[220px] max-w-[280px]"
+          aria-label="Pilih outlet aktif"
           data-testid="outlet-scope-picker"
         >
           <SelectValue placeholder="Pilih Outlet" />

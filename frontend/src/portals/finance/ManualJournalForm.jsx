@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Plus, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Save, Plus, Trash2, AlertTriangle, CheckCircle2, PenSquare } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
@@ -18,6 +18,7 @@ import PeriodLockBanner from "@/components/shared/PeriodLockBanner";
 import AIJournalGenerator from "@/components/finance/AIJournalGenerator";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -192,19 +193,24 @@ export default function ManualJournalForm() {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-testid="mje-page">
-      <div className="flex items-center gap-3 flex-wrap" data-testid="mje-header">
-        <Button variant="outline" onClick={() => navigate(-1)} className="rounded-full gap-2" data-testid="mje-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
-        </Button>
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          Manual Journal Entry <InlineHelp id="je-dr-cr" placement="bottom-start" />
-        </h2>
-        <div className="ml-auto">
-          <Button onClick={save} disabled={saving || periodLocked || !totals.balanced || (needsReason && !confirmReason.trim())} className="rounded-full pill-active gap-2" data-testid="mje-save">
-            <Save className="h-4 w-4" /> {saving ? "…" : (hasSevereGuard ? "Post (with reason)" : "Post JE")}
-          </Button>
-        </div>
+    <div className="space-y-3 lg:space-y-4" data-testid="mje-page">
+      <div data-testid="mje-header">
+        <PageHeader
+          icon={PenSquare}
+          title="Manual Journal"
+          subtitle="Input journal entry manual (reklasifikasi, koreksi, akrual). Total debit harus sama dengan kredit."
+          actions={
+            <>
+              <InlineHelp id="je-dr-cr" placement="bottom-start" />
+              <Button variant="outline" onClick={() => navigate("/finance/journals")} data-testid="mje-back">
+                Batal
+              </Button>
+              <Button onClick={save} disabled={saving || periodLocked || !totals.balanced || (needsReason && !confirmReason.trim())} data-testid="mje-save">
+                <Save className="h-4 w-4" /> {saving ? "Memposting…" : (hasSevereGuard ? "Posting (dengan alasan)" : "Posting jurnal")}
+              </Button>
+            </>
+          }
+        />
       </div>
 
       {/* AI Journal Generator */}
@@ -216,16 +222,16 @@ export default function ManualJournalForm() {
         onLockState={({ locked, closed }) => setPeriodLocked(locked || closed)}
       />
 
-      <div className="glass-card p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
         <div>
-          <Label className="text-xs uppercase text-muted-foreground">Entry Date *</Label>
-          <Input type="date" value={form.entry_date}
+          <Label htmlFor="mje-date" className="text-xs md:text-sm font-medium">Entry Date <span className="text-red-500">*</span></Label>
+          <Input id="mje-date" type="date" value={form.entry_date}
             onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))}
             className="glass-input mt-1" data-testid="mje-date" />
         </div>
         <div className="md:col-span-2">
-          <Label className="text-xs uppercase text-muted-foreground">Description *</Label>
-          <Input value={form.description}
+          <Label htmlFor="mje-desc" className="text-xs md:text-sm font-medium">Description <span className="text-red-500">*</span></Label>
+          <Input id="mje-desc" value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="mis. Reklasifikasi expense April 2026"
             className="glass-input mt-1" data-testid="mje-desc" />
@@ -253,11 +259,11 @@ export default function ManualJournalForm() {
         </div>
       </div>
 
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Lines</h3>
-          <Button onClick={addLine} variant="outline" size="sm" className="rounded-full gap-1" data-testid="mje-add-line">
-            <Plus className="h-3.5 w-3.5" /> Tambah
+          <h3 className="text-sm md:text-base font-semibold">Baris jurnal</h3>
+          <Button onClick={addLine} variant="outline" size="sm" data-testid="mje-add-line">
+            <Plus className="h-3.5 w-3.5" /> Tambah baris
           </Button>
         </div>
         <DataTable
@@ -277,7 +283,8 @@ export default function ManualJournalForm() {
                   onValueChange={v => setLine(r._idx, "coa_id", v)}
                   options={[{ value: "", label: "-- pilih COA --" }, ...coas.map(c => ({ value: c.id, label: `${c.code} — ${c.name}` }))]}
                   placeholder="-- pilih COA --"
-                  className="glass-input rounded-lg w-full px-3 h-9 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel={`COA baris ${r._idx + 1}`}
                   testId={`mje-line-coa-${r._idx}`}
                 />
               ) },
@@ -285,14 +292,16 @@ export default function ManualJournalForm() {
               render: (r) => (
                 <Input type="number" min="0" value={r.dr}
                   onChange={e => setLine(r._idx, "dr", e.target.value)}
-                  className="glass-input h-9 text-right tabular-nums w-28"
+                  className="glass-input text-right tabular-nums w-28"
+                  aria-label={`Debit baris ${r._idx + 1}`}
                   data-testid={`mje-line-dr-${r._idx}`} />
               ) },
             { key: "cr", label: "Kredit", numeric: true,
               render: (r) => (
                 <Input type="number" min="0" value={r.cr}
                   onChange={e => setLine(r._idx, "cr", e.target.value)}
-                  className="glass-input h-9 text-right tabular-nums w-28"
+                  className="glass-input text-right tabular-nums w-28"
+                  aria-label={`Kredit baris ${r._idx + 1}`}
                   data-testid={`mje-line-cr-${r._idx}`} />
               ) },
             { key: "memo", label: "Memo",
@@ -300,7 +309,8 @@ export default function ManualJournalForm() {
               render: (r) => (
                 <Input value={r.memo}
                   onChange={e => setLine(r._idx, "memo", e.target.value)}
-                  placeholder="—" className="glass-input h-9"
+                  placeholder="—" className="glass-input"
+                  aria-label={`Memo baris ${r._idx + 1}`}
                   data-testid={`mje-line-memo-${r._idx}`} />
               ) },
             { key: "dim_outlet", label: "Outlet",
@@ -311,7 +321,8 @@ export default function ManualJournalForm() {
                   onValueChange={v => setLine(r._idx, "dim_outlet", v)}
                   options={[{ value: "", label: "—" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
                   placeholder="—"
-                  className="glass-input rounded-lg w-full px-3 h-9 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel={`Outlet baris ${r._idx + 1}`}
                   testId={`mje-line-outlet-${r._idx}`}
                 />
               ) },
@@ -322,15 +333,18 @@ export default function ManualJournalForm() {
                   onValueChange={v => setLine(r._idx, "dim_brand", v)}
                   options={[{ value: "", label: "—" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
                   placeholder="—"
-                  className="glass-input rounded-lg w-full px-3 h-9 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel={`Brand baris ${r._idx + 1}`}
                   testId={`mje-line-brand-${r._idx}`}
                 />
               ) },
           ]}
           rowAction={(r) => (
-            <button onClick={() => removeLine(r._idx)} disabled={form.lines.length <= 2} className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive flex items-center justify-center disabled:opacity-30" data-testid={`mje-line-remove-${r._idx}`}>
+            <Button variant="ghost" size="icon-sm" onClick={() => removeLine(r._idx)} disabled={form.lines.length <= 2}
+              className="hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`Hapus baris ${r._idx + 1}`} data-testid={`mje-line-remove-${r._idx}`}>
               <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           )}
           footer={
             <tr className="font-bold" data-testid="mje-totals-row">
@@ -389,10 +403,11 @@ export default function ManualJournalForm() {
           "glass-card p-4 border-2",
           hasSevereGuard ? "border-red-500/40" : "border-amber-500/40",
         )}>
-          <Label className="text-xs uppercase text-muted-foreground font-semibold">
-            Alasan / Justifikasi (wajib karena {hasSevereGuard ? "jauh" : ""} di atas forecast)
+          <Label htmlFor="mje-guard-reason" className="text-xs md:text-sm font-medium">
+            Alasan / Justifikasi <span className="text-red-500">*</span> (wajib karena {hasSevereGuard ? "jauh " : ""}di atas forecast)
           </Label>
           <Textarea
+            id="mje-guard-reason"
             value={confirmReason}
             onChange={e => setConfirmReason(e.target.value)}
             placeholder="mis. One-off renovasi outlet, bayar deposit vendor baru, koreksi periode lalu, dll."

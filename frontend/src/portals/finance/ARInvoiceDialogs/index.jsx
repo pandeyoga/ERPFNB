@@ -3,32 +3,19 @@ import { useState, useEffect } from "react";
 import {
   Plus, FileText, DollarSign, X, Loader2, Edit2, Send, Bell, Mail, MessageSquare,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import DataTable from "@/components/shared/DataTable";
+import StatusPill from "@/components/shared/StatusPill";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency, formatDateID } from "@/lib/format";
 
-const STATUS_MAP = {
-  draft:     { label: "Draft",       variant: "secondary",    color: "" },
-  sent:      { label: "Terkirim",    variant: "default",      color: "" },
-  partial:   { label: "Sebagian",    variant: "outline",      color: "border-amber-500 text-amber-700" },
-  paid:      { label: "Lunas",       variant: "default",      color: "bg-green-600" },
-  overdue:   { label: "Jatuh Tempo", variant: "destructive",  color: "" },
-  cancelled: { label: "Dibatalkan",  variant: "secondary",    color: "" },
-};
-
-function StatusBadge({ status }) {
-  const s = STATUS_MAP[status] || { label: status, variant: "secondary", color: "" };
-  return <Badge variant={s.variant} className={s.color}>{s.label}</Badge>;
-}
 
 export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
   const [customers, setCustomers] = useState([]);
@@ -113,9 +100,9 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
           {/* Customer */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label>Customer (dari daftar)</Label>
+              <Label htmlFor="ar-invoice-customer-select">Customer (dari daftar)</Label>
               <Select value={form.customer_id} onValueChange={handleCustomerSelect}>
-                <SelectTrigger data-testid="invoice-customer-select">
+                <SelectTrigger id="ar-invoice-customer-select" data-testid="invoice-customer-select">
                   <SelectValue placeholder={loadingRefs ? "Memuat customer..." : "Pilih customer..."} />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,17 +111,17 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Nama Customer *</Label>
-              <Input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
+              <Label htmlFor="ar-invoice-customer-name">Nama Customer <span className="text-red-500">*</span></Label>
+              <Input id="ar-invoice-customer-name" value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
                 placeholder="Nama customer" data-testid="invoice-customer-name" />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <Label>Channel</Label>
+              <Label htmlFor="ar-invoice-channel">Channel</Label>
               <Select value={form.channel} onValueChange={v => setForm(f => ({ ...f, channel: v }))}>
-                <SelectTrigger data-testid="invoice-channel"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ar-invoice-channel" data-testid="invoice-channel"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {[
                     { code: "b2b", name: "B2B / Catering" },
@@ -147,14 +134,14 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Tanggal Invoice *</Label>
-              <Input type="date" value={form.invoice_date}
+              <Label htmlFor="ar-invoice-date">Tanggal Invoice <span className="text-red-500">*</span></Label>
+              <Input id="ar-invoice-date" type="date" value={form.invoice_date}
                 onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))}
                 data-testid="invoice-date" />
             </div>
             <div className="space-y-1">
-              <Label>Terms (hari)</Label>
-              <Input type="number" value={form.credit_terms_days}
+              <Label htmlFor="ar-invoice-terms">Terms (hari)</Label>
+              <Input id="ar-invoice-terms" type="number" value={form.credit_terms_days}
                 onChange={e => setForm(f => ({ ...f, credit_terms_days: parseInt(e.target.value) || 30 }))}
                 data-testid="invoice-terms" />
             </div>
@@ -162,14 +149,14 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label>NPWP Customer</Label>
-              <Input value={form.customer_npwp} onChange={e => setForm(f => ({ ...f, customer_npwp: e.target.value }))}
+              <Label htmlFor="ar-invoice-customer-npwp">NPWP Customer</Label>
+              <Input id="ar-invoice-customer-npwp" value={form.customer_npwp} onChange={e => setForm(f => ({ ...f, customer_npwp: e.target.value }))}
                 placeholder="00.000.000.0-000.000" data-testid="invoice-customer-npwp" />
             </div>
             <div className="space-y-1">
-              <Label>Outlet</Label>
+              <Label htmlFor="ar-invoice-outlet">Outlet</Label>
               <Select value={form.outlet_id || "no_outlet"} onValueChange={v => setForm(f => ({ ...f, outlet_id: v === "no_outlet" ? "" : v }))}>
-                <SelectTrigger data-testid="invoice-outlet"><SelectValue placeholder="Pilih outlet..." /></SelectTrigger>
+                <SelectTrigger id="ar-invoice-outlet" data-testid="invoice-outlet"><SelectValue placeholder="Pilih outlet..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="no_outlet">— Semua Outlet —</SelectItem>
                   {outlets.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
@@ -200,35 +187,35 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
                     render: (ln) => (
                       <Input value={ln.description}
                         onChange={e => updateLine(ln._idx, "description", e.target.value)}
-                        placeholder="Deskripsi item" className="h-7 text-sm"
-                        data-testid={`line-desc-${ln._idx}`} />
+                        placeholder="Deskripsi item" className="text-sm"
+                        aria-label={`Deskripsi baris ${ln._idx + 1}`} data-testid={`line-desc-${ln._idx}`} />
                     ) },
                   { key: "qty", label: "Qty", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.qty}
                         onChange={e => updateLine(ln._idx, "qty", parseFloat(e.target.value) || 1)}
-                        className="h-7 text-sm text-right tabular-nums w-16"
-                        data-testid={`line-qty-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-16"
+                        aria-label={`Qty baris ${ln._idx + 1}`} data-testid={`line-qty-${ln._idx}`} />
                     ) },
                   { key: "unit_price", label: "Harga", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.unit_price}
                         onChange={e => updateLine(ln._idx, "unit_price", parseFloat(e.target.value) || 0)}
-                        className="h-7 text-sm text-right tabular-nums w-28" data-testid={`line-price-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-28" aria-label={`Harga baris ${ln._idx + 1}`} data-testid={`line-price-${ln._idx}`} />
                     ) },
                   { key: "discount", label: "Diskon", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.discount}
                         onChange={e => updateLine(ln._idx, "discount", parseFloat(e.target.value) || 0)}
-                        className="h-7 text-sm text-right tabular-nums w-24"
-                        data-testid={`line-discount-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-24"
+                        aria-label={`Diskon baris ${ln._idx + 1}`} data-testid={`line-discount-${ln._idx}`} />
                     ) },
                   { key: "include_ppn", label: "PPN", align: "center",
                     render: (ln) => (
                       <input type="checkbox" checked={ln.include_ppn}
                         onChange={e => updateLine(ln._idx, "include_ppn", e.target.checked)}
                         className="rounded"
-                        data-testid={`line-ppn-${ln._idx}`} />
+                        aria-label={`PPN baris ${ln._idx + 1}`} data-testid={`line-ppn-${ln._idx}`} />
                     ) },
                   { key: "total", label: "Total", numeric: true,
                     render: (ln) => {
@@ -239,7 +226,7 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
                 ]}
                 rowAction={(ln) => (
                   form.lines.length > 1
-                    ? <Button size="icon" variant="ghost" aria-label="Hapus baris" className="h-6 w-6" onClick={() => removeLine(ln._idx)} data-testid={`line-remove-${ln._idx}`}><X className="h-3 w-3" /></Button>
+                    ? <Button size="icon-sm" variant="ghost" aria-label="Hapus baris" onClick={() => removeLine(ln._idx)} data-testid={`line-remove-${ln._idx}`}><X className="h-3.5 w-3.5" /></Button>
                     : null
                 )}
               />
@@ -253,8 +240,8 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
           </div>
 
           <div className="space-y-1">
-            <Label>Catatan</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            <Label htmlFor="ar-invoice-notes">Catatan</Label>
+            <Textarea id="ar-invoice-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Catatan..." rows={2} data-testid="invoice-notes" />
           </div>
         </div>
@@ -302,15 +289,15 @@ export function CustomerCreateDialog({ open, onOpenChange, onCreated }) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Nama Customer *</Label>
-            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            <Label htmlFor="ar-customer-name-input">Nama Customer <span className="text-red-500">*</span></Label>
+            <Input id="ar-customer-name-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Nama perusahaan / individu" data-testid="customer-name-input" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Channel</Label>
+              <Label htmlFor="ar-customer-channel">Channel</Label>
               <Select value={form.channel} onValueChange={v => setForm(f => ({ ...f, channel: v }))}>
-                <SelectTrigger data-testid="customer-channel"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ar-customer-channel" data-testid="customer-channel"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {[
                     { code: "b2b", name: "B2B / Catering" },
@@ -323,35 +310,35 @@ export function CustomerCreateDialog({ open, onOpenChange, onCreated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Terms (hari)</Label>
-              <Input type="number" value={form.credit_terms_days}
+              <Label htmlFor="ar-customer-terms">Terms (hari)</Label>
+              <Input id="ar-customer-terms" type="number" value={form.credit_terms_days}
                 onChange={e => setForm(f => ({ ...f, credit_terms_days: parseInt(e.target.value) || 30 }))}
                 data-testid="customer-terms" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>NPWP</Label>
-            <Input value={form.npwp} onChange={e => setForm(f => ({ ...f, npwp: e.target.value }))}
+            <Label htmlFor="ar-customer-npwp">NPWP</Label>
+            <Input id="ar-customer-npwp" value={form.npwp} onChange={e => setForm(f => ({ ...f, npwp: e.target.value }))}
               placeholder="00.000.000.0-000.000" data-testid="customer-npwp" />
           </div>
           <div className="space-y-1">
-            <Label>Alamat</Label>
-            <Textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+            <Label htmlFor="ar-customer-address">Alamat</Label>
+            <Textarea id="ar-customer-address" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
               rows={2} placeholder="Alamat lengkap" data-testid="customer-address" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Nama Kontak</Label>
-              <Input value={form.contact_person} onChange={e => setForm(f => ({ ...f, contact_person: e.target.value }))} data-testid="customer-contact-person" />
+              <Label htmlFor="ar-customer-contact-person">Nama Kontak</Label>
+              <Input id="ar-customer-contact-person" value={form.contact_person} onChange={e => setForm(f => ({ ...f, contact_person: e.target.value }))} data-testid="customer-contact-person" />
             </div>
             <div className="space-y-1">
-              <Label>Telepon</Label>
-              <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} data-testid="customer-phone" />
+              <Label htmlFor="ar-customer-phone">Telepon</Label>
+              <Input id="ar-customer-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} data-testid="customer-phone" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Email</Label>
-            <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            <Label htmlFor="ar-customer-email">Email</Label>
+            <Input id="ar-customer-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="email@domain.com" data-testid="customer-email" />
           </div>
         </div>
@@ -418,21 +405,21 @@ export function ReceiptDialog({ invoice, onClose, onRecorded }) {
           </div>
 
           <div className="space-y-1">
-            <Label>Tanggal Terima *</Label>
-            <Input type="date" value={form.receipt_date}
+            <Label htmlFor="ar-receipt-date">Tanggal Terima <span className="text-red-500">*</span></Label>
+            <Input id="ar-receipt-date" type="date" value={form.receipt_date}
               onChange={e => setForm(f => ({ ...f, receipt_date: e.target.value }))}
               data-testid="receipt-date" />
           </div>
           <div className="space-y-1">
-            <Label>Jumlah Diterima *</Label>
-            <Input type="number" value={form.amount}
+            <Label htmlFor="ar-receipt-amount">Jumlah Diterima <span className="text-red-500">*</span></Label>
+            <Input id="ar-receipt-amount" type="number" value={form.amount}
               onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
               data-testid="receipt-amount" />
           </div>
           <div className="space-y-1">
-            <Label>Metode Pembayaran</Label>
+            <Label htmlFor="ar-receipt-method">Metode Pembayaran</Label>
             <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
-              <SelectTrigger data-testid="receipt-method"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="ar-receipt-method" data-testid="receipt-method"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                 <SelectItem value="cash">Tunai</SelectItem>
@@ -443,14 +430,14 @@ export function ReceiptDialog({ invoice, onClose, onRecorded }) {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>No Referensi / Bukti</Label>
-            <Input value={form.reference}
+            <Label htmlFor="ar-receipt-reference">No Referensi / Bukti</Label>
+            <Input id="ar-receipt-reference" value={form.reference}
               onChange={e => setForm(f => ({ ...f, reference: e.target.value }))}
               placeholder="No transfer / referensi" data-testid="receipt-reference" />
           </div>
           <div className="space-y-1">
-            <Label>Catatan</Label>
-            <Textarea value={form.notes}
+            <Label htmlFor="ar-receipt-notes">Catatan</Label>
+            <Textarea id="ar-receipt-notes" value={form.notes}
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               rows={2} data-testid="receipt-notes" />
           </div>
@@ -478,7 +465,7 @@ export function InvoiceDetailDialog({ invoice, onClose, onSend, onPayment }) {
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             {invoice.invoice_no}
-            <StatusBadge status={invoice.status} />
+            <StatusPill status={invoice.status} />
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
@@ -618,50 +605,50 @@ export function CustomerEditDialog({ customer, onClose, onSaved }) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Nama Customer *</Label>
-            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            <Label htmlFor="ar-customer-edit-name">Nama Customer <span className="text-red-500">*</span></Label>
+            <Input id="ar-customer-edit-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Nama perusahaan / individu" data-testid="customer-edit-name" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Channel</Label>
+              <Label htmlFor="ar-customer-edit-channel">Channel</Label>
               <Select value={form.channel} onValueChange={v => setForm(f => ({ ...f, channel: v }))}>
-                <SelectTrigger data-testid="customer-edit-channel"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ar-customer-edit-channel" data-testid="customer-edit-channel"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CHANNELS.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Terms (hari)</Label>
-              <Input type="number" value={form.credit_terms_days}
+              <Label htmlFor="ar-customer-edit-terms">Terms (hari)</Label>
+              <Input id="ar-customer-edit-terms" type="number" value={form.credit_terms_days}
                 onChange={e => setForm(f => ({ ...f, credit_terms_days: parseInt(e.target.value) || 30 }))}
                 data-testid="customer-edit-terms" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>NPWP</Label>
-            <Input value={form.npwp} onChange={e => setForm(f => ({ ...f, npwp: e.target.value }))}
+            <Label htmlFor="ar-customer-edit-npwp">NPWP</Label>
+            <Input id="ar-customer-edit-npwp" value={form.npwp} onChange={e => setForm(f => ({ ...f, npwp: e.target.value }))}
               placeholder="00.000.000.0-000.000" data-testid="customer-edit-npwp" />
           </div>
           <div className="space-y-1">
-            <Label>Alamat</Label>
-            <Textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+            <Label htmlFor="ar-customer-edit-address">Alamat</Label>
+            <Textarea id="ar-customer-edit-address" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
               rows={2} placeholder="Alamat lengkap" data-testid="customer-edit-address" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Nama Kontak</Label>
-              <Input value={form.contact_person} onChange={e => setForm(f => ({ ...f, contact_person: e.target.value }))} data-testid="customer-edit-contact-person" />
+              <Label htmlFor="ar-customer-edit-contact-person">Nama Kontak</Label>
+              <Input id="ar-customer-edit-contact-person" value={form.contact_person} onChange={e => setForm(f => ({ ...f, contact_person: e.target.value }))} data-testid="customer-edit-contact-person" />
             </div>
             <div className="space-y-1">
-              <Label>Telepon</Label>
-              <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} data-testid="customer-edit-phone" />
+              <Label htmlFor="ar-customer-edit-phone">Telepon</Label>
+              <Input id="ar-customer-edit-phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} data-testid="customer-edit-phone" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Email</Label>
-            <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            <Label htmlFor="ar-customer-edit-email">Email</Label>
+            <Input id="ar-customer-edit-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="email@domain.com" data-testid="customer-edit-email" />
           </div>
         </div>
@@ -747,45 +734,45 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label>Nama Customer *</Label>
-              <Input value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
+              <Label htmlFor="ar-invoice-edit-customer-name">Nama Customer <span className="text-red-500">*</span></Label>
+              <Input id="ar-invoice-edit-customer-name" value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
                 placeholder="Nama customer" data-testid="invoice-edit-customer-name" />
             </div>
             <div className="space-y-1">
-              <Label>NPWP Customer</Label>
-              <Input value={form.customer_npwp} onChange={e => setForm(f => ({ ...f, customer_npwp: e.target.value }))}
+              <Label htmlFor="ar-invoice-edit-npwp">NPWP Customer</Label>
+              <Input id="ar-invoice-edit-npwp" value={form.customer_npwp} onChange={e => setForm(f => ({ ...f, customer_npwp: e.target.value }))}
                 placeholder="00.000.000.0-000.000" data-testid="invoice-edit-npwp" />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <Label>Channel</Label>
+              <Label htmlFor="ar-invoice-edit-channel">Channel</Label>
               <Select value={form.channel} onValueChange={v => setForm(f => ({ ...f, channel: v }))}>
-                <SelectTrigger data-testid="invoice-edit-channel"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="ar-invoice-edit-channel" data-testid="invoice-edit-channel"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {CHANNELS.map(c => <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Tanggal Invoice *</Label>
-              <Input type="date" value={form.invoice_date}
+              <Label htmlFor="ar-invoice-edit-date">Tanggal Invoice <span className="text-red-500">*</span></Label>
+              <Input id="ar-invoice-edit-date" type="date" value={form.invoice_date}
                 onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))}
                 data-testid="invoice-edit-date" />
             </div>
             <div className="space-y-1">
-              <Label>Jatuh Tempo</Label>
-              <Input type="date" value={form.due_date}
+              <Label htmlFor="ar-invoice-edit-due-date">Jatuh Tempo</Label>
+              <Input id="ar-invoice-edit-due-date" type="date" value={form.due_date}
                 onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
                 data-testid="invoice-edit-due-date" />
             </div>
           </div>
 
           <div className="space-y-1">
-            <Label>Outlet</Label>
+            <Label htmlFor="ar-invoice-edit-outlet">Outlet</Label>
             <Select value={form.outlet_id || "no_outlet"} onValueChange={v => setForm(f => ({ ...f, outlet_id: v === "no_outlet" ? "" : v }))}>
-              <SelectTrigger data-testid="invoice-edit-outlet"><SelectValue placeholder="Pilih outlet..." /></SelectTrigger>
+              <SelectTrigger id="ar-invoice-edit-outlet" data-testid="invoice-edit-outlet"><SelectValue placeholder="Pilih outlet..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="no_outlet">— Semua Outlet —</SelectItem>
                 {outlets.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
@@ -812,27 +799,27 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
                   { key: "description", label: "Deskripsi", primary: true,
                     render: (ln) => (
                       <Input value={ln.description} onChange={e => updateLine(ln._idx, "description", e.target.value)}
-                        placeholder="Deskripsi item" className="h-7 text-sm" data-testid={`edit-line-desc-${ln._idx}`} />
+                        placeholder="Deskripsi item" className="text-sm" aria-label={`Deskripsi baris ${ln._idx + 1}`} data-testid={`edit-line-desc-${ln._idx}`} />
                     ) },
                   { key: "qty", label: "Qty", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.qty} onChange={e => updateLine(ln._idx, "qty", parseFloat(e.target.value) || 1)}
-                        className="h-7 text-sm text-right tabular-nums w-16" data-testid={`edit-line-qty-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-16" aria-label={`Qty baris ${ln._idx + 1}`} data-testid={`edit-line-qty-${ln._idx}`} />
                     ) },
                   { key: "unit_price", label: "Harga", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.unit_price} onChange={e => updateLine(ln._idx, "unit_price", parseFloat(e.target.value) || 0)}
-                        className="h-7 text-sm text-right tabular-nums w-28" data-testid={`edit-line-price-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-28" aria-label={`Harga baris ${ln._idx + 1}`} data-testid={`edit-line-price-${ln._idx}`} />
                     ) },
                   { key: "discount", label: "Diskon", numeric: true,
                     render: (ln) => (
                       <Input type="number" value={ln.discount} onChange={e => updateLine(ln._idx, "discount", parseFloat(e.target.value) || 0)}
-                        className="h-7 text-sm text-right tabular-nums w-24" data-testid={`edit-line-discount-${ln._idx}`} />
+                        className="text-sm text-right tabular-nums w-24" aria-label={`Diskon baris ${ln._idx + 1}`} data-testid={`edit-line-discount-${ln._idx}`} />
                     ) },
                   { key: "include_ppn", label: "PPN", align: "center",
                     render: (ln) => (
                       <input type="checkbox" checked={ln.include_ppn} onChange={e => updateLine(ln._idx, "include_ppn", e.target.checked)}
-                        className="rounded" data-testid={`edit-line-ppn-${ln._idx}`} />
+                        className="rounded" aria-label={`PPN baris ${ln._idx + 1}`} data-testid={`edit-line-ppn-${ln._idx}`} />
                     ) },
                   { key: "total", label: "Total", numeric: true,
                     render: (ln) => {
@@ -843,7 +830,7 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
                 ]}
                 rowAction={(ln) => (
                   form.lines.length > 1
-                    ? <Button size="icon" variant="ghost" aria-label="Hapus baris" className="h-6 w-6" onClick={() => removeLine(ln._idx)} data-testid={`edit-line-remove-${ln._idx}`}><X className="h-3 w-3" /></Button>
+                    ? <Button size="icon-sm" variant="ghost" aria-label="Hapus baris" onClick={() => removeLine(ln._idx)} data-testid={`edit-line-remove-${ln._idx}`}><X className="h-3.5 w-3.5" /></Button>
                     : null
                 )}
               />
@@ -856,8 +843,8 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
           </div>
 
           <div className="space-y-1">
-            <Label>Catatan</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            <Label htmlFor="ar-invoice-edit-notes">Catatan</Label>
+            <Textarea id="ar-invoice-edit-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Catatan..." rows={2} data-testid="invoice-edit-notes" />
           </div>
         </div>
@@ -932,9 +919,9 @@ export function ReminderDialog({ invoice, onClose, onSent }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Channel Pengingat</Label>
+            <Label htmlFor="ar-reminder-channel">Channel Pengingat</Label>
             <Select value={channel} onValueChange={setChannel}>
-              <SelectTrigger data-testid="reminder-channel"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="ar-reminder-channel" data-testid="reminder-channel"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="email"><span className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> Email</span></SelectItem>
                 <SelectItem value="telegram"><span className="flex items-center gap-2"><MessageSquare className="h-3.5 w-3.5" /> Telegram</span></SelectItem>

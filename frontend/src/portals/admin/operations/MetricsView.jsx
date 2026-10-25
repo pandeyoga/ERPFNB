@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Activity, RefreshCw, Server, Clock, AlertTriangle, Database, TrendingUp } from "lucide-react";
+import { RefreshCw, Server, Clock, AlertTriangle, Database, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
 import api, { unwrap, unwrapError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import KpiCard from "@/components/shared/KpiCard";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import LoadingState from "@/components/shared/LoadingState";
 import ErrorState from "@/components/shared/ErrorState";
 import DataTable from "@/components/shared/DataTable";
@@ -17,10 +17,11 @@ function fmtUptime(sec) {
   const h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60);
   const ss = s % 60;
-  if (d > 0) return `${d}h ${h}j ${m}m`;
-  if (h > 0) return `${h}j ${m}m`;
-  if (m > 0) return `${m}m ${ss}d`;
-  return `${ss}d`;
+  // Satuan eksplisit (hari/jam/mnt/dtk) supaya "39m 3d" tidak terbaca 39 bulan 3 hari.
+  if (d > 0) return `${d} hari ${h} jam`;
+  if (h > 0) return `${h} jam ${m} mnt`;
+  if (m > 0) return `${m} mnt ${ss} dtk`;
+  return `${ss} dtk`;
 }
 
 export default function MetricsView() {
@@ -55,49 +56,46 @@ export default function MetricsView() {
   if (!data) return null;
 
   const errRate = (data.requests?.error_rate_last_min ?? 0) * 100;
-  const errColor = errRate >= 5 ? "aurora-3" : errRate > 0 ? "aurora-2" : "aurora-1";
+  const errColor = errRate >= 5 ? "aurora-6" : errRate > 0 ? "aurora-5" : "aurora-4";
+  const errTone = errRate >= 5 ? "danger" : errRate > 0 ? "warning" : "default";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 lg:space-y-4">
+      {/* Toolbar (judul seksi = tab "Metrics" di hub Monitoring) */}
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Activity className="h-5 w-5" /> Metrics & Health
-          </h2>
-          <p className="text-xs text-muted-foreground">Auto-refresh tiap 15 detik</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => load()} disabled={refreshing} data-testid="metrics-refresh">
-          <RefreshCw className={`h-3.5 w-3.5 mr-2 ${refreshing ? "animate-spin" : ""}`} /> Refresh
+        <p className="text-sm text-muted-foreground">Kesehatan sistem — auto-refresh tiap 15 detik.</p>
+        <Button variant="outline" onClick={() => load()} disabled={refreshing} data-testid="metrics-refresh">
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Muat ulang
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Uptime" value={fmtUptime(data.uptime_sec)} hint="sejak start" icon={Clock} color="aurora-1" />
-        <KpiCard label="Total Requests" value={fmtNumber(data.requests?.total || 0)}
-                 hint={`${data.requests?.rps_last_min || 0} req/s (60s)`} icon={Server} color="aurora-2" />
-        <KpiCard label="Error Rate (60s)" value={`${errRate.toFixed(2)}%`}
-                 hint={`${data.requests?.["5xx"] || 0} 5xx total`} icon={AlertTriangle} color={errColor} />
-        <KpiCard label="Active Sessions" value={fmtNumber(data.collection_counts?.refresh_tokens || 0)}
-                 hint="refresh tokens" icon={TrendingUp} color="aurora-4" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <CompactStatCard label="Uptime" value={fmtUptime(data.uptime_sec)} sub="sejak start" icon={Clock} color="aurora-1" />
+        <CompactStatCard label="Total Requests" value={fmtNumber(data.requests?.total || 0)}
+                 sub={`${data.requests?.rps_last_min || 0} req/s (60s)`} icon={Server} color="aurora-2" />
+        <CompactStatCard label="Error Rate (60s)" value={`${errRate.toFixed(2)}%`} tone={errTone}
+                 sub={`${data.requests?.["5xx"] || 0} 5xx total`} icon={AlertTriangle} color={errColor} />
+        <CompactStatCard label="Active Sessions" value={fmtNumber(data.collection_counts?.refresh_tokens || 0)}
+                 sub="refresh tokens" icon={TrendingUp} color="aurora-4" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+        <div className="glass-card p-4 min-w-0">
+          <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
             <Database className="h-4 w-4" /> Collection Counts
           </h3>
           <div className="grid grid-cols-2 gap-2 text-sm">
             {Object.entries(data.collection_counts || {}).map(([k, v]) => (
               <div key={k} className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted/50">
                 <span className="text-muted-foreground truncate">{k}</span>
-                <span className="font-mono tabular-nums">{fmtNumber(v < 0 ? 0 : v)}</span>
+                <span className="tabular-nums">{fmtNumber(v < 0 ? 0 : v)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold mb-3">Top Slow Routes (p95)</h3>
+        <div className="glass-card p-4 min-w-0 overflow-hidden">
+          <h3 className="text-sm md:text-base font-semibold mb-3">Top Slow Routes (p95)</h3>
           {(data.top_slow_routes || []).length === 0 ? (
             <p className="text-sm text-muted-foreground">Belum ada data.</p>
           ) : (
@@ -108,7 +106,7 @@ export default function MetricsView() {
               empty={<p className="text-sm text-muted-foreground py-2">Belum ada data.</p>}
               columns={[
                 { key: "route", label: "Route", primary: true,
-                  render: (r) => <span className="font-mono text-xs">{r.route}</span> },
+                  render: (r) => <span className="text-xs font-medium tabular-nums break-all">{r.route}</span> },
                 { key: "count", label: "Count", numeric: true, sortable: true,
                   render: (r) => fmtNumber(r.count) },
                 { key: "avg_ms", label: "Avg ms", numeric: true, sortable: true,
@@ -121,9 +119,9 @@ export default function MetricsView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold mb-3">By Status Code</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">By Status Code</h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_status || {}).map(([k, v]) => {
               const s = parseInt(k, 10);
@@ -139,8 +137,8 @@ export default function MetricsView() {
             })}
           </div>
         </div>
-        <div className="glass-card p-5">
-          <h3 className="text-sm font-semibold mb-3">By Method</h3>
+        <div className="glass-card p-4">
+          <h3 className="text-sm md:text-base font-semibold mb-3">By Method</h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_method || {}).map(([k, v]) => (
               <span key={k} className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">

@@ -146,7 +146,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
 
   return (
     <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-2xl max-h-[92vh] overflow-y-auto" data-testid="user-dialog">
+      <DialogContent className="glass-card max-w-2xl" data-testid="user-dialog">
         <DialogHeader>
           <DialogTitle>{isNew ? "User Baru" : "Edit User"}</DialogTitle>
           <DialogDescription>
@@ -158,22 +158,22 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
           {/* Basic Info */}
           <Section title="Informasi Dasar">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Nama Lengkap *" className="col-span-2 sm:col-span-1">
-                <Input value={form.full_name || ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              <Field label="Nama Lengkap *" htmlFor="user-form-name" className="col-span-2 sm:col-span-1">
+                <Input id="user-form-name" value={form.full_name || ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                        className="glass-input" data-testid="user-form-name" />
               </Field>
-              <Field label="Phone" className="col-span-2 sm:col-span-1">
-                <Input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                       className="glass-input" />
+              <Field label="Telepon" htmlFor="user-form-phone" className="col-span-2 sm:col-span-1">
+                <Input id="user-form-phone" value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                       className="glass-input" data-testid="user-form-phone" />
               </Field>
-              <Field label="Email *" className="col-span-2">
-                <Input type="email" disabled={!isNew} value={form.email || ""}
+              <Field label="Email *" htmlFor="user-form-email" className="col-span-2">
+                <Input id="user-form-email" type="email" disabled={!isNew} value={form.email || ""}
                        onChange={(e) => setForm({ ...form, email: e.target.value })}
                        className="glass-input" data-testid="user-form-email" />
               </Field>
               {isNew && (
-                <Field label="Password (min 8) *" className="col-span-2">
-                  <Input type="password" value={form.password || ""}
+                <Field label="Password (min 8) *" htmlFor="user-form-password" className="col-span-2">
+                  <Input id="user-form-password" type="password" value={form.password || ""}
                          onChange={(e) => setForm({ ...form, password: e.target.value })}
                          className="glass-input" data-testid="user-form-password" />
                 </Field>
@@ -196,7 +196,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   />
                   <span className="leading-tight">
                     <span className="block">{r.name}</span>
-                    <span className="text-[11px] text-muted-foreground">{r.code}</span>
+                    <span className="text-[11px] font-medium tabular-nums text-muted-foreground">{r.code}</span>
                   </span>
                 </label>
               ))}
@@ -225,6 +225,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                     ? "border-green-500/50 bg-green-500/10 text-green-600"
                     : "border-border hover:border-green-500/50 hover:bg-green-500/5 text-muted-foreground"
                 )}
+                aria-pressed={isAllOutlets && isAllBrands}
                 data-testid="access-full"
               >
                 <Globe2 className="h-4 w-4" />
@@ -244,6 +245,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                     ? "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
                     : "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
                 )}
+                aria-pressed={!isAllOutlets && selectedOutletCount > 0}
                 data-testid="access-clear"
               >
                 <Store className="h-4 w-4" />
@@ -342,7 +344,8 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                     { value: "owner", label: "Owner" },
                   ]}
                   placeholder="— Otomatis —"
-                  className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel="Portal default"
                   testId="user-default-portal"
                 />
               </Field>
@@ -353,7 +356,8 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   disabled={(form.outlet_ids || []).length === 0}
                   options={[{ value: "", label: "— Tidak ada / pilih manual —" }, ...outlets.filter((o) => (form.outlet_ids || []).includes(o.id)).map((o) => ({ value: o.id, label: o.name }))]}
                   placeholder="— Tidak ada / pilih manual —"
-                  className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel="Outlet default"
                   testId="user-default-outlet"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
@@ -373,16 +377,18 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   { value: "active", label: "Aktif" },
                   { value: "disabled", label: "Nonaktif" },
                 ]}
-                className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                className="glass-input w-full"
+                ariaLabel="Status akun"
                 testId="user-status"
               />
             </Section>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="user-form-save">
+        {/* Footer sticky: dialog panjang tetap bisa disimpan tanpa scroll ke bawah */}
+        <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 px-5 py-3 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+          <Button variant="outline" onClick={onClose} data-testid="user-form-cancel">Batal</Button>
+          <Button onClick={submit} disabled={saving} data-testid="user-form-save">
             {saving ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>

@@ -9,12 +9,14 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save, Send, Search, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Save, Send, Search, AlertTriangle, ClipboardCheck } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatusPill from "@/components/shared/StatusPill";
 import LoadingState from "@/components/shared/LoadingState";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import useOutletScope from "@/hooks/useOutletScope";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
@@ -87,22 +89,22 @@ export default function OpnameSession() {
     try {
       const res = await api.patch(`/inventory/opname/${id}/lines`, { lines: updates });
       setSess(unwrap(res));
-      toast.success("Progress disimpan");
+      toast.success("Progres disimpan");
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyimpan progres");
     } finally { setSaving(false); }
   }
 
   async function submitOpname() {
-    if (!(await confirmDialog("Submit opname? Variance akan diposting ke movements & jurnal."))) return;
+    if (!(await confirmDialog("Ajukan opname? Selisih (variance) akan diposting ke stock movements & jurnal."))) return;
     setSubmitting(true);
     try {
       await saveProgress();
       await api.post(`/inventory/opname/${id}/submit`);
-      toast.success("Opname disubmit");
+      toast.success("Opname diajukan");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal");
+      toast.error(e.response?.data?.errors?.[0]?.message || "Gagal mengajukan opname");
     } finally { setSubmitting(false); }
   }
 
@@ -115,40 +117,60 @@ export default function OpnameSession() {
     });
   }, [sess]);
 
+  const backButton = (
+    <Button variant="ghost" onClick={() => navigate("/inventory/opname")} data-testid="opn-sess-back">
+      <ArrowLeft /> Kembali ke Stock Opname
+    </Button>
+  );
+
   if (loading) return <LoadingState rows={8} />;
-  if (!sess) return <div className="glass-card p-6 text-center">Sesi tidak ditemukan</div>;
+  if (!sess) {
+    return (
+      <div className="space-y-3" data-testid="opname-session-page">
+        <div>{backButton}</div>
+        <div className="glass-card">
+          <EmptyState icon={ClipboardCheck} title="Sesi opname tidak ditemukan" description="Sesi mungkin sudah dihapus atau Anda tidak punya akses ke outlet ini." />
+        </div>
+      </div>
+    );
+  }
 
   const outletName = allOutlets.find(o => o.id === sess.outlet_id)?.name || sess.outlet_id;
   const editable = sess.status === "in_progress" && can("outlet.opname.execute");
 
   return (
-    <div data-testid="opname-session-page" className="space-y-5 max-w-6xl mx-auto">
-      <div data-testid="opn-sess-header" className="flex items-center gap-3 flex-wrap">
-        <Button variant="outline" onClick={() => navigate("/inventory/opname")} className="rounded-full gap-2">
-          <ArrowLeft className="h-4 w-4" /> Kembali
-        </Button>
-        <h2 className="text-xl font-bold">Opname {sess.doc_no || sess.id.slice(0, 8)}</h2>
-        <StatusPill status={sess.status} />
-        <div className="ml-auto flex items-center gap-2">
-          {editable && (
+    <div data-testid="opname-session-page" className="space-y-3 lg:space-y-4">
+      <div>{backButton}</div>
+      <div data-testid="opn-sess-header">
+        <PageHeader
+          icon={ClipboardCheck}
+          title={`Opname ${sess.doc_no || sess.id.slice(0, 8)}`}
+          subtitle={`${outletName} · periode ${sess.period || "—"}`}
+          className="mb-0 md:mb-0"
+          actions={
             <>
-              <Button onClick={saveProgress} disabled={saving} variant="outline" className="rounded-full gap-2" data-testid="opn-save">
-                <Save className="h-4 w-4" /> {saving ? "…" : "Simpan Progress"}
-              </Button>
-              <Button onClick={submitOpname} disabled={submitting} className="rounded-full pill-active gap-2" data-testid="opn-submit">
-                <Send className="h-4 w-4" /> {submitting ? "…" : "Submit"}
-              </Button>
+              <StatusPill status={sess.status} />
+              {editable && (
+                <>
+                  <Button onClick={saveProgress} disabled={saving} variant="outline" data-testid="opn-save">
+                    <Save /> {saving ? "Menyimpan…" : "Simpan progres"}
+                  </Button>
+                  <Button onClick={submitOpname} disabled={submitting} data-testid="opn-submit">
+                    <Send /> {submitting ? "Mengajukan…" : "Ajukan opname"}
+                  </Button>
+                </>
+              )}
             </>
-          )}
-        </div>
+          }
+        />
       </div>
 
-      <div data-testid="opn-sess-info" className="glass-card p-5 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+      <div data-testid="opn-sess-info" className="glass-card p-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
         <Field label="Outlet" value={outletName} />
         <Field label="Tanggal" value={fmtDate(sess.opname_date)} />
-        <Field label="Period" value={sess.period} />
-        <Field label="Counted" value={`${sess.counted_items || 0}/${sess.total_items || 0}`} />
-        <Field label="Variance Value" value={
+        <Field label="Periode" value={sess.period} />
+        <Field label="Sudah dihitung" value={`${sess.counted_items || 0}/${sess.total_items || 0}`} />
+        <Field label="Nilai variance" value={
           <span className={sess.total_variance_value < 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}>
             {fmtRp(sess.total_variance_value || 0)}
           </span>
@@ -163,9 +185,11 @@ export default function OpnameSession() {
       />
 
       <div data-testid="opn-sess-search" className="glass-card p-3 flex items-center gap-3">
-        <Search className="h-4 w-4 text-muted-foreground ml-2" />
-        <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Cari item…" className="glass-input flex-1" data-testid="opn-search" />
-        <span className="text-xs text-muted-foreground pr-2">Total {filtered.length} item</span>
+        <div className="relative flex-1">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Cari item…" aria-label="Cari item" className="glass-input pl-9" data-testid="opn-search" />
+        </div>
+        <span className="text-xs text-muted-foreground shrink-0">Total {filtered.length} item</span>
       </div>
 
       <div data-testid="opn-sess-table-card" className="glass-card overflow-hidden">
@@ -174,7 +198,7 @@ export default function OpnameSession() {
             rows={filtered}
             keyField="item_id"
             rowTestIdPrefix="opn-row"
-            empty={<div className="px-5 py-8 text-center text-sm text-muted-foreground">Tidak ada item.</div>}
+            empty={<EmptyState title="Tidak ada item" description={q ? "Tidak ada item yang cocok dengan pencarian." : "Sesi ini tidak memiliki item."} />}
             columns={[
               { key: "item", label: "Item", primary: true, render: (ln) => (
                 <div>
@@ -184,7 +208,7 @@ export default function OpnameSession() {
               ) },
               { key: "system_qty", label: "Sistem", numeric: true,
                 render: (ln) => fmtNumber(ln.system_qty || 0, 2) },
-              { key: "counted", label: "Counted", numeric: true, render: (ln) => {
+              { key: "counted", label: "Fisik", numeric: true, render: (ln) => {
                 const cur = counts[ln.item_id]?.counted_qty;
                 return (
                   <div className="flex justify-end">
@@ -194,7 +218,8 @@ export default function OpnameSession() {
                       onChange={(e) => setCount(ln.item_id, e.target.value)}
                       disabled={!editable}
                       placeholder="—"
-                      className="glass-input h-9 w-28 text-right tabular-nums"
+                      aria-label={`Qty fisik ${ln.item_name || ""}`.trim()}
+                      className="glass-input w-28 text-right tabular-nums"
                       data-testid={`opn-count-${ln.item_id}`}
                     />
                   </div>
@@ -213,7 +238,7 @@ export default function OpnameSession() {
                   </span>
                 );
               } },
-              { key: "variance_value", label: "Variance Value", numeric: true, render: (ln) => {
+              { key: "variance_value", label: "Nilai variance", numeric: true, render: (ln) => {
                 const cur = counts[ln.item_id]?.counted_qty;
                 const counted = cur !== "" && cur != null ? Number(cur) : null;
                 const variance = counted != null ? counted - Number(ln.system_qty || 0) : null;
@@ -224,13 +249,13 @@ export default function OpnameSession() {
                   </span>
                 );
               } },
-              { key: "note", label: "Note", render: (ln) => {
+              { key: "note", label: "Catatan", render: (ln) => {
                 const note = counts[ln.item_id]?.notes;
                 return (
                   <Input value={note ?? ln.notes ?? ""}
                     onChange={(e) => setNote(ln.item_id, e.target.value)}
                     disabled={!editable}
-                    placeholder="—" className="glass-input h-9" />
+                    placeholder="—" aria-label={`Catatan ${ln.item_name || ""}`.trim()} className="glass-input" />
                 );
               } },
             ]}

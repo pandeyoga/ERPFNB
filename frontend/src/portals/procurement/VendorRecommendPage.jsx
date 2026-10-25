@@ -11,13 +11,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import {
-  Sparkles, Search, Trophy, Award, Medal, ArrowRight, Copy, ExternalLink,
+  Sparkles, Search, Trophy, Award, Medal, ArrowRight, Copy, BookOpen,
   Loader2,
 } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
@@ -78,28 +79,22 @@ export default function VendorRecommendPage() {
   }, [data, item]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 py-2" data-testid="vrec-page">
-      <div className="glass-card p-5 flex items-center gap-3" data-testid="vrec-header">
-        <div className="h-12 w-12 rounded-2xl grad-aurora-soft flex items-center justify-center">
-          <Sparkles className="h-6 w-6 text-violet-600" />
-        </div>
-        <div className="flex-1">
-          <h1 className="text-lg font-bold">Rekomendasi Vendor (AI)</h1>
-          <p className="text-xs text-muted-foreground">
-            Cari item atau buka deep-link untuk lihat top vendor + rasional otomatis (Bahasa Indonesia).
-          </p>
-        </div>
-        {(itemId || prId) && (
-          <Button variant="outline" size="sm" onClick={copyDeepLink}
-            className="rounded-full gap-1.5" data-testid="vrec-copy-link">
-            <Copy className="h-3.5 w-3.5" /> Copy Link
+    <div className="max-w-4xl mx-auto space-y-3 lg:space-y-4" data-testid="vrec-page">
+      <PageHeader
+        icon={Sparkles}
+        title="Vendor Recommendation"
+        subtitle="AI memeringkat vendor terbaik per item berdasarkan harga, lead time, scorecard, dan riwayat pembelian."
+        testId="vrec-header"
+        actions={(itemId || prId) && (
+          <Button variant="outline" onClick={copyDeepLink} data-testid="vrec-copy-link">
+            <Copy /> Salin link
           </Button>
         )}
-      </div>
+      />
 
       {/* Search */}
       <div className="glass-card p-4" data-testid="vrec-search-card">
-        <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+        <Label className="text-xs md:text-sm font-medium">
           Cari item
         </Label>
         <div className="mt-1 relative">
@@ -124,7 +119,7 @@ export default function VendorRecommendPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="glass-card p-8 text-center text-sm text-muted-foreground" data-testid="vrec-loading">
+        <div className="glass-card p-6 text-center text-sm text-muted-foreground" data-testid="vrec-loading">
           <Loader2 className="h-5 w-5 animate-spin inline-block mr-2" />
           Sedang menganalisa data harga, lead time, dan scorecard…
         </div>
@@ -132,9 +127,9 @@ export default function VendorRecommendPage() {
 
       {/* Single-item candidates */}
       {!loading && data && data.candidates !== undefined && (
-        <div className="glass-card p-5 space-y-3" data-testid="vrec-page-candidates">
-          <h2 className="font-semibold text-sm flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Top Vendor
+        <div className="glass-card p-4 space-y-3" data-testid="vrec-page-candidates">
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500" /> Vendor teratas
           </h2>
           {data.candidates.length === 0 && (
             <div className="text-sm text-muted-foreground italic" data-testid="vrec-empty-candidates">
@@ -142,7 +137,7 @@ export default function VendorRecommendPage() {
             </div>
           )}
           {data.candidates.map((c, i) => (
-            <div key={c.vendor_id} className="glass-input rounded-2xl p-4 flex items-start gap-3"
+            <div key={c.vendor_id} className="rounded-lg border border-border/50 p-3 flex items-start gap-3"
               data-testid={`vrec-page-cand-${c.vendor_id}`}>
               <RankBadge rank={i} />
               <div className="flex-1 min-w-0">
@@ -153,8 +148,8 @@ export default function VendorRecommendPage() {
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground tabular-nums mt-1 flex flex-wrap gap-x-3">
-                  <span>Avg: <b className="text-foreground">{fmtRp(c.metrics?.avg_cost || 0)}</b></span>
-                  <span>Last: <b className="text-foreground">{fmtRp(c.metrics?.last_cost || 0)}</b></span>
+                  <span>Rata-rata: <b className="text-foreground">{fmtRp(c.metrics?.avg_cost || 0)}</b></span>
+                  <span>Terakhir: <b className="text-foreground">{fmtRp(c.metrics?.last_cost || 0)}</b></span>
                   {c.metrics?.lead_time_avg != null && (
                     <span>Lead time: <b className="text-foreground">{c.metrics.lead_time_avg} hari</b></span>
                   )}
@@ -163,7 +158,7 @@ export default function VendorRecommendPage() {
                     <span>Scorecard: <b className="text-foreground">{c.metrics.scorecard.toFixed(1)}/5</b></span>
                   )}
                   {c.metrics?.recency_days != null && (
-                    <span>Last receipt: <b className="text-foreground">{c.metrics.recency_days} hari lalu</b></span>
+                    <span>Terakhir diterima: <b className="text-foreground">{c.metrics.recency_days} hari lalu</b></span>
                   )}
                 </div>
                 {c.rationale && (
@@ -172,14 +167,15 @@ export default function VendorRecommendPage() {
                   </div>
                 )}
                 <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-                  <Button asChild size="sm" variant="outline" className="rounded-full gap-1">
+                  <Button asChild size="sm" variant="outline">
                     <Link to={`/procurement/po/new?vendor_id=${c.vendor_id}${itemId ? `&item_id=${itemId}` : ""}`} data-testid={`vrec-cand-create-po-${c.vendor_id}`}>
-                      Buat PO <ArrowRight className="h-3 w-3" />
+                      Buat PO <ArrowRight />
                     </Link>
                   </Button>
-                  <Button asChild size="sm" variant="ghost" className="rounded-full gap-1 text-[11px] text-muted-foreground">
-                    <Link to={`/admin/vendors/${c.vendor_id}`} data-testid={`vrec-cand-detail-${c.vendor_id}`}>
-                      Detail vendor <ExternalLink className="h-3 w-3" />
+                  {/* Sebelumnya ke /admin/vendors/:id — route itu tidak ada (redirect ke /admin) */}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to={`/procurement/vendor-catalog?vendor=${c.vendor_id}`} data-testid={`vrec-cand-detail-${c.vendor_id}`}>
+                      <BookOpen /> Katalog vendor
                     </Link>
                   </Button>
                 </div>
@@ -199,9 +195,9 @@ export default function VendorRecommendPage() {
 
       {/* PR mode */}
       {!loading && data && data.lines !== undefined && (
-        <div className="glass-card p-5 space-y-4" data-testid="vrec-page-pr">
-          <h2 className="font-semibold text-sm flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Rekomendasi per Item dalam PR
+        <div className="glass-card p-4 space-y-3" data-testid="vrec-page-pr">
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500" /> Rekomendasi per item dalam PR
           </h2>
           {data.consensus?.length > 0 && (
             <div className="p-3 rounded-lg border border-violet-500/30 bg-violet-500/5" data-testid="vrec-consensus">
@@ -244,8 +240,9 @@ export default function VendorRecommendPage() {
       )}
 
       {!loading && !data && !itemId && !prId && (
-        <div className="glass-card p-8 text-center text-sm text-muted-foreground" data-testid="vrec-empty-state">
-          Cari item di atas, atau buka link dengan parameter <code>?item_id=</code> / <code>?pr_id=</code>.
+        <div className="glass-card" data-testid="vrec-empty-state">
+          <EmptyState icon={Search} title="Pilih item untuk melihat rekomendasi"
+            description="Ketik nama item di kolom pencarian. Rekomendasi juga bisa dibuka langsung dari form PR/PO." />
         </div>
       )}
     </div>

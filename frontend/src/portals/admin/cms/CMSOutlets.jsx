@@ -2,9 +2,8 @@
  * CMS Outlets — Sprint G Admin CMS
  */
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, MapPin, Phone, Clock, Eye, EyeOff, Loader2, Copy, CheckSquare, Square } from "lucide-react";
-import { WorkflowBadge } from "./CMSWorkflow";
-import { Button } from "@/components/ui/button";
+import { Plus, Edit2, Trash2, MapPin, Phone, Loader2, Copy } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +24,8 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import ImageUpload from "@/components/shared/ImageUpload";
 import CMSScheduleFields from "@/components/shared/CMSScheduleFields";
+import EmptyState from "@/components/shared/EmptyState";
+import SegmentedFilter from "./SegmentedFilter";
 
 const ALL_FEATURES = [
   "Dine In", "Takeaway", "Delivery", "Bar", "Coworking",
@@ -159,76 +160,59 @@ export default function CMSOutlets() {
   const getBrandName = (id) => brands.find(b => b.id === id)?.name || id || "-";
 
   return (
-    <div className="space-y-4" data-testid="cms-outlets-page">
+    <div className="space-y-3" data-testid="cms-outlets-page">
+      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-xl font-bold">Outlets / Lokasi</h3>
-          <p className="text-sm text-muted-foreground">Kelola data outlet untuk halaman Lokasi di website.</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <Select value={filterBrand} onValueChange={setFilterBrand}>
-            <SelectTrigger className="w-40"><SelectValue placeholder="Semua Brand" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Brand</SelectItem>
-              {brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Button onClick={openCreate} data-testid="create-outlet-btn">
-            <Plus className="h-4 w-4 mr-2" /> Tambah Outlet
-          </Button>
-        </div>
+        <p className="text-sm text-muted-foreground">Kelola data outlet untuk halaman Lokasi di website.</p>
+        <Button onClick={openCreate} data-testid="create-outlet-btn">
+          <Plus className="h-4 w-4" /> Tambah Outlet
+        </Button>
       </div>
 
-      {/* Search and Status Filter */}
-      <div className="flex gap-3 items-center">
+      {/* Search, Brand & Status Filter */}
+      <div className="flex gap-3 items-center flex-wrap">
         <Input
           placeholder="Cari nama outlet, area, atau alamat..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
+          aria-label="Cari outlet"
           data-testid="outlet-search-input"
         />
-        <div className="flex gap-2">
-          <Button
-            variant={statusFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("all")}
-          >
-            Semua
-          </Button>
-          <Button
-            variant={statusFilter === "published" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("published")}
-          >
-            Published
-          </Button>
-          <Button
-            variant={statusFilter === "draft" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("draft")}
-          >
-            Draft
-          </Button>
-        </div>
+        <Select value={filterBrand} onValueChange={setFilterBrand}>
+          <SelectTrigger className="w-40" aria-label="Filter brand" data-testid="outlet-brand-filter"><SelectValue placeholder="Semua Brand" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Brand</SelectItem>
+            {brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <SegmentedFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          ariaLabel="Filter status outlet"
+          options={[
+            { value: "all", label: "Semua", testId: "outlet-filter-all" },
+            { value: "published", label: "Published", testId: "outlet-filter-published" },
+            { value: "draft", label: "Draft", testId: "outlet-filter-draft" },
+          ]}
+        />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <MapPin className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>Belum ada outlet.</p>
+        <div className="glass-card">
+          <EmptyState icon={MapPin} title="Belum ada outlet" description="Klik Tambah Outlet atau ubah filter pencarian." />
         </div>
       ) : (
         <div className="grid gap-3">
           {filtered.map(item => (
-            <div key={item.id} className="border rounded-xl p-4 flex gap-4 bg-white hover:shadow-md transition-shadow"
+            <div key={item.id} className="glass-card p-4 flex gap-4 hover:shadow-md transition-shadow"
                  data-testid={`outlet-row-${item.id}`}>
               <MapPin className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold">{item.name}</span>
+                  <h3 className="text-sm md:text-base font-semibold">{item.name}</h3>
                   <Badge variant="outline" className="text-xs">{getBrandName(item.brand_id)}</Badge>
                   <Badge variant={item.status === "published" ? "default" : "secondary"} className="text-xs">
                     {item.status === "published" ? "Published" : "Draft"}
@@ -236,8 +220,8 @@ export default function CMSOutlets() {
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">{item.address}</p>
                 <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                  {item.phone && <span>📞 {item.phone}</span>}
-                  {item.area && <span>📍 {item.area}</span>}
+                  {item.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" /> {item.phone}</span>}
+                  {item.area && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {item.area}</span>}
                 </div>
                 <div className="flex gap-1 mt-2 flex-wrap">
                   {(item.features || []).map(f => (
@@ -279,61 +263,61 @@ export default function CMSOutlets() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Brand *</Label>
+                <Label htmlFor="outlet-form-brand">Brand *</Label>
                 <Select value={form.brand_id} onValueChange={v => setForm(f=>({...f,brand_id:v}))}>
-                  <SelectTrigger data-testid="outlet-brand"><SelectValue placeholder="Pilih brand..." /></SelectTrigger>
+                  <SelectTrigger id="outlet-form-brand" data-testid="outlet-brand"><SelectValue placeholder="Pilih brand..." /></SelectTrigger>
                   <SelectContent>{brands.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Kode Outlet</Label>
-                <Input value={form.code} onChange={e => setForm(f=>({...f,code:e.target.value}))} placeholder="the-coffeeshop-sudirman" />
+                <Label htmlFor="outlet-form-kode-outlet">Kode Outlet</Label>
+                <Input id="outlet-form-kode-outlet" value={form.code} onChange={e => setForm(f=>({...f,code:e.target.value}))} placeholder="the-coffeeshop-sudirman" />
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Nama Outlet *</Label>
-              <Input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} data-testid="outlet-name" />
+              <Label htmlFor="outlet-form-nama-outlet">Nama Outlet *</Label>
+              <Input id="outlet-form-nama-outlet" value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} data-testid="outlet-name" />
             </div>
             <div className="space-y-1">
-              <Label>Alamat</Label>
-              <Textarea rows={2} value={form.address} onChange={e => setForm(f=>({...f,address:e.target.value}))} />
+              <Label htmlFor="outlet-form-alamat">Alamat</Label>
+              <Textarea id="outlet-form-alamat" rows={2} value={form.address} onChange={e => setForm(f=>({...f,address:e.target.value}))} />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label>Area</Label>
-                <Input value={form.area} onChange={e => setForm(f=>({...f,area:e.target.value}))} placeholder="Jakarta Selatan" />
+                <Label htmlFor="outlet-form-area">Area</Label>
+                <Input id="outlet-form-area" value={form.area} onChange={e => setForm(f=>({...f,area:e.target.value}))} placeholder="Jakarta Selatan" />
               </div>
               <div className="space-y-1">
-                <Label>Phone</Label>
-                <Input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} />
+                <Label htmlFor="outlet-form-phone">Phone</Label>
+                <Input id="outlet-form-phone" value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} />
               </div>
               <div className="space-y-1">
-                <Label>Email</Label>
-                <Input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} />
+                <Label htmlFor="outlet-form-email">Email</Label>
+                <Input id="outlet-form-email" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Jam Weekday</Label>
-                <Input value={form.hours_weekday} onChange={e => setForm(f=>({...f,hours_weekday:e.target.value}))} placeholder="11:00 – 22:00" />
+                <Label htmlFor="outlet-form-jam-weekday">Jam Weekday</Label>
+                <Input id="outlet-form-jam-weekday" value={form.hours_weekday} onChange={e => setForm(f=>({...f,hours_weekday:e.target.value}))} placeholder="11:00 – 22:00" />
               </div>
               <div className="space-y-1">
-                <Label>Jam Weekend</Label>
-                <Input value={form.hours_weekend} onChange={e => setForm(f=>({...f,hours_weekend:e.target.value}))} placeholder="11:00 – 23:00" />
+                <Label htmlFor="outlet-form-jam-weekend">Jam Weekend</Label>
+                <Input id="outlet-form-jam-weekend" value={form.hours_weekend} onChange={e => setForm(f=>({...f,hours_weekend:e.target.value}))} placeholder="11:00 – 23:00" />
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Map URL</Label>
-              <Input value={form.map_url} onChange={e => setForm(f=>({...f,map_url:e.target.value}))} placeholder="https://maps.google.com/..." />
+              <Label htmlFor="outlet-form-map-url">Map URL</Label>
+              <Input id="outlet-form-map-url" value={form.map_url} onChange={e => setForm(f=>({...f,map_url:e.target.value}))} placeholder="https://maps.google.com/..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Latitude</Label>
-                <Input type="number" step="0.0001" value={form.lat} onChange={e => setForm(f=>({...f,lat:e.target.value}))} placeholder="-6.2088" />
+                <Label htmlFor="outlet-form-latitude">Latitude</Label>
+                <Input id="outlet-form-latitude" type="number" step="0.0001" value={form.lat} onChange={e => setForm(f=>({...f,lat:e.target.value}))} placeholder="-6.2088" />
               </div>
               <div className="space-y-1">
-                <Label>Longitude</Label>
-                <Input type="number" step="0.0001" value={form.lng} onChange={e => setForm(f=>({...f,lng:e.target.value}))} placeholder="106.8456" />
+                <Label htmlFor="outlet-form-longitude">Longitude</Label>
+                <Input id="outlet-form-longitude" type="number" step="0.0001" value={form.lng} onChange={e => setForm(f=>({...f,lng:e.target.value}))} placeholder="106.8456" />
               </div>
             </div>
             <div className="space-y-2">
@@ -342,6 +326,7 @@ export default function CMSOutlets() {
                 {ALL_FEATURES.map(feat => (
                   <button key={feat} type="button"
                           onClick={() => toggleFeature(feat)}
+                          aria-pressed={form.features.includes(feat)}
                           className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
                             form.features.includes(feat)
                               ? "bg-primary text-primary-foreground border-primary"
@@ -353,8 +338,8 @@ export default function CMSOutlets() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Label>Status</Label>
-              <Switch checked={form.status === "published"}
+              <Label htmlFor="outlet-form-status">Status</Label>
+              <Switch id="outlet-form-status" checked={form.status === "published"}
                       onCheckedChange={v => setForm(f=>({...f,status:v?"published":"draft"}))} />
               <span className="text-sm">{form.status === "published" ? "Published" : "Draft"}</span>
             </div>
@@ -372,9 +357,9 @@ export default function CMSOutlets() {
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setFormOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setFormOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={saving} data-testid="save-outlet">
-              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Simpan
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Simpan
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -388,7 +373,7 @@ export default function CMSOutlets() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className={buttonVariants({ variant: "destructive" })}>Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

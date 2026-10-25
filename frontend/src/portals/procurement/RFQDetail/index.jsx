@@ -3,26 +3,28 @@
  * Shows RFQ detail, vendor quote entry, comparison matrix, and accept-to-PO flow.
  */
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft, Plus, Send, CheckCircle2, X, RefreshCw,
-  Trophy, Clock, FileCheck, AlertCircle, ChevronDown, ChevronUp
+  Trophy, Clock, FileCheck, AlertCircle, FileSearch,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import EmptyState from "@/components/shared/EmptyState";
+import LoadingState from "@/components/shared/LoadingState";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import { formatCurrency, formatDateID } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { confirmDialog } from "@/components/shared/confirmDialog";
+import StatusPill from "@/components/shared/StatusPill";
 
 // ──── RFQ Create Form (when navigating to /rfq/new)
 export function RFQForm() {
@@ -68,31 +70,33 @@ export function RFQForm() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-3xl mx-auto" data-testid="rfq-form-page">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/procurement/rfq")} data-testid="rfq-form-back">
-          <ArrowLeft className="h-4 w-4" />
+    <div className="space-y-3 lg:space-y-4 max-w-3xl mx-auto" data-testid="rfq-form-page">
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/procurement/rfq")} className="-ml-2 mb-1" data-testid="rfq-form-back">
+          <ArrowLeft /> Kembali ke RFQ
         </Button>
-        <div>
-          <h1 className="text-xl font-bold">Buat RFQ Baru</h1>
-          <p className="text-sm text-muted-foreground">Request for Quotation ke vendor</p>
-        </div>
+        <PageHeader
+          icon={FileSearch}
+          title="RFQ Baru"
+          subtitle="Request for Quotation — kirim permintaan penawaran harga ke beberapa vendor."
+          className="mb-0 md:mb-0"
+        />
       </div>
 
       <Card data-testid="rfq-form-info-card">
-        <CardHeader><CardTitle className="text-base">Informasi RFQ</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
+        <CardHeader><CardTitle>Informasi RFQ</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label>Judul RFQ *</Label>
-            <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Mis: Permintaan Harga Bahan Baku Mei 2026" data-testid="rfq-form-title" />
+            <Label htmlFor="rfq-form-title" className="text-xs md:text-sm font-medium">Judul RFQ *</Label>
+            <Input id="rfq-form-title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Mis: Permintaan Harga Bahan Baku Mei 2026" data-testid="rfq-form-title" />
           </div>
           <div className="space-y-1">
-            <Label>Deadline Balasan</Label>
-            <Input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} data-testid="rfq-form-deadline" />
+            <Label htmlFor="rfq-form-deadline" className="text-xs md:text-sm font-medium">Batas waktu balasan</Label>
+            <Input id="rfq-form-deadline" type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} data-testid="rfq-form-deadline" />
           </div>
           <div className="space-y-1">
-            <Label>Catatan</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Syarat pengiriman, spesifikasi khusus..." data-testid="rfq-form-notes" />
+            <Label htmlFor="rfq-form-notes" className="text-xs md:text-sm font-medium">Catatan</Label>
+            <Textarea id="rfq-form-notes" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} placeholder="Syarat pengiriman, spesifikasi khusus..." data-testid="rfq-form-notes" />
           </div>
         </CardContent>
       </Card>
@@ -100,7 +104,7 @@ export function RFQForm() {
       <Card data-testid="rfq-form-vendors-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Vendor *</CardTitle>
+            <CardTitle>Vendor *</CardTitle>
             <Badge variant="outline" data-testid="rfq-form-vendor-count">{form.vendor_ids.length} dipilih</Badge>
           </div>
         </CardHeader>
@@ -110,6 +114,7 @@ export function RFQForm() {
               <button
                 key={v.id}
                 type="button"
+                aria-pressed={form.vendor_ids.includes(v.id)}
                 onClick={() => setForm(f => ({ ...f, vendor_ids: f.vendor_ids.includes(v.id) ? f.vendor_ids.filter(x => x !== v.id) : [...f.vendor_ids, v.id] }))}
                 className={`flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                   form.vendor_ids.includes(v.id) ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted/50"
@@ -127,35 +132,35 @@ export function RFQForm() {
       <Card data-testid="rfq-form-items-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Item yang Diminta</CardTitle>
-            <Button size="sm" variant="outline" onClick={addLine} data-testid="rfq-form-add-line"><Plus className="h-3.5 w-3.5 mr-1" />Tambah Item</Button>
+            <CardTitle>Item yang diminta</CardTitle>
+            <Button size="sm" variant="outline" onClick={addLine} data-testid="rfq-form-add-line"><Plus /> Tambah item</Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {lines.map((line, i) => (
             <div key={i} className="flex gap-2 items-start" data-testid={`rfq-form-line-${i}`}>
               <div className="flex-1 space-y-1">
-                <Input placeholder="Nama item" value={line.item_name} onChange={e => updateLine(i, "item_name", e.target.value)} data-testid={`rfq-form-line-${i}-name`} />
+                <Input placeholder="Nama item" aria-label={`Nama item baris ${i + 1}`} value={line.item_name} onChange={e => updateLine(i, "item_name", e.target.value)} data-testid={`rfq-form-line-${i}-name`} />
               </div>
               <div className="w-20">
-                <Input type="number" min="1" placeholder="Qty" value={line.qty} onChange={e => updateLine(i, "qty", Number(e.target.value))} data-testid={`rfq-form-line-${i}-qty`} />
+                <Input type="number" min="1" placeholder="Qty" aria-label={`Qty baris ${i + 1}`} value={line.qty} onChange={e => updateLine(i, "qty", Number(e.target.value))} data-testid={`rfq-form-line-${i}-qty`} />
               </div>
               <div className="w-20">
-                <Input placeholder="UoM" value={line.uom} onChange={e => updateLine(i, "uom", e.target.value)} data-testid={`rfq-form-line-${i}-uom`} />
+                <Input placeholder="Unit" aria-label={`Unit baris ${i + 1}`} value={line.uom} onChange={e => updateLine(i, "uom", e.target.value)} data-testid={`rfq-form-line-${i}-uom`} />
               </div>
               <div className="w-28">
-                <Input type="number" placeholder="Est. Harga" value={line.est_unit_price || ""} onChange={e => updateLine(i, "est_unit_price", Number(e.target.value))} data-testid={`rfq-form-line-${i}-price`} />
+                <Input type="number" placeholder="Est. harga" aria-label={`Estimasi harga baris ${i + 1}`} value={line.est_unit_price || ""} onChange={e => updateLine(i, "est_unit_price", Number(e.target.value))} data-testid={`rfq-form-line-${i}-price`} />
               </div>
-              <Button size="icon" variant="ghost" aria-label="Hapus baris" onClick={() => removeLine(i)} data-testid={`rfq-form-line-${i}-remove`}><X className="h-4 w-4" /></Button>
+              <Button size="icon" variant="ghost" aria-label={`Hapus baris ${i + 1}`} onClick={() => removeLine(i)} data-testid={`rfq-form-line-${i}-remove`}><X /></Button>
             </div>
           ))}
         </CardContent>
       </Card>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => navigate("/procurement/rfq")} data-testid="rfq-form-cancel">Batal</Button>
         <Button onClick={handleSubmit} disabled={saving} data-testid="rfq-form-submit">
-          {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+          {saving ? <RefreshCw className="animate-spin" /> : <Plus />}
           Buat RFQ
         </Button>
       </div>
@@ -198,10 +203,10 @@ export default function RFQDetail() {
   const handleSendRFQ = async () => {
     try {
       await api.post(`/rfq/${id}/send`);
-      toast.success("Status RFQ diubah ke Dikirim");
+      toast.success("RFQ ditandai sudah dikirim");
       load();
     } catch {
-      toast.error("Gagal mengupdate status");
+      toast.error("Gagal mengubah status RFQ");
     }
   };
 
@@ -229,85 +234,89 @@ export default function RFQDetail() {
     setSaving(true);
     try {
       await api.post(`/rfq/${id}/quotes/${quoteVendorId}`, quoteForm);
-      toast.success("Quote disimpan");
+      toast.success("Penawaran disimpan");
       setQuoteDialog(false);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menyimpan quote");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menyimpan penawaran");
     } finally {
       setSaving(false);
     }
   };
 
   const handleAccept = async (vendorId) => {
-    if (!(await confirmDialog("Terima quote dari vendor ini dan buat PO draft?"))) return;
+    if (!(await confirmDialog("Terima penawaran vendor ini dan buat PO draft?"))) return;
     setAccepting(vendorId);
     try {
       const res = await api.post(`/rfq/${id}/accept/${vendorId}`);
       toast.success(`PO ${res.data.data?.po?.po_no || ""} berhasil dibuat!`);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menerima quote");
+      toast.error(err.response?.data?.errors?.[0]?.message || "Gagal menerima penawaran");
     } finally {
       setAccepting("");
     }
   };
 
-  if (loading) return <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
-  if (!rfq) return <div className="p-6 text-center text-muted-foreground">RFQ tidak ditemukan</div>;
+  if (loading) return <div data-testid="rfq-detail-loading"><LoadingState rows={6} /></div>;
+  if (!rfq) return (
+    <div className="glass-card" data-testid="rfq-detail-not-found">
+      <EmptyState icon={FileSearch} title="RFQ tidak ditemukan" description="RFQ mungkin sudah dihapus atau Anda tidak punya akses."
+        action={<Button variant="outline" onClick={() => navigate("/procurement/rfq")}><ArrowLeft /> Kembali ke RFQ</Button>} />
+    </div>
+  );
 
-  const statusColors = {
-    draft: "bg-zinc-500/10 text-zinc-600 border-zinc-500/20",
-    sent: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    quotes_received: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    accepted: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
-  };
 
   const quotedVendorIds = (rfq.quotes || []).map(q => q.vendor_id);
   const vendorMap = rfq.vendor_map || {};
 
   return (
-    <div className="space-y-6 p-6" data-testid="rfq-detail-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="rfq-detail-page">
       {/* Header */}
-      <div className="flex items-start gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/procurement/rfq")} data-testid="rfq-detail-back">
-          <ArrowLeft className="h-4 w-4" />
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/procurement/rfq")} className="-ml-2 mb-1" data-testid="rfq-detail-back">
+          <ArrowLeft /> Kembali ke RFQ
         </Button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-bold" data-testid="rfq-detail-no">{rfq.rfq_no}</h1>
-            <Badge variant="outline" className={statusColors[rfq.status] || ""} data-testid="rfq-detail-status">{rfq.status}</Badge>
-            {rfq.po_id && (
-              <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600 border-emerald-500/20" data-testid="rfq-detail-po-badge">
-                <FileCheck className="h-3 w-3" />PO Dibuat
-              </Badge>
-            )}
-          </div>
-          <p className="text-muted-foreground text-sm mt-0.5" data-testid="rfq-detail-title">{rfq.title}</p>
-        </div>
-        <div className="flex gap-2">
-          {rfq.status === "draft" && (
-            <Button size="sm" onClick={handleSendRFQ} data-testid="rfq-detail-send">
-              <Send className="h-4 w-4 mr-2" />Tandai Dikirim
-            </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={load} data-testid="rfq-detail-refresh"><RefreshCw className="h-4 w-4" /></Button>
-        </div>
+        <PageHeader
+          icon={FileSearch}
+          title={<span data-testid="rfq-detail-no">{rfq.rfq_no}</span>}
+          subtitle={
+            <span className="inline-flex items-center gap-2 flex-wrap">
+              <span data-testid="rfq-detail-status"><StatusPill status={rfq.status} /></span>
+              <span data-testid="rfq-detail-title">{rfq.title}</span>
+            </span>
+          }
+          className="mb-0 md:mb-0"
+          actions={
+            <>
+              {rfq.po_id && (
+                <Button asChild variant="outline" data-testid="rfq-detail-po-badge">
+                  <Link to={`/procurement/po/${rfq.po_id}`}><FileCheck /> Lihat PO</Link>
+                </Button>
+              )}
+              <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang RFQ" data-testid="rfq-detail-refresh"><RefreshCw /></Button>
+              {rfq.status === "draft" && (
+                <Button onClick={handleSendRFQ} data-testid="rfq-detail-send">
+                  <Send /> Tandai dikirim
+                </Button>
+              )}
+            </>
+          }
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList data-testid="rfq-detail-tabs">
-          <TabsTrigger value="overview" data-testid="rfq-tab-overview">Overview</TabsTrigger>
-          <TabsTrigger value="quotes" data-testid="rfq-tab-quotes">Quotes ({rfq.quotes?.length || 0})</TabsTrigger>
-          <TabsTrigger value="compare" data-testid="rfq-tab-compare">Bandingkan</TabsTrigger>
+          <TabsTrigger value="overview" data-testid="rfq-tab-overview">Ringkasan</TabsTrigger>
+          <TabsTrigger value="quotes" data-testid="rfq-tab-quotes">Penawaran ({rfq.quotes?.length || 0})</TabsTrigger>
+          <TabsTrigger value="compare" data-testid="rfq-tab-compare">Perbandingan</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="mt-4 space-y-4" data-testid="rfq-overview-content">
-          <div className="grid gap-4 sm:grid-cols-2">
+        <TabsContent value="overview" className="space-y-3" data-testid="rfq-overview-content">
+          <div className="grid gap-3 lg:gap-4 sm:grid-cols-2">
             <Card data-testid="rfq-overview-items">
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Items Diminta</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Item diminta</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {(rfq.items || []).map((item, i) => (
@@ -320,15 +329,15 @@ export default function RFQDetail() {
               </CardContent>
             </Card>
             <Card data-testid="rfq-overview-vendors">
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Vendor yang Dikirimi</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Vendor yang dikirimi</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {(rfq.vendor_ids || []).map(vid => (
                     <div key={vid} className="flex items-center justify-between text-sm" data-testid={`rfq-overview-vendor-${vid}`}>
                       <span>{vendorMap[vid] || vid}</span>
                       {quotedVendorIds.includes(vid)
-                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Quoted</Badge>
-                        : <Badge variant="outline" className="text-xs">Belum</Badge>}
+                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Sudah menawar</Badge>
+                        : <Badge variant="outline" className="text-xs">Belum menawar</Badge>}
                     </div>
                   ))}
                 </div>
@@ -336,17 +345,17 @@ export default function RFQDetail() {
             </Card>
           </div>
           {rfq.notes && (
-            <Card data-testid="rfq-overview-notes"><CardContent className="pt-4"><p className="text-sm"><strong>Catatan:</strong> {rfq.notes}</p></CardContent></Card>
+            <Card data-testid="rfq-overview-notes"><CardContent className="pt-4"><p className="text-sm"><span className="font-medium">Catatan:</span> {rfq.notes}</p></CardContent></Card>
           )}
         </TabsContent>
 
         {/* Quotes Tab */}
-        <TabsContent value="quotes" className="mt-4 space-y-4" data-testid="rfq-quotes-content">
+        <TabsContent value="quotes" className="space-y-3" data-testid="rfq-quotes-content">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{rfq.quotes?.length || 0} dari {rfq.vendor_ids?.length || 0} vendor telah memberikan quote</p>
+            <p className="text-sm text-muted-foreground">{rfq.quotes?.length || 0} dari {rfq.vendor_ids?.length || 0} vendor sudah memberikan penawaran</p>
           </div>
           {/* Vendor cards - enter/view quotes */}
-          <div className="grid gap-4 sm:grid-cols-2" data-testid="rfq-quote-cards">
+          <div className="grid gap-3 lg:gap-4 sm:grid-cols-2" data-testid="rfq-quote-cards">
             {(rfq.vendor_ids || []).map(vid => {
               const vname = vendorMap[vid] || vid;
               const quote = rfq.quotes?.find(q => q.vendor_id === vid);
@@ -354,9 +363,9 @@ export default function RFQDetail() {
                 <Card key={vid} data-testid={`rfq-quote-card-${vid}`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{vname}</CardTitle>
+                      <CardTitle>{vname}</CardTitle>
                       {quote
-                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Quoted</Badge>
+                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Sudah menawar</Badge>
                         : <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Menunggu</Badge>
                       }
                     </div>
@@ -371,7 +380,7 @@ export default function RFQDetail() {
                           </div>
                         ))}
                         <div className="flex justify-between text-sm font-semibold border-t pt-1 mt-1">
-                          <span>Total Est.</span>
+                          <span>Total estimasi</span>
                           <span className="tabular-nums">{formatCurrency(quote.total_est || 0)}</span>
                         </div>
                       </div>
@@ -385,19 +394,19 @@ export default function RFQDetail() {
                         disabled={rfq.status === "accepted" || rfq.status === "cancelled"}
                         data-testid={`rfq-quote-edit-${vid}`}
                       >
-                        {quote ? "Edit Quote" : "Masukkan Quote"}
+                        {quote ? "Ubah penawaran" : "Input penawaran"}
                       </Button>
                       {quote && rfq.status !== "accepted" && rfq.status !== "cancelled" && (
                         <Button
                           size="sm"
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                           onClick={() => handleAccept(vid)}
                           disabled={accepting === vid}
                           data-testid={`rfq-quote-accept-${vid}`}
                         >
                           {accepting === vid
-                            ? <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                            : <Trophy className="h-4 w-4 mr-1" />}
+                            ? <RefreshCw className="animate-spin" />
+                            : <Trophy />}
                           Terima
                         </Button>
                       )}
@@ -410,14 +419,14 @@ export default function RFQDetail() {
         </TabsContent>
 
         {/* Compare Tab */}
-        <TabsContent value="compare" className="mt-4" data-testid="rfq-compare-content">
+        <TabsContent value="compare" data-testid="rfq-compare-content">
           {!matrix || !matrix.vendors?.length ? (
-            <Card data-testid="rfq-compare-empty"><CardContent className="flex flex-col items-center gap-2 py-8 text-center">
-              <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Belum ada quote untuk dibandingkan</p>
-            </CardContent></Card>
+            <div className="glass-card" data-testid="rfq-compare-empty">
+              <EmptyState icon={AlertCircle} title="Belum ada penawaran untuk dibandingkan"
+                description="Input penawaran vendor di tab Penawaran terlebih dahulu." />
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Card>
                 <CardContent className="p-0">
                   <DataTable
@@ -462,18 +471,18 @@ export default function RFQDetail() {
               </Card>
 
               {rfq.status !== "accepted" && rfq.status !== "cancelled" && (
-                <div className="flex flex-wrap gap-3" data-testid="rfq-compare-accept-buttons">
+                <div className="flex flex-wrap gap-2" data-testid="rfq-compare-accept-buttons">
                   {matrix.vendors.map(v => (
                     <Button
                       key={v.vendor_id}
                       onClick={() => handleAccept(v.vendor_id)}
                       disabled={accepting === v.vendor_id || !rfq.quotes?.some(q => q.vendor_id === v.vendor_id)}
-                      className="gap-2"
+                      variant="outline"
                       data-testid={`rfq-compare-accept-${v.vendor_id}`}
                     >
                       {accepting === v.vendor_id
-                        ? <RefreshCw className="h-4 w-4 animate-spin" />
-                        : <Trophy className="h-4 w-4" />}
+                        ? <RefreshCw className="animate-spin" />
+                        : <Trophy />}
                       Terima {v.vendor_name}
                     </Button>
                   ))}
@@ -487,30 +496,30 @@ export default function RFQDetail() {
       {/* Quote Entry Dialog */}
       <Dialog open={quoteDialog} onOpenChange={setQuoteDialog}>
         <DialogContent className="max-w-xl" data-testid="quote-dialog">
-          <DialogHeader><DialogTitle>Masukkan Quote — {vendorMap[quoteVendorId] || quoteVendorId}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Penawaran — {vendorMap[quoteVendorId] || quoteVendorId}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             {quoteForm.lines.map((line, i) => (
               <div key={i} className="space-y-2" data-testid={`quote-line-${i}`}>
                 <p className="text-sm font-medium">{line.item_name || `Item ${i + 1}`}</p>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Harga Satuan (Rp)</Label>
-                    <Input type="number" min="0" value={line.unit_price || ""}
+                    <Label htmlFor={`quote-line-${i}-price`} className="text-xs">Harga satuan (Rp)</Label>
+                    <Input id={`quote-line-${i}-price`} type="number" min="0" value={line.unit_price || ""}
                       onChange={e => setQuoteForm(f => ({ ...f, lines: f.lines.map((l, idx) => idx === i ? { ...l, unit_price: Number(e.target.value) } : l) }))}
                       placeholder="0"
                       data-testid={`quote-line-${i}-price`}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Min. Order</Label>
-                    <Input type="number" min="1" value={line.moq || 1}
+                    <Label htmlFor={`quote-line-${i}-moq`} className="text-xs">Min. order</Label>
+                    <Input id={`quote-line-${i}-moq`} type="number" min="1" value={line.moq || 1}
                       onChange={e => setQuoteForm(f => ({ ...f, lines: f.lines.map((l, idx) => idx === i ? { ...l, moq: Number(e.target.value) } : l) }))}
                       data-testid={`quote-line-${i}-moq`}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Lead Time (hari)</Label>
-                    <Input type="number" min="1" value={line.lead_time_days || 3}
+                    <Label htmlFor={`quote-line-${i}-lead`} className="text-xs">Lead time (hari)</Label>
+                    <Input id={`quote-line-${i}-lead`} type="number" min="1" value={line.lead_time_days || 3}
                       onChange={e => setQuoteForm(f => ({ ...f, lines: f.lines.map((l, idx) => idx === i ? { ...l, lead_time_days: Number(e.target.value) } : l) }))}
                       data-testid={`quote-line-${i}-lead-time`}
                     />
@@ -519,8 +528,8 @@ export default function RFQDetail() {
               </div>
             ))}
             <div className="space-y-1">
-              <Label>Catatan Vendor</Label>
-              <Textarea rows={2} value={quoteForm.notes}
+              <Label htmlFor="quote-notes" className="text-xs md:text-sm font-medium">Catatan vendor</Label>
+              <Textarea id="quote-notes" rows={2} value={quoteForm.notes}
                 onChange={e => setQuoteForm(f => ({ ...f, notes: e.target.value }))}
                 placeholder="Kondisi pembayaran, syarat khusus..."
                 data-testid="quote-notes"
@@ -530,8 +539,8 @@ export default function RFQDetail() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setQuoteDialog(false)} data-testid="quote-cancel">Batal</Button>
             <Button onClick={handleSaveQuote} disabled={saving} data-testid="quote-save">
-              {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : null}
-              Simpan Quote
+              {saving ? <RefreshCw className="animate-spin" /> : null}
+              Simpan penawaran
             </Button>
           </DialogFooter>
         </DialogContent>

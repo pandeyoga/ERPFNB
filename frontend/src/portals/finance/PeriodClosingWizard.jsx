@@ -3,21 +3,25 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertTriangle, XCircle, Info, RefreshCw,
-  Lock, ExternalLink, ListChecks, ChevronRight, Sparkles,
+  Lock, ExternalLink, ListChecks, ChevronRight, Sparkles, ShieldAlert, CalendarCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
+import { promptDialog } from "@/components/shared/confirmDialog";
 import StatusPill from "@/components/shared/StatusPill";
 import LoadingState from "@/components/shared/LoadingState";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import { fmtRp } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+/** Backend mengirim fix_link "/procurement/prs" (route tidak ada → redirect ke beranda Procurement).
+ * Cek "PR/PO menunggu approval" diarahkan ke Pusat Persetujuan. */
+const FIX_LINK_ALIASES = { "/procurement/prs": "/my-approvals" };
+const fixLink = (l) => FIX_LINK_ALIASES[l] || l;
 
 export default function PeriodClosingWizard() {
   const { period } = useParams();
@@ -26,8 +30,6 @@ export default function PeriodClosingWizard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [confirmDlg, setConfirmDlg] = useState(null); // 'close' | 'lock'
-  const [reason, setReason] = useState("");
   const [acting, setActing] = useState(false);
   const [taxSettlement, setTaxSettlement] = useState(null);
   const [taxPreview, setTaxPreview] = useState(null);
@@ -39,7 +41,7 @@ export default function PeriodClosingWizard() {
       const res = await api.get(`/finance/periods/${period}/closing-checks`);
       setData(unwrap(res));
     } catch {
-      toast.error("Gagal load checklist");
+      toast.error("Gagal memuat checklist closing");
     } finally { setLoading(false); }
   }
   
@@ -69,14 +71,26 @@ export default function PeriodClosingWizard() {
   useEffect(() => { if (data) loadTaxSettlement(); /* eslint-disable-next-line */ }, [data?.current_status]);
 
   async function doAction(kind) {
+    const isLock = kind === "lock";
+    const note = await promptDialog({
+      title: `${isLock ? "Kunci" : "Tutup"} periode ${period}?`,
+      description: isLock
+        ? "Periode terkunci akan menolak semua posting jurnal (manual maupun otomatis). Buka kembali tetap dapat dilakukan dengan alasan tertulis."
+        : "Tutup periode adalah soft-close. Anda masih dapat membukanya kembali tanpa konsekuensi sistem.",
+      label: "Catatan (opsional)",
+      placeholder: "Mis: closing reguler April 2026",
+      required: false,
+      multiline: true,
+      confirmText: isLock ? "Kunci periode" : "Tutup periode",
+    });
+    if (note === null) return; // dibatalkan
     try {
       setActing(true);
-      await api.post(`/finance/periods/${period}/${kind}`, { reason: reason.trim() || `${kind} via wizard` });
-      toast.success(kind === "close" ? `Period ${period} closed` : `Period ${period} locked`);
-      setConfirmDlg(null); setReason("");
+      await api.post(`/finance/periods/${period}/${kind}`, { reason: note || `${kind} via wizard` });
+      toast.success(kind === "close" ? `Periode ${period} ditutup (soft-close)` : `Periode ${period} dikunci`);
       load();
     } catch (e) {
-      toast.error(e.response?.data?.errors?.[0]?.message || `Gagal ${kind}`);
+      toast.error(e.response?.data?.errors?.[0]?.message || (kind === "close" ? "Gagal menutup periode" : "Gagal mengunci periode"));
     } finally { setActing(false); }
   }
 
@@ -94,68 +108,80 @@ export default function PeriodClosingWizard() {
   const active = checks[activeIdx];
 
   return (
-    <div data-testid="closing-wizard-page" className="space-y-5 max-w-6xl mx-auto">
-      {/* Header */}
-      <div data-testid="wiz-header" className="flex items-center gap-3 flex-wrap">
-        <Button variant="outline" onClick={() => navigate("/finance/periods")} className="rounded-full gap-2" data-testid="wiz-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
-        </Button>
-        <h2 className="text-xl font-bold">Closing Wizard · {period}</h2>
+    <div data-testid="closing-wizard-page">
+      <Button variant="ghost" size="sm" className="-ml-2 mb-1 text-muted-foreground"
+        onClick={() => navigate("/finance/period-closing")} data-testid="wiz-back">
+        <ArrowLeft /> Kembali ke Period Closing
+      </Button>
+      <PageHeader
+        icon={ListChecks}
+        testId="wiz-header"
+        title={`Closing Wizard · ${period}`}
+        subtitle="Checklist 8 langkah sebelum menutup (soft-close) atau mengunci periode"
+        actions={(
+          <>
+            <Button variant="outline" onClick={load} disabled={loading} data-testid="wiz-refresh">
+              <RefreshCw className={cn(loading && "animate-spin")} /> Jalankan cek
+            </Button>
+            {!isLocked && can("finance.period.close_step") && cur === "open" && (
+              <Button variant="outline" onClick={() => doAction("close")}
+                disabled={!summary.ready_to_close || acting} data-testid="wiz-close">
+                Tutup periode
+              </Button>
+            )}
+            {!isLocked && can("finance.period.lock") && (
+              <Button onClick={() => doAction("lock")}
+                disabled={!summary.ready_to_lock || acting} data-testid="wiz-lock">
+                <Lock /> Kunci periode
+              </Button>
+            )}
+          </>
+        )}
+      >
         <StatusPill status={cur} />
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" onClick={load} disabled={loading} className="rounded-full gap-2 h-9" data-testid="wiz-refresh">
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} /> Run Checks
-          </Button>
-          {!isLocked && can("finance.period.close_step") && cur === "open" && (
-            <Button variant="outline" onClick={() => { setConfirmDlg("close"); setReason(""); }}
-              disabled={!summary.ready_to_close} className="rounded-full gap-2 h-9" data-testid="wiz-close">
-              Close Period
-            </Button>
-          )}
-          {!isLocked && can("finance.period.lock") && (
-            <Button onClick={() => { setConfirmDlg("lock"); setReason(""); }}
-              disabled={!summary.ready_to_lock} className="pill-active rounded-full gap-2 h-9" data-testid="wiz-lock">
-              <Lock className="h-4 w-4" /> Lock Period
-            </Button>
-          )}
-        </div>
-      </div>
+      </PageHeader>
 
+      <div className="space-y-3 lg:space-y-4">
       {/* Progress strip */}
-      <div data-testid="wiz-progress-strip" className="glass-card p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <ProgressTile label="Checks ok"
+      <div data-testid="wiz-progress-strip" className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <CompactStatCard size="sm" label="Cek OK" icon={CheckCircle2} color="aurora-4" tone="success"
           value={`${progressPct}%`}
-          hint={`${checks.filter(c => c.status === "ok" || c.status === "info").length}/${checks.length}`}
-          tone="emerald" />
-        <ProgressTile label="Warnings" value={summary.warnings ?? 0} hint="non-blocking" tone="amber" />
-        <ProgressTile label="Blockers" value={summary.blockers ?? 0} hint="must-fix" tone={summary.blockers ? "red" : "emerald"} />
-        <ProgressTile label="Period status" value={cur} hint={summary.ready_to_lock ? "siap lock" : "belum siap"} tone={isLocked ? "red" : (summary.ready_to_lock ? "emerald" : "amber")} />
+          sub={`${checks.filter(c => c.status === "ok" || c.status === "info").length}/${checks.length} langkah`}
+          testId="wiz-stat-ok" />
+        <CompactStatCard size="sm" label="Peringatan" icon={AlertTriangle} color="aurora-5"
+          tone={summary.warnings ? "warning" : "default"} value={summary.warnings ?? 0} sub="tidak memblokir" testId="wiz-stat-warnings" />
+        <CompactStatCard size="sm" label="Blocker" icon={ShieldAlert} color="aurora-6"
+          tone={summary.blockers ? "danger" : "success"} value={summary.blockers ?? 0} sub="wajib diselesaikan" testId="wiz-stat-blockers" />
+        <CompactStatCard size="sm" label="Status periode" icon={CalendarCheck} color="aurora-1"
+          tone={isLocked ? "danger" : (summary.ready_to_lock ? "success" : "warning")}
+          value={<span className="capitalize">{cur}</span>}
+          sub={isLocked ? "sudah dikunci" : summary.ready_to_lock ? "siap dikunci" : "belum siap"} testId="wiz-stat-status" />
       </div>
 
       {/* Tax Settlement Preview (before closing) */}
       {cur === "open" && taxPreview && (
-        <div className={`glass-card p-5 border-l-4 ${taxPreview.will_create ? "border-l-amber-500" : "border-l-slate-400"}`}
+        <div className={`glass-card p-4 border-l-4 ${taxPreview.will_create ? "border-l-amber-500" : "border-l-slate-400"}`}
           data-testid="tax-settlement-preview">
           <div className="flex items-start gap-3">
             <Sparkles className={`h-5 w-5 mt-0.5 ${taxPreview.will_create ? "text-amber-500" : "text-muted-foreground"}`} />
             <div className="flex-1">
-              <h3 className="font-semibold text-sm">Tax Settlement Preview</h3>
+              <h3 className="text-sm md:text-base font-semibold">Preview Tax Settlement</h3>
               {taxPreview.will_create ? (
                 <>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Saat Close Period, JE settlement PPN akan dibuat otomatis:
+                    Saat periode ditutup, JE settlement PPN akan dibuat otomatis:
                   </p>
-                  <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div className="rounded-lg bg-muted p-2 text-center">
                       <div className="text-muted-foreground">PPN Keluaran (Output)</div>
-                      <div className="font-bold text-base mt-0.5">
-                        Rp {(taxPreview.ppn_out || 0).toLocaleString("id-ID")}
+                      <div className="font-semibold text-base mt-0.5 tabular-nums">
+                        {fmtRp(taxPreview.ppn_out || 0)}
                       </div>
                     </div>
                     <div className="rounded-lg bg-muted p-2 text-center">
                       <div className="text-muted-foreground">PPN Masukan (Input)</div>
-                      <div className="font-bold text-base mt-0.5">
-                        Rp {(taxPreview.ppn_in || 0).toLocaleString("id-ID")}
+                      <div className="font-semibold text-base mt-0.5 tabular-nums">
+                        {fmtRp(taxPreview.ppn_in || 0)}
                       </div>
                     </div>
                     <div className={`rounded-lg p-2 text-center ${
@@ -164,10 +190,10 @@ export default function PeriodClosingWizard() {
                         : "bg-green-50 dark:bg-green-950/20"
                     }`}>
                       <div className="text-muted-foreground">PPN {(taxPreview.ppn_payable || 0) >= 0 ? "Terutang" : "Lebih Bayar"}</div>
-                      <div className={`font-bold text-base mt-0.5 ${
+                      <div className={`font-semibold text-base mt-0.5 tabular-nums ${
                         (taxPreview.ppn_payable || 0) >= 0 ? "text-amber-700 dark:text-amber-400" : "text-green-700 dark:text-green-400"
                       }`}>
-                        Rp {Math.abs(taxPreview.ppn_payable || 0).toLocaleString("id-ID")}
+                        {fmtRp(Math.abs(taxPreview.ppn_payable || 0))}
                       </div>
                     </div>
                   </div>
@@ -186,17 +212,17 @@ export default function PeriodClosingWizard() {
 
       {/* Tax Settlement Info (if closed/locked) */}
       {(cur === "closed" || cur === "locked") && taxSettlement && (
-        <div className="glass-card p-5 border-l-4 border-l-blue-500">
+        <div className="glass-card p-4 border-l-4 border-l-blue-500" data-testid="tax-settlement-info">
           <div className="flex items-start gap-3">
             <Sparkles className="h-5 w-5 text-blue-500 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-sm">Tax Settlement Auto-Generated</h3>
+              <h3 className="text-sm md:text-base font-semibold">Tax Settlement dibuat otomatis</h3>
               <p className="text-xs text-muted-foreground mt-1">
                 JE {taxSettlement.je_number || taxSettlement.doc_no} telah dibuat otomatis untuk settlement PPN periode {period}
               </p>
               <div className="mt-3 flex gap-3 flex-wrap text-xs">
                 <div>
-                  <span className="text-muted-foreground">Total Lines:</span>{" "}
+                  <span className="text-muted-foreground">Jumlah baris:</span>{" "}
                   <span className="font-semibold">{taxSettlement.lines?.length || 0}</span>
                 </div>
                 <div>
@@ -204,17 +230,18 @@ export default function PeriodClosingWizard() {
                   <StatusPill status={taxSettlement.status} size="sm" />
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Posted:</span>{" "}
+                  <span className="text-muted-foreground">Diposting:</span>{" "}
                   <span className="font-semibold">
                     {taxSettlement.posted_at ? new Date(taxSettlement.posted_at).toLocaleDateString("id-ID") : "-"}
                   </span>
                 </div>
               </div>
-              <Link 
-                to={`/finance/journal/${taxSettlement.id}`}
-                className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 hover:underline"
+              <Link
+                to={`/finance/journals/${taxSettlement.id}`}
+                className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                data-testid="tax-settlement-je-link"
               >
-                Lihat Detail JE <ExternalLink className="h-3 w-3" />
+                Lihat detail JE <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -223,18 +250,19 @@ export default function PeriodClosingWizard() {
 
       {/* Steps + Detail */}
       {loading ? <LoadingState rows={6} /> : (
-        <div data-testid="wiz-steps-container" className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div data-testid="wiz-steps-container" className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
           {/* Sidebar */}
           <div data-testid="wiz-checklist-sidebar" className="glass-card p-3 lg:col-span-1">
-            <div className="flex items-center gap-2 px-2 py-1.5 text-xs uppercase tracking-wide text-muted-foreground font-semibold">
-              <ListChecks className="h-3.5 w-3.5" /> 8-Step Checklist
-            </div>
+            <h3 className="flex items-center gap-2 px-2 py-1.5 text-sm font-semibold">
+              <ListChecks className="h-3.5 w-3.5 text-muted-foreground" /> Checklist {checks.length} langkah
+            </h3>
             <div className="space-y-1">
               {checks.map((c, i) => (
-                <button key={c.id}
+                <button key={c.id} type="button"
                   onClick={() => setActiveIdx(i)}
+                  aria-current={activeIdx === i ? "step" : undefined}
                   className={cn(
-                    "w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-colors",
+                    "w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 transition-colors",
                     activeIdx === i ? "bg-foreground/5" : "hover:bg-foreground/5",
                   )}
                   data-testid={`wiz-step-${c.id}`}>
@@ -250,7 +278,7 @@ export default function PeriodClosingWizard() {
           </div>
 
           {/* Main */}
-          <div data-testid="wiz-step-detail" className="lg:col-span-2 space-y-4">
+          <div data-testid="wiz-step-detail" className="lg:col-span-2 space-y-3 lg:space-y-4">
             <AnimatePresence mode="wait">
               {active && (
                 <motion.div
@@ -259,28 +287,28 @@ export default function PeriodClosingWizard() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.18 }}
-                  className="glass-card p-6">
+                  className="glass-card p-4">
                   <div className="flex items-start gap-3">
                     <CheckIcon status={active.status} large />
                     <div className="flex-1">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">Step {activeIdx + 1} of {checks.length}</div>
-                      <h3 className="text-lg font-bold mt-0.5">{active.label}</h3>
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Langkah {activeIdx + 1} dari {checks.length}</div>
+                      <h3 className="text-sm md:text-base font-semibold mt-0.5">{active.label}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{active.detail}</p>
                       {active.blocker && active.status === "fail" && (
                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-400 text-xs font-semibold">
                           <AlertTriangle className="h-3.5 w-3.5" /> Blocker — wajib diselesaikan sebelum close/lock
                         </div>
                       )}
-                      <div className="mt-4 flex gap-2 flex-wrap">
+                      <div className="mt-3 flex gap-2 flex-wrap">
                         {active.fix_link && (
-                          <Link to={active.fix_link}>
-                            <Button variant="outline" className="rounded-full gap-2 h-9" data-testid="wiz-step-fix">
-                              <ExternalLink className="h-3.5 w-3.5" /> Buka halaman terkait
-                            </Button>
-                          </Link>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={fixLink(active.fix_link)} data-testid="wiz-step-fix">
+                              <ExternalLink /> Buka halaman terkait
+                            </Link>
+                          </Button>
                         )}
-                        <Button variant="outline" onClick={load} className="rounded-full gap-2 h-9">
-                          <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} /> Re-check
+                        <Button variant="outline" size="sm" onClick={load} data-testid="wiz-step-recheck">
+                          <RefreshCw className={cn(loading && "animate-spin")} /> Cek ulang
                         </Button>
                       </div>
                     </div>
@@ -290,56 +318,32 @@ export default function PeriodClosingWizard() {
             </AnimatePresence>
 
             {/* Summary footer card */}
-            <div className="glass-card p-5">
+            <div className="glass-card p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-4 w-4 text-aurora-3" />
-                <h3 className="font-semibold">Ringkasan & rekomendasi</h3>
+                <h3 className="text-sm md:text-base font-semibold">Ringkasan &amp; rekomendasi</h3>
               </div>
               {isLocked ? (
                 <p className="text-sm text-muted-foreground">
-                  Period {period} sudah <b>locked</b>. Untuk koreksi mendesak, gunakan tombol <i>Reopen</i> di halaman Periods (audit-trailed).
+                  Periode {period} sudah <b>dikunci</b>. Untuk koreksi mendesak, gunakan tombol <i>Buka kembali</i> di Period Closing → Fase 1 (tercatat di audit log).
                 </p>
               ) : summary.blockers ? (
                 <p className="text-sm text-red-700 dark:text-red-400">
-                  Ada <b>{summary.blockers}</b> blocker check. Selesaikan terlebih dahulu sebelum lock.
+                  Ada <b>{summary.blockers}</b> cek blocker. Selesaikan terlebih dahulu sebelum mengunci periode.
                 </p>
               ) : summary.ready_to_lock ? (
                 <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                  Semua blocker check OK. Period siap untuk <b>lock</b> ✅
+                  Semua cek blocker OK. Periode siap untuk <b>dikunci</b>.
                 </p>
               ) : (
-                <p className="text-sm text-muted-foreground">Re-check untuk melihat status terbaru.</p>
+                <p className="text-sm text-muted-foreground">Klik Cek ulang untuk melihat status terbaru.</p>
               )}
             </div>
           </div>
         </div>
       )}
+      </div>
 
-      {/* Confirm dialog */}
-      <Dialog open={!!confirmDlg} onOpenChange={(v) => !v && setConfirmDlg(null)}>
-        <DialogContent data-testid="wiz-action-dialog" className="glass-card max-w-md">
-          <DialogHeader>
-            <DialogTitle>{confirmDlg === "lock" ? "Lock" : "Close"} Period {period}?</DialogTitle>
-            <DialogDescription>
-              {confirmDlg === "lock"
-                ? "Locked period akan menolak semua post journal (manual maupun otomatis). Reopen tetap dapat dilakukan dengan alasan tertulis."
-                : "Closed period adalah soft-close. Anda masih dapat reopen tanpa konsekuensi sistem."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label className="text-xs">Catatan (opsional)</Label>
-            <Textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Mis: closing reguler April 2026"
-              className="glass-input min-h-[80px]" data-testid="wiz-action-reason" />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDlg(null)} disabled={acting}>Batal</Button>
-            <Button onClick={() => doAction(confirmDlg)} disabled={acting}
-              className="pill-active" data-testid="wiz-action-confirm">
-              {confirmDlg === "lock" ? "Lock Period" : "Close Period"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -351,19 +355,4 @@ function CheckIcon({ status, large = false }) {
   if (status === "warn")  return <span className={`${size} rounded-full flex items-center justify-center bg-amber-500/15 text-amber-700 dark:text-amber-400`}><AlertTriangle className={inner} /></span>;
   if (status === "fail")  return <span className={`${size} rounded-full flex items-center justify-center bg-red-500/15 text-red-700 dark:text-red-400`}><XCircle className={inner} /></span>;
   return <span className={`${size} rounded-full flex items-center justify-center bg-blue-500/15 text-blue-700 dark:text-blue-400`}><Info className={inner} /></span>;
-}
-
-function ProgressTile({ label, value, hint, tone = "emerald" }) {
-  const toneCls = {
-    emerald: "text-emerald-700 dark:text-emerald-400",
-    amber:   "text-amber-700 dark:text-amber-400",
-    red:     "text-red-700 dark:text-red-400",
-  }[tone];
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`text-2xl font-bold mt-0.5 ${toneCls}`}>{value}</div>
-      <div className="text-[11px] text-muted-foreground">{hint}</div>
-    </div>
-  );
 }
