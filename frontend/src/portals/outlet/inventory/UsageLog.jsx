@@ -63,7 +63,7 @@ export default function UsageLog() {
     }
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [outletId, typeFilter, search, page]);
+  useEffect(() => { load(); }, [outletId, typeFilter, search, page]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setPage(1); }, [outletId, typeFilter, search]);
 
   const summary = meta.summary || {};
@@ -134,7 +134,7 @@ export default function UsageLog() {
           </TabsList>
         </Tabs>
         <div className="relative md:ml-auto md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
           <Input placeholder="Cari item…" aria-label="Cari item" value={q} onChange={(e) => setQ(e.target.value)}
             className="glass-input pl-9" data-testid="usage-search" />
         </div>

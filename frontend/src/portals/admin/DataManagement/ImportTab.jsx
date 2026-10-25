@@ -107,7 +107,7 @@ function ImportTab({ collections, onSuccess }) {
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Upload zone */}
       <div
-        className="glass-card border-2 border-dashed border-gray-300 p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        className="glass-card border-2 border-dashed border-border p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"
         onClick={() => fileRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); }}
         onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
@@ -120,16 +120,16 @@ function ImportTab({ collections, onSuccess }) {
           className="hidden"
           onChange={(e) => { if (e.target.files[0]) handleFile(e.target.files[0]); }}
         />
-        <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+        <Upload className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
         {file ? (
           <div>
-            <p className="font-medium text-gray-800">{file.name}</p>
-            <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+            <p className="font-medium text-foreground">{file.name}</p>
+            <p className="text-sm text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
           </div>
         ) : (
           <div>
-            <p className="text-gray-600 font-medium">Drop file JSON di sini atau klik untuk pilih</p>
-            <p className="text-sm text-gray-400 mt-1">Format: .json (FnB ERP backup atau array)</p>
+            <p className="text-muted-foreground font-medium">Drop file JSON di sini atau klik untuk pilih</p>
+            <p className="text-sm text-muted-foreground mt-1">Format: .json (FnB ERP backup atau array)</p>
           </div>
         )}
       </div>
@@ -141,32 +141,32 @@ function ImportTab({ collections, onSuccess }) {
           {preview.type === "backup" ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Full Backup</span>
-                <span className="text-sm text-gray-600">{preview.total?.toLocaleString("id-ID")} total records</span>
+                <span className="bg-sky-500/15 text-sky-700 dark:text-sky-400 text-xs px-2 py-0.5 rounded-full">Full Backup</span>
+                <span className="text-sm text-muted-foreground">{preview.total?.toLocaleString("id-ID")} total records</span>
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {preview.collections.map(c => (
-                  <span key={c} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium tabular-nums">{c}</span>
+                  <span key={c} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded font-medium tabular-nums">{c}</span>
                 ))}
               </div>
               {preview.meta?.exported_at && (
-                <p className="text-xs text-gray-400">Exported: {new Date(preview.meta.exported_at).toLocaleString("id-ID")}</p>
+                <p className="text-xs text-muted-foreground">Exported: {new Date(preview.meta.exported_at).toLocaleString("id-ID")}</p>
               )}
             </div>
           ) : preview.type === "array" ? (
             <div>
-              <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Single Collection</span>
-              <p className="text-sm text-gray-600 mt-1">{preview.count} records ditemukan</p>
+              <span className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full">Single Collection</span>
+              <p className="text-sm text-muted-foreground mt-1">{preview.count} records ditemukan</p>
               {preview.keys.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {preview.keys.map(k => (
-                    <span key={k} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium tabular-nums">{k}</span>
+                    <span key={k} className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-medium tabular-nums">{k}</span>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-sm text-red-500">File tidak dapat dibaca. Pastikan format JSON valid.</p>
+            <p className="text-sm text-destructive">File tidak dapat dibaca. Pastikan format JSON valid.</p>
           )}
         </div>
       )}
@@ -177,7 +177,7 @@ function ImportTab({ collections, onSuccess }) {
 
         {/* Mode */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-gray-600">Tipe Import</p>
+          <p className="text-xs font-medium text-muted-foreground">Tipe Import</p>
           <div className="grid grid-cols-2 gap-2">
             {[
               { id: "single", label: "Koleksi Tunggal", desc: "Import ke 1 koleksi" },
@@ -186,14 +186,14 @@ function ImportTab({ collections, onSuccess }) {
               <label
                 key={m.id}
                 className={`flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                  importMode === m.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
+                  importMode === m.id ? "border-primary bg-primary/5" : "border-border hover:border-foreground/20"
                 }`}
               >
                 <input type="radio" name="imode" value={m.id} checked={importMode === m.id}
                   onChange={() => setImportMode(m.id)} className="mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">{m.label}</p>
-                  <p className="text-xs text-gray-500">{m.desc}</p>
+                  <p className="text-xs text-muted-foreground">{m.desc}</p>
                 </div>
               </label>
             ))}
@@ -203,7 +203,7 @@ function ImportTab({ collections, onSuccess }) {
         {/* Target collection (single mode) */}
         {importMode === "single" && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-600" id="import-target-label">Koleksi Target</label>
+            <label className="text-xs font-medium text-muted-foreground" id="import-target-label">Koleksi Target</label>
             <SimpleSelect
               ariaLabel="Koleksi target"
               value={targetCollection}
@@ -218,20 +218,20 @@ function ImportTab({ collections, onSuccess }) {
 
         {/* Merge mode */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-gray-600">Mode Penggabungan</p>
+          <p className="text-xs font-medium text-muted-foreground">Mode Penggabungan</p>
           <div className="grid grid-cols-2 gap-2">
             {[
               { id: "merge", label: "Merge (Upsert)", desc: "Update existing + tambah baru" },
               { id: "replace", label: "Replace", desc: "Hapus koleksi lalu insert" },
             ].map((m) => (
               <label key={m.id} className={`flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                mergeMode === m.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
+                mergeMode === m.id ? "border-primary bg-primary/5" : "border-border hover:border-foreground/20"
               }`}>
                 <input type="radio" name="mmode" value={m.id} checked={mergeMode === m.id}
                   onChange={() => setMergeMode(m.id)} className="mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">{m.label}</p>
-                  <p className="text-xs text-gray-500">{m.desc}</p>
+                  <p className="text-xs text-muted-foreground">{m.desc}</p>
                 </div>
               </label>
             ))}
@@ -239,17 +239,17 @@ function ImportTab({ collections, onSuccess }) {
         </div>
 
         {mergeMode === "replace" && (
-          <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-yellow-700">Mode <strong>Replace</strong> akan menghapus seluruh data di koleksi tujuan sebelum import. Pastikan Anda sudah memiliki backup!</p>
+          <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-700 dark:text-amber-400">Mode <strong>Replace</strong> akan menghapus seluruh data di koleksi tujuan sebelum import. Pastikan Anda sudah memiliki backup!</p>
           </div>
         )}
       </div>
 
       {status && (
         <div className={`flex items-start gap-2 p-4 rounded-xl ${
-          status.type === "success" ? "bg-green-50 border border-green-200 text-green-700"
-            : "bg-red-50 border border-red-200 text-red-700"
+          status.type === "success" ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+            : "bg-destructive/10 border border-destructive/30 text-destructive"
         }`}>
           {status.type === "success" ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 flex-shrink-0" />}
           <p className="text-sm">{status.msg}</p>

@@ -3,22 +3,11 @@ import {
   ArrowRight, Activity, Plug, BarChart3, FileSpreadsheet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAdminHome } from "@/hooks/useAdminDashboard";
+import { useAdminHome, MASTER_TILES } from "@/hooks/useAdminDashboard";
 import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtNumber } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
-
-const MASTER_TILES = [
-  { entity: "items",            label: "Items",           col: "items" },
-  { entity: "vendors",          label: "Vendors",         col: "vendors" },
-  { entity: "employees",        label: "Employees",       col: "employees" },
-  { entity: "chart-of-accounts", label: "Chart of Accounts", col: "chart_of_accounts" },
-  { entity: "brands",           label: "Brands",          col: "brands" },
-  { entity: "outlets",          label: "Outlets",         col: "outlets" },
-  { entity: "categories",       label: "Categories",      col: "categories" },
-  { entity: "payment-methods",  label: "Payment Methods", col: "payment_methods" },
-];
 
 /** Satu gaya kartu tautan (ikon 36px, judul 14px, deskripsi 12px) untuk semua shortcut di halaman ini. */
 function LinkTile({ to, icon: Icon, iconClass, title, badge, desc, testId }) {
@@ -106,7 +95,7 @@ export default function AdminHome() {
             Lihat semua
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {MASTER_TILES.map((t) => (
             <Link
               key={t.entity}

@@ -4,16 +4,18 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 
-import { fetchAll } from "@/lib/api";
-const MASTER_TILES = [
-  { entity: "items", col: "items" },
-  { entity: "vendors", col: "vendors" },
-  { entity: "employees", col: "employees" },
-  { entity: "chart-of-accounts", col: "chart_of_accounts" },
-  { entity: "brands", col: "brands" },
-  { entity: "outlets", col: "outlets" },
-  { entity: "categories", col: "categories" },
-  { entity: "payment-methods", col: "payment_methods" },
+/** Tile master data di Admin home — satu sumber untuk hook ini dan AdminHome.jsx. */
+export const MASTER_TILES = [
+  { entity: "items",             label: "Items" },
+  { entity: "vendors",           label: "Vendors" },
+  { entity: "employees",         label: "Employees" },
+  { entity: "chart-of-accounts", label: "COA" },
+  { entity: "brands",            label: "Brands" },
+  { entity: "outlets",           label: "Outlets" },
+  { entity: "categories",        label: "Categories" },
+  { entity: "payment-methods",   label: "Metode bayar" },
+  { entity: "bank-accounts",     label: "Bank Accounts" },
+  { entity: "tax-codes",         label: "Tax Codes" },
 ];
 
 /**
@@ -25,7 +27,8 @@ export function useAdminHome(canViewUsers) {
     queryFn: async () => {
       const tiles = MASTER_TILES.map(t => t.entity);
       const results = await Promise.allSettled([
-        ...tiles.map(e => fetchAll(`/master/${e}`)),
+        // Cukup meta.total — per_page=1, tidak perlu memuat semua baris.
+        ...tiles.map(e => api.get(`/master/${e}`, { params: { per_page: 1 } })),
         ...(canViewUsers ? [
           api.get("/admin/users", { params: { per_page: 1 } }),
           api.get("/admin/roles"),

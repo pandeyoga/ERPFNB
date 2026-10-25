@@ -77,7 +77,7 @@ const PHASES = [
  * di halaman ini — bukan ke /finance/periods yang merupakan duplikat Fase 1. */
 function ClosingWizardPlaceholder({ goTo }) {
   return (
-    <div className="glass-card p-4">
+    <div className="p-1">
       <EmptyState
         icon={ClipboardCheck}
         title="Jalankan Closing Wizard per periode"
@@ -94,7 +94,7 @@ function ClosingWizardPlaceholder({ goTo }) {
 
 function LockedPhasePlaceholder({ goTo }) {
   return (
-    <div className="glass-card p-4">
+    <div className="p-1">
       <EmptyState
         icon={Lock}
         title="Period Lock & Audit Trail"
@@ -225,7 +225,7 @@ export default function PeriodClosingHub() {
                     exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden">
                     <div className="px-3 pb-3 pt-3 border-t border-border/30">
-                      <div className="pb-3">{phase.render({ goTo: setActiveIdx })}</div>
+                      <div className="pb-3 nested-cards">{phase.render({ goTo: setActiveIdx })}</div>
                       <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
                         <Button variant="ghost" onClick={goPrev} disabled={activeIdx === 0}
                           data-testid={`pc-prev-${phase.id}`}><ArrowLeft /> Sebelumnya</Button>

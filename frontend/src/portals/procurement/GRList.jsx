@@ -107,7 +107,7 @@ export default function GRList() {
       />
 
       <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="gr-filters-card">
-        <div className="relative flex-1 min-w-[220px]">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Cari no. GR atau invoice…"
@@ -131,17 +131,17 @@ export default function GRList() {
           options={[{ value: "", label: "Semua vendor" }, ...vendors.map(v => ({ value: v.id, label: v.name }))]}
           placeholder="Semua vendor"
           ariaLabel="Filter vendor"
-          className="glass-input w-[200px]"
+          className="glass-input w-[180px]"
           testId="gr-filter-vendor"
         />
         <div className="flex items-center gap-1.5">
           <Input type="date" value={dateFrom} max={dateTo || undefined}
             onChange={e => { setDateFrom(e.target.value); setPage(1); }}
-            aria-label="Tanggal terima dari" className="glass-input w-[150px]" data-testid="gr-filter-date-from" />
+            aria-label="Tanggal terima dari" className="glass-input w-[136px]" data-testid="gr-filter-date-from" />
           <span className="text-xs text-muted-foreground">s/d</span>
           <Input type="date" value={dateTo} min={dateFrom || undefined}
             onChange={e => { setDateTo(e.target.value); setPage(1); }}
-            aria-label="Tanggal terima sampai" className="glass-input w-[150px]" data-testid="gr-filter-date-to" />
+            aria-label="Tanggal terima sampai" className="glass-input w-[136px]" data-testid="gr-filter-date-to" />
         </div>
         {hasFilter && (
           <Button variant="ghost" size="sm" data-testid="gr-filter-reset"
@@ -187,7 +187,7 @@ export default function GRList() {
                       <td className="text-right py-1.5">{ln.qty_ordered ?? "—"} {ln.unit}</td>
                       <td className={`text-right py-1.5 ${ln.qty_variance ? "text-amber-700 dark:text-amber-400 font-medium" : ""}`}>{ln.qty_received} {ln.unit}</td>
                       <td className="text-right py-1.5">{fmtRp(ln.invoice_unit_cost ?? ln.unit_cost ?? 0)}</td>
-                      <td className="text-right py-1.5 font-medium">{fmtRp(ln.total_cost || 0)}</td>
+                      <td className="text-right py-1.5 font-medium">{fmtRp(ln.total_cost ?? ln.total ?? 0)}</td>
                     </tr>
                   ))}
                 </tbody>

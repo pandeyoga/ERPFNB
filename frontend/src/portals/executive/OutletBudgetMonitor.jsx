@@ -1,7 +1,7 @@
 /**
  * Executive — Outlet Budget Monitor
  *
- * 4 tabs: Heatmap / Stacked Bar / Pace Line / Detail Table.
+ * 4 tabs: Heatmap / Stacked Bar / Pace (bar ideal vs aktual) / Detail Table.
  * Period selector (weekly|monthly) + period nav.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, LineChart, Line,
+  Tooltip, Legend,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export default function OutletBudgetMonitor() {
   }, [overview, outletsById]);
 
   // Pace chart: ideal vs actual per outlet (simulate with current pace ratio)
-  const paceLineData = useMemo(() => {
+  const paceData = useMemo(() => {
     if (!overview) return [];
     return overview.items.map((it) => {
       const summary = it.pace?.summary || {};
@@ -155,9 +155,9 @@ export default function OutletBudgetMonitor() {
         </Button>
       </div>
 
-      {/* KPI strip */}
+      {/* KPI strip — kolom Rupiah (Budget/Actual) lebih lebar agar nominal tidak terpotong. */}
       {overview && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-[1fr_1.5fr_1.5fr_1fr_1fr] gap-3">
           <CompactStatCard size="sm" label="Total Outlets" value={overview.total_outlets} icon={Building2} color="aurora-1" />
           <CompactStatCard size="sm" label="Total Budget" value={fmtRp(overview.totals.total)} icon={Wallet} color="aurora-2" />
           <CompactStatCard size="sm" label="Total Actual" value={fmtRp(overview.totals.actual_total)} icon={Activity} color="aurora-3" />
@@ -240,21 +240,22 @@ export default function OutletBudgetMonitor() {
         <TabsContent value="pace">
           <Card>
             <CardHeader>
-              <CardTitle>Pace Line — Actual vs Ideal Run-rate</CardTitle>
-              <CardDescription>Garis ideal = total budget × % waktu berlalu. Aktual di atas garis = over-pacing.</CardDescription>
+              <CardTitle>Pace — Aktual vs Ideal Run-rate per Outlet</CardTitle>
+              <CardDescription>Ideal = total budget × % waktu berlalu. Batang aktual lebih tinggi dari ideal = over-pacing.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[340px]">
                 <ResponsiveContainer>
-                  <LineChart data={paceLineData}>
+                  {/* Outlet = kategori, bukan deret waktu → batang berdampingan, bukan garis. */}
+                  <BarChart data={paceData} barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb33" />
                     <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} />
                     <YAxis stroke="#94a3b8" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}jt`} />
                     <Tooltip content={<GlassTooltip valueFormatter={fmtRp} />} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Line type="monotone" dataKey="ideal" stroke="#94a3b8" strokeDasharray="5 5" name="Ideal (run-rate)" />
-                    <Line type="monotone" dataKey="actual" stroke="#f59e0b" strokeWidth={2} name="Aktual" />
-                  </LineChart>
+                    <Bar dataKey="ideal" fill="#94a3b8" fillOpacity={0.5} name="Ideal (run-rate)" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="actual" fill="#f59e0b" name="Aktual" radius={[3, 3, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>

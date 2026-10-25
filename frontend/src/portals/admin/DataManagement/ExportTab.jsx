@@ -60,52 +60,55 @@ function ExportTab({ collections }) {
 
   const clearAll = () => setSelectedCollections([]);
 
-  const handleExport = async () => {
-    if (selectedCollections.length === 0) {
-      setStatus({ type: "error", msg: "Pilih minimal 1 koleksi untuk di-export" });
-      return;
+  /** POST /admin/data/export lalu unduh file; melempar error bila server menolak
+   *  (sebelumnya Quick Export tidak mengecek response.ok dan mengunduh JSON error). */
+  const downloadExport = async (colls, format) => {
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}/api/admin/data/export`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ collections: colls, format }),
+      }
+    );
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.errors?.[0]?.message || err.detail || "Ekspor gagal");
     }
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get("content-disposition") || "";
+    const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+    const filename = filenameMatch ? filenameMatch[1] : `aurora_export.${format === "xlsx" ? "xlsx" : format === "zip_json" ? "zip" : "json"}`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    return filename;
+  };
+
+  const runExport = async (colls, format, successMsg) => {
     setExporting(true);
     setStatus(null);
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/data/export`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            collections: selectedCollections,
-            format: exportFormat,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.detail || "Export failed");
-      }
-
-      const blob = await response.blob();
-      const contentDisposition = response.headers.get("content-disposition") || "";
-      const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
-      const filename = filenameMatch ? filenameMatch[1] : `aurora_export.${exportFormat === "xlsx" ? "xlsx" : exportFormat === "zip_json" ? "zip" : "json"}`;
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      setStatus({ type: "success", msg: `Export berhasil! ${selectedCollections.length} koleksi di-export sebagai ${filename}` });
+      const filename = await downloadExport(colls, format);
+      setStatus({ type: "success", msg: successMsg(filename) });
     } catch (e) {
       setStatus({ type: "error", msg: e.message });
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleExport = () => {
+    if (selectedCollections.length === 0) {
+      setStatus({ type: "error", msg: "Pilih minimal 1 koleksi untuk di-export" });
+      return;
+    }
+    runExport(selectedCollections, exportFormat,
+      (fn) => `Export berhasil! ${selectedCollections.length} koleksi di-export sebagai ${fn}`);
   };
 
   const handlePreview = async (collName) => {
@@ -133,7 +136,7 @@ function ExportTab({ collections }) {
         <div className="glass-card">
           <div className="p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-gray-500" />
+              <Database className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-sm md:text-base font-semibold">Pilih Koleksi Data</h3>
               {selectedCollections.length > 0 && (
                 <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
@@ -162,7 +165,7 @@ function ExportTab({ collections }) {
               return (
                 <div key={catId}>
                   <div
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center justify-between p-3 hover:bg-foreground/5 cursor-pointer"
                     onClick={() => setExpandedCats(prev => ({ ...prev, [catId]: !prev[catId] }))}
                   >
                     <div className="flex items-center gap-3">
@@ -179,8 +182,8 @@ function ExportTab({ collections }) {
                         <Icon className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-800">{cat.label}</p>
-                        <p className="text-xs text-gray-500">{cat.total_docs?.toLocaleString("id-ID")} records</p>
+                        <p className="text-sm font-medium text-foreground">{cat.label}</p>
+                        <p className="text-xs text-muted-foreground">{cat.total_docs?.toLocaleString("id-ID")} records</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -189,15 +192,15 @@ function ExportTab({ collections }) {
                           {selectedInCat}/{catColls.length}
                         </span>
                       )}
-                      {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                      {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                     </div>
                   </div>
 
                   {isExpanded && (
-                    <div className="bg-gray-50 border-t">
+                    <div className="bg-muted/40 border-t">
                       {catColls.map((coll) => (
                         <div key={coll.name}>
-                          <div className="flex items-center justify-between px-10 py-2 hover:bg-gray-100">
+                          <div className="flex items-center justify-between px-10 py-2 hover:bg-foreground/5">
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -206,10 +209,10 @@ function ExportTab({ collections }) {
                                 className="rounded"
                                 aria-label={`Pilih koleksi ${coll.name}`}
                               />
-                              <span className="text-sm text-gray-700 font-medium tabular-nums">{coll.name}</span>
+                              <span className="text-sm text-foreground font-medium tabular-nums">{coll.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">{coll.count?.toLocaleString("id-ID")} docs</span>
+                              <span className="text-xs text-muted-foreground">{coll.count?.toLocaleString("id-ID")} docs</span>
                               <Button
                                 variant="ghost"
                                 size="icon-sm"
@@ -224,19 +227,19 @@ function ExportTab({ collections }) {
 
                           {/* Inline preview */}
                           {previewColl === coll.name && (
-                            <div className="mx-10 mb-2 bg-white border rounded-lg overflow-hidden">
+                            <div className="mx-10 mb-2 bg-background border rounded-lg overflow-hidden">
                               {loadingPreview ? (
-                                <div className="p-3 text-xs text-gray-500 flex items-center gap-2">
-                                  <div className="animate-spin w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full" />
+                                <div className="p-3 text-xs text-muted-foreground flex items-center gap-2">
+                                  <div className="animate-spin w-3 h-3 border-2 border-muted-foreground border-t-transparent rounded-full" />
                                   Loading preview...
                                 </div>
                               ) : previewData ? (
                                 <div className="p-3">
-                                  <p className="text-xs font-medium text-gray-600 mb-2">
+                                  <p className="text-xs font-medium text-muted-foreground mb-2">
                                     Preview: {previewData.preview_count} of {previewData.total?.toLocaleString("id-ID")} records
                                   </p>
                                   {previewData.records?.length === 0 && (
-                                    <p className="text-xs text-gray-500 py-2">Belum ada data pada koleksi ini.</p>
+                                    <p className="text-xs text-muted-foreground py-2">Belum ada data pada koleksi ini.</p>
                                   )}
                                   {previewData.records?.length > 0 && (
                                     <DataTable
@@ -252,7 +255,7 @@ function ExportTab({ collections }) {
                                           const str = typeof val === "object"
                                             ? JSON.stringify(val).slice(0, 30) + "..."
                                             : String(val ?? "—").slice(0, 30);
-                                          return <span className="text-gray-600 max-w-[120px] truncate inline-block align-top">{str}</span>;
+                                          return <span className="text-muted-foreground max-w-[120px] truncate inline-block align-top">{str}</span>;
                                         },
                                       }))}
                                     />
@@ -281,7 +284,7 @@ function ExportTab({ collections }) {
           </h3>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium text-gray-600">Format File</p>
+            <p className="text-xs font-medium text-muted-foreground">Format File</p>
             <div className="space-y-2">
               {[
                 { id: "json", label: "JSON", icon: FileJson, desc: "Single file, semua koleksi" },
@@ -293,7 +296,7 @@ function ExportTab({ collections }) {
                   <label
                     key={fmt.id}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                      exportFormat === fmt.id ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"
+                      exportFormat === fmt.id ? "border-primary bg-primary/5" : "border-border hover:border-foreground/20"
                     }`}
                   >
                     <input
@@ -304,10 +307,10 @@ function ExportTab({ collections }) {
                       onChange={() => setExportFormat(fmt.id)}
                       className="text-primary"
                     />
-                    <Icon className="w-4 h-4 text-gray-500" />
+                    <Icon className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">{fmt.label}</p>
-                      <p className="text-xs text-gray-500">{fmt.desc}</p>
+                      <p className="text-xs text-muted-foreground">{fmt.desc}</p>
                     </div>
                   </label>
                 );
@@ -315,15 +318,15 @@ function ExportTab({ collections }) {
             </div>
           </div>
 
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600">
+          <div className="p-3 bg-muted/40 rounded-lg">
+            <p className="text-xs text-muted-foreground">
               <span className="font-medium">{selectedCollections.length}</span> koleksi dipilih
             </p>
           </div>
 
           {status && (
             <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
-              status.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+              status.type === "success" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-destructive/10 text-destructive"
             }`}>
               {status.type === "success" ? <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" /> : <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />}
               {status.msg}
@@ -355,50 +358,23 @@ function ExportTab({ collections }) {
           <h3 className="text-sm md:text-base font-semibold">Quick Export</h3>
           <div className="space-y-2">
             {[
-              { label: "Full Backup (semua data)", collections: ["all"], format: "zip_json" },
-              { label: "Master Data Only", collections: Object.values(collections?.categories?.master?.collections || []).map(c => c.name), format: "json" },
-              { label: "Finance Data", collections: Object.values(collections?.categories?.finance?.collections || []).map(c => c.name), format: "xlsx" },
-              { label: "Outlet Data", collections: Object.values(collections?.categories?.outlet?.collections || []).map(c => c.name), format: "json" },
+              { id: "full", label: "Full Backup (semua data)", collections: ["all"], format: "zip_json" },
+              { id: "master", label: "Master Data Only", collections: Object.values(collections?.categories?.master?.collections || []).map(c => c.name), format: "json" },
+              { id: "finance", label: "Finance Data", collections: Object.values(collections?.categories?.finance?.collections || []).map(c => c.name), format: "xlsx" },
+              { id: "outlet", label: "Outlet Data", collections: Object.values(collections?.categories?.outlet?.collections || []).map(c => c.name), format: "json" },
             ].map((quick) => (
-              <button
+              <Button
                 key={quick.label}
-                onClick={async () => {
-                  setExporting(true);
-                  setStatus(null);
-                  try {
-                    const colls = quick.collections.filter(Boolean);
-                    const response = await fetch(
-                      `${process.env.REACT_APP_BACKEND_URL}/api/admin/data/export`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                        body: JSON.stringify({ collections: colls, format: quick.format }),
-                      }
-                    );
-                    const blob = await response.blob();
-                    const cd = response.headers.get("content-disposition") || "";
-                    const fnMatch = cd.match(/filename="(.+?)"/);
-                    const fn = fnMatch ? fnMatch[1] : `aurora_${quick.format}.${quick.format === "xlsx" ? "xlsx" : quick.format === "zip_json" ? "zip" : "json"}`;
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url; a.download = fn; a.click();
-                    URL.revokeObjectURL(url);
-                    setStatus({ type: "success", msg: `${quick.label} berhasil di-export!` });
-                  } catch (e) {
-                    setStatus({ type: "error", msg: e.message });
-                  } finally {
-                    setExporting(false);
-                  }
-                }}
-                disabled={exporting}
-                className="w-full text-left px-3 py-2 text-sm rounded-lg border hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center justify-between"
+                type="button"
+                variant="outline"
+                onClick={() => runExport(quick.collections.filter(Boolean), quick.format, () => `${quick.label} berhasil di-export!`)}
+                disabled={exporting || quick.collections.filter(Boolean).length === 0}
+                className="w-full justify-between font-normal"
+                data-testid={`dm-quick-export-${quick.id}`}
               >
                 <span>{quick.label}</span>
-                <Download className="w-3.5 h-3.5 text-gray-400" />
-              </button>
+                <Download className="w-3.5 h-3.5 text-muted-foreground" />
+              </Button>
             ))}
           </div>
         </div>

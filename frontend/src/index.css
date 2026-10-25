@@ -210,6 +210,16 @@ a[href*="emergent.sh"],
       0 4px 16px rgb(var(--glass-shadow));
     border-radius: calc(var(--radius) + 4px);
   }
+  /* Kartu di dalam kartu induk (mis. isi fase accordion Period Closing): tampil sebagai
+     panel datar — tanpa blur & bayangan ganda (hindari card-in-card). */
+  .nested-cards .glass-card {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    border-color: hsl(var(--border));
+    border-radius: var(--radius);
+  }
   .glass-card-hover {
     @apply glass-card;
     transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
