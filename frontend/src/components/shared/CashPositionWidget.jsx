@@ -17,7 +17,7 @@ const HEALTH_PILL = {
   red:   { tone: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300", icon: AlertTriangle, label: "Critical" },
 };
 
-export default function CashPositionWidget({ to = "/finance/cash-position", showLink = true }) {
+export default function CashPositionWidget({ to = "/finance/payments-hub?tab=cash-position", showLink = true }) {
   const [position, setPosition] = useState(null);
   const [loading, setLoading] = useState(true);
 

@@ -91,7 +91,7 @@ async def dispatch_event_notification(event: dict) -> int:
     perms = RECIPIENT_PERMS.get(etype, ["*"])
     recipients = await _users_with_any_perm(perms)
     count = 0
-    link = f"/finance/anomalies?id={event['id']}"
+    link = f"/finance/period-closing?phase=1&id={event['id']}"
     title = event.get("title") or ANOMALY_TYPE_LABELS.get(etype, "Anomaly")
     body = event.get("message", "")
     ntype = "urgent" if event.get("severity") == "severe" else "warn"

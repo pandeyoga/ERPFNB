@@ -28,7 +28,6 @@ import {
   adminUsersTour,
   adminRolesTour,
   adminApprovalBuilderTour,
-  adminWorkflowsTour,
   adminBulkImportTour,
   adminNumberSeriesTour,
   adminTaxConfigTour,
@@ -182,7 +181,6 @@ export const tourRegistry = {
   "admin-users": adminUsersTour,
   "admin-roles": adminRolesTour,
   "admin-approval-builder": adminApprovalBuilderTour,
-  "admin-workflows": adminWorkflowsTour,
   "admin-bulk-import": adminBulkImportTour,
   "admin-number-series": adminNumberSeriesTour,
   "admin-tax-config": adminTaxConfigTour,
@@ -345,7 +343,6 @@ export const TOUR_VERSIONS = {
   "admin-users": 1,
   "admin-roles": 1,
   "admin-approval-builder": 1,
-  "admin-workflows": 1,
   "admin-bulk-import": 1,
   "admin-number-series": 1,
   "admin-tax-config": 1,
@@ -455,7 +452,7 @@ export const TOUR_VERSIONS = {
 
   // HR
   "hr-home": 1,
-  "hr-payroll": 1,
+  "hr-payroll": 2,
   "hr-advances": 1,
   "hr-leaves": 1,
   "hr-job-applications": 1,

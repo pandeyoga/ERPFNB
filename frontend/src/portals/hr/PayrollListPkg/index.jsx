@@ -37,7 +37,8 @@ export default function PayrollList({ embedded = false }) {
   const { user } = useAuth();
   const { allOutlets: outlets } = useOutletScope();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get("tab") === "salary" ? "salary" : "cycles");
+  // ?view=salary membuka Salary Master (?tab dipakai hub Compensation untuk memilih tab Payroll)
+  const [tab, setTab] = useState(searchParams.get("view") === "salary" ? "salary" : "cycles");
   const [showForm, setShowForm] = useState(false);
   const [detailId, setDetailId] = useState(null);
   const [editSm, setEditSm] = useState(null); // employee data being edited
@@ -143,7 +144,7 @@ export default function PayrollList({ embedded = false }) {
               description="Generate payroll bulanan untuk membuat draft, lalu posting ke jurnal."
               action={canApprove ? <Button size="sm" onClick={() => setShowForm(true)}><Plus /> Generate Payroll</Button> : null} />
           ) : (
-            <div className="glass-card overflow-hidden">
+            <div className="glass-card overflow-hidden" data-testid="payroll-cycles-table">
               <DataTable
                 rows={items}
                 keyField="id"

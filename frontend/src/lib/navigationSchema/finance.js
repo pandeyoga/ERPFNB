@@ -31,7 +31,7 @@ export const financeNav = {
       name: "Payments",
       icon: CreditCard,
       items: [
-        { id: "payments-hub", name: "Payments", path: "/finance/payments-hub", matchPaths: ["/finance/payments", "/finance/payment-runs", "/finance/payment-run-templates", "/finance/payment-requests", "/finance/ap-aging", "/finance/ar-invoices", "/finance/bank-recon", "/finance/cash-position", "/finance/reservation-deposits", "/finance/vendor-scorecard"] },
+        { id: "payments-hub", name: "Payments", path: "/finance/payments-hub", matchPaths: ["/finance/payments", "/finance/payment-runs", "/finance/payment-run-templates", "/finance/payment-requests", "/finance/vendor-scorecard"] },
         // Payment Requests · Accounts Payable · Payments · Payment Runs · Run Templates
         // · Bank Reconciliation · AR Invoices · Deposit Reservasi are in-page TABS of
         // /finance/payments-hub (consolidated to keep Finance sidebar <=12 items).
@@ -43,7 +43,7 @@ export const financeNav = {
       icon: Landmark,
       items: [
         { id: "assets", name: "Fixed Assets", path: "/finance/assets" },
-        { id: "budget-hub", name: "Budget", path: "/finance/budget-hub", matchPaths: ["/finance/budget", "/finance/forecasting"] },
+        { id: "budget-hub", name: "Budget", path: "/finance/budget-hub" },
         // Budget vs Actual · Budget Management · Forecasting are in-page TABS of
         // /finance/budget-hub (consolidated to keep Finance sidebar <=12 items).
       ],
@@ -53,7 +53,7 @@ export const financeNav = {
       name: "Tax & Compliance",
       icon: FileCheck,
       items: [
-        { id: "tax", name: "Tax & Compliance", path: "/finance/tax", matchPaths: ["/finance/tax-center", "/finance/efaktur", "/finance/ebupot"] },
+        { id: "tax", name: "Tax & Compliance", path: "/finance/tax" },
         // e-Faktur · e-Bupot are in-page TABS of /finance/tax (Tax Hub).
       ],
     },
@@ -62,7 +62,7 @@ export const financeNav = {
       name: "Period Closing",
       icon: Calendar,
       items: [
-        { id: "period-closing-hub", name: "Period Closing", path: "/finance/period-closing", matchPaths: ["/finance/periods", "/finance/anomalies"] },
+        { id: "period-closing-hub", name: "Period Closing", path: "/finance/period-closing" },
         // Periods (List) & Anomaly Feed are built-in PHASES of the Period Closing
         // workflow (/finance/period-closing) — standalone routes kept for deep-links.
       ],

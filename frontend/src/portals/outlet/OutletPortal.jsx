@@ -6,6 +6,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import OutletHome from "./OutletHome";
 import DailySalesList from "./DailySalesList";
 import DailySalesForm from "./DailySalesForm";
@@ -13,7 +14,6 @@ import DailySalesDetail from "./DailySalesDetail";
 import PettyCashList from "./PettyCashList";
 import UrgentPurchaseList from "./UrgentPurchaseList";
 import DailyOrdersHub from "./DailyOrdersHub";
-import DailyClose from "./DailyClose";
 import StockCheck from "./inventory/StockCheck";
 import StockTransfers from "./inventory/StockTransfers";
 import UsageLog from "./inventory/UsageLog";
@@ -52,7 +52,7 @@ export default function OutletPortal() {
         <Route path="urgent-purchase" element={g("procurement.pr.create", <UrgentPurchaseList />)} />
         {/* Deprecated: Daily Close = Langkah 4 di End of Day (komponen yang sama). Rute dipertahankan
             untuk tautan lama; halaman menampilkan banner ke /outlet/end-of-day. */}
-        <Route path="daily-close" element={g("outlet.daily_close.execute", <DailyClose />)} />
+        <Route path="daily-close" element={<LegacyRedirect to="/outlet/end-of-day?step=3" />} />
         <Route path="end-of-day" element={g("outlet.daily_close.execute", <EndOfDayWorkflow />)} />
         <Route path="opname" element={<Navigate to="/inventory/opname" replace />} />
         <Route path="inventory/stock-check" element={g(["inventory.balance.read", "inventory.view"], <StockCheck />)} />

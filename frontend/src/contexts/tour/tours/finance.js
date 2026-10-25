@@ -136,7 +136,7 @@ const financeAPTour = {
       placement: "bottom",
     },
     {
-      target: "[data-testid='ap-aging-table']",
+      target: "[data-testid='ap-table-card']",
       title: "Detail per Vendor",
       content: "Setiap baris = satu vendor. Klik baris untuk lihat **GR/PO detail** yang belum dibayar. Siapkan Payment Request dari sini.",
       placement: "top",

@@ -749,7 +749,7 @@ function getRootCauseSuggestion(event) {
           "Transaksi tidak biasa (fraud risk)",
         ],
         actions: [
-          { label: "Cek AP Aging", link: "/finance/ap-aging" },
+          { label: "Cek AP Aging", link: "/finance/payments-hub?tab=ap-aging" },
           { label: "Cek Journals", link: "/finance/journals" },
         ],
       };

@@ -300,8 +300,8 @@ export default function CRMHub() {
           <QATile to="/outlet/reservations" icon={Calendar} label="Semua Reservasi" sublabel="Lihat & kelola" accent="aurora-1" testId="qa-all-reservations" />
           <QATile to="/outlet/loyalty/input-poin" icon={Zap} label="Input Poin Kasir" sublabel="Scan struk" accent="amber" testId="qa-input-poin" />
           <QATile to="/outlet/voucher-redeem" icon={Gift} label="Redeem Voucher" sublabel="Tukar reward" accent="purple" testId="qa-voucher-redeem" />
-          <QATile to="/admin/loyalty/customers" icon={Users} label="Daftar Member" sublabel="Cari & kelola" accent="green" testId="qa-members" />
-          <QATile to="/admin/loyalty/analytics" icon={BarChart3} label="CRM Analytics" sublabel="Statistik loyalty" accent="rose" testId="qa-crm-analytics" />
+          <QATile to="/admin/loyalty?tab=customers" icon={Users} label="Daftar Member" sublabel="Cari & kelola" accent="green" testId="qa-members" />
+          <QATile to="/admin/loyalty?tab=analytics" icon={BarChart3} label="CRM Analytics" sublabel="Statistik loyalty" accent="rose" testId="qa-crm-analytics" />
         </div>
       </section>
 
@@ -481,7 +481,7 @@ export default function CRMHub() {
             <div className="flex items-center gap-2 mb-3">
               <UserPlus className="h-4 w-4 text-muted-foreground" />
               <h3 className="text-sm md:text-base font-semibold">Member Terbaru</h3>
-              <Link to="/admin/loyalty/customers" className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <Link to="/admin/loyalty?tab=customers" className="ml-auto text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                 Semua <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -492,7 +492,7 @@ export default function CRMHub() {
               <div className="text-center py-6">
                 <Users className="h-7 w-7 mx-auto mb-2 text-muted-foreground/30" />
                 <p className="text-xs text-muted-foreground">Belum ada member terdaftar.</p>
-                <Link to="/admin/loyalty/customers" className="text-xs text-foreground/60 hover:text-foreground underline mt-1 block">
+                <Link to="/admin/loyalty?tab=customers" className="text-xs text-foreground/60 hover:text-foreground underline mt-1 block">
                   Tambah member manual
                 </Link>
               </div>
@@ -532,7 +532,7 @@ export default function CRMHub() {
                 <p className="text-xs text-muted-foreground">Poin earned (30 hari)</p>
                 <p className="text-base font-semibold tabular-nums">{(loyaltyStats.points_earned_30d || 0).toLocaleString("id-ID")} pts</p>
               </div>
-              <Link to="/admin/loyalty/analytics" className="text-xs text-muted-foreground hover:text-foreground flex-shrink-0" aria-label="Buka CRM Analytics" title="Buka CRM Analytics">
+              <Link to="/admin/loyalty?tab=analytics" className="text-xs text-muted-foreground hover:text-foreground flex-shrink-0" aria-label="Buka CRM Analytics" title="Buka CRM Analytics">
                 <BarChart3 className="h-4 w-4" />
               </Link>
             </div>

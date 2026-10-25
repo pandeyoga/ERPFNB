@@ -25,7 +25,7 @@ export default function APAgingStackedBar({
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm md:text-base font-semibold">AP Aging</h3>
         <Link
-          to="/finance/ap-aging"
+          to="/finance/payments-hub?tab=ap-aging"
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           data-testid="ap-aging-detail-link"
         >

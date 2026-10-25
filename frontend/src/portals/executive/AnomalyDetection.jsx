@@ -151,7 +151,7 @@ export default function AnomalyDetection() {
             {items.map((a) => (
               <Link
                 key={a.id}
-                to={`/finance/anomalies?id=${a.id}`}
+                to={`/finance/period-closing?phase=1&id=${a.id}`}
                 className="flex items-start gap-3 px-4 py-3 hover:bg-foreground/5 group"
                 data-testid={`anomaly-row-${a.id}`}
               >
@@ -176,7 +176,7 @@ export default function AnomalyDetection() {
       </div>
 
       <div className="text-xs text-muted-foreground text-center">
-        Untuk triage detail (acknowledge / resolve / dismiss), buka <Link to="/finance/anomalies" className="text-primary hover:underline">Finance → Anomaly Feed</Link>.
+        Untuk triage detail (acknowledge / resolve / dismiss), buka <Link to="/finance/period-closing?phase=1" className="text-primary hover:underline">Finance → Anomaly Feed</Link>.
       </div>
     </div>
   );

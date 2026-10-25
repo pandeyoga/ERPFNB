@@ -168,7 +168,7 @@ export default function AdminHome() {
             )}
             {canSeeOps && (
               <LinkTile
-                to="/admin/tour-analytics"
+                to="/admin/operations/tour-analytics"
                 icon={BarChart3}
                 iconClass="bg-purple-500/15 text-purple-600 dark:text-purple-300"
                 title="Tour Analytics"

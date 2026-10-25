@@ -88,7 +88,9 @@ for f in sorted(TOURS_DIR.glob("*.js")):
 
 # ---- 3. Route drift: tourMap routes vs nav schema / routes ----
 tourmap = (SRC / "contexts/tour/tourMap.js").read_text()
-routes_in_map = re.findall(r"""[\"'](/[a-zA-Z0-9_\-/:]+)[\"']\s*:\s*\[""", tourmap)
+# keys may carry a hub query ("/hr/compensation?tab=advances") — validate the base path
+routes_in_map = [k.split("?")[0] for k in
+                 re.findall(r"""[\"'](/[a-zA-Z0-9_\-/:]+(?:\?[a-z_]+=[a-zA-Z0-9_\-]+)?)[\"']\s*:\s*\[""", tourmap)]
 
 # collect all known route paths from navigationSchema + portal route files
 known_paths = set()

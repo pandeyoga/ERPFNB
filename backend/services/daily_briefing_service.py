@@ -317,7 +317,7 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": an["title"],
             "description": an.get("description", ""),
             "action_label": "Review Anomali",
-            "action_link": "/finance/anomalies",
+            "action_link": "/finance/period-closing?phase=1",
         })
     if data.get("ap_due_count", 0) > 0:
         urgent_actions.append({
@@ -326,7 +326,7 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": f"{data['ap_due_count']} invoice jatuh tempo 7 hari",
             "description": f"Total {_format_idr(data['ap_due_total'])} — utama: {(data['top_ap_due'][0].get('vendor_name') or '-') if data['top_ap_due'] else '-'}",
             "action_label": "Buat Payment Request",
-            "action_link": "/finance/payment-requests",
+            "action_link": "/finance/payments-hub?tab=payments",
         })
     if data.get("pending_approvals", 0) > 0:
         urgent_actions.append({
@@ -335,7 +335,7 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": f"{data['pending_approvals']} approval menunggu Anda",
             "description": "Review & approve untuk mempercepat workflow",
             "action_label": "Buka Approvals",
-            "action_link": "/approvals",
+            "action_link": "/my-approvals",
         })
 
     # ---- Try LLM-narrated briefing, fallback to deterministic ----

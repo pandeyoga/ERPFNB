@@ -285,7 +285,7 @@ export default function ExecutiveHome() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="exec-kpi-strip-secondary">
             <CompactStatCard testIdPrefix="kpi" label="AP Exposure" value={fmtRp(kpis.ap_exposure)}
               sub="Hutang belum dibayar" icon={Wallet} color="aurora-6"
-              onClick={() => navigate("/finance/ap-aging")} />
+              onClick={() => navigate("/finance/payments-hub?tab=ap-aging")} />
             <CompactStatCard testIdPrefix="kpi" label="Pending Validation" value={fmtNumber(kpis.pending_validations)}
               sub="Daily sales menunggu validasi" icon={ClipboardCheck} color="aurora-3"
               onClick={() => navigate("/finance/validation")} />

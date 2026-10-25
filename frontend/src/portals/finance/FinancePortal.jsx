@@ -8,45 +8,23 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import FinanceHome from "./FinanceHome";
 import ValidationQueue from "./ValidationQueue";
 import JournalList from "./JournalList";
 import JournalDetail from "./JournalDetail";
 import ManualJournalForm from "./ManualJournalForm";
-import TrialBalance from "./TrialBalance";
-import ProfitLoss from "./ProfitLoss";
-import BalanceSheet from "./BalanceSheet";
-import CashflowReport from "./CashflowReport";
-import APAging from "./APAging";
 import COABrowser from "./COABrowser";
-import PeriodList from "./PeriodList";
 import PeriodClosingWizard from "./PeriodClosingWizard";
-import ReportBuilder from "./ReportBuilder";
-import PivotReport from "./PivotReport";
-import Comparatives from "./Comparatives";
 import VendorScorecard from "./VendorScorecard";
-import Forecasting from "./Forecasting";
-import AnomalyFeed from "./AnomalyFeed";
-import PaymentList from "./PaymentList";
 import PaymentForm from "./PaymentForm";
 import PaymentDetail from "./PaymentDetail";
-import PaymentRunList from "./PaymentRunList";
 import PaymentRunDetail from "./PaymentRunDetail";
-import PaymentRunTemplateList from "./PaymentRunTemplateList";
 import PaymentRunTemplateDetail from "./PaymentRunTemplateDetail";
-import BankRecon from "./BankRecon";
-import CashPosition from "./CashPosition";
-import TaxCenter from "./TaxCenter";
-import EFakturExport from "./EFakturExport";
-import EBupotExport from "./EBupotExport";
 import FixedAssetList from "./FixedAssetList";
 import FixedAssetDetail from "./FixedAssetDetail";
-import BudgetVsActual from "./BudgetVsActual";
-import BudgetManagement from "./BudgetManagement";
 import BudgetHub from "./BudgetHub";
-import ARInvoiceList from "./ARInvoiceList";
 import PeriodClosingHub from "./PeriodClosingHub";
-import ReservationDeposits from "./ReservationDeposits";
 import FinanceReportsHub from "./FinanceReportsHub";
 import FinancePaymentsHub from "./FinancePaymentsHub";
 import FinanceTaxHub from "./FinanceTaxHub";
@@ -66,13 +44,13 @@ export default function FinancePortal() {
         <Route index element={<FinanceHome />} />
       <Route path="validation" element={g("finance.sales.validate", <ValidationQueue />)} />
       {/* Payments Hub — all payment sub-pages in one tabbed workspace */}
-      <Route path="payments-hub" element={g("finance.payment", <FinancePaymentsHub />)} />
-      <Route path="payments" element={g("finance.payment", <PaymentList />)} />
+      <Route path="payments-hub" element={g(["finance.payment", "finance.ap.read", "finance.bank_reconciliation", "finance.cash.read", "finance.ar"], <FinancePaymentsHub />)} />
+      <Route path="payments" element={<LegacyRedirect to="/finance/payments-hub?tab=payments" />} />
       <Route path="payments/new" element={g("finance.payment.create", <PaymentForm />)} />
       <Route path="payments/:id" element={g("finance.payment", <PaymentDetail />)} />
-      <Route path="payment-runs" element={g("finance.payment", <PaymentRunList />)} />
+      <Route path="payment-runs" element={<LegacyRedirect to="/finance/payments-hub?tab=payment-runs" />} />
       <Route path="payment-runs/:id" element={g("finance.payment", <PaymentRunDetail />)} />
-      <Route path="payment-run-templates" element={g("finance.payment", <PaymentRunTemplateList />)} />
+      <Route path="payment-run-templates" element={<LegacyRedirect to="/finance/payments-hub?tab=run-templates" />} />
       <Route path="payment-run-templates/:id" element={g("finance.payment", <PaymentRunTemplateDetail />)} />
       {/* P0-04: legacy Payment Request module retired → single Payments module */}
       <Route path="payment-requests" element={<Navigate to="/finance/payments-hub?tab=payments" replace />} />
@@ -91,30 +69,30 @@ export default function FinancePortal() {
       <Route path="comparatives" element={<Navigate to="/finance/reports?tab=comparatives" replace />} />
       <Route path="report-builder" element={<Navigate to="/finance/reports?tab=report-builder" replace />} />
       <Route path="pivot" element={<Navigate to="/finance/reports?tab=pivot" replace />} />
-      <Route path="ap-aging" element={g("finance.ap.read", <APAging />)} />
+      <Route path="ap-aging" element={<LegacyRedirect to="/finance/payments-hub?tab=ap-aging" />} />
       {/* Tax & Compliance Hub — Tax Center + e-Faktur + e-Bupot tabs */}
       <Route path="tax" element={g(["finance.report", "finance.journal_entry"], <FinanceTaxHub />)} />
-      <Route path="tax-center" element={g(["finance.report", "finance.journal_entry"], <TaxCenter />)} />
-      <Route path="efaktur" element={g(["finance.report", "finance.journal_entry"], <EFakturExport />)} />
-      <Route path="ebupot" element={g(["finance.report", "finance.journal_entry"], <EBupotExport />)} />
+      <Route path="tax-center" element={<LegacyRedirect to="/finance/tax?tab=tax" />} />
+      <Route path="efaktur" element={<LegacyRedirect to="/finance/tax?tab=efaktur" />} />
+      <Route path="ebupot" element={<LegacyRedirect to="/finance/tax?tab=ebupot" />} />
       <Route path="assets" element={g("finance.asset", <FixedAssetList />)} />
       <Route path="assets/:id" element={g("finance.asset", <FixedAssetDetail />)} />
       {/* Budget Hub — Budget vs Actual + Management + Forecasting tabs */}
       <Route path="budget-hub" element={g("finance.budget", <BudgetHub />)} />
-      <Route path="budget" element={g("finance.budget", <BudgetVsActual />)} />
-      <Route path="budget/manage" element={g("finance.budget.update", <BudgetManagement />)} />
-      <Route path="ar-invoices" element={g("finance.ar", <ARInvoiceList />)} />
-      <Route path="bank-recon" element={g("finance.bank_reconciliation", <BankRecon />)} />
-      <Route path="cash-position" element={g("finance.cash.read", <CashPosition />)} />
-      <Route path="forecasting" element={g("finance.budget", <Forecasting />)} />
-      <Route path="anomalies" element={g("finance.journal_entry.read", <AnomalyFeed />)} />
+      <Route path="budget" element={<LegacyRedirect to="/finance/budget-hub?tab=vs-actual" />} />
+      <Route path="budget/manage" element={<LegacyRedirect to="/finance/budget-hub?tab=manage" />} />
+      <Route path="ar-invoices" element={<LegacyRedirect to="/finance/payments-hub?tab=ar-invoices" />} />
+      <Route path="bank-recon" element={<LegacyRedirect to="/finance/payments-hub?tab=bank-recon" />} />
+      <Route path="cash-position" element={<LegacyRedirect to="/finance/payments-hub?tab=cash-position" />} />
+      <Route path="forecasting" element={<LegacyRedirect to="/finance/budget-hub?tab=forecasting" />} />
+      <Route path="anomalies" element={<LegacyRedirect to="/finance/period-closing?phase=1" />} />
       <Route path="vendor-scorecard" element={g("finance.ap.read", <VendorScorecard />)} />
-      <Route path="periods" element={g("finance.journal_entry.read", <PeriodList />)} />
-      <Route path="period-closing" element={g("finance.period.lock", <PeriodClosingHub />)} />
+      <Route path="periods" element={<LegacyRedirect to="/finance/period-closing?phase=0" />} />
+      <Route path="period-closing" element={g(["finance.period.lock", "finance.journal_entry.read"], <PeriodClosingHub />)} />
       <Route path="period-closing/:period" element={g("finance.period.lock", <PeriodClosingWizard />)} />
-      <Route path="closing-wizard" element={<Navigate to="/finance/periods" replace />} />
+      <Route path="closing-wizard" element={<LegacyRedirect to="/finance/period-closing" />} />
       <Route path="coa" element={g("finance.journal_entry.read", <COABrowser />)} />
-      <Route path="reservation-deposits" element={g("finance.ar", <ReservationDeposits />)} />
+      <Route path="reservation-deposits" element={<LegacyRedirect to="/finance/payments-hub?tab=deposits" />} />
       <Route path="*" element={<Navigate to="/finance" replace />} />
       </Routes>
     </div>

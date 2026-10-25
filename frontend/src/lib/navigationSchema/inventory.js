@@ -20,7 +20,7 @@ export const inventoryNav = {
       icon: Boxes,
       items: [
         { id: "balance", name: "Stock Balance", path: "/inventory/balance" },
-        { id: "movements-hub", name: "Stock Movements", path: "/inventory/movements-hub", matchPaths: ["/inventory/transfers", "/inventory/adjustments"] },
+        { id: "movements-hub", name: "Stock Movements", path: "/inventory/movements-hub", matchPaths: ["/inventory/transfers"] },
         { id: "low-stock", name: "Low Stock Alert", path: "/inventory/low-stock" },
         { id: "opname", name: "Stock Opname", path: "/inventory/opname" },
         { id: "valuation", name: "Stock Valuation", path: "/inventory/valuation" },

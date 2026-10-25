@@ -128,7 +128,7 @@ export default function LoyaltyAdminCustomers({ embedded = false }) {
       </div>
 
       {/* Table */}
-      <Card>
+      <Card data-testid="customers-table">
         <CardContent className="p-0">
           <DataTable
             columns={[

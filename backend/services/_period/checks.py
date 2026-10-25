@@ -47,7 +47,7 @@ async def closing_checks(period: str) -> dict:
             "status": "ok" if balanced else "fail",
             "value": diff,
             "detail": "Selisih Dr-Cr: Rp " + f"{diff:,.0f}".replace(",", ".") if not balanced else "Period balance Dr = Cr",
-            "fix_link": f"/finance/trial-balance?period={period}",
+            "fix_link": f"/finance/reports?tab=trial-balance&period={period}",
             "blocker": True,
         })
     except Exception as e:  # noqa: BLE001
@@ -77,7 +77,7 @@ async def closing_checks(period: str) -> dict:
         "id": "ap_open", "label": "AP terbuka (info)",
         "status": "info", "value": ap_open_count,
         "detail": f"{ap_open_count} GR open di AP ledger",
-        "fix_link": "/finance/ap-aging", "blocker": False,
+        "fix_link": "/finance/payments-hub?tab=ap-aging", "blocker": False,
     })
 
     # 5) Negative stock balance

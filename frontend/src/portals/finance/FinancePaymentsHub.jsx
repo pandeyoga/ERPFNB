@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
+import { useVisibleTabs } from "@/lib/portalGate";
 
 import APAging from "./APAging";
 import PaymentList from "./PaymentList";
@@ -25,18 +26,20 @@ import ARInvoiceList from "./ARInvoiceList";
 import ReservationDeposits from "./ReservationDeposits";
 import CashPosition from "./CashPosition";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke ?tab=…)
 const TABS = [
-  { id: "ap-aging",         label: "AP aging",             icon: Receipt,         component: APAging },
-  { id: "payments",         label: "Payments",             icon: Banknote,        component: PaymentList },
-  { id: "payment-runs",     label: "Payment runs",         icon: Layers,          component: PaymentRunList },
-  { id: "run-templates",    label: "Run templates",        icon: ClipboardList,   component: PaymentRunTemplateList },
-  { id: "bank-recon",       label: "Bank reconciliation",  icon: Landmark,        component: BankRecon },
-  { id: "cash-position",    label: "Cash position",        icon: Wallet,          component: CashPosition },
-  { id: "ar-invoices",      label: "AR invoices",          icon: FileSpreadsheet, component: ARInvoiceList },
-  { id: "deposits",         label: "Reservation deposits", icon: CalendarCheck,   component: ReservationDeposits },
+  { id: "ap-aging",         label: "AP aging",             icon: Receipt,         component: APAging,                perm: "finance.ap.read" },
+  { id: "payments",         label: "Payments",             icon: Banknote,        component: PaymentList,            perm: "finance.payment" },
+  { id: "payment-runs",     label: "Payment runs",         icon: Layers,          component: PaymentRunList,         perm: "finance.payment" },
+  { id: "run-templates",    label: "Run templates",        icon: ClipboardList,   component: PaymentRunTemplateList, perm: "finance.payment" },
+  { id: "bank-recon",       label: "Bank reconciliation",  icon: Landmark,        component: BankRecon,              perm: "finance.bank_reconciliation" },
+  { id: "cash-position",    label: "Cash position",        icon: Wallet,          component: CashPosition,           perm: "finance.cash.read" },
+  { id: "ar-invoices",      label: "AR invoices",          icon: FileSpreadsheet, component: ARInvoiceList,          perm: "finance.ar" },
+  { id: "deposits",         label: "Reservation deposits", icon: CalendarCheck,   component: ReservationDeposits,    perm: "finance.ar" },
 ];
 
 export default function FinancePaymentsHub() {
+  const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "payments");
 
@@ -50,7 +53,7 @@ export default function FinancePaymentsHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const current = TABS.find(t => t.id === activeTab) || TABS.find(t => t.id === "payments");
+  const current = tabs.find(t => t.id === activeTab) || tabs.find(t => t.id === "payments") || tabs[0];
   const ActiveComponent = current.component;
 
   return (
@@ -63,7 +66,7 @@ export default function FinancePaymentsHub() {
 
       <Tabs value={current.id} onValueChange={handleTabChange}>
         <TabsList data-testid="payments-hub-tabs">
-          {TABS.map(tab => {
+          {tabs.map(tab => {
             const Icon = tab.icon;
             return (
               <TabsTrigger key={tab.id} value={tab.id} data-testid={`payments-tab-${tab.id}`}>

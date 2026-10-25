@@ -45,7 +45,7 @@ export default function HelpTourButton() {
   const searchInputRef = useRef(null);
 
   const currentPath = location.pathname;
-  const availableTourIds = getToursForPath(currentPath);
+  const availableTourIds = getToursForPath(currentPath, location.search);
 
   // Determine if this is a public page (hide tour button)
   const isPublicPage =

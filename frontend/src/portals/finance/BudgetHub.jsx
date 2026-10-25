@@ -12,14 +12,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BudgetVsActual from "./BudgetVsActual";
 import BudgetManagement from "./BudgetManagement";
 import Forecasting from "./Forecasting";
+import { useVisibleTabs } from "@/lib/portalGate";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
-  { id: "vs-actual",   label: "Budget vs Actual",  icon: BarChart3, component: BudgetVsActual },
-  { id: "manage",      label: "Budget management", icon: Settings2, component: BudgetManagement },
-  { id: "forecasting", label: "Forecasting",       icon: LineChart, component: Forecasting },
+  { id: "vs-actual",   label: "Budget vs Actual",  icon: BarChart3, component: BudgetVsActual, perm: "finance.budget" },
+  { id: "manage",      label: "Budget management", icon: Settings2, component: BudgetManagement, perm: "finance.budget.update" },
+  { id: "forecasting", label: "Forecasting",       icon: LineChart, component: Forecasting, perm: "finance.budget" },
 ];
 
 export default function BudgetHub() {
+  const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "vs-actual");
 
@@ -33,7 +36,7 @@ export default function BudgetHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const active = TABS.find(t => t.id === activeTab) || TABS[0];
+  const active = tabs.find(t => t.id === activeTab) || tabs[0];
   const ActiveComponent = active.component;
 
   return (
@@ -46,7 +49,7 @@ export default function BudgetHub() {
 
       <Tabs value={active.id} onValueChange={handleTabChange}>
         <TabsList data-testid="budget-hub-tabs">
-          {TABS.map(tab => {
+          {tabs.map(tab => {
             const Icon = tab.icon;
             return (
               <TabsTrigger key={tab.id} value={tab.id} data-testid={`budget-tab-${tab.id}`}>

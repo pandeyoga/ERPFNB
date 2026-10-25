@@ -32,7 +32,7 @@ export const outletNav = {
       name: "End of Day",
       icon: History,
       items: [
-        { id: "end-of-day", name: "End of Day", path: "/outlet/end-of-day", matchPaths: ["/outlet/daily-close"] },
+        { id: "end-of-day", name: "End of Day", path: "/outlet/end-of-day" },
       ],
     },
     {

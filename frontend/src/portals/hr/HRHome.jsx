@@ -42,18 +42,18 @@ export default function HRHome() {
           <CompactStatCard label="Open Advances" value={home?.open_advances ?? 0}
             sub={`Outstanding: ${fmtRp(home?.advance_outstanding ?? 0)}`}
             icon={Wallet} color="aurora-2"
-            onClick={() => navigate("/hr/advances")} />
+            onClick={() => navigate("/hr/compensation?tab=advances")} />
         </div>
         <div data-testid="hr-kpi-voucher">
           <CompactStatCard label="Voucher Liability" value={fmtRp(home?.voucher_liability ?? 0)}
             sub={`${home?.voucher_unredeemed_count ?? 0} belum ditukar`}
             icon={Ticket} color="aurora-3"
-            onClick={() => navigate("/hr/voucher")} />
+            onClick={() => navigate("/hr/compensation?tab=voucher")} />
         </div>
         <div data-testid="hr-kpi-lbfund">
           <CompactStatCard label="LB Fund Balance" value={fmtRp(home?.lb_fund_balance ?? 0)}
             sub="Loss & Breakage Fund" icon={PiggyBank} color="aurora-4"
-            onClick={() => navigate("/hr/lb-fund")} />
+            onClick={() => navigate("/hr/compensation?tab=lb-fund")} />
         </div>
       </div>
 
@@ -65,21 +65,21 @@ export default function HRHome() {
             <ul className="space-y-1 text-sm text-muted-foreground">
               {home?.pending_advance_approval > 0 && (
                 <li>
-                  <Link to="/hr/advances" className="hover:text-foreground" data-testid="hr-pending-adv">
+                  <Link to="/hr/compensation?tab=advances" className="hover:text-foreground" data-testid="hr-pending-adv">
                     {home.pending_advance_approval} kasbon menunggu approval →
                   </Link>
                 </li>
               )}
               {home?.service_charge_pending > 0 && (
                 <li>
-                  <Link to="/hr/service-charge" className="hover:text-foreground" data-testid="hr-pending-sc">
+                  <Link to="/hr/compensation?tab=service-charge" className="hover:text-foreground" data-testid="hr-pending-sc">
                     {home.service_charge_pending} service charge belum di-post →
                   </Link>
                 </li>
               )}
               {home?.incentive_pending > 0 && (
                 <li>
-                  <Link to="/hr/incentive" className="hover:text-foreground" data-testid="hr-pending-inc">
+                  <Link to="/hr/compensation?tab=incentive" className="hover:text-foreground" data-testid="hr-pending-inc">
                     {home.incentive_pending} incentive run perlu disposisi →
                   </Link>
                 </li>
@@ -92,8 +92,8 @@ export default function HRHome() {
       <section data-testid="hr-quick-actions">
         <h2 className="text-base md:text-lg font-semibold mb-2">Aksi Cepat</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          <ActionTile to="/hr/advances?new=1" icon={Wallet} label="Buat Kasbon" testId="hr-qa-advance" />
-          <ActionTile to="/hr/service-charge?new=1" icon={Receipt} label="Hitung Service Charge" testId="hr-qa-service" />
+          <ActionTile to="/hr/compensation?tab=advances&new=1" icon={Wallet} label="Buat Kasbon" testId="hr-qa-advance" />
+          <ActionTile to="/hr/compensation?tab=service-charge&new=1" icon={Receipt} label="Hitung Service Charge" testId="hr-qa-service" />
           <ActionTile to="/hr/leaves" icon={CalendarDays} label="Kelola Cuti" testId="hr-qa-leaves" />
           <ActionTile to="/my-approvals" icon={CheckCircle} label="Pusat Persetujuan" testId="hr-qa-approvals" />
         </div>

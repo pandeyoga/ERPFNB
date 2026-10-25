@@ -222,7 +222,7 @@ def render_inapp(payload: dict) -> dict:
             f"Pending approval {payload['pending_approvals']} | "
             f"Anomalies {payload['anomaly_count']}"
         ),
-        "link": "/owner/cockpit",
+        "link": "/owner",
     }
 
 

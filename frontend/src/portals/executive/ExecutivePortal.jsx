@@ -18,15 +18,13 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import OwnerHome from "./OwnerHome";
 import ExecutiveHome from "./ExecutiveHome";
 import BrandDrilldown from "./BrandDrilldown";
 import OutletDrilldown from "./OutletDrilldown";
-import ProfitWalk from "./ProfitWalk";
-import PeriodCompare from "./PeriodCompare";
 import ReservationSummary from "./ReservationSummary";
 import BudgetApprovals from "./BudgetApprovals";
-import BrandMixOverview from "./BrandMixOverview";
 import ExecutiveAnalyticsHub from "./ExecutiveAnalyticsHub";
 import ExecutiveQA from "./ExecutiveQA";
 import AnomalyDetection from "./AnomalyDetection";
@@ -48,8 +46,8 @@ export default function ExecutivePortal() {
       <Route path="analytics" element={<ExecutiveHome />} />
       <Route path="brand/:brandId" element={<BrandDrilldown />} />
       <Route path="outlet/:outletId" element={<OutletDrilldown />} />
-      <Route path="profit-walk" element={<ProfitWalk />} />
-      <Route path="period-compare" element={<PeriodCompare />} />
+      <Route path="profit-walk" element={<LegacyRedirect to="/executive/analytics-hub?tab=profit-walk" />} />
+      <Route path="period-compare" element={<LegacyRedirect to="/executive/analytics-hub?tab=period-compare" />} />
       <Route path="reservations" element={<ReservationSummary />} />
       <Route path="budget-approvals" element={g("executive.budget.approve", <BudgetApprovals />)} />
 
@@ -61,7 +59,7 @@ export default function ExecutivePortal() {
       {/* Real pages: AI Q&A, Anomaly Detection, Brand Mix overview */}
       <Route path="ai-qa" element={<ExecutiveQA />} />
       <Route path="anomaly" element={<AnomalyDetection />} />
-      <Route path="brand" element={<BrandMixOverview />} />
+      <Route path="brand" element={<LegacyRedirect to="/executive/analytics-hub?tab=brand" />} />
       {/* Phase 2g — unified Performance Analytics hub (Brand Mix + Profit Walk + Period Compare) */}
       <Route path="analytics-hub" element={<ExecutiveAnalyticsHub />} />
 

@@ -176,7 +176,7 @@ async def summary(days: int = 7) -> dict:
                 "outlet_id": oid,
                 "outlet_name": outlets_map.get(oid, {}).get("name") if oid else None,
                 "created_at": d.get("created_at"),
-                "link": f"/finance/anomalies?id={d.get('id')}",
+                "link": f"/finance/period-closing?phase=1&id={d.get('id')}",
             })
 
     # Last scan metadata

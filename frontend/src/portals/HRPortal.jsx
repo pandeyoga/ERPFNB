@@ -6,14 +6,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import HRHome from "./hr/HRHome";
-import AdvancesList from "./hr/AdvancesList";
-import FOCList from "./hr/FOCList";
-import IncentiveList from "./hr/IncentiveList";
-import LBFundLedger from "./hr/LBFundLedger";
-import PayrollList from "./hr/PayrollList";
-import ServiceChargeList from "./hr/ServiceChargeList";
-import VoucherList from "./hr/VoucherList";
 import LeaveRequests from "./hr/LeaveRequests";
 import JobApplications from "./hr/JobApplications";
 import JobListings from "./hr/JobListings";
@@ -27,14 +21,14 @@ export default function HRPortal() {
     <div data-testid="hr-portal">
       <Routes>
         <Route index element={<HRHome />} />
-        <Route path="compensation" element={g(["hr.incentive", "hr.service_charge", "hr.voucher", "hr.foc", "hr.lb_fund", "hr.read", "hr.write"], <CompensationHub />)} />
-        <Route path="advances" element={g("hr.advance", <AdvancesList />)} />
-        <Route path="service-charge" element={g("hr.service_charge", <ServiceChargeList />)} />
-        <Route path="incentive" element={g("hr.incentive", <IncentiveList />)} />
-        <Route path="voucher" element={g("hr.voucher", <VoucherList />)} />
-        <Route path="foc" element={g("hr.foc", <FOCList />)} />
-        <Route path="lb-fund" element={g("hr.lb_fund", <LBFundLedger />)} />
-        <Route path="payroll" element={g(["hr.read", "hr.write"], <PayrollList />)} />
+        <Route path="compensation" element={g(["hr.incentive", "hr.service_charge", "hr.voucher", "hr.foc", "hr.lb_fund", "hr.advance", "hr.read", "hr.write"], <CompensationHub />)} />
+        <Route path="advances" element={<LegacyRedirect to="/hr/compensation?tab=advances" />} />
+        <Route path="service-charge" element={<LegacyRedirect to="/hr/compensation?tab=service-charge" />} />
+        <Route path="incentive" element={<LegacyRedirect to="/hr/compensation?tab=incentive" />} />
+        <Route path="voucher" element={<LegacyRedirect to="/hr/compensation?tab=voucher" />} />
+        <Route path="foc" element={<LegacyRedirect to="/hr/compensation?tab=foc" />} />
+        <Route path="lb-fund" element={<LegacyRedirect to="/hr/compensation?tab=lb-fund" />} />
+        <Route path="payroll" element={<LegacyRedirect to="/hr/compensation?tab=payroll" rename={{ tab: "view" }} />} />
         {/* Leaves: any authenticated user may see/manage their OWN leaves; deep
             data access is server-enforced by _assert_can_view_employee_leave. */}
         <Route path="leaves" element={<LeaveRequests />} />

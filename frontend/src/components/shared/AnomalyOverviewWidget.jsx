@@ -176,7 +176,7 @@ export default function AnomalyOverviewWidget() {
             ) : (
               <span className="text-muted-foreground">Belum pernah scan</span>
             )}
-            <Link to="/finance/anomalies"
+            <Link to="/finance/period-closing?phase=1"
               className="inline-flex items-center gap-1 text-foreground hover:underline font-semibold"
               data-testid="anomaly-widget-view-all">
               Buka Feed <ChevronRight className="h-3 w-3" />

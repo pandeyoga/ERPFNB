@@ -244,35 +244,6 @@ const adminApprovalBuilderTour = {
   ],
 };
 
-// ─── Approval Workflows (Legacy) ──────────────────────────────────
-const adminWorkflowsTour = {
-  name: "Approval Workflows",
-  description: "Kelola aturan approval berbasis teks untuk semua modul.",
-  steps: [
-    {
-      target: "body",
-      title: "Approval Workflows",
-      content: "Atur **aturan approval** untuk setiap jenis dokumen. Workflow menentukan siapa yang harus menyetujui PR, PO, Payment, dan Adjustment.",
-      placement: "center",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='wf-new']",
-      title: "Buat Workflow Baru",
-      content: "Klik **+ Workflow** untuk membuat aturan approval baru. Pilih entitas (PR/PO/dll), set threshold, dan tambah tier approver.",
-      placement: "bottom",
-    },
-    {
-      target: "body",
-      title: "Cara Kerja Tier",
-      content: "Setiap workflow bisa punya **multiple tier**. Contoh:\n\n• Tier 1: Manager (hingga Rp 5 juta)\n• Tier 2: GM (Rp 5–50 juta)\n• Tier 3: Owner (di atas Rp 50 juta)",
-      placement: "center",
-      variant: "tip",
-    },
-  ],
-};
-
 // ─── Bulk Import ──────────────────────────────────────────────────
 const adminBulkImportTour = {
   name: "Bulk Excel Import",
@@ -833,7 +804,6 @@ export {
   adminUsersTour,
   adminRolesTour,
   adminApprovalBuilderTour,
-  adminWorkflowsTour,
   adminBulkImportTour,
   adminNumberSeriesTour,
   adminTaxConfigTour,

@@ -162,7 +162,7 @@ export default function GlobalSearch({ open, onClose }) {
     else if (section === "outlets") navigate(`/admin/master/outlets?id=${item.id}`);
     else if (section === "brands") navigate(`/admin/master/brands?id=${item.id}`);
     else if (section === "coa") navigate(`/admin/master/chart-of-accounts?id=${item.id}`);
-    else if (section === "users") navigate(`/admin/users?id=${item.id}`);
+    else if (section === "users") navigate(`/admin/user-management?tab=users&id=${item.id}`);
   }, [navigate, onClose]);
 
   // Flat keyboard navigation list (nav items first)

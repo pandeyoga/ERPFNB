@@ -216,12 +216,12 @@ export default function OwnerHome() {
   const ENTITY_LABELS = {
     purchase_request:  { label: "Purchase Request",  to: "/procurement/requests" },
     purchase_order:    { label: "Purchase Order",     to: "/procurement/orders" },
-    stock_adjustment:  { label: "Stok Adjustment",    to: "/inventory/adjustments" },
-    employee_advance:  { label: "Kasbon Karyawan",    to: "/hr/advances" },
-    payment_request:   { label: "Payment Request",    to: "/finance/payments" },
+    stock_adjustment:  { label: "Stok Adjustment",    to: "/inventory/movements-hub?type=adjustments" },
+    employee_advance:  { label: "Kasbon Karyawan",    to: "/hr/compensation?tab=advances" },
+    payment_request:   { label: "Payment Request",    to: "/finance/payments-hub?tab=payments" },
     budget:            { label: "Budget",             to: "/executive/budget-approvals" },
     leave_request:     { label: "Cuti Karyawan",      to: "/hr/leave" },
-    stock_transfer:    { label: "Transfer Stok",      to: "/inventory/transfers" },
+    stock_transfer:    { label: "Transfer Stok",      to: "/inventory/movements-hub?type=transfers" },
     ar_invoice:        { label: "AR Invoice",         to: "/finance/ar" },
   };
 

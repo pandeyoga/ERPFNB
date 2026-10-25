@@ -6,6 +6,7 @@
  *   - exact match first
  *   - prefix match with "/*" suffix
  *   - dynamic params via ":param" segments
+ *   - tab hub via query: "/hr/compensation?tab=advances" → tour halaman lama yang kini menjadi tab
  *
  *   tourMetadata: { "tour-id": { title, description, icon } }
  */
@@ -17,10 +18,9 @@
 const pathToTours = {
   // ==== Outlet portal ====
   "/outlet": ["outlet-home"],
-  "/outlet/approvals": ["my-approvals"],
   "/outlet/loyalty/input-poin": ["outlet-loyalty-points"],
   "/outlet/voucher-redeem": ["outlet-loyalty-redeem"],
-  "/outlet/daily-sales/new": ["outlet-daily-sales"],
+  "/outlet/daily-sales/new": ["outlet-daily-sales", "outlet-sales-wizard"],
   "/outlet/daily-sales/:id": ["outlet-daily-sales"],
   "/outlet/daily-sales/:id/edit": ["outlet-daily-sales"],
   "/outlet/home": ["outlet-home"],
@@ -31,8 +31,7 @@ const pathToTours = {
   "/outlet/reservations/new": ["outlet-reservation-form"],
   "/outlet/reservations/:id/edit": ["outlet-reservation-form"],
   "/outlet/daily-sales": ["outlet-daily-sales"],
-  "/outlet/sales-wizard": ["outlet-sales-wizard"],
-  "/outlet/daily-close": ["outlet-daily-close"],
+  "/outlet/end-of-day?step=3": ["outlet-daily-close"],
   "/outlet/petty-cash": ["outlet-petty-cash"],
   "/outlet/loyalty/scan": ["outlet-loyalty-scan"],
   "/outlet/loyalty/redeem": ["outlet-loyalty-redeem"],
@@ -44,49 +43,41 @@ const pathToTours = {
 
   // ==== Admin portal ====
   "/admin": ["admin-home"],
-  "/admin/master-data": ["admin-master-data"],
   "/admin/master/:entity": ["admin-master-data"],
-  "/admin/cms-studio": ["admin-cms-studio"],
   "/admin/cms/:entity": ["admin-cms-studio"],
   "/admin/cms/menu": ["admin-menu-cms"],
   "/admin/cms/brands": ["admin-cms-studio"],
   "/admin/cms/news": ["admin-cms-studio"],
-  "/admin/users": ["admin-users"],
-  "/admin/roles": ["admin-roles"],
+  "/admin/user-management?tab=users": ["admin-users"],
+  "/admin/user-management?tab=roles": ["admin-roles"],
   // NOTE: `/admin/approval-builder` is NOT a real route — the ApprovalMatrixBuilder
   // page is served at `/admin/approvals` (see AdminPortal.jsx). Mapping kept only
   // on the canonical `/admin/approvals` route below.
-  "/admin/workflows": ["admin-workflows"],
-  "/admin/bulk-import": ["admin-bulk-import"],
-  "/admin/number-series": ["admin-number-series"],
-  "/admin/tax": ["admin-tax-config"],
+  "/admin/approvals": ["admin-approval-builder"],
+  "/admin/setup?tab=bulk-import": ["admin-bulk-import"],
+  "/admin/setup?tab=number-series": ["admin-number-series"],
+  "/admin/setup?tab=tax-config": ["admin-tax-config"],
   "/admin/operations": ["admin-operations"],
   "/admin/settings": ["admin-settings"],
   "/admin/loyalty": ["admin-loyalty-overview"],
-  "/admin/loyalty/customers": ["admin-loyalty-customers"],
-  "/admin/loyalty/rewards": ["admin-loyalty-rewards"],
+  "/admin/loyalty?tab=customers": ["admin-loyalty-customers"],
+  "/admin/loyalty?tab=rewards": ["admin-loyalty-rewards"],
   "/admin/configuration": ["admin-configuration"],
-  "/admin/report-schedules": ["admin-report-schedules"],
-  "/admin/data-management": ["admin-data-management"],
+  "/admin/operations/report-schedules": ["admin-report-schedules"],
+  "/admin/operations/data-management": ["admin-data-management"],
   "/admin/smart-seo": ["admin-smart-seo"],
   "/admin/integrations": ["admin-integrations"],
-  "/admin/audit-log": ["admin-audit-log"],
-  "/admin/tour-analytics": ["admin-tour-analytics"],
+  "/admin/user-management?tab=audit-log": ["admin-audit-log"],
+  "/admin/operations/tour-analytics": ["admin-tour-analytics"],
   // NOTE: `/admin/approvals` renders ApprovalMatrixBuilder (canonical route).
   // The page shows a "Memuat builder…" loading state that fetches
   // roles+outlets+brands+users+entities; the root container renders immediately
   // (data-testid="approval-matrix-builder") so the tour anchor is always present.
-  "/admin/approvals": ["admin-approval-builder"],
   "/admin/user-management": ["admin-user-management"],
   "/admin/setup": ["admin-setup"],
   "/admin/configuration/effective-dating": ["admin-effective-dating"],
-  "/admin/loyalty/redemptions": ["admin-loyalty-redemptions"],
-  // Removed: `/admin/loyalty/analytics` mapped to admin-loyalty-overview
-  // whose targets are on loyalty HOME, not analytics. Prevents runtime drift.
+  "/admin/loyalty?tab=redemptions": ["admin-loyalty-redemptions"],
   "/admin/loyalty/customers/:customerId": ["admin-loyalty-customers"],
-  // NOTE: `/admin/loyalty/analytics` was a stale mapping to the loyalty-overview
-  // tour (which targets loyalty HOME testids). Removed to eliminate route→tour
-  // drift; the analytics page will show inline help only.
   "/admin/integrations/:tab": ["admin-integrations"],
   "/admin/operations/:section": ["admin-operations"],
   "/admin/sales-schemas": ["admin-configuration"],
@@ -97,7 +88,6 @@ const pathToTours = {
 
   // ==== Procurement portal ====
   "/procurement": ["procurement-home"],
-  "/procurement/approvals": ["my-approvals"],
   "/procurement/kanban": ["procurement-kanban"],
   "/procurement/pr": ["procurement-pr-list"],
   "/procurement/po": ["procurement-po-list"],
@@ -121,24 +111,15 @@ const pathToTours = {
 
   // ==== Finance portal ====
   "/finance": ["finance-home"],
-  "/finance/approvals": ["my-approvals"],
   "/finance/validation": ["finance-validation"],
   "/finance/manual-journal": ["finance-manual-journal"],
-  "/finance/ap-aging": ["finance-ap"],
+  "/finance/payments-hub?tab=ap-aging": ["finance-ap"],
   "/finance/journals": ["finance-journals"],
-  "/finance/payment-requests": ["finance-payment-requests"],
-  "/finance/payments": ["finance-payments"],
-  "/finance/bank-recon": ["finance-bank-recon"],
-  // NOTE: `/finance/ar` is not a real route — AR invoices live at
-  // `/finance/ar-invoices` (see FinancePortal.jsx). Mapping kept there.
-  "/finance/trial-balance": ["finance-trial-balance"],
-  "/finance/balance-sheet": ["finance-balance-sheet"],
-  "/finance/cashflow": ["finance-cashflow"],
+  "/finance/payments-hub?tab=payments": ["finance-payments", "finance-payment-requests"],
+  "/finance/payments-hub?tab=bank-recon": ["finance-bank-recon"],
   "/finance/coa": ["finance-coa"],
-  "/finance/profit-loss": ["finance-profit-loss"],
-  "/finance/anomalies": ["finance-anomalies"],
-  "/finance/comparatives": ["finance-comparatives"],
-  "/finance/periods": ["finance-periods"],
+  "/finance/period-closing?phase=1": ["finance-anomalies"],
+  "/finance/period-closing?phase=0": ["finance-periods"],
   "/finance/period-closing": ["finance-period-closing"],
   // Consolidated hubs (current IA — sidebar lands here)
   "/finance/payments-hub": ["finance-payments-hub"],
@@ -147,48 +128,38 @@ const pathToTours = {
   "/finance/budget-hub": ["finance-budget-hub"],
   "/finance/assets": ["finance-assets"],
   "/finance/assets/:id": ["finance-assets"],
-  "/finance/cash-position": ["finance-cash-position"],
+  "/finance/payments-hub?tab=cash-position": ["finance-cash-position"],
   "/finance/vendor-scorecard": ["finance-vendor-scorecard"],
-  "/finance/reservation-deposits": ["finance-reservation-deposits"],
-  "/finance/payment-runs": ["finance-payment-runs"],
+  "/finance/payments-hub?tab=deposits": ["finance-reservation-deposits"],
+  "/finance/payments-hub?tab=payment-runs": ["finance-payment-runs"],
   "/finance/payment-runs/:id": ["finance-payment-runs"],
-  "/finance/payment-run-templates": ["finance-payment-run-templates"],
+  "/finance/payments-hub?tab=run-templates": ["finance-payment-run-templates"],
   "/finance/payment-run-templates/:id": ["finance-payment-run-templates"],
-  "/finance/forecasting": ["finance-forecasting"],
-  "/finance/budget": ["finance-budget-vs-actual"],
-  // NOTE: `/finance/budget/manage` renders BudgetManagement (a form), not the
-  // hub. Removed to eliminate route→tour drift; add a dedicated budget-manage
-  // tour if a walkthrough is needed there.
-  "/finance/efaktur": ["finance-efaktur"],
-  "/finance/ebupot": ["finance-ebupot"],
-  // NOTE: `/finance/tax-center` renders the legacy standalone TaxCenter, not
-  // the unified FinanceTaxHub whose tour targets tab-testids. Removed.
-  "/finance/ar-invoices": ["finance-ar"],
-  // NOTE: `/finance/payments/new` and `/finance/payment-requests/new` render
-  // form pages, not lists. Removed to eliminate route→tour drift.
-  "/finance/payments/:id": ["finance-payments"],
-  "/finance/payment-requests/:id": ["finance-payment-requests"],
+  "/finance/budget-hub?tab=forecasting": ["finance-forecasting"],
+  "/finance/budget-hub?tab=vs-actual": ["finance-budget-vs-actual"],
+  "/finance/tax?tab=efaktur": ["finance-efaktur"],
+  "/finance/tax?tab=ebupot": ["finance-ebupot"],
+  "/finance/payments-hub?tab=ar-invoices": ["finance-ar"],
+  "/finance/payments/:id": ["finance-payments", "finance-payment-requests"],
   "/finance/journals/:id": ["finance-journals"],
   "/finance/period-closing/:period": ["finance-period-closing"],
 
   // ==== Inventory portal ====
   "/inventory": ["inventory-home"],
   "/inventory/balance": ["inventory-balance"],
-  "/inventory/movements": ["inventory-movements"],
   "/inventory/movements-hub": ["inventory-movements-hub"],
   "/inventory/opname": ["inventory-opname"],
   "/inventory/opname/:id": ["inventory-opname"],
-  "/inventory/transfers": ["inventory-transfers"],
+  "/inventory/movements-hub?type=transfers": ["inventory-transfers"],
   "/inventory/transfers/:id": ["inventory-transfers"],
-  "/inventory/adjustments": ["inventory-adjustment"],
+  "/inventory/movements-hub?type=adjustments": ["inventory-adjustment"],
   "/inventory/low-stock": ["inventory-low-stock"],
   "/inventory/market-list": ["inventory-market-list"],
   "/inventory/valuation": ["inventory-valuation"],
 
   // ==== Executive portal ====
   "/executive": ["executive-owner-home"],
-  "/executive/approvals": ["my-approvals"],
-  "/executive/brand": ["executive-brand-mix"],
+  "/executive/analytics-hub?tab=brand": ["executive-brand-mix"],
   "/executive/brand/:brandId": ["executive-brand-drilldown"],
   "/executive/outlet/:outletId": ["executive-outlet-drilldown"],
   "/executive/analytics": ["executive-home"],
@@ -197,10 +168,8 @@ const pathToTours = {
   // ai-qa). Removed to eliminate route→tour drift.
   "/executive/anomaly": ["executive-anomaly"],
   "/executive/analytics-hub": ["executive-analytics-hub"],
-  // NOTE: `/executive/brand-mix` is not a real route — BrandMixOverview is served
-  // at `/executive/brand` (see ExecutivePortal.jsx). Mapping kept there.
-  "/executive/profit-walk": ["executive-profit-walk"],
-  "/executive/period-compare": ["executive-period-compare"],
+  "/executive/analytics-hub?tab=profit-walk": ["executive-profit-walk"],
+  "/executive/analytics-hub?tab=period-compare": ["executive-period-compare"],
   "/executive/reservations": ["executive-reservations"],
   "/executive/budget-approvals": ["executive-budget-approvals"],
   "/executive/outlet-budgets": ["executive-outlet-budgets"],
@@ -209,31 +178,33 @@ const pathToTours = {
 
   // ==== Owner portal ====
   "/owner": ["owner-home"],
-  "/owner/cockpit": ["owner-home"],
   "/owner/cash": ["owner-cash"],
-  "/owner/approvals": ["my-approvals"],
   "/owner/briefing": ["owner-briefing"],
   "/owner/ai-assistant": ["owner-ai-assistant"],
   "/owner/digest-settings": ["owner-digest-settings"],
 
   // ==== HR portal ====
   "/hr": ["hr-home"],
-  "/hr/approvals": ["my-approvals"],
-  "/hr/voucher": ["hr-voucher"],
-  "/hr/foc": ["hr-foc"],
-  "/hr/lb-fund": ["hr-lb-fund"],
-  "/hr/payroll": ["hr-payroll"],
-  "/hr/advances": ["hr-advances"],
+  "/hr/compensation?tab=voucher": ["hr-voucher"],
+  "/hr/compensation?tab=foc": ["hr-foc"],
+  "/hr/compensation?tab=lb-fund": ["hr-lb-fund"],
+  "/hr/compensation?tab=payroll": ["hr-payroll"],
+  "/hr/compensation?tab=advances": ["hr-advances"],
   "/hr/leaves": ["hr-leaves"],
   "/hr/job-applications": ["hr-job-applications"],
   "/hr/job-listings": ["hr-job-listings"],
-  "/hr/service-charge": ["hr-service-charge"],
-  "/hr/incentive": ["hr-incentive"],
+  "/hr/compensation?tab=service-charge": ["hr-service-charge"],
+  "/hr/compensation?tab=incentive": ["hr-incentive"],
   "/hr/compensation": ["hr-compensation"],
 
   // ==== Top-level (cross-portal) ====
-  "/approvals": ["my-approvals"],
   "/my-approvals": ["my-approvals"],
+  "/finance/reports?tab=trial-balance": ["finance-trial-balance"],
+  "/finance/reports?tab=balance-sheet": ["finance-balance-sheet"],
+  "/finance/reports?tab=cashflow": ["finance-cashflow"],
+  "/finance/reports?tab=profit-loss": ["finance-profit-loss"],
+  "/finance/reports?tab=comparatives": ["finance-comparatives"],
+  "/inventory/movements-hub?type=history": ["inventory-movements"],
 };
 
 // =====================================================
@@ -271,7 +242,6 @@ const tourMetadata = {
   "admin-users": { title: "Manajemen User", description: "Buat user, atur role, dan reset password" },
   "admin-roles": { title: "Roles & Permissions", description: "Kelola peran dan izin akses untuk semua user" },
   "admin-approval-builder": { title: "Approval Matrix Builder", description: "Bangun workflow approval multi-tier secara visual" },
-  "admin-workflows": { title: "Approval Workflows", description: "Kelola aturan approval berbasis teks untuk semua modul" },
   "admin-bulk-import": { title: "Bulk Excel Import", description: "Import ratusan data sekaligus via CSV/Excel" },
   "admin-number-series": { title: "Number Series", description: "Atur format nomor otomatis untuk semua jenis dokumen" },
   "admin-tax-config": { title: "Tax Configuration", description: "Atur tax codes dan rate PPN/service charge" },
@@ -403,12 +373,18 @@ const tourMetadata = {
 // LOOKUP HELPERS
 // =====================================================
 
-export function getToursForPath(path) {
+export function getToursForPath(path, search = "") {
   const ids = [];
+
+  // Tab hub (route lama yang kini menjadi tab): "/hub?tab=x" didahulukan sebagai tour utama
+  new URLSearchParams(search).forEach((value, key) => {
+    const tabKey = `${path}?${key}=${value}`;
+    if (pathToTours[tabKey]) ids.push(...pathToTours[tabKey].filter((id) => !ids.includes(id)));
+  });
 
   // Exact match
   if (pathToTours[path]) {
-    ids.push(...pathToTours[path]);
+    ids.push(...pathToTours[path].filter((id) => !ids.includes(id)));
   } else {
     // Pattern match (dynamic params e.g. /admin/master/:entity, /outlet/reservations/:id/edit)
     for (const [pattern, tourIds] of Object.entries(pathToTours)) {

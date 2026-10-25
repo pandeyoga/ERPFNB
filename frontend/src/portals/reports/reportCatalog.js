@@ -147,7 +147,7 @@ export const REPORT_CATEGORIES = [
         description: "Hutang outstanding per vendor dengan bucket umur (Current / 1–30 / 31–60 / 61–90 / 90+ hari) dan detail invoice.",
         icon: Clock,
         route: "/reports/ap-aging",
-        related: { to: "/finance/ap-aging", label: "AP Aging", perms: ["finance.ap.read"] },
+        related: { to: "/finance/payments-hub?tab=ap-aging", label: "AP Aging", perms: ["finance.ap.read"] },
       },
       {
         id: "pl-group",

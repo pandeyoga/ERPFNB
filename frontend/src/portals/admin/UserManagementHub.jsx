@@ -15,14 +15,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Users from "./Users";
 import Roles from "./Roles";
 import AuditLog from "./AuditLog";
+import { useVisibleTabs } from "@/lib/portalGate";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
-  { id: "users",     label: "All users",           icon: UsersIcon,  component: Users },
-  { id: "roles",     label: "Roles & permissions", icon: Shield,     component: Roles },
-  { id: "audit-log", label: "Activity log",        icon: ScrollText, component: AuditLog },
+  { id: "users",     label: "All users",           icon: UsersIcon,  component: Users, perm: "admin.user" },
+  { id: "roles",     label: "Roles & permissions", icon: Shield,     component: Roles, perm: "admin.user" },
+  { id: "audit-log", label: "Activity log",        icon: ScrollText, component: AuditLog, perm: "admin.audit_log" },
 ];
 
 export default function UserManagementHub() {
+  const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "users");
 
@@ -36,7 +39,7 @@ export default function UserManagementHub() {
     setSearchParams({ tab: id }, { replace: true });
   }
 
-  const current = TABS.some((t) => t.id === activeTab) ? activeTab : TABS[0].id;
+  const current = tabs.some((t) => t.id === activeTab) ? activeTab : tabs[0].id;
 
   return (
     <div data-testid="admin-user-management-hub">
@@ -48,7 +51,7 @@ export default function UserManagementHub() {
 
       <Tabs value={current} onValueChange={handleTabChange}>
         <TabsList data-testid="user-mgmt-hub-tabs">
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <TabsTrigger key={tab.id} value={tab.id} data-testid={`user-mgmt-tab-${tab.id}`}>
@@ -58,7 +61,7 @@ export default function UserManagementHub() {
           })}
         </TabsList>
 
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const Comp = tab.component;
           return (
             <TabsContent key={tab.id} value={tab.id} data-testid="user-mgmt-hub-content">

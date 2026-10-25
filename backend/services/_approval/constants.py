@@ -41,13 +41,13 @@ ENTITY_LABELS: dict[str, str] = {
 ENTITY_LINK_BUILDERS = {
     "purchase_request":  lambda eid: f"/procurement/pr/{eid}",
     "purchase_order":    lambda eid: f"/procurement/po/{eid}",
-    "stock_adjustment":  lambda _eid: "/inventory/adjustments",
+    "stock_adjustment":  lambda _eid: "/inventory/movements-hub?type=adjustments",
     "payment_request":   lambda eid: f"/finance/payment-requests/{eid}",
-    "employee_advance":  lambda _eid: "/hr/advances",
-    "budget":            lambda eid: "/finance/budget/manage",
+    "employee_advance":  lambda _eid: "/hr/compensation?tab=advances",
+    "budget":            lambda eid: "/finance/budget-hub?tab=manage",
     "leave_request":     lambda eid: "/hr/leaves",
-    "stock_transfer":    lambda eid: "/inventory/transfers",
-    "ar_invoice":        lambda eid: "/finance/ar-invoices",
+    "stock_transfer":    lambda eid: "/inventory/movements-hub?type=transfers",
+    "ar_invoice":        lambda eid: "/finance/payments-hub?tab=ar-invoices",
 }
 
 

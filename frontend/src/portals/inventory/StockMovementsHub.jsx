@@ -16,7 +16,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { History, ArrowLeftRight, Edit3, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { permitted } from "@/lib/portalGate";
+import { permitted, useVisibleTabs } from "@/lib/portalGate";
 import { REPORT_CENTER_PERMS } from "@/lib/portals";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
@@ -25,17 +25,19 @@ import Movements from "./Movements";
 import TransferList from "./TransferList";
 import AdjustmentList from "./AdjustmentList";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
-  { id: "history",     name: "Riwayat",    icon: History,        desc: "Semua pergerakan stok masuk & keluar per outlet." },
-  { id: "transfers",   name: "Transfer",   icon: ArrowLeftRight, desc: "Transfer stok antar outlet / lokasi." },
-  { id: "adjustments", name: "Adjustment", icon: Edit3,          desc: "Penyesuaian stok manual (waste, rusak, koreksi)." },
+  { id: "history",     name: "Riwayat",    icon: History,        desc: "Semua pergerakan stok masuk & keluar per outlet.", perm: ["inventory.movement.read", "inventory.view"] },
+  { id: "transfers",   name: "Transfer",   icon: ArrowLeftRight, desc: "Transfer stok antar outlet / lokasi.", perm: "inventory.transfer" },
+  { id: "adjustments", name: "Adjustment", icon: Edit3,          desc: "Penyesuaian stok manual (waste, rusak, koreksi).", perm: "inventory.adjustment" },
 ];
 
 export default function StockMovementsHub() {
+  const tabs = useVisibleTabs(TABS);
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = (searchParams.get("type") || "history").toLowerCase();
-  const activeTab = TABS.find(t => t.id === type) || TABS[0];
+  const activeTab = tabs.find(t => t.id === type) || tabs[0];
 
   const setTab = (id) => setSearchParams({ type: id }, { replace: true });
 
@@ -56,7 +58,7 @@ export default function StockMovementsHub() {
 
       <Tabs value={activeTab.id} onValueChange={setTab}>
         <TabsList data-testid="movements-tabs" aria-label="Jenis pergerakan stok">
-          {TABS.map(t => {
+          {tabs.map(t => {
             const Icon = t.icon;
             return (
               <TabsTrigger key={t.id} value={t.id} data-testid={`mov-tab-${t.id}`}>

@@ -25,21 +25,24 @@ import VoucherList from "./VoucherList";
 import FOCList from "./FOCList";
 import AdvancesList from "./AdvancesList";
 import LBFundLedger from "./LBFundLedger";
+import { useVisibleTabs } from "@/lib/portalGate";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
-  { id: "payroll",        name: "Payroll",        icon: DollarSign, desc: "Penggajian bulanan & salary master karyawan", render: () => <PayrollList embedded /> },
-  { id: "service-charge", name: "Service Charge", icon: Receipt,    desc: "Distribusi service charge per outlet & periode", render: () => <ServiceChargeList embedded /> },
-  { id: "incentive",      name: "Incentive",      icon: Gift,       desc: "Program insentif & bonus karyawan", render: () => <IncentiveList embedded /> },
-  { id: "voucher",        name: "Voucher",        icon: Ticket,     desc: "Penerbitan & penukaran voucher", render: () => <VoucherList embedded /> },
-  { id: "foc",            name: "FOC",            icon: Coffee,     desc: "Pencatatan Free of Charge (staff meal, marketing, kompensasi)", render: () => <FOCList embedded /> },
-  { id: "advances",       name: "Advances",       icon: Wallet,     desc: "Kasbon karyawan & jadwal cicilan", render: () => <AdvancesList embedded /> },
-  { id: "lb-fund",        name: "LB Fund",        icon: PiggyBank,  desc: "Buku besar dana Loss & Breakage", render: () => <LBFundLedger embedded /> },
+  { id: "payroll",        name: "Payroll",        icon: DollarSign, desc: "Penggajian bulanan & salary master karyawan", render: () => <PayrollList embedded />, perm: ["hr.read", "hr.write"] },
+  { id: "service-charge", name: "Service Charge", icon: Receipt,    desc: "Distribusi service charge per outlet & periode", render: () => <ServiceChargeList embedded />, perm: "hr.service_charge" },
+  { id: "incentive",      name: "Incentive",      icon: Gift,       desc: "Program insentif & bonus karyawan", render: () => <IncentiveList embedded />, perm: "hr.incentive" },
+  { id: "voucher",        name: "Voucher",        icon: Ticket,     desc: "Penerbitan & penukaran voucher", render: () => <VoucherList embedded />, perm: "hr.voucher" },
+  { id: "foc",            name: "FOC",            icon: Coffee,     desc: "Pencatatan Free of Charge (staff meal, marketing, kompensasi)", render: () => <FOCList embedded />, perm: "hr.foc" },
+  { id: "advances",       name: "Advances",       icon: Wallet,     desc: "Kasbon karyawan & jadwal cicilan", render: () => <AdvancesList embedded />, perm: "hr.advance" },
+  { id: "lb-fund",        name: "LB Fund",        icon: PiggyBank,  desc: "Buku besar dana Loss & Breakage", render: () => <LBFundLedger embedded />, perm: "hr.lb_fund" },
 ];
 
 export default function CompensationHub() {
+  const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get("tab") || "payroll").toLowerCase();
-  const activeTab = TABS.find(t => t.id === tab) || TABS[0];
+  const activeTab = tabs.find(t => t.id === tab) || tabs[0];
 
   const setTab = (id) => setSearchParams({ tab: id }, { replace: true });
 
@@ -53,7 +56,7 @@ export default function CompensationHub() {
       />
       <Tabs value={activeTab.id} onValueChange={setTab}>
         <TabsList data-testid="comp-tabs">
-          {TABS.map(t => {
+          {tabs.map(t => {
             const Icon = t.icon;
             return (
               <TabsTrigger key={t.id} value={t.id} data-testid={`comp-tab-${t.id}`}>

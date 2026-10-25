@@ -271,7 +271,7 @@ export default function OwnerCockpit() {
             color="aurora-6"
             tone={digest.anomaly_severe ? "danger" : "default"}
             sub={`${digest.anomaly_severe || 0} severe`}
-            onClick={() => navigate("/finance/anomalies")}
+            onClick={() => navigate("/finance/period-closing?phase=1")}
           />
         </div>
       </CollapsibleSection>
@@ -370,7 +370,7 @@ export default function OwnerCockpit() {
             <p className="text-xs text-muted-foreground">Tidak ada anomali aktif.</p>
           )}
           <Button variant="outline" size="sm" asChild className="mt-3" data-testid="cockpit-open-anomaly-feed">
-            <Link to="/finance/anomalies">Buka Anomaly Feed <ArrowRight /></Link>
+            <Link to="/finance/period-closing?phase=1">Buka Anomaly Feed <ArrowRight /></Link>
           </Button>
         </div>
 

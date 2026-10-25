@@ -20,7 +20,7 @@ export const executiveNav = {
       icon: LineChart,
       items: [
         { id: "analytics-dashboard", name: "Sales Analytics", path: "/executive/analytics" },
-        { id: "analytics-hub", name: "Performance Analytics", path: "/executive/analytics-hub", matchPaths: ["/executive/brand", "/executive/profit-walk", "/executive/period-compare", "/executive/outlet"] },
+        { id: "analytics-hub", name: "Performance Analytics", path: "/executive/analytics-hub", matchPaths: ["/executive/brand", "/executive/outlet"] },
         // Brand Mix · Profit Walk · Period Compare are in-page TABS of
         // /executive/analytics-hub (consolidated to keep Executive sidebar <=12 items).
       ],

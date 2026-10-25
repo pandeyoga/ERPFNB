@@ -279,7 +279,7 @@ async def submit(
                     .replace(",", ".") +
                     " Slip setoran terlampir."
                 ),
-                link=f"/outlet/daily-close?outlet_id={outlet_id}&date={date_str}",
+                link=f"/outlet/end-of-day?step=3&outlet_id={outlet_id}&date={date_str}",
                 source_type="daily_close",
                 source_id=rec_id,
             )

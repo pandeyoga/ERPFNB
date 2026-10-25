@@ -11,7 +11,7 @@ export const ownerNav = {
       name: "Cockpit",
       icon: Crown,
       items: [
-        { id: "overview", name: "Overview", path: "/owner", matchPaths: ["/owner/cockpit"] },
+        { id: "overview", name: "Overview", path: "/owner" },
         { id: "daily-briefing", name: "AI Daily Briefing", path: "/owner/briefing" },
       ],
     },

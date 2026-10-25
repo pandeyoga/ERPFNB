@@ -68,7 +68,7 @@ export default function PaymentRunList({ embedded = false }) {
   useEffect(() => { loadKpi(); }, []);
 
   const subtitle = "Eksekusi beberapa payment approved sekaligus dari satu rekening bank.";
-  const templatesPath = embedded ? "/finance/payments-hub?tab=run-templates" : "/finance/payment-run-templates";
+  const templatesPath = "/finance/payments-hub?tab=run-templates";
   const actions = (
     <>
       <Button variant="outline" onClick={() => navigate(templatesPath)} data-testid="prn-from-template-btn">

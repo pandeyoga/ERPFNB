@@ -29,7 +29,7 @@ export const hrNav = {
       items: [
         // Advances · Service Charge · Incentive · Voucher · FOC · LB Fund · Payroll
         // are in-page TABS of /hr/compensation.
-        { id: "comp-hub", name: "Compensation", path: "/hr/compensation", matchPaths: ["/hr/advances", "/hr/service-charge", "/hr/incentive", "/hr/voucher", "/hr/foc", "/hr/lb-fund", "/hr/payroll"] },
+        { id: "comp-hub", name: "Compensation", path: "/hr/compensation" },
       ],
     },
     {

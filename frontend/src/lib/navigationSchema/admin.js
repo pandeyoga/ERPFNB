@@ -20,7 +20,7 @@ export const adminNav = {
       icon: Users,
       reqPerm: "admin.user",
       items: [
-        { id: "user-mgmt-hub", name: "Users & Roles", path: "/admin/user-management", matchPaths: ["/admin/users", "/admin/roles", "/admin/audit-log"] },
+        { id: "user-mgmt-hub", name: "Users & Roles", path: "/admin/user-management" },
         // All Users · Roles & Permissions · Activity Log are in-page TABS of
         // /admin/user-management (User Management Hub).
       ],
@@ -41,9 +41,9 @@ export const adminNav = {
       reqPerm: "admin.business_rules",
       items: [
         { id: "business-rules", name: "Business Rules", path: "/admin/configuration", matchPaths: ["/admin/configuration"] },
-        { id: "approval-matrix", name: "Approval Matrix", path: "/admin/approvals", matchPaths: ["/admin/workflows"] },
+        { id: "approval-matrix", name: "Approval Matrix", path: "/admin/approvals" },
         { id: "integrations", name: "Integrations", path: "/admin/integrations", matchPaths: ["/admin/integrations"] },
-        { id: "setup", name: "Setup & Numbering", path: "/admin/setup", matchPaths: ["/admin/number-series", "/admin/tax", "/admin/bulk-import"] },
+        { id: "setup", name: "Setup & Numbering", path: "/admin/setup" },
         // Number Series · Tax Config · Bulk Excel Import are in-page TABS of /admin/setup.
       ],
     },
@@ -81,7 +81,7 @@ export const adminNav = {
       icon: Activity,
       reqPerm: "admin.audit_log",
       items: [
-        { id: "ops-hub", name: "Monitoring", path: "/admin/operations", matchPaths: ["/admin/operations", "/admin/report-schedules", "/admin/data-management", "/admin/tour-analytics"] },
+        { id: "ops-hub", name: "Monitoring", path: "/admin/operations", matchPaths: ["/admin/operations"] },
         // System Metrics · Logs · Scheduler · Archival · Rate Limits · Laporan Terjadwal
         // · Manajemen Data · Tour Analytics are in-page TABS of /admin/operations.
       ],

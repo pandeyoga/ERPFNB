@@ -509,7 +509,7 @@ function SalaryReadOnly({ summary, isNew }) {
     <div className="rounded-lg border border-border/60 bg-foreground/[0.03] p-3 space-y-2" data-testid="employee-salary-readonly">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">Gaji (hanya-baca · Salary Master)</span>
-        <Link to="/hr/payroll?tab=salary" className="text-xs underline underline-offset-2" data-testid="employee-salary-master-link">
+        <Link to="/hr/compensation?tab=payroll&view=salary" className="text-xs underline underline-offset-2" data-testid="employee-salary-master-link">
           Kelola di Salary Master
         </Link>
       </div>
