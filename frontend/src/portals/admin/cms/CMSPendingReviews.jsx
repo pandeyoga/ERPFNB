@@ -121,7 +121,8 @@ export default function CMSPendingReviews() {
                 {/* Image / Icon */}
                 <div className="w-14 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-muted flex items-center justify-center">
                   {img
-                    ? <img src={img} alt={getTitle(item)} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                    ? <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async"
+                           onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
                     : <Icon className="h-6 w-6 text-muted-foreground" />}
                 </div>
 

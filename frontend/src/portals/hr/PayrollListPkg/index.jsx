@@ -162,9 +162,11 @@ export default function PayrollList({ embedded = false }) {
                 rowAction={(it) => {
                   const action = canApprove && ({ draft: "approve", approved: "post" })[it.status];
                   if (!action) return null;
+                  const label = action === "post" ? "Posting payroll ke jurnal" : "Setujui payroll";
                   return (
-                    // aksi per baris = outline; aksi primer halaman hanya "Generate Payroll"
-                    <Button size="sm" variant="outline"
+                    // aksi per baris = tombol ikon outline (9 kolom harus muat di 1280px);
+                    // aksi primer halaman hanya "Generate Payroll"
+                    <Button size="icon-sm" variant="outline" aria-label={label} title={label}
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {
@@ -174,9 +176,7 @@ export default function PayrollList({ embedded = false }) {
                         } catch (err) { toast.error(unwrapError(err)); }
                       }}
                       data-testid={`hr-payroll-${action}-${it.id}`}>
-                      {action === "post"
-                        ? <><ArrowUpCircle /> Posting</>
-                        : <><CheckCircle2 /> Setujui</>}
+                      {action === "post" ? <ArrowUpCircle /> : <CheckCircle2 />}
                     </Button>
                   );
                 }}

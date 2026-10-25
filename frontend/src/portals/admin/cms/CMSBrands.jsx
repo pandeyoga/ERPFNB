@@ -291,7 +291,9 @@ export default function CMSBrands() {
               <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border"
                    style={{ background: item.color || "#f0f0f0" }}>
                 {item.card_image && (
-                  <img src={item.card_image} alt={item.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  // dekoratif (nama tampil di sebelahnya); gambar gagal → tampil kotak warna brand, bukan teks alt
+                  <img src={item.card_image} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async"
+                       onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
