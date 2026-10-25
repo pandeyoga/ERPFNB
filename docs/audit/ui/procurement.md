@@ -45,7 +45,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | PRC-VC-02 | page | button | P2 | Chip item <button> mentah text-xs, tombol 'Clear' h-6 text-[11px] rounded-full; teks 'selected', 'Selected:', 'Clear', 'Max 10 item'. | Button size sm outline/default + aria-pressed; 'dipilih', 'Dipilih:', 'Hapus semua', 'Maksimal 10 item'; tombol hapus chip punya aria-label nama item. | Diperbaiki |
 | PRC-VC-04 | form | form | P2 | Input cari item tanpa label terhubung dan override h-10. | Label htmlFor + id, tinggi default h-9. | Diperbaiki |
 | PRC-VC-05 | page | ia | P2 | Halaman tidak ada di sidebar (hanya via pill di Vendors/Overview) dan breadcrumb hanya 'Beranda › Procurement'. | Diperbaiki global oleh lead (breadcrumb/sidebar via matchPaths). | Diperbaiki |
-| PRC-VC-06 | page | ia | P2 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | tidak diperbaiki: keputusan IA (usul satu hub 'Price comparison' dengan tab Per item / Per PO, dan satu Vendor Scorecard). | Terbuka |
+| PRC-VC-06 | page | ia | P2 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | Butuh keputusan. Rekomendasi: Vendor Comparison fokus ke perbandingan harga per item; panel scorecard diganti tautan ke Procurement › Vendor Scorecard. | Terbuka |
 | PRC-VC-03 | page | card | P3 | Tile scorecard lokal (rounded-xl p-4, text-2xl font-extrabold); kartu p-5/p-10. | CompactStatCard dengan tone success/warning/danger; kartu p-4; judul seksi h2 text-base md:text-lg. | Diperbaiki |
 
 ## `/procurement/vendor-recommend` — Vendor Recommendation
@@ -106,7 +106,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | PRC-RFQ-01 | page | title | P3 | h1 bespoke text-2xl font-bold; wrapper p-6 + space-y-6 (padding ganda); judul tidak sama dengan nav 'RFQ'. | PageHeader 'RFQ' (subtitle Request for Quotation), tombol 'Buat RFQ' di actions. | Diperbaiki |
 | PRC-RFQ-04 | page | card | P3 | Empty state ad-hoc py-12 (juga muncul saat filter tanpa hasil); meta 'Menampilkan x dari y' di luar kartu. | EmptyState (varian 'Tidak ada RFQ yang cocok' saat filter aktif); meta jadi footer tabel. | Diperbaiki |
 | PRC-RFQ-05 | page | button | P3 | Tombol 'Detail' outline di baris yang juga bisa diklik; header kolom 'Quotes'; 'Refresh daftar RFQ'. | Detail ghost sm; 'Penawaran'; 'Muat ulang'. | Diperbaiki |
-| PRC-RFQ-06 | page | runtime | P3 | Pencarian memanggil API di setiap ketikan (tanpa debounce). | tidak diperbaiki: perlu perubahan pola fetch (DebouncedSearch). | Terbuka |
+| PRC-RFQ-06 | page | runtime | P3 | Pencarian memanggil API di setiap ketikan (tanpa debounce). | Pencarian RFQ di-debounce (terverifikasi 1 request untuk 6 karakter). | Diperbaiki |
 
 ## `/procurement/rfq/new` — RFQ Baru
 
@@ -120,7 +120,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | PRC-RFQN-02 | form | form | P2 | 7 input tanpa label terhubung (Label tanpa htmlFor; baris item hanya placeholder). | Label htmlFor/id; aria-label per baris (nama, qty, unit, est. harga). | Diperbaiki |
 | PRC-RFQN-01 | page | title | P3 | h1 bespoke xl bold; tombol kembali ikon-saja tanpa aria-label; wrapper p-6. | Ghost 'Kembali ke RFQ' + PageHeader 'RFQ Baru'. | Diperbaiki |
 | PRC-RFQN-03 | form | a11y | P3 | Toggle vendor tanpa aria-pressed; ikon tombol dengan override mr-2. | aria-pressed; ikon mengikuti gap Button. | Diperbaiki |
-| PRC-RFQN-04 | form | ia | P3 | Daftar vendor hanya 20 pertama dari halaman 1 /master/vendors, tanpa pencarian. | tidak diperbaiki: perlu fetchAll + pencarian vendor. | Terbuka |
+| PRC-RFQN-04 | form | ia | P3 | Daftar vendor hanya 20 pertama dari halaman 1 /master/vendors, tanpa pencarian. | Form RFQ memuat semua vendor aktif (fetchAll) dengan kotak pencarian; vendor terpilih tetap tampil. | Diperbaiki |
 
 ## `/procurement/rfq/:id` — RFQ detail (No. RFQ)
 
@@ -243,7 +243,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | PRC-GR-01 | page | title | P2 | Tidak ada <h1>: kartu header dengan h3 'Goods Receipts' (beda dengan nav). | PageHeader 'Goods Receipt' (testId gr-list-header), InlineHelp & 'Posting GR' di actions. | Diperbaiki |
 | PRC-GR-02 | page | button | P2 | Tombol h-10 rounded-full pill-active; Prev/Next <button> mentah tanpa aria-label. | Button default; paging outline sm dengan aria-label. | Diperbaiki |
-| PRC-GR-04 | page | ia | P2 | Tidak ada filter (vendor/outlet/tanggal) dan tidak ada detail GR; penanda JE tidak bisa diklik padahal tour menyebut 'klik untuk lihat detail JE'. | tidak diperbaiki: butuh route detail GR / tautan jurnal finance. | Terbuka |
+| PRC-GR-04 | page | ia | P2 | Tidak ada filter (vendor/outlet/tanggal) dan tidak ada detail GR; penanda JE tidak bisa diklik padahal tour menyebut 'klik untuk lihat detail JE'. | Filter outlet/vendor/tanggal terima/cari no. GR atau invoice (server-side); baris GR bisa dibuka untuk melihat item, PO & termin; penanda JE menjadi tautan ke detail jurnal bagi user Finance. | Diperbaiki |
 | PRC-GR-03 | page | ia | P3 | Kolom JE tanpa header; vendor/outlet fallback UUID. | Header 'Jurnal', tanda '—' bila kosong. | Diperbaiki |
 
 ## `/procurement/gr/new` — Posting Goods Receipt
@@ -286,7 +286,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | PRC-POC-01 | page | layout | P2 | Select filter vendor/status full-width bertumpuk (2 baris 40px); ikon Filter dekoratif; wrapper max-w-7xl. | Select lebar tetap sebaris + ariaLabel; status 'Partial' ditambahkan. | Diperbaiki |
 | PRC-POC-02 | page | button | P2 | Setiap baris PO punya tombol primary 'Bandingkan' (banyak primary) dengan override rounded-full h-8 text-xs. | Button outline/secondary sm dengan aria-pressed. | Diperbaiki |
-| PRC-POC-04 | page | ia | P2 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | tidak diperbaiki: usul satukan dengan Vendor Comparison dalam satu hub bertab. | Terbuka |
+| PRC-POC-04 | page | ia | P2 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | Butuh keputusan. Rekomendasi: jadikan PO Comparison tab 'Per PO' di Vendor Comparison (satu tempat perbandingan harga), RFQ tetap punya tab Perbandingan untuk penawaran. | Terbuka |
 | PRC-POC-03 | page | language | P3 | 'items', 'Side-by-Side', 'Cell hijau … tsb'; vendor fallback UUID. | 'item', 'Perbandingan berdampingan', 'Sel hijau = harga terbaik …', fallback '—'. | Diperbaiki |
 
 ## `/procurement/vendors` — Vendors

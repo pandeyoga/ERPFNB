@@ -14,7 +14,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-HOME-02 | page | card | P2 | KPI memakai KpiCard tanpa delta/tren, grid gap-4, halaman space-y-6. | Diganti CompactStatCard (testid kpi-* tetap), grid-cols-2 md:grid-cols-4 gap-3, space-y-3 lg:space-y-4. | Diperbaiki |
 | ADM-HOME-03 | page | typography | P3 | Tile master data memakai text-2xl font-bold. Judul seksi berupa h3 uppercase. Label 'GL Accounts' berbeda dari nama di hub. | Tile memakai CompactStatCard size sm di dalam Link (testid tile-* tetap). Judul seksi h2 text-base/lg semibold, ditambah tautan 'Lihat semua', label diganti 'Chart of Accounts'. | Diperbaiki |
 | ADM-HOME-04 | page | card | P3 | Kartu shortcut (Bulk Import, Operations, Integrations, Tour Analytics) memakai p-5 dan ikon 48px, terpecah di dua seksi, badge 'New' berbahasa Inggris. | Disatukan dalam satu grid LinkTile p-3 dengan ikon 36px. Badge diganti 'Baru'. Bulk Import kini menuju hub /admin/setup?tab=bulk-import. | Diperbaiki |
-| ADM-HOME-05 | page | ia | P3 | Tile master data tidak mencakup Bank Accounts dan Tax Codes. | Tidak diperbaiki: hitungan berasal dari hooks/useAdminDashboard.js yang di luar kepemilikan saya. | Terbuka |
+| ADM-HOME-05 | page | ia | P3 | Tile master data tidak mencakup Bank Accounts dan Tax Codes. | Tile Bank Accounts & Tax Codes ditambahkan (grid 5×2); hitungan memakai per_page=1, tidak lagi memuat semua baris. | Diperbaiki |
 
 ## `/admin/users` — Users
 
@@ -51,7 +51,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-ROL-03 | dialog:Role Baru | form | P2 | Label tidak terhubung dan uppercase. Label 'Code' berbahasa Inggris, tombol 'Toggle all', kode permission memakai font-mono. | Field Kode dan Nama dibuat 2 kolom, label dihubungkan lewat htmlFor, 'Pilih/lepas semua', font Inter. | Diperbaiki |
 | ADM-ROL-04 | dialog:Role Baru | layout | P2 | Daftar permission panjang sehingga footer keluar layar. | Footer Batal + Simpan dibuat sticky, override max-h dan pill-active dihapus. | Diperbaiki |
 | ADM-ROL-06 | page | ia | P2 | Duplikat dengan tab 'Roles & permissions' di /admin/user-management. | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
-| ADM-ROL-05 | page | flow | P3 | Role sistem tidak bisa dibuka untuk melihat daftar permission-nya (tidak ada mode lihat). | Tidak diperbaiki: butuh mode baca-saja di RoleDialog. | Terbuka |
+| ADM-ROL-05 | page | flow | P3 | Role sistem tidak bisa dibuka untuk melihat daftar permission-nya (tidak ada mode lihat). | Role sistem punya tombol lihat (ikon mata): dialog baca-saja berisi permission yang dimiliki, tanpa tombol Simpan. | Diperbaiki |
 | ADM-ROL-07 | page | typography | P3 | Kode role di kartu dan kode permission di dialog tampil sebagai teks biasa. | Memakai font-medium tabular-nums. | Diperbaiki |
 
 ## `/admin/user-management` — Users & Roles
@@ -70,7 +70,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ADM-UMH-02 | page | tabs | P2 | Tab garis-bawah custom (raw button role=tab, tinggi baris 43px). | Diganti Tabs/TabsList/TabsTrigger standar dengan label sentence case. Testid user-mgmt-tab-* dan user-mgmt-hub-* tetap. | Diperbaiki |
 | ADM-UMH-03 | page | title | P2 | Halaman anak berisiko menampilkan judul ganda. | Users, Roles, dan AuditLog dirender dengan prop embedded sehingga tidak ada h1 kedua. | Diperbaiki |
 | ADM-UMH-04 | tab:Activity Log | form | P2 | 2 filter tanpa label (placeholder 'Filter entity_type'), tinggi h-10. Tombol 'Refresh' berbahasa Inggris dengan pill-active, dan filter hanya jalan lewat tombol. | Ditambah aria-label dan placeholder berbahasa Indonesia, Enter kini menerapkan filter, tombol jadi 'Terapkan & muat ulang' (outline). Kolom diganti Entitas/Aksi. | Diperbaiki |
-| ADM-UMH-06 | tab:Activity Log | ia | P3 | Kolom User hanya menampilkan 8 karakter ID, bukan nama user. | Tidak diperbaiki: butuh lookup data users. | Terbuka |
+| ADM-UMH-06 | tab:Activity Log | ia | P3 | Kolom User hanya menampilkan 8 karakter ID, bukan nama user. | API audit-log mengembalikan user_name (nama/email); kolom User menampilkan nama, fallback 'Sistem'. | Diperbaiki |
 | ADM-UMH-07 | tab:Activity Log | button | P3 | Pagination memakai raw button 'Prev/Next'. | Diganti Button outline sm 'Sebelumnya/Berikutnya'. | Diperbaiki |
 
 ## `/admin/setup` — Setup & Numbering
@@ -232,7 +232,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | ADM-WF-01 | page | title | P2 | Tidak ada judul, hanya teks ringkasan. | Ditambah PageHeader 'Approval Workflows' dengan subtitle jumlah workflow dan aksi. | Diperbaiki |
 | ADM-WF-02 | page | button | P2 | Tombol 'Reset to Defaults' dan 'Workflow Baru' memakai rounded-full h-9 pill-active, label berbahasa Inggris. | Diganti 'Reset ke Default' (outline) dan 'Tambah Workflow' (default). Testid tetap. | Diperbaiki |
-| ADM-WF-03 | page | ia | P2 | Duplikat fungsi dengan /admin/approvals: keduanya mengedit business_rules rule_type=approval_workflow, dan menu 'Approval Matrix' memakai matchPaths /admin/workflows. Halaman ini punya 'Eskalasi ke (permission)' yang tidak ada di builder. | Ditambah banner dengan tautan 'Buka Approval Matrix'. Rute tidak dihapus. Saran: pindahkan field eskalasi ke builder, lalu redirect. | Terbuka |
+| ADM-WF-03 | page | ia | P2 | Duplikat fungsi dengan /admin/approvals: keduanya mengedit business_rules rule_type=approval_workflow, dan menu 'Approval Matrix' memakai matchPaths /admin/workflows. Halaman ini punya 'Eskalasi ke (permission)' yang tidak ada di builder. | /admin/workflows → redirect ke Approval Matrix; field 'Eskalasi ke (permission)' dipindah ke editor step Approval Matrix (escalate_to_perms). | Diperbaiki |
 | ADM-WF-04 | page | a11y | P2 | Tombol edit/hapus versi berupa raw button tanpa aria-label. Header grup accordion tanpa aria-expanded. Teks '1 version · active: 1' dan '(any)' berbahasa Inggris. | Diganti Button icon-sm dengan aria-label, ditambah aria-expanded, header jadi h3. Teks jadi '1 versi · 1 aktif' dan '(siapa saja)'. | Diperbaiki |
 | ADM-WF-05 | dialog:Workflow Baru | form | P2 | 5 field tanpa label terhubung, label uppercase 11px. Input memakai override h-10/h-8. Label Inggris ('Entity Type', 'Amount Field', 'Min Amount'). | Ditambah htmlFor/id, label standar, 'Jenis Entitas *', 'Field Nominal', 'Nominal Min/Maks', input h-9. | Diperbaiki |
 | ADM-WF-06 | dialog:Workflow Baru | button | P2 | Tombol 'Hapus Tier' dan 'Step' memakai rounded-full h-7/h-9 text-xs. Simpan berlabel 'Buat' dengan pill-active. Footer tidak terjangkau pada form panjang. | Tombol memakai size sm/default, 'Tambah Step', 'Simpan'. Footer Batal + Simpan dibuat sticky. | Diperbaiki |

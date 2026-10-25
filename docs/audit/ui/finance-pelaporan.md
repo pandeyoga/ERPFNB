@@ -227,7 +227,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-PCH-05 | page | flow | P2 | Hub menimpa seluruh query string saat set ?phase → ?id= anomali (deep link) hilang | setSearchParams fungsional mempertahankan param lain; localStorage dibungkus try/catch | Diperbaiki |
 | FIN-PCH-01 | page | title | P3 | h1 bespoke font-bold 700 di hero glass-card + wrapper max-w-6xl mx-auto (ruang kosong kiri-kanan) | PageHeader 'Period Closing' + progress bar sebagai children (role=progressbar); max-w dihapus | Diperbaiki |
 | FIN-PCH-04 | page | button | P3 | Override rounded-full/pill-active pada Lanjut/Tandai Selesai; panah teks '←' | Button standar (Lanjut primer, Tandai Selesai outline), ikon ArrowLeft/Right | Diperbaiki |
-| FIN-PCH-06 | page | card | P3 | Konten fase (kartu PeriodList/AnomalyFeed) bersarang di dalam glass-card fase (card-in-card) | tidak diperbaiki: butuh desain ulang accordion fase; dampak kecil | Terbuka |
+| FIN-PCH-06 | page | card | P3 | Konten fase (kartu PeriodList/AnomalyFeed) bersarang di dalam glass-card fase (card-in-card) | Isi fase dirender datar (utilitas .nested-cards) — tidak ada lagi kartu di dalam kartu. | Diperbaiki |
 
 ## `/finance/period-closing/:period` — Closing Wizard · {period}
 

@@ -15,7 +15,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-HOME-01 | page | title | P2 | Tidak ada <h1>. Judul 'Finance Overview' berupa h2 text-xl font-bold di dalam kartu hero glass-card p-6 | Diganti PageHeader (ikon LayoutDashboard, subtitle periode aktif). Wrapper data-testid finance-welcome dipertahankan | Diperbaiki |
 | FIN-HOME-02 | page | card | P2 | Strip KPI memakai KpiCard tanpa delta/tren. Kartu Journal dan AP Exposure tidak bisa diklik | Diganti CompactStatCard dengan testId kpi-* lama. Journal → /finance/journals, AP exposure → tab AP aging di hub. Rejected DS memakai tone danger bila > 0 | Diperbaiki |
 | FIN-HOME-05 | page | ia | P2 | Teks 'Period locking akan tersedia di Phase 6' sudah usang | Diganti teks bantuan dengan tautan ke /finance/period-closing | Diperbaiki |
-| FIN-HOME-07 | page | runtime | P2 | KPI 'Pending validation' = 0, padahal antrian /finance/validation berisi 303 daily sales (field submitted_validations) | tidak diperbaiki: masalah data/API (useFinanceHome) | Terbuka |
+| FIN-HOME-07 | page | runtime | P2 | KPI 'Pending validation' = 0, padahal antrian /finance/validation berisi 303 daily sales (field submitted_validations) | KPI benar (0 menunggu). Bug ada di antrean: kini default 'Menunggu validasi' dengan filter status Tervalidasi/Ditolak; tombol Validasi/Tolak hanya untuk yang menunggu; API meneruskan status & period. Finance home kini mengirim submitted_validations/rejected_count/je_this_period. | Diperbaiki |
 | FIN-HOME-04 | page | language | P3 | Label quick action berbeda dari nama nav ('Validate Sales', 'Manual JE'). Tautan TB/P&L lewat route redirect. Belum ada pintasan ke Payments dan Period Closing | Label disamakan dengan nav ('Sales Validation', 'Manual Journal'). Tautan langsung ke /finance/reports?tab=…. Ditambah tile Payments dan Period Closing (grid 3 kolom) | Diperbaiki |
 | FIN-HOME-06 | page | layout | P3 | space-y-6, glass-card p-5/p-6, judul section h3 uppercase | space-y-3 lg:space-y-4, kartu p-4/p-3, judul section h2 text-base md:text-lg | Diperbaiki |
 
@@ -119,7 +119,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-PRNDET-01 | page | title | P2 | Tidak ada <h1>. Doc no berupa h2 dengan badge status lokal. Tombol back hanya ikon | Ghost 'Kembali ke Payment Runs' (ke tab hub) + PageHeader (doc no, tanggal/bank, StatusPill, aksi Batalkan/Konfirmasi/Eksekusi) | Diperbaiki |
 | FIN-PRNDET-02 | page | card | P2 | Tile lokal SummaryCard | CompactStatCard (testid prn-* tetap). SummaryCard dihapus | Diperbaiki |
 | FIN-PRNDET-03 | page | button | P2 | Status payment mentah lowercase. Tautan JE memakai <a href>. Tombol Eksekusi hijau custom. Kartu p-5 | StatusPill, <Link>, Button standar, kartu p-4. Toast diterjemahkan | Diperbaiki |
-| FIN-PRNDET-04 | page | runtime | P3 | 'Daftar Payment (0)', padahal pay_count = 1 (payments[] kosong dari API) | tidak diperbaiki: inkonsistensi data API | Terbuka |
+| FIN-PRNDET-04 | page | runtime | P3 | 'Daftar Payment (0)', padahal pay_count = 1 (payments[] kosong dari API) | Bukan bug aplikasi: PRN-2610-0002 adalah data uji yang tertinggal dari skrip intent_audit (pay_count tanpa dokumen payment). | Tidak perlu perubahan |
 
 ## `/finance/payment-run-templates` — Payment Run Templates
 
@@ -183,7 +183,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | FIN-JEDET-01 | page | title | P2 | Judul h2 'JE JAE-…' (awalan dobel). Tombol Kembali rounded-full. Wrapper max-w-5xl | Ghost 'Kembali ke Journals' + PageHeader (StatusPill, Reverse JE di actions). max-w dihapus. Kartu p-4 | Diperbaiki |
 | FIN-JEDET-02 | page | flow | P2 | Jika gagal load, skeleton tampil selamanya | State not-found + tombol kembali | Diperbaiki |
 | FIN-JEDET-03 | dialog:Reverse Journal Entry | form | P2 | Textarea alasan tanpa label. Tombol pill-active bisa diklik saat kosong | Label 'Alasan reversal *'. Tombol destructive, disabled saat kosong | Diperbaiki |
-| FIN-JEDET-04 | page | density | P3 | Kolom Dim menampilkan potongan UUID | tidak diperbaiki: butuh nama dimensi dari API | Terbuka |
+| FIN-JEDET-04 | page | density | P3 | Kolom Dim menampilkan potongan UUID | Kolom 'Dimensi' menampilkan nama Outlet/Brand/Vendor/Karyawan (API detail jurnal memperkaya dimensi). | Diperbaiki |
 
 ## `/finance/manual-journal` — Manual Journal
 

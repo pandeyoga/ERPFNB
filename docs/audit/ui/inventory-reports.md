@@ -33,8 +33,8 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | INV-BAL-03 | page | flow | P2 | List memuat per_page=100 tanpa pager, sehingga baris setelah 100 tidak bisa diakses. | Ditambah pager Sebelumnya/Berikutnya. | Diperbaiki |
 | INV-BAL-04 | page | form | P2 | Label filter 11px uppercase tanpa htmlFor. Select Outlet tidak terhubung ke label. | Label diubah ke ukuran standar. Input cari memakai htmlFor, select memakai aria-label (htmlFor butuh perubahan shared SimpleSelect). Ref doc di drilldown kini Inter font-medium tabular-nums (bukan font-mono). | Diperbaiki |
 | INV-BAL-05 | tab:Matrix | button | P2 | Chip outlet dan tombol Reset berupa <button> mentah. Checkbox native. Link 'cell di bawah par' berupa chip custom. | Chip jadi Button sm toggle + aria-pressed. Reset jadi Button ghost. Checkbox diganti shadcn Checkbox + Label. Link jadi Button outline sm. | Diperbaiki |
-| INV-BAL-06 | page | ia | P2 | Duplikat dengan /reports/stock-balance (on-screen vs Excel). | Ditautkan dua arah. Tidak dihapus; konsolidasi butuh keputusan lead. | Terbuka |
-| INV-BAL-07 | page | flow | P3 | Pencarian item hanya memfilter halaman yang sedang dimuat (client-side). | Tidak diperbaiki: perlu parameter search di API. Catatan ditampilkan di pager. | Terbuka |
+| INV-BAL-06 | page | ia | P2 | Duplikat dengan /reports/stock-balance (on-screen vs Excel). | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
+| INV-BAL-07 | page | flow | P3 | Pencarian item hanya memfilter halaman yang sedang dimuat (client-side). | Parameter search di /inventory/balance; pencarian berlaku untuk seluruh data, bukan halaman aktif. | Diperbaiki |
 
 ## `/inventory/low-stock` — Low Stock Alert
 
@@ -68,7 +68,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | INV-MOV-04 | tab:Transfer | button | P2 | Kirim/Terima memakai h-7 rounded-full pill-active. 'Transfer Baru' memakai h-10 rounded-full. Doc No memakai font-mono. | Override dihapus, ukuran standar. Doc No kini Inter font-medium tabular-nums. | Diperbaiki |
 | INV-MOV-06 | tab:Adjustment | a11y | P2 | Tombol Eye mentah tanpa aria-label. 'Approve'/'Reject' berbahasa Inggris dengan override h-7. Doc No memakai font-mono. | Eye jadi Button icon-sm + aria-label. Label 'Setujui'/'Tolak'. Toast Bahasa. Doc No Inter tabular-nums. | Diperbaiki |
 | INV-MOV-07 | dialog:Tolak adjustment | form | P2 | Dialog reject ad-hoc: textarea tanpa label, konfirmasi pill-active (bukan destructive). Dialog Approval Detail tanpa tombol tutup. | Reject diganti promptDialog global (label 'Alasan penolakan', wajib, destructive, 'Tolak'); dialog lokal dan testid adj-reject-reason/confirm dihapus, dialog global punya testid prompt-dialog-input/confirm-ok. Dialog approval diberi footer 'Tutup'. | Diperbaiki |
-| INV-MOV-09 | tab:Riwayat | ia | P2 | Tab Riwayat menduplikasi /reports/stock-movement. | Ditambah 'Ekspor Excel' (tab Riwayat, dengan cek izin) ke Report Center; laporan menautkan balik. | Terbuka |
+| INV-MOV-09 | tab:Riwayat | ia | P2 | Tab Riwayat menduplikasi /reports/stock-movement. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 | INV-MOV-08 | tab:Riwayat | form | P3 | Label 11px uppercase ('Type', 'Sejak Tanggal'). Select tanpa label terhubung. | Label standar + htmlFor/aria-label. Empty state diberi deskripsi. | Diperbaiki |
 
 ## `/inventory/transfers` — Stock Transfers
@@ -149,7 +149,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ID | Area | Kategori | Sev | Temuan | Perbaikan | Status |
 |---|---|---|---|---|---|---|
 | INV-VAL-01 | page | title | P2 | Halaman tanpa judul/<h1>. | Ditambah PageHeader 'Stock Valuation' + 'Ekspor Excel' ke /reports/inventory-valuation (dengan cek izin). | Diperbaiki |
-| INV-VAL-04 | page | ia | P2 | Duplikat /reports/inventory-valuation dan widget Overview. | Ditautkan; tidak dihapus. | Terbuka |
+| INV-VAL-04 | page | ia | P2 | Duplikat /reports/inventory-valuation dan widget Overview. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 | INV-VAL-02 | page | card | P3 | KPI memakai KpiCard tanpa delta. | Diganti CompactStatCard dengan label Bahasa. | Diperbaiki |
 | INV-VAL-03 | page | layout | P3 | Saat loading, seluruh halaman (termasuk filter) hilang. Kartu p-5, nilai font-bold, label 'As of'. | Header dan filter tetap tampil saat loading. p-4, semibold, 'Per:'. | Diperbaiki |
 
@@ -171,7 +171,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | INV-ML-04 | page | card | P3 | Dua kartu terpisah; kartu quarter kosong saat belum ada quarter. Chip quarter biru custom. | Digabung jadi satu kartu filter dengan hint empty. Chip jadi Button sm toggle. | Diperbaiki |
 | INV-ML-07 | page | language | P3 | Konfirmasi memakai emoji '⚠️'. 'Extreme Price Variance!' berbahasa Inggris. Tidak ada toast sukses. | Diganti Bahasa tanpa emoji. Ditambah toast sukses. | Diperbaiki |
 | INV-ML-09 | page | typography | P3 | Warna hardcode gray/blue/yellow tidak mendukung dark mode. | Diganti token muted dan amber/emerald dengan varian dark. | Diperbaiki |
-| INV-ML-10 | page | ia | P3 | Tile 'Pending review' menghitung item di halaman aktif saja. | Tidak diperbaiki: butuh count dari API. | Terbuka |
+| INV-ML-10 | page | ia | P3 | Tile 'Pending review' menghitung item di halaman aktif saja. | Tile 'Menunggu review' memakai meta.pending_review_count dari server. | Diperbaiki |
 
 ## `/reports` — Report Center
 
@@ -201,7 +201,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-DS-02 | form | button | P2 | Tombol full-width gradient emerald (30px) 'Download Excel Report'. | Diganti satu tombol primer 'Ekspor Excel' h-9 di footer kartu filter. | Diperbaiki |
 | RPT-DS-03 | form | form | P2 | Input tanggal tanpa label terhubung. Chip outlet/brand berupa <button> mentah. | Ditambah ReportField htmlFor (grid 1/2/4 kolom) dan ChipMultiSelect (aria-pressed, 'n dipilih', Reset). | Diperbaiki |
 | RPT-DS-04 | form | runtime | P2 | Error ekspor menampilkan 'Request failed…' (blob tidak dibaca). Toast Inggris. Tanpa validasi rentang. | useExcelExport mem-parse error blob. Toast Bahasa. Ditambah validRange. | Diperbaiki |
-| RPT-DS-05 | page | density | P3 | Tidak ada pratinjau di layar. | Tidak diperbaiki: tidak ada API pratinjau. | Terbuka |
+| RPT-DS-05 | page | density | P3 | Tidak ada pratinjau di layar. | Permintaan fitur: pratinjau tabel di layar sebelum ekspor butuh endpoint JSON baru — di luar cakupan perbaikan UI. | Terbuka |
 
 ## `/reports/outlet-performance` — Outlet Performance Report
 
@@ -240,7 +240,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-SB-01 | page | title | P2 | Header Card p-5 bespoke. | Diganti PageHeader. | Diperbaiki |
 | RPT-SB-02 | form | button | P2 | Tombol gradient biru full-width. | Diganti 'Ekspor Excel' primer. | Diperbaiki |
 | RPT-SB-03 | form | form | P2 | 'As of Date' lebar penuh tanpa label terhubung. Chip berupa <button> mentah. | Ditambah ReportField 'Per tanggal' dan ChipMultiSelect Outlet/Kategori. | Diperbaiki |
-| RPT-SB-04 | page | ia | P2 | Duplikat /inventory/balance. | Ditambah 'Buka Stock Balance' (dengan cek izin); ditautkan dua arah. | Terbuka |
+| RPT-SB-04 | page | ia | P2 | Duplikat /inventory/balance. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 
 ## `/reports/stock-movement` — Stock Movements Report
 
@@ -253,7 +253,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-SM-01 | page | title | P2 | Header bespoke. Judul tidak selaras dengan nav 'Stock Movements'. | Diganti PageHeader 'Stock Movements Report'. | Diperbaiki |
 | RPT-SM-02 | form | button | P2 | Tombol gradient full-width. | Diganti 'Ekspor Excel' primer. | Diperbaiki |
 | RPT-SM-03 | form | form | P2 | Input tanpa label terhubung. 'Movement Type'/'All Types'. | Ditambah ReportField htmlFor ('Tipe movement', 'Semua tipe'), ChipMultiSelect, validRange. | Diperbaiki |
-| RPT-SM-04 | page | ia | P2 | Duplikat tab Riwayat hub. | Ditautkan dua arah. | Terbuka |
+| RPT-SM-04 | page | ia | P2 | Duplikat tab Riwayat hub. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 
 ## `/reports/inventory-valuation` — Stock Valuation Report
 
@@ -266,7 +266,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-IV-01 | page | title | P2 | Header bespoke. Judul tidak selaras dengan nav 'Stock Valuation'. | Diganti PageHeader 'Stock Valuation Report' (juga di katalog). | Diperbaiki |
 | RPT-IV-02 | form | form | P2 | Berbeda dari laporan lain: <input> native, p-6, space-y-6. | Diseragamkan ke ReportPage/ReportField/ChipMultiSelect. | Diperbaiki |
 | RPT-IV-03 | form | button | P2 | Tombol 'Download Excel'/'Generating...' gradient 30px. | Diganti 'Ekspor Excel'/'Mengekspor…' primer. | Diperbaiki |
-| RPT-IV-04 | page | ia | P2 | Duplikat /inventory/valuation. | Ditautkan dua arah. | Terbuka |
+| RPT-IV-04 | page | ia | P2 | Duplikat /inventory/valuation. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 
 ## `/reports/po-summary` — PO Summary Report
 
@@ -303,7 +303,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-VP-01 | page | title | P2 | Header bespoke. | Diganti PageHeader + 'Buka Vendor Scorecard'. | Diperbaiki |
 | RPT-VP-02 | form | button | P2 | Tombol gradient full-width. | Diganti 'Ekspor Excel' primer. | Diperbaiki |
 | RPT-VP-03 | form | form | P2 | Input tanpa label terhubung. Chip vendor berupa <button> mentah. | Ditambah ReportField, ChipMultiSelect, validRange. | Diperbaiki |
-| RPT-VP-04 | page | ia | P3 | Tumpang tindih dengan /procurement/vendor-scorecard. | Ditautkan. | Terbuka |
+| RPT-VP-04 | page | ia | P3 | Tumpang tindih dengan /procurement/vendor-scorecard. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 
 ## `/reports/journal-ledger` — Journal Ledger Report
 
@@ -341,7 +341,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | RPT-AP-01 | page | title | P2 | Header bespoke. | Diganti PageHeader + 'Buka AP Aging'. | Diperbaiki |
 | RPT-AP-02 | form | button | P2 | Tombol gradient amber full-width. | Diganti 'Ekspor Excel' primer. | Diperbaiki |
 | RPT-AP-03 | form | form | P2 | 'As Of Date' tanpa label terhubung. Chip vendor berupa <button> mentah. | Ditambah ReportField 'Per tanggal' + hint dan ChipMultiSelect. | Diperbaiki |
-| RPT-AP-04 | page | ia | P3 | Tumpang tindih dengan /finance/ap-aging. | Ditautkan. | Terbuka |
+| RPT-AP-04 | page | ia | P3 | Tumpang tindih dengan /finance/ap-aging. | Halaman on-screen ↔ laporan Excel di Report Center saling ditautkan ('Ekspor Excel' / 'Lihat di layar') — aturan §8.1. | Keputusan: dipertahankan (§8.1) |
 
 ## `/reports/pl-group` — P&L Report — FnB Group Format
 

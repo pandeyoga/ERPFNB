@@ -186,7 +186,7 @@ async def upsert_workflow(
               any_of_role_ids: [str]?,
               any_of_user_ids: [str]?,
               deadline_hours: int?,
-              escalation_to_perms: [str]?,
+              escalate_to_perms: [str]?,   # dibaca checker SLA (_approval/escalation.py)
             }
           ]
         }

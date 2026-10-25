@@ -124,7 +124,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OUT-DO-04 | tab:Kitchen | card | P2 | Banner gradien besar + kartu filter status full-width yang terpisah | Satu toolbar ringkas: h2 + deskripsi + select status (aria-label) + tombol 'KDO/BDO Baru' | Diperbaiki |
 | OUT-DO-06 | dialog:KDO Baru | form | P2 | 3 field tanpa label, input h-10 | Label htmlFor / aria-label, tinggi default | Diperbaiki |
 | OUT-DO-07 | tab:Floor | flow | P2 | 'Buat FDO' disabled tanpa penjelasan. Submit tanpa toast. 3 tombol ikon tanpa label | Tombol diaktifkan (outlet dipilih di form) + hint, toast sukses, aria-label | Diperbaiki |
-| OUT-DO-08 | tab:Floor | ia | P3 | FDO tidak punya filter status seperti KDO/BDO | tidak diperbaiki: dukungan parameter status di /outlet/fdo perlu dicek | Terbuka |
+| OUT-DO-08 | tab:Floor | ia | P3 | FDO tidak punya filter status seperti KDO/BDO | FDO punya filter status yang sama dengan KDO/BDO (opsi dibagi dari satu konstanta). | Diperbaiki |
 
 ## `/outlet/urgent-purchase` — Urgent Purchase
 
@@ -170,7 +170,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OUT-EOD-01 | page | title | P2 | h1 bespoke 'Tutup Hari (End-of-Day)' font-bold dengan ikon 48px | PageHeader 'End of Day' (testId eod-title), InlineHelp & badge di actions, progress jadi kartu p-3 | Diperbaiki |
 | OUT-EOD-03 | tab:Draft | tabs | P2 | Sub-tab Kitchen/Bar/Floor dan tab status bespoke | Tabs standar (testid eod-orders-* tetap) + key={tab} | Diperbaiki |
 | OUT-EOD-04 | page | button | P2 | Tombol pill, '← Sebelumnya' memakai karakter panah, 'Kembali ke Dashboard' berupa Link bergaya manual | Button standar, ikon ArrowLeft, Button asChild 'Kembali ke Overview' (testid eod-finish) | Diperbaiki |
-| OUT-EOD-05 | page | flow | P3 | Langkah 1 memuat daftar Daily Sales 14 hari (71 entri), padahal tujuannya sales hari ini | tidak diperbaiki: butuh keputusan produk (default filter hari ini di mode embedded) | Terbuka |
+| OUT-EOD-05 | page | flow | P3 | Langkah 1 memuat daftar Daily Sales 14 hari (71 entri), padahal tujuannya sales hari ini | Langkah 1 End of Day default ke sales hari ini; rentang bisa diperluas lewat filter tanggal / 'Semua tanggal'. | Diperbaiki |
 
 ## `/outlet/inventory/stock-check` — Stock Check
 
@@ -212,7 +212,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OUT-UL-03 | page | typography | P1 | Qty/Nilai font-mono, search tanpa label | Mono dihapus, search diberi aria-label | Diperbaiki |
 | OUT-UL-02 | page | runtime | P2 | Baris tipe 'Penyesuaian' tampil tetapi tidak ada filternya | Filter dibangun dari semua tipe yang ada di data, memakai Tabs standar | Diperbaiki |
 | OUT-UL-01 | page | title | P3 | h1 bespoke dan tile KPI bespoke | PageHeader 'Usage Log' + CompactStatCard (testid usage-kpi-*) | Diperbaiki |
-| OUT-UL-04 | page | density | P3 | Hingga 200 baris dalam satu tabel tanpa paginasi | tidak diperbaiki: butuh paginasi | Terbuka |
+| OUT-UL-04 | page | density | P3 | Hingga 200 baris dalam satu tabel tanpa paginasi | Usage Log difilter, dicari & dipaginasi di server (25/halaman); KPI dihitung dari seluruh hasil (meta.summary). | Diperbaiki |
 
 ## `/outlet/voucher-redeem` — Voucher Redemption
 
@@ -255,7 +255,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OUT-RL-05 | dialog:Detail Reservasi | flow | P2 | Tidak ada jalan ke halaman edit atau tombol tutup. Tombol h-7 dengan warna custom | Footer Hapus \| Tutup + Ubah, menu baris 'Ubah', tombol sm, warna /10 untuk dark mode | Diperbaiki |
 | OUT-RL-06 | dialog:Batalkan/Jadwal Ulang/DP | form | P2 | Dialog alasan batal ad-hoc, Label tanpa htmlFor, Batal ghost, tombol indigo/emerald custom | Batal reservasi memakai promptDialog global. Jadwal Ulang/DP: htmlFor/id, Batal outline, tombol primary standar | Diperbaiki |
 | OUT-RL-01 | page | title | P3 | h1 bespoke 'Manajemen Reservasi' font-bold, wrapper p-6 | PageHeader 'Reservations' + 'Muat ulang'/'Buat Reservasi' | Diperbaiki |
-| OUT-RL-08 | page | density | P3 | Angka per status dihitung dari halaman yang tampil, sedangkan Total dari seluruh hasil | tidak diperbaiki: butuh agregasi per status dari backend | Terbuka |
+| OUT-RL-08 | page | density | P3 | Angka per status dihitung dari halaman yang tampil, sedangkan Total dari seluruh hasil | Tile status memakai meta.status_counts dari server (seluruh hasil filter), bukan halaman aktif. | Diperbaiki |
 | OUT-RL-09 | page | language | P3 | Badge status reservasi masih komponen lokal (label Bahasa + ikon) | Badge reservasi memakai StatusPill; label status Bahasa Indonesia sama dengan tab filter (UX-G-51). | Diperbaiki |
 
 ## `/outlet/reservations/new` — Buat Reservasi

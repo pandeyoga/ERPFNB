@@ -110,7 +110,7 @@ Audit menyeluruh konsistensi antarmuka: **setiap halaman, tab, form, dan pop-up/
 
 Distribusi temuan review per kategori: title 182, form 131, card 94, button 94, ia 90, language 63, tabs 60, runtime 55, flow 53, a11y 52, typography 41, layout 37, density 14.
 Per severity: P1 66, P2 647, P3 253.
-Status: Diperbaiki 888, Terbuka 42, Diperbaiki (komponen shared) 32, Keputusan: dipertahankan (§8.1) 3, Tidak perlu perubahan 1.
+Status: Diperbaiki 911, Diperbaiki (komponen shared) 32, Keputusan: dipertahankan (§8.1) 15, Terbuka 5, Tidak perlu perubahan 3.
 
 ## 6. Metrik sebelum → sesudah
 
@@ -228,66 +228,35 @@ Setiap reviewer halaman hanya mengubah file di kelompoknya; perubahan pada kompo
 - **Bahasa status** (keputusan pemilik produk, 25 Okt): label status memakai Bahasa Indonesia (Diajukan, Disetujui, Ditolak, Dikonversi, Lunas, …) dengan beberapa istilah tetap (Draft, Posted, Void, Published, Waitlist, Approval). Satu kamus di `StatusPill` dipakai pill, tab & filter status, dan copy tour (§3 UX-G-51). Nama modul/halaman tetap istilah ERP.
 - **Angka & kode**: `font-mono` dipetakan ke Inter tabular-nums; monospace asli hanya untuk blok JSON/log/cron.
 - **Report Center vs Finance › Reports**: Report Center = katalog ekspor Excel lintas modul; Finance › Reports = analisis di layar.
+- **On-screen vs Excel** (Inventory Balance/Movements/Valuation, Vendor Scorecard, AP Aging): halaman on-screen punya tombol 'Ekspor Excel' ke laporan Report Center, dan laporan punya 'Lihat di layar' ke halaman on-screen (sesuai izin).
+- **Sub-tab di dalam tab hub** (Loyalty CRM analytics, Order Data, Report schedules, Payroll/Incentive): baris kedua adalah sub-tampilan satu tab, bukan navigasi setara — dipertahankan.
 
 ### 8.2 Di luar cakupan audit ini
 
 - Situs publik (`/`, `/brands`, `/menu`, `/reservation`, …) dan aplikasi member loyalty (`/loyalty/*`) — desain & tipografinya berbeda (brand publik, font serif). Hanya halaman yang menjadi pratinjau di CMS yang disentuh.
 
-### 8.3 Temuan halaman yang masih terbuka
+### 8.3 Temuan yang masih terbuka — menunggu keputusan pemilik produk
 
 | Portal | Route | ID | Temuan | Alasan |
 |---|---|---|---|---|
-| Admin — User, Master Data, Konfigurasi | `/admin/workflows` | ADM-WF-03 | Duplikat fungsi dengan /admin/approvals: keduanya mengedit business_rules rule_type=approval_workflow, dan menu 'Approval Matrix' memakai matchPaths /admin/workflows. Halaman ini punya 'Eskalasi ke (permission)' yang tidak ada di builder. | Ditambah banner dengan tautan 'Buka Approval Matrix'. Rute tidak dihapus. Saran: pindahkan field eskalasi ke builder, lalu redirect. |
-| Executive & Owner | `/executive` | EXE-OV-08 | Dashboard duplikat. KPI Revenue hari ini/WTD/MTD + AP Exposure dan daftar top outlet juga ada di /executive/analytics. Ringkasan approval + anomali juga ada di /owner. 'Akses Cepat' (16 tile) menduplikasi sidebar | tidak diperbaiki: keputusan IA (lihat notes). Shortcut dipertahankan karena jadi target tour 'owner-shortcuts', tapi diringkas |
-| Executive & Owner | `/executive/brand/:brandId` | EXE-BD-07 | Data tidak konsisten. GP% brand The Coffeeshop 95.9% (COGS Rp 7.282.000), sedangkan drilldown outletnya (1 outlet, revenue sama) GP 65.1% (COGS Rp 62.487.000) | tidak diperbaiki: kalkulasi backend |
-| Executive & Owner | `/executive/ai-qa` | EXE-QA-03 | Ada 3 UI Q&A AI: halaman ini (/executive/qa), ConversationalQA di Sales Analytics, dan /owner/ai-assistant (/ai/exec-qa) | tidak diperbaiki: perlu penyatuan komponen/endpoint (lihat notes) |
-| Finance — Operasional | `/finance` | FIN-HOME-07 | KPI 'Pending validation' = 0, padahal antrian /finance/validation berisi 303 daily sales (field submitted_validations) | tidak diperbaiki: masalah data/API (useFinanceHome) |
-| Inventory & Report Center | `/inventory/balance` | INV-BAL-06 | Duplikat dengan /reports/stock-balance (on-screen vs Excel). | Ditautkan dua arah. Tidak dihapus; konsolidasi butuh keputusan lead. |
-| Inventory & Report Center | `/inventory/movements-hub` | INV-MOV-09 | Tab Riwayat menduplikasi /reports/stock-movement. | Ditambah 'Ekspor Excel' (tab Riwayat, dengan cek izin) ke Report Center; laporan menautkan balik. |
-| Inventory & Report Center | `/inventory/valuation` | INV-VAL-04 | Duplikat /reports/inventory-valuation dan widget Overview. | Ditautkan; tidak dihapus. |
-| Inventory & Report Center | `/reports/stock-balance` | RPT-SB-04 | Duplikat /inventory/balance. | Ditambah 'Buka Stock Balance' (dengan cek izin); ditautkan dua arah. |
-| Inventory & Report Center | `/reports/stock-movement` | RPT-SM-04 | Duplikat tab Riwayat hub. | Ditautkan dua arah. |
-| Inventory & Report Center | `/reports/inventory-valuation` | RPT-IV-04 | Duplikat /inventory/valuation. | Ditautkan dua arah. |
-| Procurement | `/procurement/vendor-comparison` | PRC-VC-06 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | tidak diperbaiki: keputusan IA (usul satu hub 'Price comparison' dengan tab Per item / Per PO, dan satu Vendor Scorecard). |
-| Procurement | `/procurement/gr` | PRC-GR-04 | Tidak ada filter (vendor/outlet/tanggal) dan tidak ada detail GR; penanda JE tidak bisa diklik padahal tour menyebut 'klik untuk lihat detail JE'. | tidak diperbaiki: butuh route detail GR / tautan jurnal finance. |
-| Procurement | `/procurement/po-comparison` | PRC-POC-04 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | tidak diperbaiki: usul satukan dengan Vendor Comparison dalam satu hub bertab. |
-| Admin — Loyalty, CMS, Monitoring | `/admin/loyalty` | LOY-HUB-06 | Dua baris tab bertumpuk (tab hub + sub-tab CRM analytics) | tidak diperbaiki: sub-tab CRM (7 tampilan) memang view berbeda; kedua baris kini memakai gaya Tabs terpadu yang sama |
-| Admin — Loyalty, CMS, Monitoring | `/admin/loyalty/redemptions` | LOY-RDM-06 | Paginasi memanggil load() manual sekaligus setPage, sehingga data dimuat dua kali | tidak diperbaiki: ini logika data, bukan UI |
-| Admin — Loyalty, CMS, Monitoring | `/admin/data-management` | OPS-DM-05 | Daftar 'Quick Export' masih raw <button>; warna text-gray-*/bg-gray-* tidak adaptif dark mode | tidak diperbaiki: butuh refactor visual lebih besar |
-| Admin — Loyalty, CMS, Monitoring | `/admin/operations/logs` | OPS-LOG-05 | Filter teks memanggil API setiap ketikan (tanpa debounce), sehingga tombol Terapkan redundan | tidak diperbaiki: ini perubahan logika fetch |
-| Admin — Loyalty, CMS, Monitoring | `/admin/operations/report-schedules` | OPS-ORS-02 | 2 baris tab bertumpuk (hub + Jadwal/Riwayat Kirim) | tidak diperbaiki: sub-view berbeda; keduanya kini memakai gaya Tabs terpadu |
-| Admin — Loyalty, CMS, Monitoring | `/admin/operations/data-management` | OPS-ODM-02 | 2 baris tab (hub + Ekspor/Impor/Hapus) | tidak diperbaiki: sub-view berbeda; gayanya kini seragam |
-| Admin — User, Master Data, Konfigurasi | `/admin` | ADM-HOME-05 | Tile master data tidak mencakup Bank Accounts dan Tax Codes. | Tidak diperbaiki: hitungan berasal dari hooks/useAdminDashboard.js yang di luar kepemilikan saya. |
-| Admin — User, Master Data, Konfigurasi | `/admin/roles` | ADM-ROL-05 | Role sistem tidak bisa dibuka untuk melihat daftar permission-nya (tidak ada mode lihat). | Tidak diperbaiki: butuh mode baca-saja di RoleDialog. |
-| Admin — User, Master Data, Konfigurasi | `/admin/user-management` | ADM-UMH-06 | Kolom User hanya menampilkan 8 karakter ID, bukan nama user. | Tidak diperbaiki: butuh lookup data users. |
-| Executive & Owner | `/executive/analytics` | EXE-SA-07 | pageerror 'Error parsing CSS component value' (kemungkinan dari html2canvas/komponen widget shared) | tidak diperbaiki: bukan dari kode halaman ini |
-| Executive & Owner | `/executive/budget-monitor` | EXE-BM-05 | LineChart menghubungkan outlet (kategori) dengan garis, menyesatkan. Lebih cocok bar chart ideal vs aktual | tidak diperbaiki: perubahan visualisasi, perlu keputusan produk |
-| Executive & Owner | `/executive/analytics-hub` | EXE-PA-04 | Chart Visual Overview tampak kosong saat screenshot (kemungkinan animasi recharts belum selesai; versi standalone tampil normal) | tidak diperbaiki: tidak bisa direproduksi tanpa server |
-| Executive & Owner | `/owner` | OWN-OV-07 | Digest Preview menampilkan '0 txn' untuk semua outlet (field transactions kosong dari API), sementara briefing menampilkan 192 trx | Jumlah trx hanya ditampilkan bila > 0. Data backend perlu dicek |
-| Finance — Operasional | `/finance/payment-runs/:id` | FIN-PRNDET-04 | 'Daftar Payment (0)', padahal pay_count = 1 (payments[] kosong dari API) | tidak diperbaiki: inkonsistensi data API |
-| Finance — Operasional | `/finance/journals/:id` | FIN-JEDET-04 | Kolom Dim menampilkan potongan UUID | tidak diperbaiki: butuh nama dimensi dari API |
-| Finance — Pelaporan & Kontrol | `/finance/period-closing` | FIN-PCH-06 | Konten fase (kartu PeriodList/AnomalyFeed) bersarang di dalam glass-card fase (card-in-card) | tidak diperbaiki: butuh desain ulang accordion fase; dampak kecil |
-| HR & Halaman Sistem | `/hr/compensation` | COMP-05 | Tab Payroll (Siklus Payroll/Salary Master) dan Incentive (Runs/Schemes) memunculkan baris tab kedua di bawah tab hub. | tidak diperbaiki: keduanya sub-view sungguhan. Baris tab kedua digabung dengan tombol aksi dalam satu toolbar agar ringkas. |
-| Inventory & Report Center | `/inventory/balance` | INV-BAL-07 | Pencarian item hanya memfilter halaman yang sedang dimuat (client-side). | Tidak diperbaiki: perlu parameter search di API. Catatan ditampilkan di pager. |
-| Inventory & Report Center | `/inventory/market-list` | INV-ML-10 | Tile 'Pending review' menghitung item di halaman aktif saja. | Tidak diperbaiki: butuh count dari API. |
-| Inventory & Report Center | `/reports/daily-sales` | RPT-DS-05 | Tidak ada pratinjau di layar. | Tidak diperbaiki: tidak ada API pratinjau. |
-| Inventory & Report Center | `/reports/vendor-performance` | RPT-VP-04 | Tumpang tindih dengan /procurement/vendor-scorecard. | Ditautkan. |
-| Inventory & Report Center | `/reports/ap-aging` | RPT-AP-04 | Tumpang tindih dengan /finance/ap-aging. | Ditautkan. |
-| Outlet | `/outlet/daily-orders` | OUT-DO-08 | FDO tidak punya filter status seperti KDO/BDO | tidak diperbaiki: dukungan parameter status di /outlet/fdo perlu dicek |
-| Outlet | `/outlet/end-of-day` | OUT-EOD-05 | Langkah 1 memuat daftar Daily Sales 14 hari (71 entri), padahal tujuannya sales hari ini | tidak diperbaiki: butuh keputusan produk (default filter hari ini di mode embedded) |
-| Outlet | `/outlet/inventory/usage` | OUT-UL-04 | Hingga 200 baris dalam satu tabel tanpa paginasi | tidak diperbaiki: butuh paginasi |
-| Outlet | `/outlet/reservations` | OUT-RL-08 | Angka per status dihitung dari halaman yang tampil, sedangkan Total dari seluruh hasil | tidak diperbaiki: butuh agregasi per status dari backend |
-| Procurement | `/procurement/rfq` | PRC-RFQ-06 | Pencarian memanggil API di setiap ketikan (tanpa debounce). | tidak diperbaiki: perlu perubahan pola fetch (DebouncedSearch). |
-| Procurement | `/procurement/rfq/new` | PRC-RFQN-04 | Daftar vendor hanya 20 pertama dari halaman 1 /master/vendors, tanpa pencarian. | tidak diperbaiki: perlu fetchAll + pencarian vendor. |
+| Executive & Owner | `/executive` | EXE-OV-08 | Dashboard duplikat. KPI Revenue hari ini/WTD/MTD + AP Exposure dan daftar top outlet juga ada di /executive/analytics. Ringkasan approval + anomali juga ada di /owner. 'Akses Cepat' (16 tile) menduplikasi sidebar | Butuh keputusan. Rekomendasi: Executive Overview = ringkasan satu layar (KPI hari ini + pintasan); KPI WTD/MTD & top outlet cukup di Sales Analytics; approval/anomali cukup di Owner Cockpit. |
+| Executive & Owner | `/executive/ai-qa` | EXE-QA-03 | Ada 3 UI Q&A AI: halaman ini (/executive/qa), ConversationalQA di Sales Analytics, dan /owner/ai-assistant (/ai/exec-qa) | Butuh keputusan. Rekomendasi: satu halaman Q&A kanonis (/executive/qa); panel di Sales Analytics tetap sebagai pintasan ke endpoint yang sama; /owner/ai-assistant diarahkan ke halaman kanonis. |
+| Procurement | `/procurement/vendor-comparison` | PRC-VC-06 | Duplikasi: panel 'Scorecard performa vendor' tumpang tindih dengan /procurement/vendor-scorecard dan /finance/vendor-scorecard; perbandingan harga per item juga ada di PO Comparison dan tab Perbandingan RFQ. | Butuh keputusan. Rekomendasi: Vendor Comparison fokus ke perbandingan harga per item; panel scorecard diganti tautan ke Procurement › Vendor Scorecard. |
+| Procurement | `/procurement/po-comparison` | PRC-POC-04 | Duplikasi parsial: membandingkan harga per item lintas PO tumpang tindih dengan Vendor Comparison (per item lintas vendor) dan tab Perbandingan di RFQ. | Butuh keputusan. Rekomendasi: jadikan PO Comparison tab 'Per PO' di Vendor Comparison (satu tempat perbandingan harga), RFQ tetap punya tab Perbandingan untuk penawaran. |
+| Inventory & Report Center | `/reports/daily-sales` | RPT-DS-05 | Tidak ada pratinjau di layar. | Permintaan fitur: pratinjau tabel di layar sebelum ekspor butuh endpoint JSON baru — di luar cakupan perbaikan UI. |
 
 ### 8.4 Catatan data & backend (bukan UI) dari reviewer
 
-Ditemukan saat memeriksa halaman dengan data demo; belum diperbaiki di sesi ini karena menyangkut logika perhitungan backend:
+Ditemukan saat memeriksa halaman dengan data demo. Status per 25 Okt:
 
-- Sebagian PR demo memiliki `est_cost` 0 sehingga total estimasi & konsolidasi tampil Rp 0.
-- Angka "pending validation" di KPI Finance berbeda dengan antrean Sales Validation; GP% di tampilan brand vs outlet tidak sama.
-- Daily digest menghitung 0 transaksi; backtest Forecasting menunjukkan MAPE sangat tinggi (agregasi harian vs bulanan).
-- Layanan AI (Owner AI Assistant, AI insights) membutuhkan API key — di environment audit menjawab "Layanan AI tidak aktif".
+- **Diperbaiki** — KPI Finance vs antrean Sales Validation (antrean kini default 'Menunggu validasi' + filter status; Finance home mengirim field yang dibaca tile).
+- **Diperbaiki** — GP% brand vs outlet: drilldown brand memakai P&L GL per outlet seperti drilldown outlet.
+- **Diperbaiki** — Daily digest 0 transaksi: field yang dijumlah salah (`transactions_count` → `transaction_count`).
+- **Diperbaiki** — Dimensi jurnal, nama user di audit log, hitungan status reservasi & market list kini dari server.
+- **Data demo** — sebagian PR demo memiliki `est_cost` 0 sehingga total estimasi & konsolidasi tampil Rp 0 (bukan bug perhitungan).
+- **Data demo** — backtest Forecasting menunjukkan MAPE tinggi karena histori demo pendek; perlu data riil untuk dinilai.
+- **Konfigurasi** — layanan AI (Owner AI Assistant, AI insights) membutuhkan API key; di environment audit menjawab "Layanan AI tidak aktif".
+- **Regresi ronde sebelumnya yang ikut diperbaiki** — saat halaman Workflows dihapus, field 'Eskalasi ke (permission)' hilang dari UI (nilai yang ada tetap tersimpan). Field kini ada di editor step Approval Matrix.
 
 ## 9. Contoh sebelum → sesudah
 

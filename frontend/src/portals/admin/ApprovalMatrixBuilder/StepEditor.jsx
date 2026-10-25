@@ -121,6 +121,20 @@ function StepEditor({ tierIdx, idx, step, users, roles, perms, onChange, onRemov
           className="mt-1 max-w-[140px]"
         />
       </div>
+
+      {/* Eskalasi (dulu di halaman Workflows): dipakai checker SLA saat deadline terlewati. */}
+      <MultiSelectChips
+        label="Eskalasi ke (permission, saat deadline terlewati)"
+        options={[
+          { value: "*", label: "* — Super admin / Owner" },
+          ...perms.map((p) => ({ value: p.code, label: `${p.code} — ${p.label}` })),
+        ]}
+        selected={step.escalate_to_perms || []}
+        onChange={(v) => onChange({ escalate_to_perms: v })}
+        placeholder="Cari permission…"
+        searchable
+        testId={`step-${tierIdx}-${idx}-escalate`}
+      />
     </div>
   );
 }

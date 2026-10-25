@@ -17,7 +17,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | LOY-HUB-03 | tab:Overview | card | P2 | StatCard lokal (text-3xl font-bold, ikon gradient) dipakai untuk 4 KPI | Diganti CompactStatCard (grid-cols-2 md:grid-cols-4 gap-3), komponen StatCard lokal dihapus | Diperbaiki |
 | LOY-HUB-04 | tab:Overview | ia | P2 | Kartu 'Navigasi Cepat' membuka route terpisah /admin/loyalty/customers\|rewards\|redemptions (keluar dari hub, tab hilang); juga pola <Link><Button> (elemen interaktif bersarang) | Link diarahkan ke tab hub (/admin/loyalty?tab=…), memakai Button asChild + Link (testid link-admin-loyalty-* tetap). Padding p-5 -> p-4, judul jadi h3 | Diperbaiki |
 | LOY-HUB-05 | tab:Overview | language | P3 | State error memakai tombol 'Coba Lagi' dan kartu p-8; skeleton 8 kotak untuk 4 KPI | Tombol 'Muat ulang', padding p-4, skeleton disamakan dengan 4 tile | Diperbaiki |
-| LOY-HUB-06 | tab:CRM Analytics | tabs | P3 | Dua baris tab bertumpuk (tab hub + sub-tab CRM analytics) | tidak diperbaiki: sub-tab CRM (7 tampilan) memang view berbeda; kedua baris kini memakai gaya Tabs terpadu yang sama | Terbuka |
+| LOY-HUB-06 | tab:CRM Analytics | tabs | P3 | Dua baris tab bertumpuk (tab hub + sub-tab CRM analytics) | Sub-tab = sub-tampilan di dalam satu tab hub (mis. Siklus/Salary Master); gaya segmented yang lebih kecil dari tab hub — dipertahankan (§8.1). | Keputusan: dipertahankan (§8.1) |
 
 ## `/admin/loyalty/customers` — Customers
 
@@ -78,7 +78,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | LOY-RDM-03 | page | flow | P3 | 'Export CSV' tampak tidak berfungsi saat data kosong (hanya toast error) | Tombol Ekspor disabled bila tidak ada data | Diperbaiki |
 | LOY-RDM-04 | dialog:Konfirmasi Expired | button | P3 | Konfirmasi kedaluwarsa memakai override bg-red-600; input cari/select tanpa label | variant destructive, judul 'Tandai Kedaluwarsa'; aria-label pada cari dan filter status | Diperbaiki |
 | LOY-RDM-05 | page | typography | P3 | Kode voucher di tabel memakai <code> font-mono | Jadi span Inter font-medium tabular-nums (konvensi kode dokumen lintas portal) | Diperbaiki |
-| LOY-RDM-06 | page | runtime | P3 | Paginasi memanggil load() manual sekaligus setPage, sehingga data dimuat dua kali | tidak diperbaiki: ini logika data, bukan UI | Terbuka |
+| LOY-RDM-06 | page | runtime | P3 | Paginasi memanggil load() manual sekaligus setPage, sehingga data dimuat dua kali | Satu jalur load (page/status/search debounced) — tidak ada lagi muat ganda. | Diperbaiki |
 
 ## `/admin/loyalty/analytics` — CRM Analytics
 
@@ -284,7 +284,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OPS-DM-03 | page | tabs | P2 | Tab Export/Import/Hapus berupa button segmented custom bg-gray-100; label campur bahasa | Tabs terpadu (testid dm-tabs/dm-tab-* tetap), label 'Ekspor data / Impor data / Hapus data' | Diperbaiki |
 | OPS-DM-04 | tab:Export | button | P2 | Tombol aksi utama raw <button> (Export/Import/Hapus), tombol preview ikon tanpa label, 9 checkbox tanpa label, kartu bg-white p-5; nama koleksi dan frasa konfirmasi memakai font-mono | <Button> (default/destructive, testid tetap), label 'Ekspor/Impor', preview icon-sm + aria-label, checkbox aria-label, glass-card p-4, input konfirmasi hapus berlabel; nama koleksi dan frasa konfirmasi pakai Inter font-medium tabular-nums | Diperbaiki |
 | OPS-DM-06 | page | ia | P2 | Duplikat dari /admin/operations/data-management | Diperbaiki (25 Okt): halaman duplikat dihapus — URL lama di-redirect ke tab hub, query ikut, tab sesuai izin (UX-G-50). | Diperbaiki |
-| OPS-DM-05 | tab:Export | card | P3 | Daftar 'Quick Export' masih raw <button>; warna text-gray-*/bg-gray-* tidak adaptif dark mode | tidak diperbaiki: butuh refactor visual lebih besar | Terbuka |
+| OPS-DM-05 | tab:Export | card | P3 | Daftar 'Quick Export' masih raw <button>; warna text-gray-*/bg-gray-* tidak adaptif dark mode | Quick Export memakai Button; warna gray/red/green-50 diganti token tema (dark mode) di semua tab Data management; error ekspor kini terdeteksi. | Diperbaiki |
 
 ## `/admin/tour-analytics` — Tour Analytics
 
@@ -315,7 +315,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OPS-LOG-02 | page | form | P2 | 3 input filter tanpa label; tombol 'Apply' memakai override rounded-full pill-active; 'All levels' dan Prev/Next bahasa Inggris | aria-label di semua filter (testid baru logs-filter-user), 'Terapkan' Button default (testid logs-apply), 'Semua level', 'Sebelumnya/Berikutnya' | Diperbaiki |
 | OPS-LOG-03 | page | typography | P3 | Kolom route/request ID di tabel memakai font-mono | Jadi Inter font-medium tabular-nums; font-mono hanya dipertahankan di blok JSON baris yang di-expand | Diperbaiki |
 | OPS-LOG-04 | page | runtime | P3 | EmptyState dipanggil dengan prop 'hint' yang tidak ada, sehingga deskripsi tidak tampil | Diganti prop description | Diperbaiki |
-| OPS-LOG-05 | page | flow | P3 | Filter teks memanggil API setiap ketikan (tanpa debounce), sehingga tombol Terapkan redundan | tidak diperbaiki: ini perubahan logika fetch | Terbuka |
+| OPS-LOG-05 | page | flow | P3 | Filter teks memanggil API setiap ketikan (tanpa debounce), sehingga tombol Terapkan redundan | Filter teks di-debounce (1 request per ketikan selesai, terverifikasi); tombol 'Terapkan' diganti 'Reset filter'. | Diperbaiki |
 
 ## `/admin/operations/scheduler` — Monitoring — Scheduler
 
@@ -372,7 +372,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 |---|---|---|---|---|---|---|
 | OPS-ORS-01 | page | title | P1 | Dua judul: <h1> 'Laporan Terjadwal' (font-bold 700) di bawah header hub + padding p-6 ganda | Dirender dengan embedded: tanpa h1, cukup toolbar deskripsi + aksi | Diperbaiki |
 | OPS-ORS-03 | dialog:Tambah Jadwal | form | P2 | 4 field tanpa label terhubung | Sama dengan OPS-RPS-04 (label terhubung) | Diperbaiki |
-| OPS-ORS-02 | page | tabs | P3 | 2 baris tab bertumpuk (hub + Jadwal/Riwayat Kirim) | tidak diperbaiki: sub-view berbeda; keduanya kini memakai gaya Tabs terpadu | Terbuka |
+| OPS-ORS-02 | page | tabs | P3 | 2 baris tab bertumpuk (hub + Jadwal/Riwayat Kirim) | Sub-tab = sub-tampilan di dalam satu tab hub (mis. Siklus/Salary Master); gaya segmented yang lebih kecil dari tab hub — dipertahankan (§8.1). | Keputusan: dipertahankan (§8.1) |
 
 ## `/admin/operations/data-management` — Monitoring — Data management
 
@@ -385,7 +385,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ID | Area | Kategori | Sev | Temuan | Perbaikan | Status |
 |---|---|---|---|---|---|---|
 | OPS-ODM-01 | page | title | P2 | Judul kedua 'Manajemen Data Sistem' di bawah header hub | Dirender dengan embedded (tanpa judul); perbaikan lain lihat OPS-DM-02..05 | Diperbaiki |
-| OPS-ODM-02 | page | tabs | P3 | 2 baris tab (hub + Ekspor/Impor/Hapus) | tidak diperbaiki: sub-view berbeda; gayanya kini seragam | Terbuka |
+| OPS-ODM-02 | page | tabs | P3 | 2 baris tab (hub + Ekspor/Impor/Hapus) | Sub-tab = sub-tampilan di dalam satu tab hub (mis. Siklus/Salary Master); gaya segmented yang lebih kecil dari tab hub — dipertahankan (§8.1). | Keputusan: dipertahankan (§8.1) |
 
 ## `/admin/operations/tour-analytics` — Monitoring — Tour analytics
 

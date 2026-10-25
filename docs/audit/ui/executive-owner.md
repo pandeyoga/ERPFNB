@@ -17,7 +17,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | EXE-OV-04 | page | density | P2 | 6 KPI dalam 1 baris (lg:grid-cols-6) membuat nilai terpotong ('Rp 5…', 'Rp 2…'). Subteks 'vs kemarin' muncul tanpa angka pembanding | KpiTile lokal dihapus, diganti CompactStatCard langsung (testIdPrefix owner-kpi) dengan grid 2/3 kolom gap-3. Subteks diganti 'Daily sales tervalidasi' | Diperbaiki |
 | EXE-OV-06 | page | button | P2 | Tombol 'Semua/Lihat semua/Detail' berupa <Button> di dalam <Link> (elemen interaktif bersarang) dengan override h-7 text-xs. 'Refresh' dan 'Full Analytics' dalam bahasa Inggris dan tidak sesuai nama nav | Button ghost sm asChild + Link. Label jadi 'Muat ulang' dan 'Sales Analytics' (testid dipertahankan) | Diperbaiki |
 | EXE-OV-07 | page | ia | P2 | Shortcut Profit Walk / Period Compare / Brand Mix membuka halaman standalone, padahal di nav ketiganya adalah tab Performance Analytics | Link diarahkan ke /executive/analytics-hub?tab=… | Diperbaiki |
-| EXE-OV-08 | page | ia | P2 | Dashboard duplikat. KPI Revenue hari ini/WTD/MTD + AP Exposure dan daftar top outlet juga ada di /executive/analytics. Ringkasan approval + anomali juga ada di /owner. 'Akses Cepat' (16 tile) menduplikasi sidebar | tidak diperbaiki: keputusan IA (lihat notes). Shortcut dipertahankan karena jadi target tour 'owner-shortcuts', tapi diringkas | Terbuka |
+| EXE-OV-08 | page | ia | P2 | Dashboard duplikat. KPI Revenue hari ini/WTD/MTD + AP Exposure dan daftar top outlet juga ada di /executive/analytics. Ringkasan approval + anomali juga ada di /owner. 'Akses Cepat' (16 tile) menduplikasi sidebar | Butuh keputusan. Rekomendasi: Executive Overview = ringkasan satu layar (KPI hari ini + pintasan); KPI WTD/MTD & top outlet cukup di Sales Analytics; approval/anomali cukup di Owner Cockpit. | Terbuka |
 | EXE-OV-05 | page | card | P3 | Panel lokal memakai rounded-2xl border shadow-sm px-5 py-4. ShortcutCard tinggi p-4 rounded-2xl. Pembungkus halaman p-4 md:p-6 max-w-screen-xl mx-auto + space-y-6 menyisakan ruang kosong di sisi | Panel → glass-card dengan header px-4 dan judul h3 text-sm/base. Shortcut jadi tile ringkas (ikon + label, p-2.5, 8 kolom). max-w/padding dihapus, spasi jadi space-y-3 lg:space-y-4 | Diperbaiki |
 
 ## `/executive/analytics` — Sales Analytics
@@ -36,7 +36,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | EXE-SA-04 | page | card | P2 | KpiCard dipakai tanpa delta/tren. Tile 'Buka P&L' adalah Link kustom berbeda gaya. Klik tile memakai window.location.assign (full reload) | Diganti CompactStatCard (testIdPrefix kpi, testid exec-pl-link). Navigasi pakai navigate(). Subteks diterjemahkan | Diperbaiki |
 | EXE-SA-05 | page | tabs | P3 | Rentang Sales Trend 7d/14d/30d/60d berupa <button> mentah px-3 py-1 text-xs | Diganti Tabs standar (testid exec-range-* dipertahankan) | Diperbaiki |
 | EXE-SA-06 | page | layout | P3 | max-w-7xl mx-auto, mb-5/mb-6, gap-5, glass-card p-5, h3 tanpa ukuran. Teks izin 'Cash Position requires permission.' dalam bahasa Inggris | space-y-3 lg:space-y-4, gap-3 lg:gap-4, p-4, h3 text-sm/base. Teks izin diterjemahkan | Diperbaiki |
-| EXE-SA-07 | page | runtime | P3 | pageerror 'Error parsing CSS component value' (kemungkinan dari html2canvas/komponen widget shared) | tidak diperbaiki: bukan dari kode halaman ini | Terbuka |
+| EXE-SA-07 | page | runtime | P3 | pageerror 'Error parsing CSS component value' (kemungkinan dari html2canvas/komponen widget shared) | Ekspor PDF: warna latar di-resolve dari computed style (token HSL membuat html2canvas error), halaman A4 berlanjut, toast saat gagal. Terverifikasi: unduhan sales-analytics-<periode>.pdf. | Diperbaiki |
 
 ## `/executive/brand/:brandId` — Brand drilldown (nama brand)
 
@@ -51,7 +51,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | EXE-BD-02 | page | flow | P2 | Tombol kembali berlabel 'Dashboard' selalu ke /executive (Overview), padahal user biasanya datang dari Brand Mix/Sales Analytics | 'Kembali' → navigate(-1), fallback ke /executive/analytics-hub?tab=brand | Diperbaiki |
 | EXE-BD-03 | tab:Outlets | tabs | P2 | TabsList dioverride glass-card p-1 mb-4. Isi tab p-5. Baris outlet glass-input di dalam glass-card (card-in-card) | Override TabsList dihapus. TabsContent p-4. Baris jadi border tipis, tidak lagi kartu bersarang | Diperbaiki |
 | EXE-BD-05 | tab:Cost Structure | tabs | P2 | Saat tab aktif di-hover, teksnya hilang (gelap di atas pill gelap). Juga terlihat di tab Trends | Sudah diperbaiki global oleh lead di components/ui/tabs.jsx | Diperbaiki |
-| EXE-BD-07 | page | runtime | P2 | Data tidak konsisten. GP% brand The Coffeeshop 95.9% (COGS Rp 7.282.000), sedangkan drilldown outletnya (1 outlet, revenue sama) GP 65.1% (COGS Rp 62.487.000) | tidak diperbaiki: kalkulasi backend | Terbuka |
+| EXE-BD-07 | page | runtime | P2 | Data tidak konsisten. GP% brand The Coffeeshop 95.9% (COGS Rp 7.282.000), sedangkan drilldown outletnya (1 outlet, revenue sama) GP 65.1% (COGS Rp 62.487.000) | COGS/GP brand dihitung dari P&L GL per outlet (sumber yang sama dengan drilldown outlet); GP brand = GP outlet. | Diperbaiki |
 | EXE-BD-01 | page | title | P3 | Header kustom h1 bold 700 + ikon + tombol rounded-full glass-input | PageHeader (judul = nama brand + chip kode). Actions: 'Kembali' (ghost) + PeriodPicker | Diperbaiki |
 | EXE-BD-04 | page | card | P3 | KpiCard dipakai tanpa delta | Diganti CompactStatCard (testIdPrefix kpi) | Diperbaiki |
 | EXE-BD-06 | page | ia | P3 | Breadcrumb TopNav hanya 'Beranda › Executive' | Sudah diperbaiki global oleh lead (matchPaths) | Diperbaiki |
@@ -153,7 +153,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | EXE-BM-03 | page | card | P2 | KpiBox lokal ('Rp\n590.000.000' turun baris, ruang kosong besar) | Diganti CompactStatCard sm dengan ikon + tone, KpiBox dihapus | Diperbaiki |
 | EXE-BM-06 | tab:Mingguan | tabs | P2 | Teks tab aktif hilang saat di-hover | Sudah diperbaiki global oleh lead di components/ui/tabs.jsx | Diperbaiki |
 | EXE-BM-04 | tab:Stacked Bar | typography | P3 | Sumbu/legend chart memakai ukuran default (besar), tinggi 400px. Icon tab dioverride h-4 mr-1 | tick/legend 12px, tinggi 340px, override ikon tab dihapus, TabsContent mt-4 dihapus | Diperbaiki |
-| EXE-BM-05 | tab:Pace | ia | P3 | LineChart menghubungkan outlet (kategori) dengan garis, menyesatkan. Lebih cocok bar chart ideal vs aktual | tidak diperbaiki: perubahan visualisasi, perlu keputusan produk | Terbuka |
+| EXE-BM-05 | tab:Pace | ia | P3 | LineChart menghubungkan outlet (kategori) dengan garis, menyesatkan. Lebih cocok bar chart ideal vs aktual | Tab Pace memakai bar berdampingan Ideal vs Aktual per outlet; kolom KPI Rupiah dilebarkan agar nominal tidak terpotong. | Diperbaiki |
 
 ## `/executive/budget-increase-requests` — Increase Requests
 
@@ -179,7 +179,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | ID | Area | Kategori | Sev | Temuan | Perbaikan | Status |
 |---|---|---|---|---|---|---|
 | EXE-QA-02 | form | a11y | P2 | Input pertanyaan tanpa label. Tombol Tanya override rounded-full pill-active h-10. Reset ghost tanpa state | aria-label pada input. Button standar. 'Mulai ulang' (outline, disabled bila belum ada chat, testid qa-reset). 'Sources' → 'Sumber' | Diperbaiki |
-| EXE-QA-03 | page | ia | P2 | Ada 3 UI Q&A AI: halaman ini (/executive/qa), ConversationalQA di Sales Analytics, dan /owner/ai-assistant (/ai/exec-qa) | tidak diperbaiki: perlu penyatuan komponen/endpoint (lihat notes) | Terbuka |
+| EXE-QA-03 | page | ia | P2 | Ada 3 UI Q&A AI: halaman ini (/executive/qa), ConversationalQA di Sales Analytics, dan /owner/ai-assistant (/ai/exec-qa) | Butuh keputusan. Rekomendasi: satu halaman Q&A kanonis (/executive/qa); panel di Sales Analytics tetap sebagai pintasan ke endpoint yang sama; /owner/ai-assistant diarahkan ke halaman kanonis. | Terbuka |
 | EXE-QA-01 | page | layout | P3 | max-w-4xl mx-auto membuat judul tidak sejajar dengan halaman lain | max-w dihapus. Tinggi chat calc(100vh-140px) min 420px | Diperbaiki |
 
 ## `/executive/anomaly` — Anomaly Detection
@@ -221,7 +221,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | EXE-PA-03 | tab:Brand Mix | runtime | P1 | Brand Mix kosong karena mismatch field API (lihat EXE-BX-01) | Diperbaiki di BrandMixOverview | Diperbaiki |
 | EXE-PA-01 | page | title | P2 | Hub memakai h2 bold, lalu tab Brand Mix merender h1 'Brand Mix' (h1 halaman jadi nama tab), sedangkan tab Profit Walk/Period Compare tanpa h1 | PageHeader 'Performance Analytics'. Komponen tab menerima prop embedded (tanpa h1, pakai toolbar/subtitle) | Diperbaiki |
 | EXE-PA-02 | page | tabs | P2 | Tab kustom bergaris bawah (border-b-2, py-2, tinggi 43px). Ada breadcrumb in-page 'Analytics › Brand Mix' di kanan | Diganti Tabs/TabsList/TabsTrigger/TabsContent standar (testid exec-analytics-tab-* dipertahankan). Breadcrumb in-page dihapus | Diperbaiki |
-| EXE-PA-04 | tab:Period Compare | runtime | P3 | Chart Visual Overview tampak kosong saat screenshot (kemungkinan animasi recharts belum selesai; versi standalone tampil normal) | tidak diperbaiki: tidak bisa direproduksi tanpa server | Terbuka |
+| EXE-PA-04 | tab:Period Compare | runtime | P3 | Chart Visual Overview tampak kosong saat screenshot (kemungkinan animasi recharts belum selesai; versi standalone tampil normal) | Diverifikasi ulang dengan server: chart Visual Overview tampil (bar per metrik & periode). | Tidak perlu perubahan |
 
 ## `/owner` — Overview
 
@@ -238,7 +238,7 @@ Bagian dari [Laporan Audit UI/UX 2026-10-24](../UI_UX_AUDIT_2026-10-24.md). Seti
 | OWN-OV-04 | page | ia | P2 | Kartu 'Pending Approvals' di Insights & Actions menampilkan 0 ('Semua approval sudah selesai'), padahal widget di atasnya berisi 5 item (duplikat + kontradiktif) | Kartu duplikat dihapus (seksi Approval Pending selalu tampil di preset yang punya bottomRow). Bottom row jadi Anomali + Business Q&A | Diperbaiki |
 | OWN-OV-05 | page | button | P2 | Approve emerald min-h-[40px] berbahasa Inggris. Reject tombol ikon tanpa aria-label yang langsung menolak tanpa konfirmasi, dengan alasan hard-coded 'Owner reject from cockpit'. <Button> di dalam <Link>. Emoji ✨ di copy | 'Setujui' size sm. Reject icon-sm + aria-label, sekarang meminta alasan via promptDialog (destructive) sebelum dikirim. Button asChild + Link, emoji dihapus, EmptyState shared | Diperbaiki |
 | OWN-OV-06 | page | card | P2 | KpiCard tanpa delta dengan color 'danger/warning/success' (CSS var tidak ada → ikon tanpa warna). Klik memakai window.location.assign. Kartu p-5, gap-5, space-y-6 | CompactStatCard (testid owner-kpi-*, warna aurora + tone), navigate(). p-4, gap-3/4, space-y-3/4. 'Digest Preview' memakai tabular-nums, bukan mono | Diperbaiki |
-| OWN-OV-07 | page | runtime | P3 | Digest Preview menampilkan '0 txn' untuk semua outlet (field transactions kosong dari API), sementara briefing menampilkan 192 trx | Jumlah trx hanya ditampilkan bila > 0. Data backend perlu dicek | Terbuka |
+| OWN-OV-07 | page | runtime | P3 | Digest Preview menampilkan '0 txn' untuk semua outlet (field transactions kosong dari API), sementara briefing menampilkan 192 trx | Digest menjumlah transaction_count (sebelumnya field transactions_count yang tidak ada) dan mengabaikan sales terhapus. | Diperbaiki |
 | OWN-OV-08 | page | button | P3 | DashboardPresetSelector memakai Button h-7 text-xs (5 tombol ikon tanpa label menurut crawler) | Diselesaikan di komponen bersama — DashboardPresetSelector.jsx | Diperbaiki (komponen shared) |
 
 ## `/owner/cockpit` — Overview (duplikat /owner)

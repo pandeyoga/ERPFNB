@@ -3,8 +3,11 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, Star, TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
+import { Award, Star, TrendingUp, TrendingDown, ExternalLink, FileSpreadsheet } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
+import { REPORT_CENTER_PERMS } from "@/lib/portals";
 import PageHeader from "@/components/shared/PageHeader";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Button } from "@/components/ui/button";
@@ -29,6 +32,8 @@ function periodRange(period) {
   return { date_from: start, date_to: today };
 }
 export default function VendorScorecardList() {
+  const { user } = useAuth();
+  const canExport = permitted(user, REPORT_CENTER_PERMS);
   const [data, setData] = useState([]);
   const [period, setPeriod] = useState("ytd");
   const [loading, setLoading] = useState(true);
@@ -79,6 +84,7 @@ export default function VendorScorecardList() {
         title="Vendor Scorecard"
         subtitle="Peringkat performa vendor: ketepatan pengiriman, kualitas, dan daya saing harga."
         actions={
+          <>
           <SimpleSelect
             value={period}
             onValueChange={setPeriod}
@@ -91,6 +97,13 @@ export default function VendorScorecardList() {
             className="glass-input w-[200px]"
             testId="scorecard-period"
           />
+          {/* Ekspor Excel ada di Report Center (Vendor Performance) — halaman ini on-screen. */}
+          {canExport && (
+            <Button asChild variant="outline" data-testid="scorecard-export-link">
+              <Link to="/reports/vendor-performance"><FileSpreadsheet /> Ekspor Excel</Link>
+            </Button>
+          )}
+          </>
         }
       />
 
