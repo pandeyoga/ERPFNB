@@ -95,7 +95,7 @@ export default function ChangePasswordDialog({ open, onOpenChange }) {
       <DialogContent className="max-w-md" data-testid="change-password-dialog">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5" /> Ganti Password
+            <KeyRound className="h-5 w-5" /> Ubah Password
           </DialogTitle>
           <DialogDescription>
             Demi keamanan, masukkan password lama lalu password baru yang kuat.

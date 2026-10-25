@@ -21,6 +21,10 @@ export default function UserMenu() {
   const [outlets, setOutlets] = useState([]);
   const [brands, setBrands] = useState([]);
   const [activeDialog, setActiveDialog] = useState(null); // 'profile' | 'password' | 'preferences' | null
+  const [menuOpen, setMenuOpen] = useState(false);
+  // Item yang membuka dialog menutup menu dulu; tanpa ini menu tetap terbuka di belakang
+  // dialog dan masih menghalangi klik setelah dialog ditutup.
+  const openDialog = (name) => { setMenuOpen(false); setActiveDialog(name); };
 
   useEffect(() => {
     if (!user) return;
@@ -47,7 +51,7 @@ export default function UserMenu() {
 
   return (
     <>
-    <DropdownMenu>
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
       <DropdownMenuTrigger asChild>
         <button
           className="flex items-center gap-2 h-9 pl-1.5 pr-2.5 rounded-full glass-input hover:bg-foreground/5 transition-colors"
@@ -62,7 +66,12 @@ export default function UserMenu() {
           <ChevronDown className="h-3 w-3 text-muted-foreground hidden md:block" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 glass-card">
+      <DropdownMenuContent
+        align="end"
+        className="w-64 glass-card"
+        // fokus jangan kembali ke trigger saat dialog baru saja dibuka dari menu
+        onCloseAutoFocus={(e) => { if (activeDialog) e.preventDefault(); }}
+      >
         {/* User identity */}
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col gap-0.5">
@@ -115,21 +124,21 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={(e) => { e.preventDefault(); setActiveDialog("profile"); }}
+          onSelect={(e) => { e.preventDefault(); openDialog("profile"); }}
           data-testid="menu-profile"
         >
           <UserIcon className="h-4 w-4 mr-2" /> Profil
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={(e) => { e.preventDefault(); setActiveDialog("password"); }}
+          onSelect={(e) => { e.preventDefault(); openDialog("password"); }}
           data-testid="menu-change-password"
         >
           <KeyRound className="h-4 w-4 mr-2" /> Ubah Password
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={(e) => { e.preventDefault(); setActiveDialog("preferences"); }}
+          onSelect={(e) => { e.preventDefault(); openDialog("preferences"); }}
           data-testid="menu-preferences"
         >
           <SettingsIcon className="h-4 w-4 mr-2" /> Preferensi

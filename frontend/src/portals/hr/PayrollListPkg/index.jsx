@@ -151,8 +151,8 @@ export default function PayrollList({ embedded = false }) {
                 onRowClick={(it) => setDetailId(it.id)}
                 columns={[
                   { key: "doc_no", label: "Doc No", primary: true, render: (it) => <span className="font-mono text-xs whitespace-nowrap">{it.doc_no}</span> },
-                  { key: "period", label: "Period", render: (it) => <span className="font-mono">{it.period}</span> },
-                  { key: "outlet", label: "Outlet", render: (it) => <span className="text-sm">{outlets.find(o => o.id === it.outlet_id)?.name || "Group-wide"}</span> },
+                  { key: "period", label: "Period", render: (it) => <span className="font-mono whitespace-nowrap">{it.period}</span> },
+                  { key: "outlet", label: "Outlet", render: (it) => <span className="text-sm whitespace-nowrap">{outlets.find(o => o.id === it.outlet_id)?.name || "Group-wide"}</span> },
                   { key: "total_gross", label: "Gross", numeric: true, sortable: true, render: (it) => <span className="text-sm whitespace-nowrap">{fmtRp(it.total_gross)}</span> },
                   { key: "total_bpjs_employee", label: "BPJS", numeric: true, render: (it) => <span className="text-xs text-amber-600 whitespace-nowrap">{it.total_bpjs_employee ? fmtRp(it.total_bpjs_employee) : "-"}</span> },
                   { key: "total_pph21", label: "PPh21", numeric: true, render: (it) => <span className="text-xs text-red-500 whitespace-nowrap">{it.total_pph21 ? fmtRp(it.total_pph21) : "-"}</span> },
@@ -163,7 +163,8 @@ export default function PayrollList({ embedded = false }) {
                   const action = canApprove && ({ draft: "approve", approved: "post" })[it.status];
                   if (!action) return null;
                   return (
-                    <Button size="sm" variant={action === "post" ? "default" : "outline"}
+                    // aksi per baris = outline; aksi primer halaman hanya "Generate Payroll"
+                    <Button size="sm" variant="outline"
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {

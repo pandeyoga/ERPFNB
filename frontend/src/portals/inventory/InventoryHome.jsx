@@ -166,8 +166,9 @@ export default function InventoryHome() {
                 <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{m.item_name || m.item_id}</div>
-                  <div className="text-xs text-muted-foreground capitalize">
-                    {m.movement_type.replace("_", " ")} · {fmtRelative(m.created_at)}
+                  {/* hanya tipe pergerakan yang di-kapitalisasi; waktu relatif tetap huruf kecil seperti di halaman lain */}
+                  <div className="text-xs text-muted-foreground">
+                    <span className="capitalize">{m.movement_type.replace("_", " ")}</span> · {fmtRelative(m.created_at)}
                   </div>
                 </div>
                 <div className={`text-sm tabular-nums font-semibold ${m.qty > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>

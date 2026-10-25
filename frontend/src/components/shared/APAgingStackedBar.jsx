@@ -23,13 +23,13 @@ export default function APAgingStackedBar({
   return (
     <div className="glass-card p-4" data-testid="ap-aging-widget">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">AP Aging</h3>
+        <h3 className="text-sm md:text-base font-semibold">AP Aging</h3>
         <Link
           to="/finance/ap-aging"
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           data-testid="ap-aging-detail-link"
         >
-          Detail <ArrowRight className="h-3 w-3" />
+          Lihat detail <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
 
@@ -39,7 +39,7 @@ export default function APAgingStackedBar({
         </div>
       ) : (
         <>
-          <div className="text-2xl font-bold tabular-nums mb-2">{fmtRp(total)}</div>
+          <div className="text-xl font-semibold tracking-[-0.02em] tabular-nums mb-2">{fmtRp(total)}</div>
           {/* Stacked bar */}
           <div className="h-3 w-full rounded-full overflow-hidden flex bg-foreground/5" data-testid="ap-aging-bar">
             {BUCKET_DEF.map(b => {
@@ -56,29 +56,26 @@ export default function APAgingStackedBar({
               );
             })}
           </div>
-          <div className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {/* Legenda bucket sebagai daftar baris: tetap terbaca di kartu sempit (1/3 lebar) —
+              grid 5 kolom sebelumnya membuat nominal saling menimpa. */}
+          <ul className="mt-3 space-y-1" data-testid="ap-aging-buckets">
             {BUCKET_DEF.map(b => {
               const v = Number(buckets?.[b.key] || 0);
               const pct = total > 0 ? ((v / total) * 100).toFixed(1) : 0;
               return (
-                <div key={b.key} className="text-xs">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ background: b.color }}
-                    />
-                    <span className="text-muted-foreground">{b.label}</span>
-                  </div>
-                  <div className="font-semibold tabular-nums">{fmtRp(v)}</div>
-                  <div className="text-muted-foreground">{pct}%</div>
-                </div>
+                <li key={b.key} className="flex items-center gap-2 text-xs" data-testid={`ap-aging-bucket-${b.key}`}>
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: b.color }} aria-hidden />
+                  <span className="text-muted-foreground">{b.label}</span>
+                  <span className="ml-auto font-semibold tabular-nums">{fmtRp(v)}</span>
+                  <span className="w-12 text-right text-muted-foreground tabular-nums">{pct}%</span>
+                </li>
               );
             })}
-          </div>
+          </ul>
           {top_vendors && top_vendors.length > 0 && (
             <div className="mt-4 pt-3 border-t border-border/50">
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
-                Top Vendor (Outstanding)
+              <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground mb-2">
+                Top vendor (outstanding)
               </div>
               <div className="space-y-1.5">
                 {top_vendors.slice(0, 3).map(v => (
@@ -90,7 +87,7 @@ export default function APAgingStackedBar({
                     )}
                   >
                     <span className="font-medium truncate">{v.vendor_name}</span>
-                    <span className="font-bold tabular-nums shrink-0 ml-2">{fmtRp(v.total)}</span>
+                    <span className="font-semibold tabular-nums shrink-0 ml-2">{fmtRp(v.total)}</span>
                   </div>
                 ))}
               </div>

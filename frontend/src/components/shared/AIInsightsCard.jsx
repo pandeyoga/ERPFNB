@@ -27,18 +27,19 @@ export default function AIInsightsCard() {
 
   return (
     <div className="glass-card p-4 relative overflow-hidden" data-testid="ai-insights-card">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-xl grad-aurora flex items-center justify-center">
+      {/* Kartu ini sering berada di kolom sempit (1/3) → judul tidak boleh terbelah, muat ulang = tombol ikon */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="h-8 w-8 shrink-0 rounded-xl grad-aurora flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
-          <h3 className="font-semibold">AI Insights</h3>
+          <h3 className="text-sm md:text-base font-semibold whitespace-nowrap">AI Insights</h3>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-foreground/10 text-muted-foreground uppercase tracking-wider">
             Beta
           </span>
         </div>
-        <Button onClick={load} disabled={refreshing} size="sm" variant="outline" data-testid="ai-insights-refresh">
-          <RefreshCw className={cn(refreshing && "animate-spin")} /> Muat ulang
+        <Button onClick={load} disabled={refreshing} size="icon-sm" variant="outline" aria-label="Muat ulang AI insights" title="Muat ulang" data-testid="ai-insights-refresh">
+          <RefreshCw className={cn(refreshing && "animate-spin")} />
         </Button>
       </div>
 

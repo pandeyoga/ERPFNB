@@ -83,7 +83,7 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
       {/* Recharts chart */}
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="areaTrendGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="hsl(var(--aurora-1))" stopOpacity={0.45} />
@@ -99,6 +99,7 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             />
             <YAxis
               tick={{ fontSize: 11 }}
+              width={44}
               tickFormatter={(v) => {
                 if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                 if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bell, AlertTriangle, Info, CheckCircle, Mail } from "lucide-react";
@@ -24,6 +24,16 @@ export default function NotificationDrawer({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
+  const closeRef = useRef(null);
+
+  // Drawer modal: Escape menutup, fokus awal di tombol tutup (setara Sheet/Dialog lain).
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
+    window.addEventListener("keydown", onKey);
+    const t = setTimeout(() => closeRef.current?.focus(), 50);
+    return () => { window.removeEventListener("keydown", onKey); clearTimeout(t); };
+  }, [open, onClose]);
 
   async function load() {
     setLoading(true);
@@ -72,6 +82,10 @@ export default function NotificationDrawer({ open, onClose }) {
             onClick={onClose}
           />
           <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="notification-drawer-title"
+            data-testid="notification-drawer"
             className="fixed right-0 top-0 h-full w-full sm:w-[420px] glass-card z-50 flex flex-col"
             style={{ borderRadius: 0, borderLeft: "1px solid rgb(var(--glass-border))" }}
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
@@ -80,9 +94,9 @@ export default function NotificationDrawer({ open, onClose }) {
             <div className="px-5 py-4 flex items-center justify-between border-b border-border/50">
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                <h2 className="text-base font-semibold">Notifikasi</h2>
+                <h2 id="notification-drawer-title" className="text-base font-semibold">Notifikasi</h2>
               </div>
-              <button onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center" aria-label="Tutup" data-testid="notifications-close">
+              <button ref={closeRef} onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Tutup" data-testid="notifications-close">
                 <X className="h-4 w-4" />
               </button>
             </div>

@@ -43,6 +43,10 @@ export default function CompactStatCard({
   className,
 }) {
   const clickable = typeof onClick === "function";
+  // Nominal panjang (mis. "Rp 1.236.158.000") tidak muat di text-xl pada grid 4 kolom → turun ke
+  // text-lg agar tidak terpotong; nilai lengkap tetap tersedia di title.
+  const valueText = typeof value === "string" || typeof value === "number" ? String(value) : undefined;
+  const longValue = (valueText?.length || 0) >= 15;
   const tid =
     testId ||
     `${testIdPrefix}-${String(label || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
@@ -64,9 +68,10 @@ export default function CompactStatCard({
           <div
             className={cn(
               "mt-0.5 font-semibold leading-[1.1] tabular-nums tracking-[-0.02em] truncate",
-              size === "sm" ? "text-lg" : "text-lg md:text-xl",
+              size === "sm" || longValue ? "text-lg" : "text-lg md:text-xl",
               TONE_VALUE[tone] || ""
             )}
+            title={valueText}
             data-testid="kpi-card-value"
           >
             {value}

@@ -28,8 +28,8 @@ export default function ApprovalsInboxButton() {
     <Link
       to="/my-approvals"
       className="relative h-9 w-9 rounded-full glass-input flex items-center justify-center hover:bg-foreground/5 transition-colors"
-      aria-label="My Approvals"
-      title="My Approvals"
+      aria-label="Pusat Persetujuan"
+      title="Pusat Persetujuan"
       data-testid="open-my-approvals"
     >
       <Inbox className="h-4 w-4" />
