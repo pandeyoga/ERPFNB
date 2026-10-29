@@ -25,3 +25,20 @@ super admin). Route berparameter (`/x/:id`) hanya diukur bila ada `params.json`
 
 Laporan menampilkan persentase "sesuai spec" per komponen dan daftar halaman/elemen yang menyimpang
 (dengan potongan `className` untuk menemukan sumbernya).
+
+## Audit komposisi (layout.js)
+
+Cek per elemen bisa lolos semua, tetapi layarnya tetap terasa salah: toolbar yang terlipat jadi dua baris
+setengah kosong, tab hub yang terpotong, kalimat pengantar bertumpuk, istilah Inggris & Indonesia campur di
+satu layar, angka uang terpotong "…", tombol utama berjajar di setiap baris tabel. `layout.js` membuka setiap
+route + tab dan menjalankan heuristik komposisi tersebut; screenshot disimpan hanya untuk state yang punya temuan.
+
+```bash
+cd scripts/ui_metrics
+for i in 0 1 2 3; do node layout.js out/layout_$i.json out/shots $i 4 & done; wait
+cd out && python3 ../layout_report.py 6          # ringkasan per jenis + fakta penempatan lintas halaman
+ONLY='^/finance/payments-hub$' node ../layout.js layout_0.json shots   # ulang satu halaman saja
+```
+
+Temuan bersifat heuristik: konfirmasi lewat screenshot sebelum memperbaiki. Hasil terakhir:
+`docs/audit/UI_LAYOUT_AUDIT_2026-10-29.md`.
