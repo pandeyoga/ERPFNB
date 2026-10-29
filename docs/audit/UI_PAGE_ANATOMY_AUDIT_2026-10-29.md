@@ -235,6 +235,13 @@ angka = jumlah halaman unik yang masih memuat temuan.
   Nominal, …); "Buat ‹dokumen›" / "Tambah ‹data›"; kolom Kanban & pill integrasi dalam Bahasa Indonesia; Payments: tab
   "Diajukan" digabung ke "Menunggu Approval" (backend menerima beberapa status sekaligus, dengan tes regresi).
 
+**Contoh sebelum / sesudah**
+
+![Budget vs Actual](img/anatomy_budget.png)
+![Approval Matrix](img/anatomy_approval.png)
+![Payments](img/anatomy_payments.png)
+![Petty Cash](img/anatomy_petty.png)
+
 **Sisa & catatan**
 - *Judul ganda / judul campur* (Owner, Sales Analytics): sisa temuan adalah bagian dashboard berisi ≥ 2 kartu berjudul
   (mis. "Cash & Digest" → "Cash Position" + "Digest Preview"), yang sesuai standar; heuristik menghitung kemiripan kata.
