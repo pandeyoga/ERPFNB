@@ -163,7 +163,7 @@ export default function PageBuilder() {
         subtitle="Buat halaman kustom dengan blok konten yang fleksibel."
         actions={<>
           <Button onClick={openCreate} data-testid="create-page-btn">
-            <Plus className="h-4 w-4" /> Buat Halaman Baru
+            <Plus className="h-4 w-4" /> Buat Halaman
           </Button>
         </>}
       />
@@ -230,12 +230,12 @@ export default function PageBuilder() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-5 pt-5 pb-3 border-b">
             <DialogTitle className="flex items-center justify-between pr-6">
-              <span>{editing ? "Edit Halaman" : "Buat Halaman Baru"}</span>
+              <span>{editing ? "Edit Halaman" : "Halaman Baru"}</span>
               <div className="flex items-center gap-2">
                 {editing && form.status === "published" && (
                   <Button asChild variant="outline" size="sm">
                     <a href={`/pages/${form.slug}`} target="_blank" rel="noreferrer">
-                      <ExternalLink className="h-3.5 w-3.5" /> Preview
+                      <ExternalLink className="h-3.5 w-3.5" /> Pratinjau
                     </a>
                   </Button>
                 )}

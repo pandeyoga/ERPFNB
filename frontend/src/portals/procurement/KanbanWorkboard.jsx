@@ -248,8 +248,8 @@ export default function KanbanWorkboard() {
             description="Buat PR atau PO baru untuk memulai pipeline procurement."
             action={
               <div className="flex gap-2">
-                <Button asChild data-testid="wb-empty-new-pr"><Link to="/procurement/pr/new">PR Baru</Link></Button>
-                <Button asChild variant="outline" data-testid="wb-empty-new-po"><Link to="/procurement/po/new">PO Baru</Link></Button>
+                <Button asChild data-testid="wb-empty-new-pr"><Link to="/procurement/pr/new">Buat PR</Link></Button>
+                <Button asChild variant="outline" data-testid="wb-empty-new-po"><Link to="/procurement/po/new">Buat PO</Link></Button>
               </div>
             }
           />

@@ -120,7 +120,7 @@ export default function CashPosition({ embedded = false }) {
             <FileSpreadsheet className="h-4 w-4" /> Unggah CSV
           </Button>
           <Button onClick={() => setShowCreate(true)} data-testid="cash-create-btn">
-            <Plus className="h-4 w-4" /> Akun Baru
+            <Plus className="h-4 w-4" /> Tambah Akun
           </Button>
         </>
       )}
@@ -173,7 +173,7 @@ export default function CashPosition({ embedded = false }) {
         </div>
         <div data-testid="cash-kpi-runway">
           <CompactStatCard
-            label="Days runway"
+            label="Runway (hari)"
             value={position?.days_runway ? `${position.days_runway} hari` : "—"}
             icon={HealthIcon}
             color={runwayTone === "danger" ? "aurora-6" : runwayTone === "warning" ? "aurora-5" : "aurora-4"}

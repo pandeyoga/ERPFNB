@@ -46,7 +46,7 @@ export default function InventoryHome() {
         <CompactStatCard label="Total Inventory Value"
           value={fmtRp(val?.total_value || 0)} loading={loading}
           sub="Berdasarkan moving average" icon={BarChart3} color="aurora-1" testId="inv-kpi-value" />
-        <CompactStatCard label="Item Count"
+        <CompactStatCard label="Jumlah Item"
           value={fmtNumber(val?.item_count || 0)} loading={loading}
           sub="Item dengan qty > 0" icon={Layers} color="aurora-2" testId="inv-kpi-items" />
         <CompactStatCard label="Low Stock"

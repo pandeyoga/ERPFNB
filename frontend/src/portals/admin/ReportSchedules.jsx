@@ -266,7 +266,7 @@ export default function ReportSchedules({ embedded = false }) {
                     <Separator />
                     <div className="flex gap-1" data-testid={`schedule-actions-${sched.id}`}>
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => handlePreview(sched)} data-testid={`schedule-preview-${sched.id}`}>
-                        <Eye className="h-3.5 w-3.5" />Preview
+                        <Eye className="h-3.5 w-3.5" />Pratinjau
                       </Button>
                       <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRunNow(sched)}
                         disabled={runningId === sched.id} data-testid={`schedule-run-${sched.id}`}>

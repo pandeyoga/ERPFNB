@@ -178,7 +178,7 @@ export default function ARInvoiceList({ embedded = false }) {
   const headerActions = (
     <>
       <Button variant="outline" onClick={() => setCustomerDialog(true)} data-testid="add-customer-btn">
-        <Plus className="h-4 w-4" /> Customer Baru
+        <Plus className="h-4 w-4" /> Tambah Customer
       </Button>
       <Button variant="outline"
         onClick={() => exportXlsx("/ar/invoices/write-off/export/xlsx", "ar_writeoff.xlsx")}
@@ -189,7 +189,7 @@ export default function ARInvoiceList({ embedded = false }) {
         {downloading ? "Mengunduh..." : "Ekspor write-off"}
       </Button>
       <Button onClick={() => setInvoiceDialog(true)} data-testid="create-invoice-btn">
-        <Plus className="h-4 w-4" /> Invoice Baru
+        <Plus className="h-4 w-4" /> Buat Invoice
       </Button>
     </>
   );

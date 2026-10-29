@@ -75,7 +75,7 @@ export default function PRList() {
               <Download /> {downloading ? "Mengunduh…" : "Ekspor Excel"}
             </Button>
             <Button asChild data-testid="pr-new">
-              <Link to="/procurement/pr/new"><Plus /> PR Baru</Link>
+              <Link to="/procurement/pr/new"><Plus /> Buat PR</Link>
             </Button>
           </>
         }

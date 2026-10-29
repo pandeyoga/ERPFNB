@@ -99,16 +99,16 @@ export default function COABrowser() {
           rowTestIdPrefix="coa-row"
           empty={<EmptyState icon={Wallet} title="COA tidak ditemukan" description="Ubah tipe atau kata kunci pencarian." />}
           columns={[
-            { key: "code", label: "Code", sortable: true, primary: true,
+            { key: "code", label: "Kode", sortable: true, primary: true,
               render: (c) => <span className={cn("text-xs font-medium tabular-nums", !c.is_postable && "text-muted-foreground")}>{c.code}</span> },
-            { key: "name", label: "Name", sortable: true,
+            { key: "name", label: "Nama", sortable: true,
               render: (c) => (
                 <div className={cn(!c.is_postable && "text-muted-foreground")}>
                   <div className="font-medium">{c.name}</div>
                   {c.name_id && <div className="text-xs text-muted-foreground">{c.name_id}</div>}
                 </div>
               ) },
-            { key: "type", label: "Type", sortable: true,
+            { key: "type", label: "Tipe", sortable: true,
               render: (c) => <span className="capitalize">{c.type}</span> },
             { key: "normal_balance", label: "Normal" },
             { key: "is_postable", label: "Postable",

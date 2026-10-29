@@ -93,7 +93,7 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="invoice-create-dialog">
         <DialogHeader>
-          <DialogTitle>Buat Invoice AR Baru</DialogTitle>
+          <DialogTitle>Invoice AR Baru</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -285,7 +285,7 @@ export function CustomerCreateDialog({ open, onOpenChange, onCreated }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="customer-create-dialog">
         <DialogHeader>
-          <DialogTitle>Tambah Customer AR Baru</DialogTitle>
+          <DialogTitle>Customer AR Baru</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">

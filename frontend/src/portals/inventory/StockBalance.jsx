@@ -133,12 +133,12 @@ function StockBalanceList() {
               numeric: true, sortable: true, sortAccessor: r => r.qty || 0,
               render: r => <span className={cnQty(r.qty)}>{fmtNumber(r.qty, 2)}</span> },
             { key: "unit", label: "Unit", render: r => <span className="text-muted-foreground">{r.unit || "—"}</span> },
-            { key: "last_unit_cost", label: "Last Cost", numeric: true, sortable: true, sortAccessor: r => r.last_unit_cost || 0,
+            { key: "last_unit_cost", label: "Cost Terakhir", numeric: true, sortable: true, sortAccessor: r => r.last_unit_cost || 0,
               render: r => fmtRp(r.last_unit_cost || 0) },
-            { key: "total_value", label: "Total Value", help: <InlineHelp id="moving-avg" size="xs" placement="top-end" />,
+            { key: "total_value", label: "Nilai Total", help: <InlineHelp id="moving-avg" size="xs" placement="top-end" />,
               numeric: true, sortable: true, sortAccessor: r => r.total_value || 0,
               render: r => fmtRp(r.total_value || 0) },
-            { key: "last_movement_at", label: "Last Move", render: r => <span className="text-xs text-muted-foreground">{r.last_movement_at || "—"}</span> },
+            { key: "last_movement_at", label: "Mutasi Terakhir", render: r => <span className="text-xs text-muted-foreground">{r.last_movement_at || "—"}</span> },
           ]}
           rows={rows.map(r => ({ ...r, _key: `${r.item_id}-${r.outlet_id}` }))}
           keyField="_key"

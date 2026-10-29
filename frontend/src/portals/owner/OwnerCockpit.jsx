@@ -293,7 +293,7 @@ export default function OwnerCockpit() {
               <div className="flex items-center gap-2 min-w-0">
                 <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="min-w-0">
-                  <h3 className="text-sm md:text-base font-semibold">Digest Preview</h3>
+                  <h3 className="text-sm md:text-base font-semibold">Pratinjau Digest</h3>
                   <p className="text-xs text-muted-foreground">
                     Yang akan dikirim ke channel Anda jam 06:00 WIB
                   </p>
@@ -342,7 +342,7 @@ export default function OwnerCockpit() {
       {/* Bottom row: Anomalies + AI (kartu "Pending Approvals" dihapus — duplikat
           seksi Approval Pending di atas, yang selalu tampil di preset yang punya bottomRow) */}
       {sections.bottomRow && (
-      <CollapsibleSection id="owner_bottom_row" title="Insights & Actions" icon={Bell}>
+      <CollapsibleSection id="owner_bottom_row" title="Insight & Aksi" icon={Bell}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4" data-testid="owner-bottom-row">
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-2">

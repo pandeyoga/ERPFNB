@@ -361,7 +361,7 @@ export default function SmartSEO() {
                     className="flex-shrink-0 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
                   >
                     {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    <span className="ml-1.5 hidden sm:inline">Generate</span>
+                    <span className="ml-1.5 hidden sm:inline">Buat</span>
                   </Button>
                 </div>
               </div>
@@ -630,7 +630,7 @@ export default function SmartSEO() {
             >
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-muted-foreground" />
-                <h3 className="text-sm md:text-base font-semibold">Preview</h3>
+                <h3 className="text-sm md:text-base font-semibold">Pratinjau</h3>
               </div>
               {showPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>

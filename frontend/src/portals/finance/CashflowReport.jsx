@@ -129,13 +129,13 @@ export default function CashflowReport() {
                   keyField="je_id"
                   rowTestIdPrefix="cf-txn"
                   columns={[
-                    { key: "entry_date", label: "Date", sortable: true, primary: true,
+                    { key: "entry_date", label: "Tanggal", sortable: true, primary: true,
                       render: (t) => fmtDate(t.entry_date) },
                     { key: "doc_no", label: "Doc No",
                       render: (t) => <span className="text-xs font-medium tabular-nums">{t.doc_no}</span> },
                     { key: "source_type", label: "Source",
                       render: (t) => <span className="text-muted-foreground">{t.source_type}</span> },
-                    { key: "description", label: "Description", hideOnMobile: true,
+                    { key: "description", label: "Deskripsi", hideOnMobile: true,
                       render: (t) => <span className="block max-w-[300px] truncate">{t.description}</span> },
                     { key: "inflow", label: "Inflow", numeric: true, sortable: true,
                       render: (t) => <span className={t.inflow ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground"}>{t.inflow ? fmtRp(t.inflow) : "-"}</span> },

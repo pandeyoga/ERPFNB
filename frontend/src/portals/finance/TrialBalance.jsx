@@ -127,10 +127,10 @@ export default function TrialBalance() {
           defaultSort={{ key: "closing", dir: "desc" }}
           empty={<EmptyState title="Tidak ada aktivitas" description="Tidak ada COA dengan aktivitas pada periode/filter ini." />}
           columns={[
-            { key: "code", label: "Code", sortable: true, primary: true,
+            { key: "code", label: "Kode", sortable: true, primary: true,
               render: (r) => <span className="text-xs font-medium tabular-nums">{r.code}</span> },
-            { key: "name", label: "Name", sortable: true },
-            { key: "type", label: "Type",
+            { key: "name", label: "Nama", sortable: true },
+            { key: "type", label: "Tipe",
               render: (r) => <span className="text-xs text-muted-foreground capitalize">{r.type}</span> },
             { key: "opening", label: "Opening", numeric: true, sortable: true,
               help: <InlineHelp id="trial-balance-opening" size="xs" placement="top" />,

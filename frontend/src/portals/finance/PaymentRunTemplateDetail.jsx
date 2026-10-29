@@ -165,7 +165,7 @@ export default function PaymentRunTemplateDetail() {
                 render: (it) => <span className="max-w-[200px] truncate inline-block align-middle text-muted-foreground">{it.description}</span> },
               { key: "gl_debit_code", label: "COA Debit",
                 render: (it) => <span className="text-xs text-muted-foreground tabular-nums">{it.gl_debit_code} — {it.gl_debit_name}</span> },
-              { key: "amount", label: "Amount", numeric: true, sortable: true,
+              { key: "amount", label: "Nominal", numeric: true, sortable: true,
                 render: (it) => <span className="font-semibold">{fmtRp(it.amount)}</span> },
               { key: "wht", label: "WHT", numeric: true,
                 sortAccessor: (it) => it.wh_type ? round2(parseFloat(it.amount) * parseFloat(it.wh_rate || 0) / 100) : 0,

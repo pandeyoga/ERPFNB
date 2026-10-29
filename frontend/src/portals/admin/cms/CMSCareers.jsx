@@ -158,7 +158,7 @@ export default function CMSCareers() {
         subtitle={<>{total} lowongan total &mdash; {activeCount} aktif &mdash; tampil di halaman Careers publik</>}
         actions={<>
           <Button onClick={openCreate} data-testid="new-job-btn">
-            <Plus className="h-4 w-4" /> Lowongan Baru
+            <Plus className="h-4 w-4" /> Tambah Lowongan
           </Button>
         </>}
       />

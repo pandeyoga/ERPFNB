@@ -98,7 +98,7 @@ export default function DailySalesList({ embedded = false }) {
   const newButton = (
     <Button asChild>
       <Link to="/outlet/daily-sales/new" data-testid="ds-new">
-        <Plus className="h-4 w-4" /> Daily Sales Baru
+        <Plus className="h-4 w-4" /> Buat Daily Sales
       </Link>
     </Button>
   );

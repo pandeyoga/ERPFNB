@@ -132,7 +132,7 @@ function PdfTab({ brands, selectedBrandId }) {
               </div>
               <div className="flex gap-1">
                 <Button size="sm" variant="outline" onClick={() => setPreviewUrl(getFullUrl(pdf.pdf_url))} title="Preview">
-                  <Eye className="h-3.5 w-3.5" /> Preview
+                  <Eye className="h-3.5 w-3.5" /> Pratinjau
                 </Button>
                 <Button size="icon-sm" variant="outline" asChild title="Unduh" aria-label="Unduh PDF">
                   <a href={getFullUrl(pdf.pdf_url)} download target="_blank" rel="noreferrer">

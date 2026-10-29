@@ -138,8 +138,8 @@ export default function IncentiveList({ embedded = false }) {
           <div className="glass-card" data-testid="hr-inc-schemes-card">
             <DataTable
               columns={[
-                { key: "code", label: "Code", primary: true, sortable: true, render: s => <span className="font-mono">{s.code}</span> },
-                { key: "name", label: "Name", sortable: true },
+                { key: "code", label: "Kode", primary: true, sortable: true, render: s => <span className="font-mono">{s.code}</span> },
+                { key: "name", label: "Nama", sortable: true },
                 { key: "scope", label: "Scope", render: s => (
                   <span className="text-xs text-muted-foreground">
                     {s.scope_type}{s.scope_id ? `: ${(outlets.find(o => o.id === s.scope_id)?.name || s.scope_id.slice(0,8))}` : ""}

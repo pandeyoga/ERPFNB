@@ -88,7 +88,7 @@ export default function POList() {
               <Link to="/procurement/vendor-comparison?tab=po"><Scale /> Bandingkan PO</Link>
             </Button>
             <Button asChild data-testid="po-new">
-              <Link to="/procurement/po/new"><Plus /> PO Baru</Link>
+              <Link to="/procurement/po/new"><Plus /> Buat PO</Link>
             </Button>
           </>
         }

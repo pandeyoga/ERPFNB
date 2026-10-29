@@ -83,7 +83,7 @@ export default function ArchivalView() {
         <DataTable
           columns={[
             { key: "coll", label: "Collection", primary: true, sortable: true, render: (r) => <span className="text-xs font-medium tabular-nums">{r.coll}</span> },
-            { key: "retention_days", label: "Retention (days)", numeric: true, sortable: true, render: (r) => r.retention_days },
+            { key: "retention_days", label: "Retensi (hari)", numeric: true, sortable: true, render: (r) => r.retention_days },
             { key: "cutoff", label: "Cutoff", render: (r) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(r.cutoff)}</span> },
             { key: "total", label: "Total", numeric: true, sortable: true, render: (r) => fmtNumber(r.total) },
             { key: "eligible_for_archive", label: "Eligible", numeric: true, sortable: true, render: (r) => <span className={r.eligible_for_archive > 0 ? "font-semibold text-amber-700 dark:text-amber-400" : "font-semibold"}>{fmtNumber(r.eligible_for_archive)}</span> },

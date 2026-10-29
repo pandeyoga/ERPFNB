@@ -208,7 +208,7 @@ export default function StockBalanceMatrix() {
           : <span className="text-muted-foreground">—</span>;
       },
     })),
-    { key: "total_value", label: "Total Value", numeric: true,
+    { key: "total_value", label: "Nilai Total", numeric: true,
       render: (row) => <span className="font-semibold text-xs">{fmtRp(row.totals.value)}</span> },
   ], [matrix.outlets, openCell]);
 

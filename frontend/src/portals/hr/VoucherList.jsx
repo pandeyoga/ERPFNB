@@ -109,7 +109,7 @@ export default function VoucherList({ embedded = false }) {
       <div className="glass-card" data-testid="hr-voucher-table-card">
         <DataTable
           columns={[
-            { key: "code", label: "Code", primary: true, sortable: true, render: v => <span className="font-mono">{v.code}</span> },
+            { key: "code", label: "Kode", primary: true, sortable: true, render: v => <span className="font-mono">{v.code}</span> },
             { key: "issue_date", label: "Issue Date", sortable: true, render: v => fmtDate(v.issue_date) },
             { key: "expire_date", label: "Expire", sortable: true, render: v => v.expire_date ? fmtDate(v.expire_date) : "—" },
             { key: "purpose", label: "Purpose", sortable: true, render: v => <span className="text-xs">{v.purpose}</span> },

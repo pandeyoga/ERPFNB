@@ -77,7 +77,7 @@ function PayrollFormDialog({ open, onOpenChange, outlets, onCreated }) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
           <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-payroll-submit">
-            {submitting ? <><RefreshCw className="animate-spin" />Memproses…</> : "Generate Payroll"}
+            {submitting ? <><RefreshCw className="animate-spin" />Memproses…</> : "Buat Payroll"}
           </Button>
         </DialogFooter>
       </DialogContent>

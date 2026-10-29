@@ -75,7 +75,7 @@ export default function MetricsView() {
                  sub={`${data.requests?.rps_last_min || 0} req/s (60s)`} icon={Server} color="aurora-2" />
         <CompactStatCard label="Error Rate (60s)" value={`${errRate.toFixed(2)}%`} tone={errTone}
                  sub={`${data.requests?.["5xx"] || 0} 5xx total`} icon={AlertTriangle} color={errColor} />
-        <CompactStatCard label="Active Sessions" value={fmtNumber(data.collection_counts?.refresh_tokens || 0)}
+        <CompactStatCard label="Sesi Aktif" value={fmtNumber(data.collection_counts?.refresh_tokens || 0)}
                  sub="refresh tokens" icon={TrendingUp} color="aurora-4" />
       </div>
 
@@ -107,7 +107,7 @@ export default function MetricsView() {
               columns={[
                 { key: "route", label: "Route", primary: true,
                   render: (r) => <span className="text-xs font-medium tabular-nums break-all">{r.route}</span> },
-                { key: "count", label: "Count", numeric: true, sortable: true,
+                { key: "count", label: "Jumlah", numeric: true, sortable: true,
                   render: (r) => fmtNumber(r.count) },
                 { key: "avg_ms", label: "Avg ms", numeric: true, sortable: true,
                   render: (r) => r.avg_ms?.toFixed(1) },
@@ -121,7 +121,7 @@ export default function MetricsView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
         <div className="glass-card p-4">
-          <h3 className="text-sm md:text-base font-semibold mb-3">By Status Code</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-3">Per Status Code</h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_status || {}).map(([k, v]) => {
               const s = parseInt(k, 10);
@@ -138,7 +138,7 @@ export default function MetricsView() {
           </div>
         </div>
         <div className="glass-card p-4">
-          <h3 className="text-sm md:text-base font-semibold mb-3">By Method</h3>
+          <h3 className="text-sm md:text-base font-semibold mb-3">Per Method</h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_method || {}).map(([k, v]) => (
               <span key={k} className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-800 dark:text-blue-400">

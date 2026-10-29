@@ -190,10 +190,10 @@ export default function OutletHome() {
       <section data-testid="outlet-quick-actions">
         <h2 className="text-base md:text-lg font-semibold mb-2">Aksi Cepat</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <QuickActionTile to="/outlet/daily-sales/new" icon={Receipt} label="Daily Sales Baru" testId="qa-ds" />
+          <QuickActionTile to="/outlet/daily-sales/new" icon={Receipt} label="Buat Daily Sales" testId="qa-ds" />
           <QuickActionTile to="/outlet/petty-cash" icon={Wallet} label="Catat Petty Cash" testId="qa-pc" />
-          <QuickActionTile to="/outlet/daily-orders?type=kdo" icon={ChefHat} label="KDO Baru" testId="qa-kdo" />
-          <QuickActionTile to="/outlet/daily-orders?type=bdo" icon={Wine} label="BDO Baru" testId="qa-bdo" />
+          <QuickActionTile to="/outlet/daily-orders?type=kdo" icon={ChefHat} label="Buat KDO" testId="qa-kdo" />
+          <QuickActionTile to="/outlet/daily-orders?type=bdo" icon={Wine} label="Buat BDO" testId="qa-bdo" />
           <QuickActionTile to="/outlet/urgent-purchase" icon={ShoppingBag} label="Urgent Purchase" testId="qa-up" />
           <QuickActionTile to="/outlet/end-of-day" icon={CheckSquare} label="End of Day" testId="qa-dc" />
           <QuickActionTile to="/inventory/opname" icon={ClipboardCheck} label="Mulai Opname" testId="qa-opname" />

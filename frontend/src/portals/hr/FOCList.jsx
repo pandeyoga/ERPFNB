@@ -94,11 +94,11 @@ export default function FOCList({ embedded = false }) {
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true, render: it => <span className="font-mono text-xs" data-testid={`hr-foc-docno-${it.id}`}>{it.doc_no}</span> },
-            { key: "foc_date", label: "Date", sortable: true, render: it => fmtDate(it.foc_date) },
+            { key: "foc_date", label: "Tanggal", sortable: true, render: it => fmtDate(it.foc_date) },
             { key: "outlet", label: "Outlet", render: it => outletMap[it.outlet_id]?.name || it.outlet_id?.slice(0, 8) },
-            { key: "foc_type", label: "Type", sortable: true, render: it => <span className="text-xs" data-testid={`hr-foc-type-${it.id}`}>{FOC_LABELS[it.foc_type] || it.foc_type}</span> },
+            { key: "foc_type", label: "Tipe", sortable: true, render: it => <span className="text-xs" data-testid={`hr-foc-type-${it.id}`}>{FOC_LABELS[it.foc_type] || it.foc_type}</span> },
             { key: "beneficiary", label: "Beneficiary", render: it => <span className="text-xs text-muted-foreground">{it.beneficiary || "—"}</span> },
-            { key: "amount", label: "Amount", numeric: true, sortable: true, render: it => <span className="whitespace-nowrap" data-testid={`hr-foc-amount-${it.id}`}>{fmtRp(it.amount)}</span> },
+            { key: "amount", label: "Nominal", numeric: true, sortable: true, render: it => <span className="whitespace-nowrap" data-testid={`hr-foc-amount-${it.id}`}>{fmtRp(it.amount)}</span> },
             { key: "status", label: "Status", align: "center", sortable: true, render: it => <StatusPill status={it.status} /> },
           ]}
           rows={items}

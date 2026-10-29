@@ -282,7 +282,7 @@ export default function ExecutiveHome() {
               sub={`Sejak ${kpis.week_start}`} icon={TrendingUp} color="aurora-2" />
             <CompactStatCard testIdPrefix="kpi" label="Sales MTD" value={fmtRp(kpis.sales_mtd)}
               sub={`Periode ${kpis.period}`} icon={TrendingUp} color="aurora-4" />
-            <CompactStatCard testIdPrefix="kpi" label="Inventory Value" value={fmtRp(kpis.inventory_value)}
+            <CompactStatCard testIdPrefix="kpi" label="Nilai Inventory" value={fmtRp(kpis.inventory_value)}
               sub={`${fmtNumber(kpis.inventory_item_count)} item`} icon={Layers} color="aurora-5"
               onClick={() => navigate("/inventory/valuation")} />
             {/* Satu grup KPI (8 kartu, 2 baris) = ringkasan halaman tanpa judul (DESIGN_SYSTEM §10.2). */}
@@ -290,7 +290,7 @@ export default function ExecutiveHome() {
             <CompactStatCard testIdPrefix="kpi" label="AP Exposure" value={fmtRp(kpis.ap_exposure)}
               sub="Hutang belum dibayar" icon={Wallet} color="aurora-6"
               onClick={() => navigate("/finance/payments-hub?tab=ap-aging")} />
-            <CompactStatCard testIdPrefix="kpi" label="Pending Validation" value={fmtNumber(kpis.pending_validations)}
+            <CompactStatCard testIdPrefix="kpi" label="Menunggu Validasi" value={fmtNumber(kpis.pending_validations)}
               sub="Daily sales menunggu validasi" icon={ClipboardCheck} color="aurora-3"
               onClick={() => navigate("/finance/validation")} />
             <CompactStatCard testIdPrefix="kpi" label="Opname Aktif" value={fmtNumber(kpis.opname_pending)}

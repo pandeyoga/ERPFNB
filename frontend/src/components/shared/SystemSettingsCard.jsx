@@ -152,7 +152,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={load} className="gap-1">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
         </Button>
       </div>
 

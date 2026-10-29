@@ -114,7 +114,7 @@ export default function OutletDrilldown() {
           sub={`COGS ${fmtRp(pl.cogs)}`} icon={TrendingUp} color="aurora-2" />
         <CompactStatCard testIdPrefix="kpi" label="Net" value={fmtRp(pl.net)}
           sub={`Margin ${pl.net_margin_pct?.toFixed?.(1) ?? "0"}%`} icon={Wallet} color="aurora-4" />
-        <CompactStatCard testIdPrefix="kpi" label="Avg/Day" value={fmtRp(pl.avg_daily_sales)}
+        <CompactStatCard testIdPrefix="kpi" label="Rata-rata/Hari" value={fmtRp(pl.avg_daily_sales)}
           sub="Rata-rata sales harian" icon={TrendingUp} color="aurora-5" />
       </div>
 
@@ -139,10 +139,10 @@ export default function OutletDrilldown() {
             <CompactStatCard size="sm" testId="outlet-ops-opname" icon={Package} color="aurora-3"
               label="Opname aktif" value={fmtNumber(ops.opname_active)} />
             <CompactStatCard size="sm" testId="outlet-ops-kdo" icon={ClipboardCheck} color="aurora-5"
-              label="KDO pending" value={fmtNumber(ops.kdo_pending)} sub="Buka KDO →"
+              label="KDO menunggu" value={fmtNumber(ops.kdo_pending)} sub="Buka KDO →"
               onClick={() => navigate("/outlet/kdo")} />
             <CompactStatCard size="sm" testId="outlet-ops-bdo" icon={ClipboardCheck} color="aurora-2"
-              label="BDO pending" value={fmtNumber(ops.bdo_pending)} sub="Buka BDO →"
+              label="BDO menunggu" value={fmtNumber(ops.bdo_pending)} sub="Buka BDO →"
               onClick={() => navigate("/outlet/bdo")} />
             <CompactStatCard size="sm" testId="outlet-ops-last-close" icon={Building2} color="aurora-6"
               label="Last daily close" value={ops.last_close_date ? fmtDate(ops.last_close_date) : "Belum pernah"} />
@@ -161,8 +161,8 @@ export default function OutletDrilldown() {
         {/* INVENTORY */}
         <TabsContent value="inv" className="space-y-2">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <CompactStatCard testIdPrefix="kpi" label="Inventory Value" value={fmtRp(inv.valuation)} icon={Package} color="aurora-1" />
-            <CompactStatCard testIdPrefix="kpi" label="Item Count" value={fmtNumber(inv.item_count)} icon={Package} color="aurora-2" />
+            <CompactStatCard testIdPrefix="kpi" label="Nilai Inventory" value={fmtRp(inv.valuation)} icon={Package} color="aurora-1" />
+            <CompactStatCard testIdPrefix="kpi" label="Jumlah Item" value={fmtNumber(inv.item_count)} icon={Package} color="aurora-2" />
             <CompactStatCard testIdPrefix="kpi" label="Low Stock" value={fmtNumber(inv.low_stock_count)}
               sub={inv.low_stock_count > 0 ? "perlu restock" : "sehat"}
               tone={inv.low_stock_count > 0 ? "danger" : "default"}

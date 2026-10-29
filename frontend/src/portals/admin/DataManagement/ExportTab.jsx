@@ -280,7 +280,7 @@ function ExportTab({ collections }) {
         <div className="glass-card p-4 space-y-3">
           <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
             <Download className="w-4 h-4" />
-            Opsi Export
+            Opsi Ekspor
           </h3>
 
           <div className="space-y-2">
@@ -355,7 +355,7 @@ function ExportTab({ collections }) {
 
         {/* Quick export buttons */}
         <div className="glass-card p-4 space-y-3">
-          <h3 className="text-sm md:text-base font-semibold">Quick Export</h3>
+          <h3 className="text-sm md:text-base font-semibold">Ekspor Cepat</h3>
           <div className="space-y-2">
             {[
               { id: "full", label: "Full Backup (semua data)", collections: ["all"], format: "zip_json" },

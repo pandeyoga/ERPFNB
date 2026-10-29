@@ -96,7 +96,7 @@ export default function Movements() {
             { key: "outlet", label: "Outlet", render: m => outletMap[m.outlet_id]?.name || m.outlet_id },
             { key: "item_name", label: "Item", primary: true, sortable: true, sortAccessor: m => m.item_name || m.item_id || "",
               render: m => <span className="font-medium" data-testid={`movement-item-${m.id}`}>{m.item_name || m.item_id}</span> },
-            { key: "movement_type", label: "Type", sortable: true,
+            { key: "movement_type", label: "Tipe", sortable: true,
               render: m => <span className="capitalize" data-testid={`movement-type-${m.id}`}>{(m.movement_type || "").replace("_", " ")}</span> },
             { key: "qty", label: "Qty", numeric: true, sortable: true, sortAccessor: m => m.qty || 0,
               render: m => <span className={m.qty > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"} data-testid={`movement-qty-${m.id}`}>{m.qty > 0 ? "+" : ""}{fmtNumber(m.qty, 2)} {m.unit}</span> },

@@ -316,7 +316,7 @@ function CreateTemplateDialog({ onClose, onCreated }) {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg" data-testid="create-template-dialog">
         <DialogHeader>
-          <DialogTitle>Buat Template Baru</DialogTitle>
+          <DialogTitle>Template Baru</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">

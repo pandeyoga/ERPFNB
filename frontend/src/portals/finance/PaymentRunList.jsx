@@ -88,7 +88,7 @@ export default function PaymentRunList({ embedded = false }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="prn-kpi-strip">
           <CompactStatCard label="Draft" icon={FileEdit} color="aurora-3" testId="prn-kpi-draft"
             value={<span data-testid="prn-kpi-draft-value">{kpi.draft ?? "—"}</span>} />
-          <CompactStatCard label="Confirmed (siap eksekusi)" icon={CheckCircle2} color="aurora-2" tone="info" testId="prn-kpi-confirmed"
+          <CompactStatCard label="Dikonfirmasi (siap eksekusi)" icon={CheckCircle2} color="aurora-2" tone="info" testId="prn-kpi-confirmed"
             value={<span data-testid="prn-kpi-confirmed-value">{kpi.confirmed ?? "—"}</span>} />
           <CompactStatCard label={`Posted ${kpi.period}`} icon={PlayCircle} color="aurora-4" tone="success" testId="prn-kpi-posted"
             value={<span data-testid="prn-kpi-posted-value">{kpi.posted_this_month.count}</span>}
@@ -125,12 +125,12 @@ export default function PaymentRunList({ embedded = false }) {
             columns={[
               { key: "doc_no", label: "Doc No", primary: true, sortable: true,
                 render: (r) => <span className="font-mono text-xs whitespace-nowrap" data-testid={`prn-doc-${r.doc_no}`}>{r.doc_no}</span> },
-              { key: "payment_date", label: "Payment Date", sortable: true, render: (r) => fmtDate(r.payment_date) },
+              { key: "payment_date", label: "Tanggal Payment", sortable: true, render: (r) => fmtDate(r.payment_date) },
               { key: "bank", label: "Bank Account",
                 render: (r) => <span className="text-xs text-muted-foreground max-w-[200px] truncate block">{r.bank_account_name || r.bank_account_id}</span> },
               { key: "pay_count", label: "Jumlah PAY", numeric: true, sortable: true,
                 render: (r) => <span data-testid={`prn-count-${r.doc_no}`}>{r.pay_count} PAY</span> },
-              { key: "total_amount", label: "Total Amount", numeric: true, sortable: true,
+              { key: "total_amount", label: "Total Nominal", numeric: true, sortable: true,
                 render: (r) => <span data-testid={`prn-amount-${r.doc_no}`}>{fmtRp(r.total_amount)}</span> },
               { key: "status", label: "Status",
                 render: (r) => (
@@ -254,7 +254,7 @@ function CreateRunDialog({ onClose, onCreated }) {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="create-run-dialog">
         <DialogHeader>
-          <DialogTitle>Buat Payment Run Baru</DialogTitle>
+          <DialogTitle>Payment Run Baru</DialogTitle>
         </DialogHeader>
 
         {step === 1 && (

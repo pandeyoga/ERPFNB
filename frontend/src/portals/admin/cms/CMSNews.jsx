@@ -308,7 +308,7 @@ export default function CMSNews() {
                 )}
                 <Button variant="outline" size="sm"
                         onClick={() => setPreviewOpen(true)} type="button" data-testid="preview-news-btn">
-                  <ExternalLink className="h-3.5 w-3.5" /> Preview
+                  <ExternalLink className="h-3.5 w-3.5" /> Pratinjau
                 </Button>
               </div>
             </DialogTitle>

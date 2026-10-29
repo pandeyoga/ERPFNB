@@ -120,7 +120,7 @@ export default function DigestSettings() {
   const headerActions = (
     <>
       <Button variant="outline" onClick={loadPreview} data-testid="owner-preview-btn">
-        <ExternalLink /> Preview Digest
+        <ExternalLink /> Pratinjau Digest
       </Button>
       <Button onClick={sendNow} disabled={busy} data-testid="owner-send-now">
         <Send /> Kirim Sekarang

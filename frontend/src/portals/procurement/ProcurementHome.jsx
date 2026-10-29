@@ -34,7 +34,7 @@ export default function ProcurementHome() {
               <Link to="/procurement/vendor-comparison"><Scale /> Bandingkan vendor</Link>
             </Button>
             <Button asChild data-testid="qa-new-pr">
-              <Link to="/procurement/pr/new"><Plus /> PR Baru</Link>
+              <Link to="/procurement/pr/new"><Plus /> Buat PR</Link>
             </Button>
           </>
         }

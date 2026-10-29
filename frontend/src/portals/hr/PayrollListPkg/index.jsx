@@ -97,7 +97,7 @@ export default function PayrollList({ embedded = false }) {
       )}
       {tab === "cycles" && canApprove && (
         <Button onClick={() => setShowForm(true)} data-testid="hr-payroll-create">
-          <Plus /> Generate Payroll
+          <Plus /> Buat Payroll
         </Button>
       )}
       {tab === "salary" && canApprove && (
@@ -139,7 +139,7 @@ export default function PayrollList({ embedded = false }) {
           ) : items.length === 0 ? (
             <EmptyState icon={CalendarClock} title="Belum ada payroll cycle"
               description="Generate payroll bulanan untuk membuat draft, lalu posting ke jurnal."
-              action={canApprove ? <Button size="sm" onClick={() => setShowForm(true)}><Plus /> Generate Payroll</Button> : null} />
+              action={canApprove ? <Button size="sm" onClick={() => setShowForm(true)}><Plus /> Buat Payroll</Button> : null} />
           ) : (
             <div className="glass-card overflow-hidden" data-testid="payroll-cycles-table">
               <DataTable
@@ -163,7 +163,7 @@ export default function PayrollList({ embedded = false }) {
                   const label = action === "post" ? "Posting payroll ke jurnal" : "Setujui payroll";
                   return (
                     // aksi per baris = tombol ikon outline (9 kolom harus muat di 1280px);
-                    // aksi primer halaman hanya "Generate Payroll"
+                    // aksi primer halaman hanya "Buat Payroll"
                     <Button size="icon-sm" variant="outline" aria-label={label} title={label}
                       onClick={async (e) => {
                         e.stopPropagation();

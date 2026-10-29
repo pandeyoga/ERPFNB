@@ -131,7 +131,7 @@ export default function LoyaltyAdminCustomers({ embedded = false }) {
           <DataTable
             columns={[
               { key: "full_name", label: "Customer", primary: true, sortable: true, render: (c) => (<div><div className="font-medium">{c.full_name}</div><div className="text-xs text-muted-foreground">{c.email}</div></div>) },
-              { key: "phone", label: "Phone", hideOnMobile: true, render: (c) => <span className="text-muted-foreground">{c.phone || "—"}</span> },
+              { key: "phone", label: "Telepon", hideOnMobile: true, render: (c) => <span className="text-muted-foreground">{c.phone || "—"}</span> },
               { key: "loyalty_tier", label: "Tier", sortable: true, render: (c) => <Badge className={`capitalize ${TIER_BADGE[c.loyalty_tier] || ""}`} variant="secondary">{c.loyalty_tier}</Badge> },
               { key: "total_points", label: "Points", numeric: true, sortable: true, render: (c) => <span className="font-semibold">{c.total_points.toLocaleString()}</span> },
               { key: "lifetime_points", label: "Lifetime", numeric: true, sortable: true, hideOnMobile: true, render: (c) => <span className="text-muted-foreground">{c.lifetime_points.toLocaleString()}</span> },

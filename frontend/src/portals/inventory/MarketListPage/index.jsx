@@ -500,7 +500,7 @@ export default function MarketListPage() {
       <Dialog open={showCreateQuarter} onOpenChange={setShowCreateQuarter}>
         <DialogContent data-testid="quarter-form-dialog">
           <DialogHeader>
-            <DialogTitle>Buat Quarter Baru</DialogTitle>
+            <DialogTitle>Quarter Baru</DialogTitle>
             <DialogDescription>Quarter baru dibuat sebagai draft; aktifkan setelah harga acuan diisi.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-2">

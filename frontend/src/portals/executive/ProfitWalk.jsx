@@ -120,7 +120,7 @@ export default function ProfitWalk({ embedded = false }) {
       ),
     },
     { key: "value", label: "Period", numeric: true, sortable: true, render: (s) => <span className="font-mono">{fmtRp(s.value)}</span> },
-    { key: "compare", label: "Compare", numeric: true, sortable: true, render: (s) => <span className="font-mono text-muted-foreground">{fmtRp(s.compare)}</span> },
+    { key: "compare", label: "Pembanding", numeric: true, sortable: true, render: (s) => <span className="font-mono text-muted-foreground">{fmtRp(s.compare)}</span> },
     {
       key: "delta", label: "Δ", numeric: true, sortable: true,
       sortAccessor: (s) => (s.value || 0) - (s.compare || 0),

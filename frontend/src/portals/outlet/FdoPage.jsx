@@ -211,7 +211,7 @@ export default function FdoPage() {
           </div>
           <Button variant="outline" size="icon" onClick={fetchFdoList} aria-label="Muat ulang daftar FDO" title="Muat ulang" data-testid="fdo-refresh"><RefreshCw className="h-4 w-4" /></Button>
           <Button onClick={() => setShowForm(true)} data-testid="fdo-create-btn">
-            <Plus className="h-4 w-4" /> FDO Baru
+            <Plus className="h-4 w-4" /> Buat FDO
           </Button>
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function FdoPage() {
                   icon={Utensils}
                   title={status ? "Tidak ada FDO dengan status ini" : "Belum ada FDO"}
                   description="Buat FDO untuk mengajukan kebutuhan floor/service harian ke purchasing."
-                  action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>FDO Baru</Button>}
+                  action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>Buat FDO</Button>}
                 />
               </div>
             )}

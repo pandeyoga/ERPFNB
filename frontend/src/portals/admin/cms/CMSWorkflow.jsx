@@ -140,7 +140,7 @@ export default function CMSWorkflow({
                 disabled={loading}
                 onClick={doSubmit}
                 data-testid={`cms-workflow-submit-compact-${itemId}`}>
-          <Send className="h-3 w-3" /> Submit
+          <Send className="h-3 w-3" /> Ajukan
         </Button>
       )}
 

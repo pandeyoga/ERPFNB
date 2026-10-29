@@ -128,7 +128,7 @@ export default function SchedulerView() {
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-base md:text-lg font-semibold">Recent Runs</h2>
+          <h2 className="text-base md:text-lg font-semibold">Run Terbaru</h2>
           <span className="text-xs text-muted-foreground">
             Total: {meta.total} · Halaman {page} / {meta.total_pages}
           </span>

@@ -342,7 +342,7 @@ function BankReconDetail({ sessionId, onBack }) {
   const reconRowColumns = [
     { key: "date", label: "Tanggal", primary: true, render: (r) => <span className="text-xs whitespace-nowrap">{fmtDate(r.date)}</span> },
     { key: "description", label: "Keterangan", render: (r) => <span className="block max-w-[280px] truncate" title={r.description}>{r.description || "-"}</span> },
-    { key: "amount", label: "Amount", numeric: true,
+    { key: "amount", label: "Nominal", numeric: true,
       render: (r) => <span className={cn(r.amount >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>{fmtRp(r.amount)}</span> },
     { key: "reference", label: "Ref", render: (r) => <span className="text-xs text-muted-foreground">{r.reference || "-"}</span> },
     { key: "match", label: "Match", render: (r) => (

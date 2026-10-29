@@ -76,7 +76,7 @@ export default function CMSPendingReviews() {
     <div className="space-y-3" data-testid="cms-pending-reviews">
       {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
       <PageHeader
-        title="Pending reviews"
+        title="Review Menunggu"
         subtitle={`Konten yang menunggu persetujuan editor${total > 0 ? ` — ${total} menunggu` : ""}.`}
         actions={<>
           <Button variant="outline" onClick={load} disabled={loading} data-testid="reviews-refresh">

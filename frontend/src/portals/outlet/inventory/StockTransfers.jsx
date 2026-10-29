@@ -114,7 +114,7 @@ export default function StockTransfers() {
               <RefreshCw className="h-4 w-4" /> Muat ulang
             </Button>
             <Button onClick={() => setCreateOpen(true)} data-testid="transfers-new">
-              <Plus className="h-4 w-4" /> Transfer Baru
+              <Plus className="h-4 w-4" /> Buat Transfer
             </Button>
           </>
         }
@@ -145,7 +145,7 @@ export default function StockTransfers() {
           onRowClick={(r) => setDetail(r)}
           empty={<EmptyState icon={ArrowLeftRight} title={statusFilter === "all" ? "Belum ada transfer" : "Tidak ada transfer dengan status ini"}
             description="Buat transfer baru untuk memindahkan stok antar outlet."
-            action={<Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>Transfer Baru</Button>} />}
+            action={<Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>Buat Transfer</Button>} />}
           rowTestIdPrefix="transfers-row"
         />
       </div>

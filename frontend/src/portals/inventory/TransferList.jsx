@@ -90,7 +90,7 @@ export default function TransferList({ embedded = false }) {
                 />
               )}
               <Button onClick={() => setShowForm(true)} data-testid="trf-new" disabled={!can("inventory.transfer.create")}>
-                <Plus /> Transfer Baru
+                <Plus /> Buat Transfer
               </Button>
             </>
           }
@@ -106,7 +106,7 @@ export default function TransferList({ embedded = false }) {
             { key: "from", label: "Dari", render: t => outletMap[t.from_outlet_id]?.name || t.from_outlet_id },
             { key: "to", label: "Ke", render: t => outletMap[t.to_outlet_id]?.name || t.to_outlet_id },
             { key: "lines", label: "Lines", numeric: true, sortable: true, sortAccessor: t => t.lines?.length || 0, render: t => t.lines?.length || 0 },
-            { key: "total_value", label: "Total Value", numeric: true, sortable: true, render: t => <span className="font-semibold">{fmtRp(t.total_value || 0)}</span> },
+            { key: "total_value", label: "Nilai Total", numeric: true, sortable: true, render: t => <span className="font-semibold">{fmtRp(t.total_value || 0)}</span> },
             { key: "status",
               label: <span className="inline-flex items-center gap-1.5">Status <InlineHelp id="transfer-status" size="xs" placement="top" /></span>,
               render: t => <StatusPill status={t.status} /> },

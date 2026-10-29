@@ -33,7 +33,7 @@ const TABS = [
   { entity: "careers",   name: "Careers",         render: () => <CMSCareers /> },
   { entity: "media",     name: "Media library",   render: () => <MediaLibrary /> },
   { entity: "pages",     name: "Page builder",    render: () => <PageBuilder /> },
-  { entity: "reviews",   name: "Pending reviews", render: () => <CMSPendingReviews /> },
+  { entity: "reviews",   name: "Review Menunggu", render: () => <CMSPendingReviews /> },
   { entity: "analytics", name: "Analytics",       render: () => <CMSAnalytics /> },
 ];
 

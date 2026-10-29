@@ -129,7 +129,7 @@ export default function PeriodList({ embedded = false }) {
                     p.closed_at ? <><CheckCircle2 className="h-3 w-3" aria-label="Ditutup" /> {fmtDateTime(p.closed_at)}</> : "—"}
                 </span>
               ) },
-            { key: "updated_at", label: "Last Update", sortable: true,
+            { key: "updated_at", label: "Terakhir Diperbarui", sortable: true,
               render: (p) => <span className="text-xs text-muted-foreground">{fmtDateTime(p.updated_at)}</span> },
           ]}
           rowAction={(p) => (

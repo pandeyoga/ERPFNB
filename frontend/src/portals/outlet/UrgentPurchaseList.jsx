@@ -92,7 +92,7 @@ export default function UrgentPurchaseList() {
         className="mb-0 md:mb-0"
         actions={
           <Button onClick={() => setShowForm(true)} data-testid="up-new">
-            <Plus className="h-4 w-4" /> Urgent Purchase Baru
+            <Plus className="h-4 w-4" /> Buat Urgent Purchase
           </Button>
         }
       />
@@ -132,7 +132,7 @@ export default function UrgentPurchaseList() {
           rows={items}
           loading={loading}
           empty={<EmptyState icon={ShoppingBag} title="Belum ada urgent purchase" description="Buat ketika ada kebutuhan mendadak yang tidak bisa lewat PR normal."
-            action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>Urgent Purchase Baru</Button>} />}
+            action={<Button size="sm" variant="outline" onClick={() => setShowForm(true)}>Buat Urgent Purchase</Button>} />}
           rowAction={(up) => (
             up.status === "submitted" && can("finance.payment.approve") && (
               <Button onClick={() => approve(up)} size="sm" variant="outline" data-testid={`up-approve-${up.id}`}>

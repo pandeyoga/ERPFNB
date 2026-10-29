@@ -124,7 +124,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
                   className="text-xs"
                   columns={[
                     { key: "row", label: "Row", primary: true },
-                    { key: "code", label: "Code" },
+                    { key: "code", label: "Kode" },
                     { key: "prev", label: "Sebelumnya", numeric: true, render: (r) => <span className="font-mono">{fmtRp(r.prev)}</span> },
                     { key: "new", label: "Baru", numeric: true, render: (r) => <span className="font-mono font-semibold">{fmtRp(r.new)}</span> },
                     { key: "delta", label: "Delta", numeric: true, render: (r) => (

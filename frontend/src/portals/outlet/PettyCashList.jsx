@@ -119,7 +119,7 @@ export default function PettyCashList({ embedded = false }) {
       data-testid="pc-new"
       title={!outletId ? "Pilih outlet untuk transaksi" : ""}
     >
-      <Plus className="h-4 w-4" /> Transaksi Baru
+      <Plus className="h-4 w-4" /> Buat Transaksi
     </Button>
   );
 
@@ -219,7 +219,7 @@ export default function PettyCashList({ embedded = false }) {
               description={aggregateMode
                 ? "Pilih outlet spesifik di header untuk mulai mencatat petty cash, atau lanjut catat dari outlet manapun."
                 : "Mulai catat pengeluaran kecil di sini."}
-              action={<Button size="sm" variant="outline" onClick={() => (outletId ? setShowForm(true) : setPickOutlet(true))} disabled={scopedOutlets.length === 0}>Transaksi Baru</Button>}
+              action={<Button size="sm" variant="outline" onClick={() => (outletId ? setShowForm(true) : setPickOutlet(true))} disabled={scopedOutlets.length === 0}>Buat Transaksi</Button>}
             />
           }
           rowTestIdPrefix="pc"

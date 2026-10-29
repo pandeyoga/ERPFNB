@@ -123,7 +123,7 @@ export default function AdjustmentList({ embedded = false }) {
                 />
               )}
               <Button onClick={() => setShowForm(true)} data-testid="adj-new" disabled={!can("inventory.adjustment.create")}>
-                <Plus /> Adjustment Baru
+                <Plus /> Buat Adjustment
               </Button>
             </>
           }
@@ -139,7 +139,7 @@ export default function AdjustmentList({ embedded = false }) {
             { key: "outlet", label: "Outlet", render: a => outletMap[a.outlet_id]?.name || a.outlet_id },
             { key: "reason", label: "Alasan", sortable: true, render: a => <span className="capitalize">{a.reason}</span> },
             { key: "lines", label: "Lines", numeric: true, sortable: true, sortAccessor: a => a.lines?.length || 0, render: a => a.lines?.length || 0 },
-            { key: "total_value", label: "Total Value", numeric: true, sortable: true,
+            { key: "total_value", label: "Nilai Total", numeric: true, sortable: true,
               render: a => <span className={cn("font-semibold", a.total_value < 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400")}>{fmtRp(a.total_value || 0)}</span> },
             { key: "status", label: "Status", render: a => <StatusPill status={a.status} /> },
           ]}

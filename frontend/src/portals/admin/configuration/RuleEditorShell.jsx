@@ -195,7 +195,7 @@ export default function RuleEditorShell({
       {renderPreview && (
         <section className="space-y-2" data-testid="config-editor-preview-panel">
           <h4 className="text-sm font-semibold flex items-center gap-2">
-            <Eye className="h-4 w-4" /> Preview
+            <Eye className="h-4 w-4" /> Pratinjau
           </h4>
           <div className="rounded-xl border border-border/50 grad-aurora-soft p-3">
             {renderPreview({ ruleData })}

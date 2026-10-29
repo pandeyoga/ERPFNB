@@ -222,7 +222,7 @@ export default function ProcurementReportsTab() {
         {/* 3. GR Summary */}
         <ReportCard
           icon={Truck}
-          title="Goods Receipt Summary"
+          title="Ringkasan Goods Receipt"
           description="Ringkasan penerimaan barang per periode — jumlah GR, total nilai, dan vendor."
           accentClass="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
           testId="export-gr-xlsx"

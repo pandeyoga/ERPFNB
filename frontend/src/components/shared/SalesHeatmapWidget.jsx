@@ -98,7 +98,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
           rowTestIdPrefix="heatmap-day"
           className="text-xs"
           columns={[
-            { key: "day", label: "Day", primary: true,
+            { key: "day", label: "Hari", primary: true,
               render: (row) => <span className="font-medium text-muted-foreground">{row.day}</span> },
             ...weeks.map((w, i) => ({
               key: `w${i}`, label: w, align: "center",

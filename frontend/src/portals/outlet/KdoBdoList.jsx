@@ -494,7 +494,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
               disabled={saving}
               data-testid={`${kind}-submit`}
             >
-              <Send className="h-4 w-4" /> Submit
+              <Send className="h-4 w-4" /> Ajukan
             </Button>
           </div>
         </DialogFooter>

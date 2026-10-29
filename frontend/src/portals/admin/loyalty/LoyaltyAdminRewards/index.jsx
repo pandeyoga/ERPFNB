@@ -277,7 +277,7 @@ export default function LoyaltyAdminRewards({ embedded = false }) {
 
   const newRewardBtn = (
     <Button onClick={openCreate} data-testid="rewards-new">
-      <Plus className="h-4 w-4" /> Reward Baru
+      <Plus className="h-4 w-4" /> Tambah Reward
     </Button>
   );
 

@@ -391,7 +391,7 @@ function CreateLeaveDialog({ open, onOpenChange, onCreated, currentUserId }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid="create-leave-dialog">
         <DialogHeader>
-          <DialogTitle>Ajukan Cuti Baru</DialogTitle>
+          <DialogTitle>Ajukan Cuti</DialogTitle>
           <DialogDescription>Simpan sebagai draft atau langsung ajukan ke atasan.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
