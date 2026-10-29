@@ -61,7 +61,7 @@ export default function KpiCard({
       </div>
 
       <div className="relative mt-1.5 flex items-end justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-x-2 gap-y-0.5 min-w-0 flex-wrap">
           {hasDelta && (
             <span
               className={cn(
@@ -72,11 +72,11 @@ export default function KpiCard({
               )}
             >
               {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {positive ? "+" : ""}{Number(delta).toFixed(1)}%
+              {positive ? "+" : ""}{Number(delta).toFixed(1).replace(".", ",")}%
             </span>
           )}
           {(deltaLabel || hint) && (
-            <span className="truncate text-xs text-muted-foreground">{deltaLabel || hint}</span>
+            <span className="text-xs text-muted-foreground">{deltaLabel || hint}</span>
           )}
         </div>
         {series?.length > 1 && (

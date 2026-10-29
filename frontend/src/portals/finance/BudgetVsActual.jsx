@@ -74,15 +74,6 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   // Di dalam hub → pindah tab; standalone → buka hub pada tab Budget management.
   const goManage = () => (onSwitchTab ? onSwitchTab("manage") : navigate("/finance/budget-hub?tab=manage"));
 
-  const varianceTone = (pct, category) => {
-    const cls = getVarianceColor(pct, category);
-    if (cls.includes("red")) return "danger";
-    if (cls.includes("green")) return "success";
-    return "default";
-  };
-  const fmtVar = (pct) => (pct === null || pct === undefined ? null : `${pct > 0 ? "+" : ""}${(pct || 0).toFixed(1)}%`);
-  const catSub = (cat) => [`Budget: ${formatCurrency(cat.budget)}`, fmtVar(cat.variance_pct)].filter(Boolean).join(" · ");
-
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="budget-vs-actual">
       <PageHeader
@@ -97,88 +88,85 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         )}
       />
 
-      <Card>
-        <CardContent className="p-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
-            <div className="space-y-1">
-              <Label htmlFor="bva-period">Periode</Label>
-              <Input id="bva-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
-                data-testid="period-input" />
-            </div>
+      {/* Filter tingkat halaman = baris polos tanpa kartu (DESIGN_SYSTEM §10.3). */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end" data-testid="bva-filters">
+        <div className="space-y-1">
+          <Label htmlFor="bva-period">Periode</Label>
+          <Input id="bva-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
+            data-testid="period-input" />
+        </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="bva-scope">Scope</Label>
-              <Select value={scope} onValueChange={v => {
-                setScope(v);
-                setOutletId("");
-                setBrandId("");
-              }}>
-                <SelectTrigger id="bva-scope" data-testid="scope-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="outlet">Outlet</SelectItem>
-                  <SelectItem value="brand">Brand</SelectItem>
-                  <SelectItem value="group">Group</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="space-y-1">
+          <Label htmlFor="bva-scope">Scope</Label>
+          <Select value={scope} onValueChange={v => {
+            setScope(v);
+            setOutletId("");
+            setBrandId("");
+          }}>
+            <SelectTrigger id="bva-scope" data-testid="scope-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="outlet">Outlet</SelectItem>
+              <SelectItem value="brand">Brand</SelectItem>
+              <SelectItem value="group">Group</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-            {scope === "outlet" && (
-              <div className="space-y-1">
-                <Label htmlFor="bva-outlet">Outlet</Label>
-                <Select value={outletId} onValueChange={setOutletId}>
-                  <SelectTrigger id="bva-outlet" data-testid="outlet-select">
-                    <SelectValue placeholder="Semua outlet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {outlets.map(o => (
-                      <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {scope === "brand" && (
-              <div className="space-y-1">
-                <Label htmlFor="bva-brand">Brand</Label>
-                <Select value={brandId} onValueChange={setBrandId}>
-                  <SelectTrigger id="bva-brand" data-testid="brand-select">
-                    <SelectValue placeholder="Semua brand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brands.map(b => (
-                      <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <Label htmlFor="bva-level">Level</Label>
-              <Select value={level} onValueChange={setLevel}>
-                <SelectTrigger id="bva-level" data-testid="level-select">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">COA + Kategori</SelectItem>
-                  <SelectItem value="coa">COA saja</SelectItem>
-                  <SelectItem value="category">Kategori saja</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button variant="outline" onClick={loadData} disabled={loading} data-testid="load-data-btn" className="w-full">
-                <RefreshCw className={loading ? "animate-spin" : undefined} />
-                {loading ? "Memuat…" : "Muat ulang"}
-              </Button>
-            </div>
+        {scope === "outlet" && (
+          <div className="space-y-1">
+            <Label htmlFor="bva-outlet">Outlet</Label>
+            <Select value={outletId} onValueChange={setOutletId}>
+              <SelectTrigger id="bva-outlet" data-testid="outlet-select">
+                <SelectValue placeholder="Semua outlet" />
+              </SelectTrigger>
+              <SelectContent>
+                {outlets.map(o => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {scope === "brand" && (
+          <div className="space-y-1">
+            <Label htmlFor="bva-brand">Brand</Label>
+            <Select value={brandId} onValueChange={setBrandId}>
+              <SelectTrigger id="bva-brand" data-testid="brand-select">
+                <SelectValue placeholder="Semua brand" />
+              </SelectTrigger>
+              <SelectContent>
+                {brands.map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <Label htmlFor="bva-level">Level</Label>
+          <Select value={level} onValueChange={setLevel}>
+            <SelectTrigger id="bva-level" data-testid="level-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="both">COA + Kategori</SelectItem>
+              <SelectItem value="coa">COA saja</SelectItem>
+              <SelectItem value="category">Kategori saja</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-end">
+          <Button variant="outline" onClick={loadData} disabled={loading} data-testid="load-data-btn" className="w-full">
+            <RefreshCw className={loading ? "animate-spin" : undefined} />
+            {loading ? "Memuat…" : "Muat ulang"}
+          </Button>
+        </div>
+      </div>
 
       {data && !hasBudgets && (
         <Card className="border-dashed">
@@ -195,43 +183,54 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
 
       {data && hasBudgets && (
         <>
-          {/* Category Summary */}
-          {(level === "both" || level === "category") && (data.category_rollup || []).length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="category-summary">
-              {(data.category_rollup || []).filter(cat => !cat.derived).map((cat) => (
-                <CompactStatCard
-                  key={cat.category}
-                  label={cat.name || cat.category}
-                  value={formatCurrency(cat.actual)}
-                  sub={catSub(cat)}
-                  icon={cat.variance_pct > 0 ? TrendingUp : TrendingDown}
-                  tone={varianceTone(cat.variance_pct, cat.category)}
-                  color="aurora-1"
-                  testId={`bva-cat-${String(cat.category).toLowerCase()}`}
-                />
-              ))}
-            </div>
-          )}
+          {/* Ringkasan halaman: satu strip KPI di atas, tanpa judul (§10.2). */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="bva-totals">
+            <CompactStatCard label="Total budget" value={formatCurrency(data.total_budget)} icon={Target} color="aurora-1" testId="bva-total-budget" />
+            <CompactStatCard label="Total actual" value={formatCurrency(data.total_actual)} icon={BarChart3} color="aurora-3" testId="bva-total-actual" />
+            <CompactStatCard label="Variance"
+              value={`${data.total_variance > 0 ? "+" : ""}${formatCurrency(data.total_variance)}`}
+              icon={data.total_variance > 0 ? TrendingUp : TrendingDown}
+              tone={data.total_variance > 0 ? "danger" : "success"}
+              color={data.total_variance > 0 ? "aurora-6" : "aurora-4"}
+              testId="bva-total-variance" />
+          </div>
 
-          {/* Derived Categories Summary */}
-          {(level === "both" || level === "category") && (data.category_rollup || []).some(c => c.derived) && (
-            <section className="space-y-2" data-testid="bva-pl-summary">
-              <h2 className="text-base md:text-lg font-semibold">Ringkasan P&amp;L</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {(data.category_rollup || []).filter(cat => cat.derived).map((cat) => (
-                  <CompactStatCard
-                    key={cat.category}
-                    label={cat.name || cat.category}
-                    value={formatCurrency(cat.actual)}
-                    sub={catSub(cat)}
-                    icon={cat.variance_pct > 0 ? TrendingUp : TrendingDown}
-                    tone={varianceTone(cat.variance_pct, cat.category)}
-                    color="aurora-2"
-                    testId={`bva-derived-${String(cat.category).toLowerCase()}`}
-                  />
-                ))}
-              </div>
-            </section>
+          {/* Ringkasan per kategori + P&L = satu tabel (data sejenis yang dibandingkan), bukan 8 kartu KPI
+              dalam dua grid berbeda dengan judul di luar kartu (DESIGN_SYSTEM §10.2–10.3, §10.6). */}
+          {(level === "both" || level === "category") && (data.category_rollup || []).length > 0 && (
+            <Card data-testid="category-summary">
+              <CardHeader>
+                <CardTitle>Ringkasan per kategori</CardTitle>
+                <CardDescription>Budget vs actual per kategori, lalu turunan P&amp;L (Gross Profit, EBITDA, Net Income).</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <DataTable
+                  rows={[...(data.category_rollup || []).filter(c => !c.derived), ...(data.category_rollup || []).filter(c => c.derived)]}
+                  keyField="category"
+                  rowTestIdPrefix="bva-cat"
+                  rowClassName={(r) => (r.derived ? "bg-muted/40 font-semibold" : undefined)}
+                  columns={[
+                    { key: "name", label: "Kategori", primary: true,
+                      render: (r) => (
+                        <span className="flex items-center gap-2" data-testid={`${r.derived ? "bva-derived" : "bva-cat"}-${String(r.category).toLowerCase()}`}>
+                          {r.name || r.category}
+                          {r.derived && <Badge variant="outline" className="text-xs">P&amp;L</Badge>}
+                        </span>
+                      ) },
+                    { key: "budget", label: "Budget", numeric: true, render: (r) => formatCurrency(r.budget) },
+                    { key: "actual", label: "Actual", numeric: true, render: (r) => formatCurrency(r.actual) },
+                    { key: "variance", label: "Variance", numeric: true,
+                      render: (r) => <span className={getVarianceColor(r.variance_pct, r.category)}>{formatCurrency(r.variance ?? (r.actual - r.budget))}</span> },
+                    { key: "variance_pct", label: "Var %", numeric: true,
+                      render: (r) => (
+                        <span className={getVarianceColor(r.variance_pct, r.category)}>
+                          {r.variance_pct != null ? `${r.variance_pct > 0 ? "+" : ""}${Number(r.variance_pct).toFixed(1)}%` : "—"}
+                        </span>
+                      ) },
+                  ]}
+                />
+              </CardContent>
+            </Card>
           )}
 
           {/* COA Detail */}
@@ -274,17 +273,6 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
             </Card>
           )}
 
-          {/* Totals */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="bva-totals">
-            <CompactStatCard label="Total budget" value={formatCurrency(data.total_budget)} icon={Target} color="aurora-1" testId="bva-total-budget" />
-            <CompactStatCard label="Total actual" value={formatCurrency(data.total_actual)} icon={BarChart3} color="aurora-3" testId="bva-total-actual" />
-            <CompactStatCard label="Variance"
-              value={`${data.total_variance > 0 ? "+" : ""}${formatCurrency(data.total_variance)}`}
-              icon={data.total_variance > 0 ? TrendingUp : TrendingDown}
-              tone={data.total_variance > 0 ? "danger" : "success"}
-              color={data.total_variance > 0 ? "aurora-6" : "aurora-4"}
-              testId="bva-total-variance" />
-          </div>
         </>
       )}
     </div>

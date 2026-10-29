@@ -285,9 +285,8 @@ export default function ExecutiveHome() {
             <CompactStatCard testIdPrefix="kpi" label="Inventory Value" value={fmtRp(kpis.inventory_value)}
               sub={`${fmtNumber(kpis.inventory_item_count)} item`} icon={Layers} color="aurora-5"
               onClick={() => navigate("/inventory/valuation")} />
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="exec-kpi-strip-secondary">
+            {/* Satu grup KPI (8 kartu, 2 baris) = ringkasan halaman tanpa judul (DESIGN_SYSTEM §10.2). */}
+            <div className="contents" data-testid="exec-kpi-strip-secondary">
             <CompactStatCard testIdPrefix="kpi" label="AP Exposure" value={fmtRp(kpis.ap_exposure)}
               sub="Hutang belum dibayar" icon={Wallet} color="aurora-6"
               onClick={() => navigate("/finance/payments-hub?tab=ap-aging")} />
@@ -300,6 +299,7 @@ export default function ExecutiveHome() {
             <CompactStatCard testId="exec-pl-link" label="Buka P&L" value={`Periode ${kpis.period}`}
               sub="Laporan laba rugi" icon={ArrowRight} color="aurora-2"
               onClick={() => navigate("/finance/profit-loss")} />
+          </div>
           </div>
 
           {/* AI assistant — collapsible (default collapsed) & placed below the KPIs so it doesn't dominate the dashboard */}

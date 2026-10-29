@@ -335,9 +335,8 @@ export default function OwnerCockpit() {
 
       {/* Pending approvals quick widget (Phase 11F) */}
       {sections.pendingApprovals && (
-      <CollapsibleSection id="owner_pending_approvals" title="Approval Pending" icon={ClipboardCheck}>
-        <PendingApprovalsWidget />
-      </CollapsibleSection>
+      // Satu kartu berjudul sendiri → tanpa judul bagian di atasnya (tidak ada judul ganda, DESIGN_SYSTEM §10.2).
+      <PendingApprovalsWidget />
       )}
 
       {/* Bottom row: Anomalies + AI (kartu "Pending Approvals" dihapus — duplikat

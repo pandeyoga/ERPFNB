@@ -15,6 +15,7 @@
  *  - onClick → dirender sebagai <button>; active → state terpilih (filter tile)
  *  - badge (angka di pojok), loading, size "sm" | "md", testId / testIdPrefix
  */
+import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -43,6 +44,17 @@ export default function CompactStatCard({
   className,
 }) {
   const clickable = typeof onClick === "function";
+  // Nominal tidak boleh terpotong (DESIGN_SYSTEM §10.6): kartu sempit (5–6 per baris) → ikon disembunyikan
+  // dan nilai turun ke text-base, sehingga "Rp 425.000.000" tetap utuh.
+  const ref = useRef(null);
+  const [narrow, setNarrow] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(([entry]) => setNarrow(entry.contentRect.width < 210));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // Nominal panjang (mis. "Rp 1.236.158.000") tidak muat di text-xl pada grid 4 kolom → turun ke
   // text-lg agar tidak terpotong; nilai lengkap tetap tersedia di title.
   const valueText = typeof value === "string" || typeof value === "number" ? String(value) : undefined;
@@ -68,7 +80,7 @@ export default function CompactStatCard({
           <div
             className={cn(
               "mt-0.5 font-semibold leading-[1.1] tabular-nums tracking-[-0.02em] truncate",
-              size === "sm" || longValue ? "text-lg" : "text-lg md:text-xl",
+              narrow ? "text-base" : size === "sm" || longValue ? "text-lg" : "text-lg md:text-xl",
               TONE_VALUE[tone] || ""
             )}
             title={valueText}
@@ -77,9 +89,9 @@ export default function CompactStatCard({
             {value}
           </div>
         )}
-        {sub && <div className="mt-0.5 text-xs text-muted-foreground truncate">{sub}</div>}
+        {sub && <div className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{sub}</div>}
       </div>
-      {Icon && (
+      {Icon && !narrow && (
         <div
           className="shrink-0 h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center"
           style={{ background: `hsl(var(--${color}) / 0.12)`, color: `hsl(var(--${color}))` }}
@@ -100,13 +112,13 @@ export default function CompactStatCard({
 
   if (clickable) {
     return (
-      <button type="button" onClick={onClick} className={base} data-testid={tid} aria-pressed={active || undefined}>
+      <button ref={ref} type="button" onClick={onClick} className={base} data-testid={tid} aria-pressed={active || undefined}>
         {inner}
       </button>
     );
   }
   return (
-    <div className={base} data-testid={tid}>
+    <div ref={ref} className={base} data-testid={tid}>
       {inner}
     </div>
   );
