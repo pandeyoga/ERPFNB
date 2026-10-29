@@ -14,7 +14,7 @@
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { FileText } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import CMSBrands from "./cms/CMSBrands";
 import CMSOutlets from "./cms/CMSOutlets";
 import CMSNews from "./cms/CMSNews";
@@ -47,26 +47,28 @@ export default function CMSStudio() {
   if (!activeItem) return <Navigate to="/admin/cms/brands" replace />;
 
   return (
-    <div data-testid="cms-studio">
-      <PageHeader
-        icon={FileText}
-        title="CMS Studio"
-        subtitle="Semua konten website publik dalam satu tempat — brand, outlet, berita, menu, karier, dan halaman."
-      />
+    <HubHeaderProvider>
+      <div data-testid="cms-studio">
+        <PageHeader hub
+          icon={FileText}
+          title="CMS Studio"
+          subtitle="Semua konten website publik dalam satu tempat — brand, outlet, berita, menu, karier, dan halaman."
+        />
 
-      <Tabs value={activeItem.entity} onValueChange={(v) => navigate(`/admin/cms/${v}`)}>
-        <TabsList data-testid="cms-tabs">
-          {TABS.map(t => (
-            <TabsTrigger key={t.entity} value={t.entity} data-testid={`cms-tab-${t.entity}`}>
-              {t.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+        <Tabs value={activeItem.entity} onValueChange={(v) => navigate(`/admin/cms/${v}`)}>
+          <TabsList data-testid="cms-tabs">
+            {TABS.map(t => (
+              <TabsTrigger key={t.entity} value={t.entity} data-testid={`cms-tab-${t.entity}`}>
+                {t.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      <div className="mt-3" data-testid={`cms-content-${activeItem.entity}`}>
-        {activeItem.render()}
+        <div className="mt-3" data-testid={`cms-content-${activeItem.entity}`}>
+          {activeItem.render()}
+        </div>
       </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

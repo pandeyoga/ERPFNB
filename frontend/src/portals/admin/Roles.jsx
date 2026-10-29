@@ -43,17 +43,14 @@ export default function Roles({ embedded = false } = {}) {
   return (
     <div className="space-y-3" data-testid="roles-page">
       {/* Halaman mandiri (/admin/roles) punya judul sendiri; di dalam hub "Users & Roles" judul dari hub */}
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={Shield}
           title="Roles & Permissions"
           subtitle="Role sistem & custom beserta permission-nya."
           actions={newButton}
         />
-      )}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{roles.length} role aktif · role sistem (label "System") tidak bisa diubah atau dihapus</p>
-        {embedded && newButton}
       </div>
       {loading ? <LoadingState rows={6} /> : (
         roles.length === 0 ? <EmptyState title="Belum ada role" /> : (

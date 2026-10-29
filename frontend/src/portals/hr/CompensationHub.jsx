@@ -16,7 +16,7 @@
 import { useSearchParams } from "react-router-dom";
 import { DollarSign, Receipt, Gift, Ticket, Coffee, Wallet, PiggyBank } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import PayrollList from "./PayrollList";
 import ServiceChargeList from "./ServiceChargeList";
@@ -47,28 +47,30 @@ export default function CompensationHub() {
   const setTab = (id) => setSearchParams({ tab: id }, { replace: true });
 
   return (
-    <div data-testid="compensation-hub">
-      <PageHeader
-        icon={activeTab.icon}
-        title="Compensation"
-        subtitle={activeTab.desc}
-        actions={<InlineHelp id="hr-compensation-hub" size="sm" />}
-      />
-      <Tabs value={activeTab.id} onValueChange={setTab}>
-        <TabsList data-testid="comp-tabs">
-          {tabs.map(t => {
-            const Icon = t.icon;
-            return (
-              <TabsTrigger key={t.id} value={t.id} data-testid={`comp-tab-${t.id}`}>
-                <Icon /> {t.name}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-        <TabsContent value={activeTab.id} data-testid={`comp-content-${activeTab.id}`}>
-          {activeTab.render()}
-        </TabsContent>
-      </Tabs>
-    </div>
+    <HubHeaderProvider>
+      <div data-testid="compensation-hub">
+        <PageHeader hub
+          icon={activeTab.icon}
+          title="Compensation"
+          subtitle={activeTab.desc}
+          actions={<InlineHelp id="hr-compensation-hub" size="sm" />}
+        />
+        <Tabs value={activeTab.id} onValueChange={setTab}>
+          <TabsList data-testid="comp-tabs">
+            {tabs.map(t => {
+              const Icon = t.icon;
+              return (
+                <TabsTrigger key={t.id} value={t.id} data-testid={`comp-tab-${t.id}`}>
+                  <Icon /> {t.name}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          <TabsContent value={activeTab.id} data-testid={`comp-content-${activeTab.id}`}>
+            {activeTab.render()}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </HubHeaderProvider>
   );
 }

@@ -22,9 +22,7 @@ export default function NumberSeries({ embedded = false } = {}) {
 
   return (
     <div className="space-y-3" data-testid="number-series-page">
-      {!embedded && (
-        <PageHeader icon={Hash} title="Number Series" subtitle="Format penomoran dokumen otomatis per jenis dokumen." />
-      )}
+      <PageHeader icon={Hash} title="Number Series" subtitle="Format penomoran dokumen otomatis per jenis dokumen." />
       <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5">
         Nomor dokumen dibuat otomatis mengikuti format di bawah (hanya-baca).
         <InlineHelp id="number-series-format" size="xs" placement="right" />

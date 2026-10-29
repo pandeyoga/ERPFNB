@@ -2,10 +2,10 @@
  * CMSPendingReviews — Sprint I: Review queue dashboard
  * Shows all content types awaiting review + quick approve/reject actions.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle, RefreshCw, Loader2, Globe, Newspaper, Tag, UtensilsCrossed, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import EmptyState from "@/components/shared/EmptyState";
@@ -74,19 +74,17 @@ export default function CMSPendingReviews() {
 
   return (
     <div className="space-y-3" data-testid="cms-pending-reviews">
-      {/* Toolbar: deskripsi + filter tipe + muat ulang (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground flex items-center gap-2">
-          Konten yang menunggu persetujuan editor.
-          {total > 0 && (
-            <Badge className="bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30">{total} menunggu</Badge>
-          )}
-        </p>
-        <Button variant="outline" onClick={load} disabled={loading} data-testid="reviews-refresh">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Muat ulang
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Pending reviews"
+        subtitle={`Konten yang menunggu persetujuan editor${total > 0 ? ` — ${total} menunggu` : ""}.`}
+        actions={<>
+          <Button variant="outline" onClick={load} disabled={loading} data-testid="reviews-refresh">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Muat ulang
+          </Button>
+        </>}
+      />
 
       {/* Type Filter */}
       <SegmentedFilter

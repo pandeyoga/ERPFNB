@@ -7,7 +7,7 @@
  */
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingBag, Wallet, Sparkles, Award, CalendarDays, Settings2, Shield } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScopePicker from "@/components/shared/ScopePicker";
 
@@ -28,31 +28,33 @@ export default function ConfigurationLayout() {
   const active = SUB.find((r) => current === r.path || current.startsWith(`${r.path}/`))?.path;
 
   return (
-    <div className="space-y-3" data-testid="admin-configuration-page">
-      <PageHeader
-        icon={Settings2}
-        title="Business Rules"
-        subtitle="Atur aturan operasional tanpa tim teknis. Setiap aturan punya scope dan periode berlaku."
-      />
+    <HubHeaderProvider>
+      <div className="space-y-3" data-testid="admin-configuration-page">
+        <PageHeader hub
+          icon={Settings2}
+          title="Business Rules"
+          subtitle="Atur aturan operasional tanpa tim teknis. Setiap aturan punya scope dan periode berlaku."
+        />
 
-      <Tabs value={active || ""} onValueChange={(v) => navigate(`${base}/${v}${location.search}`)}>
-        <TabsList data-testid="config-tabs">
-          {SUB.map((r) => {
-            const Icon = r.icon;
-            return (
-              <TabsTrigger key={r.path} value={r.path} title={r.hint} data-testid={`config-tab-${r.path}`}>
-                <Icon /> {r.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+        <Tabs value={active || ""} onValueChange={(v) => navigate(`${base}/${v}${location.search}`)}>
+          <TabsList data-testid="config-tabs">
+            {SUB.map((r) => {
+              const Icon = r.icon;
+              return (
+                <TabsTrigger key={r.path} value={r.path} title={r.hint} data-testid={`config-tab-${r.path}`}>
+                  <Icon /> {r.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
-      <div className="glass-card p-3 sticky top-2 z-20 backdrop-blur-md">
-        <ScopePicker />
+        <div className="glass-card p-3 sticky top-2 z-20 backdrop-blur-md">
+          <ScopePicker />
+        </div>
+
+        <Outlet />
       </div>
-
-      <Outlet />
-    </div>
+    </HubHeaderProvider>
   );
 }

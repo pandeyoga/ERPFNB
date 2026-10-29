@@ -103,13 +103,11 @@ export default function POComparison({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="po-comparison-page">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={ShoppingCart}
           title="PO Comparison"
           subtitle="Bandingkan harga per item di beberapa Purchase Order (maks. 4) secara berdampingan."
         />
-      )}
 
       {/* Filters + PO picker */}
       <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="po-cmp-filters">

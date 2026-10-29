@@ -115,16 +115,8 @@ export default function PeriodCompare({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="period-compare-page">
-      {!embedded && (
-        <PageHeader icon={GitCompareArrows} title="Period Compare" subtitle={subtitle} actions={refreshBtn} className="mb-0 md:mb-0" />
-      )}
+      <PageHeader icon={GitCompareArrows} title="Period Compare" subtitle={subtitle} actions={refreshBtn} className="mb-0 md:mb-0" />
       <div className="glass-card p-4" data-testid="period-compare-controls">
-        {embedded && (
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
-            <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-            {refreshBtn}
-          </div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
           <div>
             <div className="text-xs md:text-sm font-medium mb-2">Metrik</div>

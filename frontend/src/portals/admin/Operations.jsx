@@ -9,7 +9,7 @@
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Activity } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 
 import MetricsView from "./operations/MetricsView";
 import LogsView from "./operations/LogsView";
@@ -49,38 +49,40 @@ export default function Operations() {
   const tabValue = activePage.path || "index";
 
   return (
-    <div data-testid="operations-page">
-      <PageHeader
-        icon={Activity}
-        title="Monitoring"
-        subtitle="Metrics, logs, scheduler, archival, rate limit, laporan terjadwal, manajemen data, dan tour analytics."
-      />
+    <HubHeaderProvider>
+      <div data-testid="operations-page">
+        <PageHeader hub
+          icon={Activity}
+          title="Monitoring"
+          subtitle="Metrics, logs, scheduler, archival, rate limit, laporan terjadwal, manajemen data, dan tour analytics."
+        />
 
-      <Tabs
-        value={tabValue}
-        onValueChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
-      >
-        <TabsList data-testid="operations-tabs">
-          {SUB_PAGES.map((page) => (
-            <TabsTrigger
-              key={page.path || "index"}
-              value={page.path || "index"}
-              data-testid={`operations-tab-${page.tid}`}
-            >
-              {page.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+        <Tabs
+          value={tabValue}
+          onValueChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
+        >
+          <TabsList data-testid="operations-tabs">
+            {SUB_PAGES.map((page) => (
+              <TabsTrigger
+                key={page.path || "index"}
+                value={page.path || "index"}
+                data-testid={`operations-tab-${page.tid}`}
+              >
+                {page.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      {/* Render active component with key to force remount on navigation */}
-      <div
-        key={tabValue}
-        className="mt-3"
-        data-testid={`operations-content-${activePage.tid}`}
-      >
-        {activePage.render()}
+        {/* Render active component with key to force remount on navigation */}
+        <div
+          key={tabValue}
+          className="mt-3"
+          data-testid={`operations-content-${activePage.tid}`}
+        >
+          {activePage.render()}
+        </div>
       </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

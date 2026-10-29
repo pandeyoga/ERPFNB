@@ -2,6 +2,7 @@
  * Media Library Page
  * Browse, upload, and manage images in the CMS media library.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Upload, Search, Trash2, Copy, CheckCircle2, Loader2,
@@ -184,41 +185,42 @@ export default function MediaLibrary() {
 
   return (
     <div className="space-y-3" data-testid="cms-media-page">
-      {/* Toolbar: ringkasan + aksi (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">{total} file tersimpan</p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label="Muat ulang media library"
-            title="Muat ulang"
-            onClick={() => load(page, search)}
-            disabled={loading}
-            data-testid="media-refresh-btn"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </Button>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            data-testid="media-upload-btn"
-          >
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            Unggah
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            multiple
-            className="hidden"
-            onChange={handleUpload}
-            disabled={uploading}
-            aria-label="Pilih file media"
-          />
-        </div>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Media library"
+        subtitle={<>{total} file tersimpan</>}
+        actions={<>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Muat ulang media library"
+              title="Muat ulang"
+              onClick={() => load(page, search)}
+              disabled={loading}
+              data-testid="media-refresh-btn"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            </Button>
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              data-testid="media-upload-btn"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Unggah
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              multiple
+              className="hidden"
+              onChange={handleUpload}
+              disabled={uploading}
+              aria-label="Pilih file media"
+            />
+        </>}
+      />
 
       {/* Search + view toggle */}
       <div className="flex items-center gap-3">

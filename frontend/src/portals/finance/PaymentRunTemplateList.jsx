@@ -66,14 +66,7 @@ export default function PaymentRunTemplateList({ embedded = false }) {
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="prn-template-list-page">
       <div data-testid="prn-template-toolbar">
-        {embedded ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
-          </div>
-        ) : (
-          <PageHeader icon={ClipboardList} title="Payment Run Templates" subtitle={subtitle} actions={actions} />
-        )}
+        <PageHeader icon={ClipboardList} title="Payment Run Templates" subtitle={subtitle} actions={actions} />
       </div>
 
       {loading && <LoadingState rows={4} />}

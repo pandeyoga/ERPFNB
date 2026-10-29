@@ -3,6 +3,7 @@
  * PageBuilder — Sprint L: Flexible content page builder
  * Block-based custom pages with multiple block types.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import {
   Plus, Trash2, Edit2, Eye, EyeOff, Globe, Loader2, ChevronUp, ChevronDown,
@@ -156,13 +157,16 @@ export default function PageBuilder() {
 
   return (
     <div className="space-y-3" data-testid="cms-page-builder">
-      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">Buat halaman kustom dengan blok konten yang fleksibel.</p>
-        <Button onClick={openCreate} data-testid="create-page-btn">
-          <Plus className="h-4 w-4" /> Buat Halaman Baru
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Page builder"
+        subtitle="Buat halaman kustom dengan blok konten yang fleksibel."
+        actions={<>
+          <Button onClick={openCreate} data-testid="create-page-btn">
+            <Plus className="h-4 w-4" /> Buat Halaman Baru
+          </Button>
+        </>}
+      />
 
       {/* Page list */}
       {loading ? (

@@ -85,19 +85,17 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="budget-vs-actual">
-      {!embedded && (
-        <PageHeader
-          icon={Target}
-          title="Budget vs Actual"
-          subtitle="Perbandingan budget vs realisasi per periode"
-          className="mb-0 md:mb-0"
-          actions={(
-            <Button variant="outline" onClick={goManage} data-testid="manage-budgets-btn">
-              <Settings2 /> Kelola Budget
-            </Button>
-          )}
-        />
-      )}
+      <PageHeader
+        icon={Target}
+        title="Budget vs Actual"
+        subtitle="Perbandingan budget vs realisasi per periode"
+        className="mb-0 md:mb-0"
+        actions={(
+          <Button variant="outline" onClick={goManage} data-testid="manage-budgets-btn">
+            <Settings2 /> Kelola Budget
+          </Button>
+        )}
+      />
 
       <Card>
         <CardContent className="p-3">

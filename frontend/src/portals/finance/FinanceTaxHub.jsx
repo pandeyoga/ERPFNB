@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Receipt, Users, Briefcase, Building, FileText, ScrollText, FileCheck } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import TaxCenter from "./TaxCenter";
@@ -45,31 +45,33 @@ export default function FinanceTaxHub() {
   const ActiveComponent = active.component;
 
   return (
-    <div data-testid="finance-tax-hub">
-      <PageHeader
-        icon={FileCheck}
-        title="Tax & Compliance"
-        subtitle="Konfigurasi PPN & PPh, kalkulator pemotongan, dan ekspor e-Faktur / e-Bupot ke DJP"
-      />
+    <HubHeaderProvider>
+      <div data-testid="finance-tax-hub">
+        <PageHeader hub
+          icon={FileCheck}
+          title="Tax & Compliance"
+          subtitle="Konfigurasi PPN & PPh, kalkulator pemotongan, dan ekspor e-Faktur / e-Bupot ke DJP"
+        />
 
-      <Tabs value={active.id} onValueChange={handleTabChange}>
-        <TabsList data-testid="tax-hub-tabs">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`tax-tab-${tab.id}`}>
-                <Icon />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-        <TabsContent value={active.id} data-testid="tax-hub-content">
-          {active.section
-            ? <TaxCenter embedded section={active.section} />
-            : <ActiveComponent embedded />}
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Tabs value={active.id} onValueChange={handleTabChange}>
+          <TabsList data-testid="tax-hub-tabs">
+            {TABS.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} data-testid={`tax-tab-${tab.id}`}>
+                  <Icon />
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          <TabsContent value={active.id} data-testid="tax-hub-content">
+            {active.section
+              ? <TaxCenter embedded section={active.section} />
+              : <ActiveComponent embedded />}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </HubHeaderProvider>
   );
 }

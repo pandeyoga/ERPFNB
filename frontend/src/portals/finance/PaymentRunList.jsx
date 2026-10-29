@@ -82,14 +82,7 @@ export default function PaymentRunList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="payment-run-list-page">
-      {embedded ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-          <div className="flex flex-wrap items-center gap-2">{actions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={Layers} title="Payment Runs" subtitle={subtitle} actions={actions} />
-      )}
+      <PageHeader icon={Layers} title="Payment Runs" subtitle={subtitle} actions={actions} />
 
       {kpi && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="prn-kpi-strip">

@@ -84,7 +84,7 @@ export default function TransferList({ embedded = false }) {
                   onValueChange={setOutletId}
                   options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
                   placeholder="Semua outlet"
-                  className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
+                  className="glass-input w-44"
                   testId="trf-outlet-filter"
                   ariaLabel="Filter outlet"
                 />

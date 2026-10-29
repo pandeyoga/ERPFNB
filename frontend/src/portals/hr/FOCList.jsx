@@ -68,11 +68,9 @@ export default function FOCList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-foc-page">
-      {!embedded && (
-        <PageHeader icon={Coffee} title="FOC"
+      <PageHeader icon={Coffee} title="FOC"
           subtitle="Pencatatan Free of Charge — staff meal, marketing & kompensasi pelanggan"
           actions={createBtn} />
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3" data-testid="hr-foc-toolbar">
         <div className="flex items-center gap-2 flex-wrap" data-testid="hr-foc-filters">
           <Select value={typeFilter || "all"} onValueChange={(v) => setTypeFilter(v === "all" ? "" : v)}>
@@ -90,7 +88,6 @@ export default function FOCList({ embedded = false }) {
             </SelectContent>
           </Select>
         </div>
-        {embedded && createBtn}
       </div>
 
       <div className="glass-card" data-testid="hr-foc-table-card">

@@ -197,14 +197,7 @@ export default function ARInvoiceList({ embedded = false }) {
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="ar-invoice-list">
       {/* Header */}
-      {embedded ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-          <div className="flex flex-wrap items-center gap-2">{headerActions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={Users} title="AR Invoices" subtitle={subtitle} actions={headerActions} />
-      )}
+      <PageHeader icon={Users} title="AR Invoices" subtitle={subtitle} actions={headerActions} />
 
       {/* KPI Strip */}
       {summary && (

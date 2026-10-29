@@ -96,11 +96,9 @@ export default function IncentiveList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-incentive-page">
-      {!embedded && (
-        <PageHeader icon={Trophy} title="Incentive"
+      <PageHeader icon={Trophy} title="Incentive"
           subtitle="Program insentif & bonus karyawan berbasis scheme"
           actions={primaryAction} />
-      )}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
@@ -111,7 +109,6 @@ export default function IncentiveList({ embedded = false }) {
             {tab === "runs" && <InlineHelp id="hr-incentive-runs" size="sm" />}
             {tab === "schemes" && <InlineHelp id="hr-incentive-schemes" size="sm" />}
           </div>
-          {embedded && <div className="flex items-center gap-2">{primaryAction}</div>}
         </div>
         <TabsContent value="runs">
           <div className="glass-card" data-testid="hr-inc-runs-card">

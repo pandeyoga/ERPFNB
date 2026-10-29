@@ -3,6 +3,7 @@
  * CMS E-Menu — Admin CMS for managing brand menu items, categories, and PDF menus.
  * Uses new admin_menu.py API: /api/admin/cms/menu/items|categories|pdfs|upload-image|upload-pdf
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import { UtensilsCrossed, FileText, Tag, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -39,34 +40,35 @@ export default function CMSMenu() {
 
   return (
     <div className="space-y-3" data-testid="cms-emenu-page">
-      {/* Toolbar: deskripsi seksi + pemilih brand (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-muted-foreground">
-          Kelola menu items, kategori, dan PDF per brand untuk ditampilkan di website.
-        </p>
-        <div className="flex items-center gap-2" data-testid="admin-menu-brand-group">
-          <Label htmlFor="cms-menu-brand" className="text-xs md:text-sm font-medium whitespace-nowrap">Brand</Label>
-          {brandsLoading ? (
-            <Skeleton className="h-9 w-40" />
-          ) : (
-            <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
-              <SelectTrigger id="cms-menu-brand" className="w-44" data-testid="brand-selector">
-                <SelectValue placeholder="Pilih brand..." />
-              </SelectTrigger>
-              <SelectContent>
-                {brands.map(b => (
-                  <SelectItem key={b.id} value={b.id}>
-                    <div className="flex items-center gap-2">
-                      {b.color && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: b.color }} />}
-                      {b.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Menu items"
+        subtitle="Kelola menu items, kategori, dan PDF per brand untuk ditampilkan di website."
+        actions={<>
+          <div className="flex items-center gap-2" data-testid="admin-menu-brand-group">
+            <Label htmlFor="cms-menu-brand" className="text-xs md:text-sm font-medium whitespace-nowrap">Brand</Label>
+            {brandsLoading ? (
+              <Skeleton className="h-9 w-40" />
+            ) : (
+              <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
+                <SelectTrigger id="cms-menu-brand" className="w-44" data-testid="brand-selector">
+                  <SelectValue placeholder="Pilih brand..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {brands.map(b => (
+                    <SelectItem key={b.id} value={b.id}>
+                      <div className="flex items-center gap-2">
+                        {b.color && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: b.color }} />}
+                        {b.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </>}
+      />
 
       {!selectedBrandId && !brandsLoading && (
         <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300">

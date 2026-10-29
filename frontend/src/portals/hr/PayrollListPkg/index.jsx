@@ -110,11 +110,9 @@ export default function PayrollList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-payroll-page">
-      {!embedded && (
-        <PageHeader icon={DollarSign} title="Payroll"
+      <PageHeader icon={DollarSign} title="Payroll"
           subtitle="Siklus penggajian bulanan & salary master karyawan"
           actions={actions} />
-      )}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
@@ -129,7 +127,6 @@ export default function PayrollList({ embedded = false }) {
             {tab === "cycles" && <InlineHelp id="hr-payroll-cycles" size="sm" />}
             {tab === "salary" && <InlineHelp id="hr-salary-master" size="sm" />}
           </div>
-          {embedded && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
         </div>
 
         {/* ─── Cycles Tab ─── */}

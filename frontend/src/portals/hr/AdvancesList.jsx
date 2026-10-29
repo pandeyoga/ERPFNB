@@ -155,11 +155,9 @@ export default function AdvancesList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-advances-page">
-      {!embedded && (
-        <PageHeader icon={Wallet} title="Advances"
+      <PageHeader icon={Wallet} title="Advances"
           subtitle="Kasbon karyawan & jadwal cicilan — dipotong otomatis saat payroll di-post"
           actions={createBtn} />
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
@@ -176,7 +174,6 @@ export default function AdvancesList({ embedded = false }) {
             </SelectContent>
           </Select>
         </div>
-        {embedded && createBtn}
       </div>
 
       <div className="glass-card" data-testid="hr-adv-table-card">

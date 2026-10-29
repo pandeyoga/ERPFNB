@@ -1,6 +1,7 @@
 /**
  * CMS Outlets — Sprint G Admin CMS
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, MapPin, Phone, Loader2, Copy } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -161,13 +162,16 @@ export default function CMSOutlets() {
 
   return (
     <div className="space-y-3" data-testid="cms-outlets-page">
-      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-muted-foreground">Kelola data outlet untuk halaman Lokasi di website.</p>
-        <Button onClick={openCreate} data-testid="create-outlet-btn">
-          <Plus className="h-4 w-4" /> Tambah Outlet
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Outlets"
+        subtitle="Kelola data outlet untuk halaman Lokasi di website."
+        actions={<>
+          <Button onClick={openCreate} data-testid="create-outlet-btn">
+            <Plus className="h-4 w-4" /> Tambah Outlet
+          </Button>
+        </>}
+      />
 
       {/* Search, Brand & Status Filter */}
       <div className="flex gap-3 items-center flex-wrap">

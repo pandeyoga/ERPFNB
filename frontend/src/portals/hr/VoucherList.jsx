@@ -81,11 +81,9 @@ export default function VoucherList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-voucher-page">
-      {!embedded && (
-        <PageHeader icon={Ticket} title="Voucher"
+      <PageHeader icon={Ticket} title="Voucher"
           subtitle="Penerbitan, penukaran & liability voucher"
           actions={issueBtn} />
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
@@ -106,7 +104,6 @@ export default function VoucherList({ embedded = false }) {
                     data-testid="hr-voucher-search" />
           </div>
         </div>
-        {embedded && issueBtn}
       </div>
 
       <div className="glass-card" data-testid="hr-voucher-table-card">

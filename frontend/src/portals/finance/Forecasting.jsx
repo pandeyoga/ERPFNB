@@ -67,7 +67,7 @@ export default function Forecasting({ embedded = false }) {
   }
   useEffect(() => { load(); }, [target, outletId, months, method, historyDays]); // eslint-disable-line
 
-  const header = !embedded && (
+  const header = (
     <PageHeader
       icon={LineChart}
       title="Forecasting"

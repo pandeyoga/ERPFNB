@@ -14,7 +14,7 @@ import {
   Landmark, FileSpreadsheet, CalendarCheck, Wallet, CreditCard,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { useVisibleTabs } from "@/lib/portalGate";
 
 import APAging from "./APAging";
@@ -57,30 +57,32 @@ export default function FinancePaymentsHub() {
   const ActiveComponent = current.component;
 
   return (
-    <div className="space-y-3 lg:space-y-4" data-testid="finance-payments-hub">
-      <PageHeader
-        icon={CreditCard}
-        title="Payments"
-        subtitle="Hutang (AP), pembayaran, payment run, rekonsiliasi bank, posisi kas, dan piutang (AR) dalam satu tempat."
-      />
+    <HubHeaderProvider>
+      <div className="space-y-3 lg:space-y-4" data-testid="finance-payments-hub">
+        <PageHeader hub
+          icon={CreditCard}
+          title="Payments"
+          subtitle="Hutang (AP), pembayaran, payment run, rekonsiliasi bank, posisi kas, dan piutang (AR) dalam satu tempat."
+        />
 
-      <Tabs value={current.id} onValueChange={handleTabChange}>
-        <TabsList data-testid="payments-hub-tabs">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`payments-tab-${tab.id}`}>
-                <Icon />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+        <Tabs value={current.id} onValueChange={handleTabChange}>
+          <TabsList data-testid="payments-hub-tabs">
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} data-testid={`payments-tab-${tab.id}`}>
+                  <Icon />
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
-      <div data-testid="payments-hub-content" role="tabpanel" aria-label={current.label}>
-        <ActiveComponent embedded />
+        <div data-testid="payments-hub-content" role="tabpanel" aria-label={current.label}>
+          <ActiveComponent embedded />
+        </div>
       </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

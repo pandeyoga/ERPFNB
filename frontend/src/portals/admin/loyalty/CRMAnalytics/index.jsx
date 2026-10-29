@@ -240,14 +240,7 @@ export default function CRMAnalytics({ embedded = false }) {
   return (
     <div className="space-y-3" data-testid="crm-analytics">
       {/* Header */}
-      {embedded ? (
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="text-sm text-muted-foreground">{intro}</p>
-          {refreshBtn}
-        </div>
-      ) : (
-        <PageHeader icon={BarChart2} title="CRM Analytics" subtitle={intro} actions={refreshBtn} />
-      )}
+      <PageHeader icon={BarChart2} title="CRM Analytics" subtitle={intro} actions={refreshBtn} />
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList data-testid="crm-analytics-tabs">

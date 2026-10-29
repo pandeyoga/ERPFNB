@@ -122,20 +122,13 @@ export default function BrandMixOverview({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="brand-mix-overview">
-      {embedded ? (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs md:text-sm text-muted-foreground">Performa antar-brand dalam grup FnB Group</p>
-          {periodSelect}
-        </div>
-      ) : (
-        <PageHeader
+      <PageHeader
           icon={BarChart3}
           title="Brand Mix"
           subtitle="Performa antar-brand dalam grup FnB Group"
           className="mb-0 md:mb-0"
           actions={periodSelect}
         />
-      )}
 
       {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

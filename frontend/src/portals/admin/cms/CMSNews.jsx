@@ -1,6 +1,7 @@
 /**
  * CMS News & Events — Sprint G + Sprint I-L (Workflow + Bulk Ops)
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import {
   Plus, Edit2, Trash2, Newspaper, Eye, EyeOff, Loader2, History, Copy, ExternalLink,
@@ -158,13 +159,16 @@ export default function CMSNews() {
 
   return (
     <div className="space-y-3" data-testid="cms-news-page">
-      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">Kelola artikel, berita, dan event untuk website compro.</p>
-        <Button onClick={openCreate} data-testid="create-news-btn">
-          <Plus className="h-4 w-4" /> Tambah Artikel
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="News & events"
+        subtitle="Kelola artikel, berita, dan event untuk website compro."
+        actions={<>
+          <Button onClick={openCreate} data-testid="create-news-btn">
+            <Plus className="h-4 w-4" /> Tambah Artikel
+          </Button>
+        </>}
+      />
 
       {/* Search and Filters */}
       <div className="flex gap-3 items-center flex-wrap">

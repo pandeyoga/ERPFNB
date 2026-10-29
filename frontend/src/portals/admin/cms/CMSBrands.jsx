@@ -1,6 +1,7 @@
 /**
  * CMS Brands — Sprint G + I + Sprint I-L (Workflow + Bulk Ops)
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, Image, Globe,
@@ -199,13 +200,16 @@ export default function CMSBrands() {
 
   return (
     <div className="space-y-3" data-testid="cms-brands-page">
-      {/* Toolbar: deskripsi seksi + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">Kelola konten brand untuk halaman publik compro.</p>
-        <Button onClick={openCreate} data-testid="create-brand-btn">
-          <Plus className="h-4 w-4" /> Tambah Brand
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Brands"
+        subtitle="Kelola konten brand untuk halaman publik compro."
+        actions={<>
+          <Button onClick={openCreate} data-testid="create-brand-btn">
+            <Plus className="h-4 w-4" /> Tambah Brand
+          </Button>
+        </>}
+      />
 
       {/* Search and Filter */}
       <div className="flex gap-3 items-center flex-wrap">

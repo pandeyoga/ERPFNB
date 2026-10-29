@@ -84,13 +84,11 @@ export default function LoyaltyAdminCustomers({ embedded = false }) {
 
   return (
     <div className="space-y-3" data-testid="admin-loyalty-customers">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={Users}
           title="Customers"
           subtitle="Daftar member loyalty: saldo poin, tier, dan status."
         />
-      )}
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[240px]">

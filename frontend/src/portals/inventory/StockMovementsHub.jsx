@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/auth";
 import { permitted, useVisibleTabs } from "@/lib/portalGate";
 import { REPORT_CENTER_PERMS } from "@/lib/portals";
 import { Button } from "@/components/ui/button";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Movements from "./Movements";
 import TransferList from "./TransferList";
@@ -42,38 +42,40 @@ export default function StockMovementsHub() {
   const setTab = (id) => setSearchParams({ type: id }, { replace: true });
 
   return (
-    <div className="space-y-3 lg:space-y-4" data-testid="stock-movements-hub">
-      <PageHeader
-        icon={activeTab.icon}
-        title="Stock Movements"
-        subtitle={activeTab.desc}
-        className="mb-0 md:mb-0"
-        actions={activeTab.id === "history" && permitted(user, REPORT_CENTER_PERMS) ? (
-          // Ekspor Excel riwayat pergerakan ada di Report Center (/reports/stock-movement).
-          <Button asChild variant="outline" data-testid="mov-export-link">
-            <Link to="/reports/stock-movement"><FileSpreadsheet /> Ekspor Excel</Link>
-          </Button>
-        ) : null}
-      />
+    <HubHeaderProvider>
+      <div className="space-y-3 lg:space-y-4" data-testid="stock-movements-hub">
+        <PageHeader hub
+          icon={activeTab.icon}
+          title="Stock Movements"
+          subtitle={activeTab.desc}
+          className="mb-0 md:mb-0"
+          actions={activeTab.id === "history" && permitted(user, REPORT_CENTER_PERMS) ? (
+            // Ekspor Excel riwayat pergerakan ada di Report Center (/reports/stock-movement).
+            <Button asChild variant="outline" data-testid="mov-export-link">
+              <Link to="/reports/stock-movement"><FileSpreadsheet /> Ekspor Excel</Link>
+            </Button>
+          ) : null}
+        />
 
-      <Tabs value={activeTab.id} onValueChange={setTab}>
-        <TabsList data-testid="movements-tabs" aria-label="Jenis pergerakan stok">
-          {tabs.map(t => {
-            const Icon = t.icon;
-            return (
-              <TabsTrigger key={t.id} value={t.id} data-testid={`mov-tab-${t.id}`}>
-                <Icon /> {t.name}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+        <Tabs value={activeTab.id} onValueChange={setTab}>
+          <TabsList data-testid="movements-tabs" aria-label="Jenis pergerakan stok">
+            {tabs.map(t => {
+              const Icon = t.icon;
+              return (
+                <TabsTrigger key={t.id} value={t.id} data-testid={`mov-tab-${t.id}`}>
+                  <Icon /> {t.name}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
-      <div data-testid={`movements-content-${activeTab.id}`}>
-        {activeTab.id === "history" && <Movements />}
-        {activeTab.id === "transfers" && <TransferList embedded />}
-        {activeTab.id === "adjustments" && <AdjustmentList embedded />}
+        <div data-testid={`movements-content-${activeTab.id}`}>
+          {activeTab.id === "history" && <Movements />}
+          {activeTab.id === "transfers" && <TransferList embedded />}
+          {activeTab.id === "adjustments" && <AdjustmentList embedded />}
+        </div>
       </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

@@ -2,6 +2,7 @@
  * CMSCareers.jsx — Sprint Compro-Next
  * Admin management of job listings: create, edit, toggle active/inactive
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import {
   Plus, Edit2, Power, PowerOff, Search, RefreshCw, Loader2, Briefcase,
@@ -151,15 +152,16 @@ export default function CMSCareers() {
 
   return (
     <div className="space-y-3" data-testid="cms-careers">
-      {/* Toolbar: ringkasan + aksi utama (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-muted-foreground">
-          {total} lowongan total &mdash; {activeCount} aktif &mdash; tampil di halaman Careers publik
-        </p>
-        <Button onClick={openCreate} data-testid="new-job-btn">
-          <Plus className="h-4 w-4" /> Lowongan Baru
-        </Button>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Careers"
+        subtitle={<>{total} lowongan total &mdash; {activeCount} aktif &mdash; tampil di halaman Careers publik</>}
+        actions={<>
+          <Button onClick={openCreate} data-testid="new-job-btn">
+            <Plus className="h-4 w-4" /> Lowongan Baru
+          </Button>
+        </>}
+      />
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">

@@ -18,7 +18,7 @@ import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import VendorComparisonPanel from "@/components/shared/VendorComparisonPanel";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import { useVisibleTabs } from "@/lib/portalGate";
 import { toast } from "sonner";
@@ -44,38 +44,40 @@ export default function VendorComparison() {
   const [days, setDays] = useState(180);
 
   return (
-    <div className="space-y-3 lg:space-y-4" data-testid="vendor-comparison-page">
-      <PageHeader
-        icon={Scale}
-        title="Vendor Comparison"
-        subtitle="Bandingkan harga per item lintas vendor, atau beberapa PO berdampingan."
-        actions={active.id === "items" ? (
-          <SimpleSelect
-            value={days}
-            onValueChange={(v) => setDays(Number(v))}
-            options={DAY_OPTIONS}
-            ariaLabel="Periode"
-            className="glass-input w-[170px]"
-            testId="vc-days"
-          />
-        ) : null}
-      />
+    <HubHeaderProvider>
+      <div className="space-y-3 lg:space-y-4" data-testid="vendor-comparison-page">
+        <PageHeader hub
+          icon={Scale}
+          title="Vendor Comparison"
+          subtitle="Bandingkan harga per item lintas vendor, atau beberapa PO berdampingan."
+          actions={active.id === "items" ? (
+            <SimpleSelect
+              value={days}
+              onValueChange={(v) => setDays(Number(v))}
+              options={DAY_OPTIONS}
+              ariaLabel="Periode"
+              className="glass-input w-[170px]"
+              testId="vc-days"
+            />
+          ) : null}
+        />
 
-      <Tabs value={active.id} onValueChange={(id) => setSearchParams({ tab: id }, { replace: true })}>
-        {tabs.length > 1 && (
-          <TabsList aria-label="Jenis perbandingan" data-testid="vc-tabs">
-            {tabs.map(({ id, label, icon: Icon }) => (
-              <TabsTrigger key={id} value={id} data-testid={`vc-tab-${id}`}>
-                <Icon /> {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        )}
-        <TabsContent value={active.id} className="space-y-3 lg:space-y-4">
-          {active.id === "po" ? <POComparison embedded /> : <ItemComparison days={days} />}
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Tabs value={active.id} onValueChange={(id) => setSearchParams({ tab: id }, { replace: true })}>
+          {tabs.length > 1 && (
+            <TabsList aria-label="Jenis perbandingan" data-testid="vc-tabs">
+              {tabs.map(({ id, label, icon: Icon }) => (
+                <TabsTrigger key={id} value={id} data-testid={`vc-tab-${id}`}>
+                  <Icon /> {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          )}
+          <TabsContent value={active.id} className="space-y-3 lg:space-y-4">
+            {active.id === "po" ? <POComparison embedded /> : <ItemComparison days={days} />}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </HubHeaderProvider>
   );
 }
 

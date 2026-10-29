@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Star, Users, Gift, Ticket, BarChart3 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 
 import LoyaltyAdminHome from "./LoyaltyAdminHome";
 import LoyaltyAdminCustomers from "./LoyaltyAdminCustomers";
@@ -45,30 +45,32 @@ export default function LoyaltyHub() {
   const ActiveComponent = current.component;
 
   return (
-    <div data-testid="loyalty-hub">
-      <PageHeader
-        icon={Star}
-        title="Loyalty Program"
-        subtitle="Member, katalog reward, penukaran poin, dan analitik CRM dalam satu tempat."
-      />
+    <HubHeaderProvider>
+      <div data-testid="loyalty-hub">
+        <PageHeader hub
+          icon={Star}
+          title="Loyalty Program"
+          subtitle="Member, katalog reward, penukaran poin, dan analitik CRM dalam satu tempat."
+        />
 
-      <Tabs value={current.id} onValueChange={handleTabChange}>
-        <TabsList data-testid="loyalty-hub-tabs">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`loyalty-tab-${tab.id}`}>
-                <Icon />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
+        <Tabs value={current.id} onValueChange={handleTabChange}>
+          <TabsList data-testid="loyalty-hub-tabs">
+            {TABS.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} data-testid={`loyalty-tab-${tab.id}`}>
+                  <Icon />
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
-      <div className="mt-3" data-testid="loyalty-hub-content" role="tabpanel">
-        <ActiveComponent embedded />
+        <div className="mt-3" data-testid="loyalty-hub-content" role="tabpanel">
+          <ActiveComponent embedded />
+        </div>
       </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

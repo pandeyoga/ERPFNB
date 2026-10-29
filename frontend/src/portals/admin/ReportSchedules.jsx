@@ -198,14 +198,7 @@ export default function ReportSchedules({ embedded = false }) {
 
   return (
     <div className="space-y-3" data-testid="report-schedules-page">
-      {embedded ? (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-muted-foreground">{intro}</p>
-          <div className="flex gap-2">{headerActions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={CalendarDays} title="Report Schedules" subtitle={intro} actions={headerActions} />
-      )}
+      <PageHeader icon={CalendarDays} title="Report Schedules" subtitle={intro} actions={headerActions} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList data-testid="report-schedules-tabs">

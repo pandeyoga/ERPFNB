@@ -157,14 +157,7 @@ export default function TourAnalytics({ embedded = false }) {
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="tour-analytics-page">
       {/* Header */}
-      {embedded ? (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-muted-foreground">{intro}</p>
-          <div className="flex gap-2">{headerActions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={BarChart3} title="Tour Analytics" subtitle={intro} actions={headerActions} />
-      )}
+      <PageHeader icon={BarChart3} title="Tour Analytics" subtitle={intro} actions={headerActions} />
 
       {/* Global KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-testid="ta-global-kpis">

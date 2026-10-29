@@ -283,14 +283,12 @@ export default function LoyaltyAdminRewards({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="admin-loyalty-rewards">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={Gift}
           title="Rewards Catalog"
           subtitle="Katalog reward yang bisa ditukar member dengan poin."
           actions={newRewardBtn}
         />
-      )}
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -336,7 +334,6 @@ export default function LoyaltyAdminRewards({ embedded = false }) {
         <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="rewards-refresh">
           <RefreshCw className="h-3.5 w-3.5" />
         </Button>
-        {embedded && newRewardBtn}
       </div>
 
       {/* Grid */}

@@ -86,14 +86,12 @@ export default function Users({ embedded = false } = {}) {
   return (
     <div className="space-y-3" data-testid="users-page">
       {/* Halaman mandiri (/admin/users) punya judul sendiri; di dalam hub "Users & Roles" judul dari hub */}
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={Users2}
           title="Users"
           subtitle="Akun user ERP, role, dan akses outlet/brand."
           actions={newButton}
         />
-      )}
 
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -108,7 +106,6 @@ export default function Users({ embedded = false } = {}) {
             data-testid="users-search"
           />
         </div>
-        {embedded && newButton}
       </div>
 
       {/* Legend */}

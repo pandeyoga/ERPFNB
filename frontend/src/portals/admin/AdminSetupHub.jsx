@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Hash, Calculator, Upload, Wrench } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import NumberSeries from "./NumberSeries";
@@ -39,34 +39,36 @@ export default function AdminSetupHub() {
   const current = TABS.some((t) => t.id === activeTab) ? activeTab : TABS[0].id;
 
   return (
-    <div data-testid="admin-setup-hub">
-      <PageHeader
-        icon={Wrench}
-        title="Setup & Numbering"
-        subtitle="Penomoran dokumen, status pajak, dan import master data massal."
-      />
+    <HubHeaderProvider>
+      <div data-testid="admin-setup-hub">
+        <PageHeader hub
+          icon={Wrench}
+          title="Setup & Numbering"
+          subtitle="Penomoran dokumen, status pajak, dan import master data massal."
+        />
 
-      <Tabs value={current} onValueChange={handleTabChange}>
-        <TabsList data-testid="setup-hub-tabs">
+        <Tabs value={current} onValueChange={handleTabChange}>
+          <TabsList data-testid="setup-hub-tabs">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} data-testid={`setup-tab-${tab.id}`}>
+                  <Icon /> {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
           {TABS.map((tab) => {
-            const Icon = tab.icon;
+            const Comp = tab.component;
             return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`setup-tab-${tab.id}`}>
-                <Icon /> {tab.label}
-              </TabsTrigger>
+              <TabsContent key={tab.id} value={tab.id} data-testid="setup-hub-content">
+                <Comp embedded />
+              </TabsContent>
             );
           })}
-        </TabsList>
-
-        {TABS.map((tab) => {
-          const Comp = tab.component;
-          return (
-            <TabsContent key={tab.id} value={tab.id} data-testid="setup-hub-content">
-              <Comp embedded />
-            </TabsContent>
-          );
-        })}
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </HubHeaderProvider>
   );
 }

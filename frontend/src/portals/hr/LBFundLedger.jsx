@@ -28,10 +28,8 @@ export default function LBFundLedger({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-lb-fund-page">
-      {!embedded && (
-        <PageHeader icon={PiggyBank} title="LB Fund"
+      <PageHeader icon={PiggyBank} title="LB Fund"
           subtitle="Buku besar dana Loss & Breakage — saldo berjalan dari service charge L&B" />
-      )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4" data-testid="lb-fund-kpi-strip">
         <div data-testid="lb-fund-kpi-balance">
           <CompactStatCard label="Saldo Berjalan" value={fmtRp(meta.balance ?? 0)} loading={loading}

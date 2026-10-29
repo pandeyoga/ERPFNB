@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BarChart3, Settings2, LineChart, Target } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import BudgetVsActual from "./BudgetVsActual";
@@ -40,29 +40,31 @@ export default function BudgetHub() {
   const ActiveComponent = active.component;
 
   return (
-    <div data-testid="finance-budget-hub">
-      <PageHeader
-        icon={Target}
-        title="Budget"
-        subtitle="Bandingkan anggaran vs realisasi, kelola budget per COA, dan proyeksikan tren"
-      />
+    <HubHeaderProvider>
+      <div data-testid="finance-budget-hub">
+        <PageHeader hub
+          icon={Target}
+          title="Budget"
+          subtitle="Bandingkan anggaran vs realisasi, kelola budget per COA, dan proyeksikan tren"
+        />
 
-      <Tabs value={active.id} onValueChange={handleTabChange}>
-        <TabsList data-testid="budget-hub-tabs">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`budget-tab-${tab.id}`}>
-                <Icon />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-        <TabsContent value={active.id} data-testid="budget-hub-content">
-          <ActiveComponent embedded onSwitchTab={handleTabChange} />
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Tabs value={active.id} onValueChange={handleTabChange}>
+          <TabsList data-testid="budget-hub-tabs">
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.id} value={tab.id} data-testid={`budget-tab-${tab.id}`}>
+                  <Icon />
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          <TabsContent value={active.id} data-testid="budget-hub-content">
+            <ActiveComponent embedded onSwitchTab={handleTabChange} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </HubHeaderProvider>
   );
 }

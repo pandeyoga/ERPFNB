@@ -95,14 +95,12 @@ export default function EBupotExport({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="ebupot-export-page">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={FileSpreadsheet}
           title="e-Bupot PPh 23"
           subtitle="Ekspor data pemotongan PPh 23 dalam format CSV DJP e-Bupot Unifikasi"
           className="mb-0 md:mb-0"
         />
-      )}
 
       <Alert>
         <Info className="h-4 w-4" />

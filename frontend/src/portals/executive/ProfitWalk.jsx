@@ -138,7 +138,8 @@ export default function ProfitWalk({ embedded = false }) {
   ], []);
 
   const subtitle = "Revenue → COGS → GP → OPEX → Service → Net Profit";
-  const controls = (
+  // Filter tingkat halaman = baris polos (tanpa kartu); Muat ulang = aksi layar di header (DESIGN_SYSTEM §10).
+  const filters = (
     <div className="flex items-center gap-2 flex-wrap">
       <Select value={period} onValueChange={setPeriod}>
         <SelectTrigger className="w-[180px]" data-testid="profit-period-select" aria-label="Periode"><SelectValue /></SelectTrigger>
@@ -149,10 +150,12 @@ export default function ProfitWalk({ embedded = false }) {
         <SelectTrigger className="w-[180px]" data-testid="profit-compare-select" aria-label="Periode pembanding"><SelectValue /></SelectTrigger>
         <SelectContent>{PERIODS.map((p) => <SelectItem key={p.v} value={p.v}>{p.l}</SelectItem>)}</SelectContent>
       </Select>
-      <Button variant="outline" onClick={load} data-testid="profit-refresh">
-        <RefreshCw /> Muat ulang
-      </Button>
     </div>
+  );
+  const refreshBtn = (
+    <Button variant="outline" onClick={load} data-testid="profit-refresh">
+      <RefreshCw /> Muat ulang
+    </Button>
   );
   const periodLine = data && (
     <span className="text-xs text-muted-foreground">
@@ -160,20 +163,14 @@ export default function ProfitWalk({ embedded = false }) {
       {data.compare?.label && <> vs <span className="font-mono font-semibold text-foreground">{data.compare.label}</span></>}
     </span>
   );
-  const header = embedded ? (
-    <div className="glass-card p-3 flex items-center justify-between flex-wrap gap-3" data-testid="profit-walk-controls">
-      <div className="min-w-0">
-        <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
+  const header = (
+    <>
+      <PageHeader icon={TrendingUp} title="Profit Walk" subtitle={subtitle} actions={refreshBtn} className="mb-0 md:mb-0" />
+      <div className="flex items-center justify-between flex-wrap gap-3" data-testid="profit-walk-controls">
+        {filters}
         {periodLine}
       </div>
-      {controls}
-    </div>
-  ) : (
-    <div data-testid="profit-walk-controls">
-      <PageHeader icon={TrendingUp} title="Profit Walk" subtitle={subtitle} actions={controls} className="mb-0 md:mb-0">
-        {periodLine}
-      </PageHeader>
-    </div>
+    </>
   );
 
   if (loading || !data) return (

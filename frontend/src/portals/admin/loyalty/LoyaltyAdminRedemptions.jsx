@@ -182,14 +182,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
   return (
     <div className="space-y-3" data-testid="admin-loyalty-redemptions">
       {/* Header */}
-      {embedded ? (
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-          <div className="flex gap-2">{headerActions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={Ticket} title="Redemptions" subtitle={subtitle} actions={headerActions} />
-      )}
+      <PageHeader icon={Ticket} title="Redemptions" subtitle={subtitle} actions={headerActions} />
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">

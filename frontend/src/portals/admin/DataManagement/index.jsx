@@ -59,14 +59,7 @@ export default function DataManagement({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="data-management-page">
-      {embedded ? (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-muted-foreground">{intro}</p>
-          {refreshBtn}
-        </div>
-      ) : (
-        <PageHeader icon={Database} title="Data Management" subtitle={intro} actions={refreshBtn} />
-      )}
+      <PageHeader icon={Database} title="Data Management" subtitle={intro} actions={refreshBtn} />
 
       {loading && !collections ? (
         <div className="flex items-center justify-center h-64">

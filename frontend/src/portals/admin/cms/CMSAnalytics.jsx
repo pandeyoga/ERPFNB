@@ -2,6 +2,7 @@
  * CMSAnalytics — Sprint K: Content Analytics Dashboard
  * Shows page views, top content, daily trends.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useState, useEffect } from "react";
 import { BarChart2, TrendingUp, Eye, RefreshCw, Loader2, Globe, Newspaper, Tag, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,23 +64,24 @@ export default function CMSAnalytics() {
 
   return (
     <div className="space-y-3" data-testid="cms-analytics">
-      {/* Toolbar: deskripsi + periode + muat ulang (judul sudah di PageHeader/tab CMS Studio) */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-muted-foreground">Page views dan performa konten publik.</p>
-        <div className="flex items-center gap-2">
-          <SegmentedFilter
-            value={days}
-            onChange={(v) => setDays(Number(v))}
-            ariaLabel="Periode analytics"
-            testId="cms-analytics-period"
-            options={PERIOD_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
-          />
-          <Button variant="outline" size="icon" onClick={() => load(days)} disabled={loading}
-                  aria-label="Muat ulang" title="Muat ulang" data-testid="cms-analytics-refresh">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          </Button>
-        </div>
-      </div>
+      {/* Di dalam CMS Studio, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Analytics"
+        subtitle="Page views dan performa konten publik."
+        actions={<>
+            <SegmentedFilter
+              value={days}
+              onChange={(v) => setDays(Number(v))}
+              ariaLabel="Periode analytics"
+              testId="cms-analytics-period"
+              options={PERIOD_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+            />
+            <Button variant="outline" size="icon" onClick={() => load(days)} disabled={loading}
+                    aria-label="Muat ulang" title="Muat ulang" data-testid="cms-analytics-refresh">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </Button>
+        </>}
+      />
 
       {loading && !overview ? (
         <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>

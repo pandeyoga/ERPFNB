@@ -111,14 +111,12 @@ export default function EFakturExport({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="efaktur-export">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={FileText}
           title="e-Faktur Export"
           subtitle="Ekspor Faktur Pajak (CSV + XML) format Coretax untuk diunggah ke DJP"
           className="mb-0 md:mb-0"
         />
-      )}
 
       <Card data-testid="export-form-card">
         <CardHeader>

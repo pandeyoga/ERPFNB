@@ -81,11 +81,9 @@ export default function ServiceChargeList({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-service-charge-page">
-      {!embedded && (
-        <PageHeader icon={Receipt} title="Service Charge"
+      <PageHeader icon={Receipt} title="Service Charge"
           subtitle="Distribusi service charge per outlet & periode"
           actions={calcBtn} />
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Label htmlFor="hr-sc-period-filter" className="text-xs md:text-sm font-medium text-muted-foreground">Periode</Label>
@@ -98,7 +96,6 @@ export default function ServiceChargeList({ embedded = false }) {
           )}
           <InlineHelp id="hr-service-charge-list" size="sm" />
         </div>
-        {embedded && calcBtn}
       </div>
 
       <div className="glass-card" data-testid="hr-sc-table-card">

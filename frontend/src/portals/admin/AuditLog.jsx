@@ -48,13 +48,11 @@ export default function AuditLog({ embedded = false } = {}) {
 
   return (
     <div className="space-y-3" data-testid="audit-log-page">
-      {!embedded && (
-        <PageHeader
+      <PageHeader
           icon={ScrollText}
           title="Audit Log"
           subtitle="Jejak aktivitas user: login, create, update, approve, dsb."
         />
-      )}
       <div className="flex flex-wrap items-center gap-2" data-testid="audit-toolbar">
         <Input placeholder="Entitas (mis. auth, daily_sales)" value={q.entity_type}
                aria-label="Filter entitas"

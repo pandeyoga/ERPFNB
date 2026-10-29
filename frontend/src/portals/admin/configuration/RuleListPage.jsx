@@ -3,6 +3,7 @@
  * Renders a table on the left and history panel on the right (lg+).
  * Editor is a child component passed via render prop.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, Sparkles, Pencil, Copy, Archive, Power, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -135,14 +136,11 @@ export default function RuleListPage({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4">
       <div className="lg:col-span-8 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-base md:text-lg font-semibold" data-testid={`${testIdPrefix}-page-title`}>{title}</h2>
-            {description && (
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+        {/* Di dalam Business Rules (hub), PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+        <PageHeader
+          title={title}
+          subtitle={description}
+          actions={<>
             <Button
               variant="outline"
               onClick={seedDefaults}
@@ -159,8 +157,8 @@ export default function RuleListPage({
             >
               <Plus /> Buat Aturan
             </Button>
-          </div>
-        </div>
+          </>}
+        />
 
         <div className="glass-card p-3">
           <div className="flex flex-wrap gap-2">

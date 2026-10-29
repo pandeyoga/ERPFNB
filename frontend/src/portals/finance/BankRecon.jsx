@@ -56,10 +56,8 @@ export default function BankRecon({ embedded = false }) {
   return (
     <div className="space-y-3 lg:space-y-4">
       {/* Standalone: tetap satu <h1> di atas tampilan detail sesi (di hub, <h1> milik hub). */}
-      {!embedded && (
-        <PageHeader icon={Landmark} title="Bank Reconciliation"
+      <PageHeader icon={Landmark} title="Bank Reconciliation"
           subtitle="Review hasil auto-match per baris statement, lalu commit rekonsiliasi." />
-      )}
       <BankReconDetail sessionId={activeId} onBack={() => { setActiveId(null); setView("list"); }} />
     </div>
   );
@@ -132,14 +130,7 @@ function BankReconList({ onOpen, embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="bank-recon-page">
-      {embedded ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-          <div className="flex flex-wrap items-center gap-2">{actions}</div>
-        </div>
-      ) : (
-        <PageHeader icon={Landmark} title="Bank Reconciliation" subtitle={subtitle} actions={actions} />
-      )}
+      <PageHeader icon={Landmark} title="Bank Reconciliation" subtitle={subtitle} actions={actions} />
 
       <div className="glass-card overflow-hidden" data-testid="br-session-table-card">
         <DataTable

@@ -3,7 +3,7 @@
  * Shows live toggle statuses + rates, lets admin enable/disable each type.
  */
 import { useEffect, useState, useCallback } from "react";
-import { Calculator, CheckCircle2, XCircle, ExternalLink, Info, RefreshCw } from "lucide-react";
+import { Calculator, CheckCircle2, XCircle, ExternalLink, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import api, { unwrap } from "@/lib/api";
 import { toast } from "sonner";
@@ -105,11 +105,11 @@ export default function TaxConfig({ embedded = false } = {}) {
     </div>
   );
 
-  const header = !embedded && (
+  const header = (
     <PageHeader
       icon={Calculator}
       title="Tax Config"
-      subtitle="Aktif/nonaktifkan setiap jenis pajak. Konfigurasi lengkap ada di Finance → Pajak."
+      subtitle="Aktif/nonaktifkan setiap jenis pajak. Kalkulator PPh 21, tarif, riwayat & ekspor ada di Finance → Pajak."
       actions={fullConfigLink}
     />
   );
@@ -126,17 +126,6 @@ export default function TaxConfig({ embedded = false } = {}) {
     <div className="space-y-3" data-testid="tax-config-page">
       {header}
 
-      {/* Info + tautan ke konfigurasi lengkap (sebelumnya banner + kartu terpisah yang isinya sama) */}
-      <div className="glass-card p-3 flex items-center justify-between gap-3 flex-wrap" data-testid="tax-config-info-banner">
-        <div className="flex items-start gap-2 min-w-0">
-          <Info className="h-4 w-4 text-sky-700 dark:text-sky-400 mt-0.5 shrink-0" />
-          <p className="text-sm text-muted-foreground">
-            Ringkasan status pajak. Kalkulator PPh 21, tabel tarif PPh 23/4(2), riwayat withholding per periode,
-            dan ekspor ada di Finance → Pajak.
-          </p>
-        </div>
-        {embedded && fullConfigLink}
-      </div>
 
       {/* Tax cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="tax-cards-grid">

@@ -190,20 +190,13 @@ export default function BudgetManagement({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="budget-management">
-      {embedded ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs md:text-sm text-muted-foreground">Kelola budget per COA dan periode, lalu ajukan untuk approval.</p>
-          <div className="flex flex-wrap gap-2">{pageActions}</div>
-        </div>
-      ) : (
-        <PageHeader
+      <PageHeader
           icon={Target}
           title="Budget Management"
-          subtitle="Kelola budget per COA dan periode"
+          subtitle="Kelola budget per COA dan periode, lalu ajukan untuk approval."
           className="mb-0 md:mb-0"
           actions={pageActions}
         />
-      )}
 
       {/* Filter */}
       <Card>

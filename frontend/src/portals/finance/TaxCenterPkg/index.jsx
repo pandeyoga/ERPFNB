@@ -153,7 +153,7 @@ export default function TaxCenter({ embedded = false, section }) {
     }
   }
 
-  const header = !embedded && (
+  const header = (
     <PageHeader
       icon={Calculator}
       title="Tax Center"

@@ -49,10 +49,8 @@ export default function APAging({ embedded = false }) {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="ap-aging-page">
-      {!embedded && (
-        <PageHeader icon={Receipt} title="AP Aging"
+      <PageHeader icon={Receipt} title="AP Aging"
           subtitle="Hutang usaha (GR belum dibayar) per vendor, dikelompokkan per umur jatuh tempo." />
-      )}
 
       <div className="glass-card p-3 flex flex-wrap items-end gap-3" data-testid="ap-toolbar">
         <div className="min-w-[160px]">

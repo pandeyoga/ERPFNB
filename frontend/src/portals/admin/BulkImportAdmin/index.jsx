@@ -184,20 +184,13 @@ export default function BulkImport({ embedded = false } = {}) {
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="bulk-import-page">
       {/* Header — mandiri: PageHeader; di dalam hub "Setup & Numbering": baris ringkas tanpa judul kedua */}
-      {embedded ? (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-sm text-muted-foreground" data-testid="bulk-import-title">{subtitle}</p>
-          {resetButton}
-        </div>
-      ) : (
-        <PageHeader
+      <PageHeader
           icon={FileSpreadsheet}
           title="Bulk Excel Import"
           subtitle={subtitle}
           actions={resetButton}
           testId="bulk-import-title"
         />
-      )}
 
       {/* Progress Steps */}
       <Card data-testid="bulk-import-steps">

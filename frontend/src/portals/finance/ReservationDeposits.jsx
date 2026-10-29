@@ -63,11 +63,7 @@ export default function ReservationDeposits({ embedded = false }) {
 
   return (
     <div data-testid="reservation-deposits-page" className="space-y-3 lg:space-y-4">
-      {embedded ? (
-        <p className="text-xs md:text-sm text-muted-foreground">{subtitle}</p>
-      ) : (
-        <PageHeader icon={CalendarCheck} title="Reservation Deposits" subtitle={subtitle} />
-      )}
+      <PageHeader icon={CalendarCheck} title="Reservation Deposits" subtitle={subtitle} />
 
       {/* Period filter */}
       <div className="flex flex-wrap items-center gap-2">
