@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import { fmtRp } from "@/lib/format";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 
 import { MODE_META, emptyStep, emptyTier } from "./constants";
 import TierEditor from "./TierEditor";
@@ -41,6 +42,7 @@ export default function ApprovalMatrixBuilder() {
   const [selectedEntity, setSelectedEntity] = useState(null);
   const [tiers, setTiers] = useState([]);
   const [wfMeta, setWfMeta] = useState({ name: "", description: "" });
+  const [loadedFor, setLoadedFor] = useState(null); // entitas yang workflow-nya sudah dimuat (dasar penanda perubahan)
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState([]);
@@ -97,11 +99,14 @@ export default function ApprovalMatrixBuilder() {
           setWfMeta({ name: "", description: "" });
         }
         setPreviewResult(null);
+        setLoadedFor(selectedEntity);
       } catch (e) {
         toast.error("Gagal memuat workflow");
       }
     })();
   }, [selectedEntity]);
+
+  const { dirty, markSaved } = useDirtyState({ tiers, wfMeta }, !!selectedEntity && loadedFor === selectedEntity);
 
   const updateTier = (idx, patch) => {
     setTiers((prev) => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
@@ -159,6 +164,7 @@ export default function ApprovalMatrixBuilder() {
         tiers,
       });
       toast.success("Workflow disimpan (versi baru aktif).");
+      markSaved();
       // Refresh entity-types to update has_workflow indicator
       const etRes = await api.get("/admin/approval-matrix/entity-types");
       setEntityTypes(etRes.data.data.items || []);
@@ -227,11 +233,6 @@ export default function ApprovalMatrixBuilder() {
         icon={GitBranch}
         title="Approval Matrix"
         subtitle="Alur approval per entitas dengan 3 mode routing (Permission, Role, User Spesifik); bisa kondisional per outlet/brand."
-        actions={(
-          <Button onClick={save} disabled={saving || !selectedEntity} data-testid="btn-save-workflow">
-            <Save /> {saving ? "Menyimpan…" : "Simpan Workflow"}
-          </Button>
-        )}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-3 lg:gap-4 items-start">
@@ -244,7 +245,7 @@ export default function ApprovalMatrixBuilder() {
             {entityTypes.map((et) => (
               <button
                 key={et.value}
-                onClick={() => setSelectedEntity(et.value)}
+                onClick={async () => { if (et.value === selectedEntity || await confirmDiscard()) setSelectedEntity(et.value); }}
                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedEntity === et.value ? "bg-aurora/10 border-aurora/30" : "border-transparent hover:bg-foreground/5"}`}
                 aria-pressed={selectedEntity === et.value}
                 data-testid={`entity-btn-${et.value}`}
@@ -393,6 +394,13 @@ export default function ApprovalMatrixBuilder() {
               />
             </TabsContent>
           </Tabs>
+
+          {/* Simpan selalu terlihat di bawah, dekat yang sedang diedit (DESIGN_SYSTEM §10.4). */}
+          <FormActionBar dirty={dirty} hint="Menyimpan membuat versi workflow baru yang langsung aktif.">
+            <Button onClick={save} disabled={saving || !selectedEntity || !dirty} data-testid="btn-save-workflow">
+              <Save /> {saving ? "Menyimpan…" : "Simpan Workflow"}
+            </Button>
+          </FormActionBar>
         </div>
       </div>
     </div>

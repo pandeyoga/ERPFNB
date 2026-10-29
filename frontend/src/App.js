@@ -32,6 +32,7 @@ import NotFound from "@/pages/NotFound";
 import MyApprovals from "@/pages/MyApprovals";
 import { REPORT_CENTER_PERMS } from "@/lib/portals";
 import { ConfirmDialogHost } from "@/components/shared/confirmDialog";
+import { UnsavedChangesGuard } from "@/components/shared/UnsavedChanges";
 
 // Loyalty Pages (eagerly loaded — lightweight)
 import LoyaltyRegister from "@/pages/loyalty/LoyaltyRegister";
@@ -138,6 +139,8 @@ export default function App() {
     <ThemeProvider defaultTheme="light" storageKey="aurora-theme">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+          {/* Menahan klik menu/link saat ada perubahan form yang belum disimpan (DESIGN_SYSTEM §10.4). */}
+          <UnsavedChangesGuard />
           <AuthProvider>
             <TourProvider>
               {/* Global top-level error boundary — catches anything that slips through */}

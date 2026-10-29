@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 
 // ─── Page Registry ─────────────────────────────────────────────────────────────
 const PUBLIC_PAGES = [
@@ -75,6 +76,8 @@ export default function SmartSEO() {
   const [showAnalysis, setShowAnalysis] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [aiElapsed, setAiElapsed] = useState(0);
+  const [formFor, setFormFor] = useState(null); // halaman yang isinya sudah dimuat ke form
+  const { dirty, markSaved } = useDirtyState(form, formFor === selected.path);
   const aiTimerRef = useRef(null);
 
   // Start/stop elapsed timer for AI operations
@@ -133,6 +136,7 @@ export default function SmartSEO() {
     }
     setGenerated(null);
     setInputKeywords("");
+    setFormFor(selected.path);
   }, [selected.path, seoMap]); // eslint-disable-line
 
   const handleAnalyze = useCallback(async () => {
@@ -222,11 +226,12 @@ export default function SmartSEO() {
       };
       const r = await api.post("/seo/pages", payload);
       setSeoMap(m => ({ ...m, [selected.path]: r.data?.data }));
+      markSaved();
       toast.success("SEO settings disimpan!");
     } catch (e) {
       toast.error("Gagal menyimpan SEO settings");
     } finally { setSaving(false); }
-  }, [selected, form, analysis]);
+  }, [selected, form, analysis, markSaved]);
 
   const handleApplyGenerated = () => {
     if (!generated) return;
@@ -286,7 +291,7 @@ export default function SmartSEO() {
                 <button
                   key={pg.path}
                   type="button"
-                  onClick={() => setSelected(pg)}
+                  onClick={async () => { if (pg.path === selected.path || await confirmDiscard()) setSelected(pg); }}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left text-sm transition-all",
@@ -318,10 +323,6 @@ export default function SmartSEO() {
             </div>
             <div className="flex items-center gap-2">
               {hasSeoSaved && <Badge className="bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 text-xs"><Check className="w-3 h-3 mr-1" />Tersimpan</Badge>}
-              <Button size="sm" onClick={handleSave} disabled={saving} data-testid="seo-save-btn">
-                {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Simpan
-              </Button>
             </div>
           </div>
 
@@ -664,6 +665,14 @@ export default function SmartSEO() {
               ))}
             </div>
           </div>
+
+          {/* Simpan selalu terlihat di bawah editor (DESIGN_SYSTEM §10.4). */}
+          <FormActionBar dirty={dirty} hint={`SEO untuk ${selected.page_name} (${selected.path})`}>
+            <Button onClick={handleSave} disabled={saving} data-testid="seo-save-btn">
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Simpan
+            </Button>
+          </FormActionBar>
         </div>
       </div>
 

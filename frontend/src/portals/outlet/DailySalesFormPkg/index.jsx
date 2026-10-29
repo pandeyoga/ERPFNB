@@ -23,6 +23,7 @@ import PeriodLockBanner from "@/components/shared/PeriodLockBanner";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import StatusPill from "@/components/shared/StatusPill";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -247,6 +248,8 @@ export default function DailySalesForm() {
     }));
   }
 
+  const { dirty, markSaved } = useDirtyState(form, !loading);
+
   // ----- Save / Submit -----
   async function saveDraftCore({ silent = false } = {}) {
     if (!form.outlet_id || !form.sales_date) {
@@ -279,6 +282,7 @@ export default function DailySalesForm() {
         setForm(f => ({ ...f, id: saved.id, status: saved.status }));
       }
       setAutosaveStatus("saved");
+      markSaved();
       if (!silent) toast.success("Draft disimpan");
       return saved;
     } catch (e) {
@@ -375,7 +379,7 @@ export default function DailySalesForm() {
   return (
     <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto">
       <div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(isEdit ? `/outlet/daily-sales/${id}` : "/outlet/daily-sales")} className="-ml-2 mb-1" data-testid="ds-form-back">
+        <Button variant="ghost" size="sm" onClick={async () => { if (await confirmDiscard()) navigate(isEdit ? `/outlet/daily-sales/${id}` : "/outlet/daily-sales"); }} className="-ml-2 mb-1" data-testid="ds-form-back">
           <ArrowLeft className="h-4 w-4" /> {isEdit ? "Kembali ke detail" : "Kembali ke Daily Sales"}
         </Button>
         <PageHeader
@@ -383,20 +387,6 @@ export default function DailySalesForm() {
           title={isEdit ? "Edit Daily Sales" : "Daily Sales Baru"}
           subtitle="Isi per langkah — draft tersimpan otomatis setiap 5 detik."
           className="mb-0 md:mb-0"
-          actions={
-            <>
-              <Button onClick={() => saveDraftCore()} disabled={!editable || saving}
-                variant="outline"
-                data-testid="ds-save-draft">
-                <Save className="h-4 w-4" /> {saving ? "Menyimpan…" : "Simpan Draft"}
-              </Button>
-              <Button onClick={submitForValidation}
-                disabled={!editable || submitting || !balanced || periodLocked}
-                data-testid="ds-submit">
-                <Send className="h-4 w-4" /> {submitting ? "Mengirim…" : "Submit"}
-              </Button>
-            </>
-          }
         >
           {(form.status || autosaveStatus !== "idle") && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -577,31 +567,26 @@ export default function DailySalesForm() {
         )}
       </div>
 
-      {/* Step nav */}
-      <div className="glass-card p-3 flex items-center justify-between">
-        <Button variant="outline" disabled={stepIdx === 0}
-          onClick={handlePrev}
-          data-testid="ds-step-prev">
+      {/* Navigasi langkah + simpan/submit: satu bar sticky di bawah (DESIGN_SYSTEM §10.4). */}
+      <FormActionBar dirty={dirty && editable} hint={`Langkah ${stepIdx + 1} / ${STEPS.length} — ${STEPS[stepIdx].label}`} testId="ds-step-nav">
+        <Button variant="ghost" disabled={stepIdx === 0} onClick={handlePrev} data-testid="ds-step-prev">
           <ArrowLeft className="h-3.5 w-3.5" /> Sebelumnya
         </Button>
-        <div className="text-xs text-muted-foreground">
-          Langkah {stepIdx + 1} / {STEPS.length} — {STEPS[stepIdx].label}
-        </div>
-        {stepIdx < STEPS.length - 1 ? (
-          <Button onClick={handleNext}
-            disabled={!nextCheck.ok}
-            title={nextCheck.ok ? "" : nextCheck.msg}
-            data-testid="ds-step-next">
+        <Button onClick={() => saveDraftCore()} disabled={!editable || saving} variant="outline" data-testid="ds-save-draft">
+          <Save className="h-4 w-4" /> {saving ? "Menyimpan…" : "Simpan Draft"}
+        </Button>
+        {stepIdx < STEPS.length - 1 && (
+          <Button onClick={handleNext} disabled={!nextCheck.ok} title={nextCheck.ok ? "" : nextCheck.msg} data-testid="ds-step-next">
             Lanjut <ArrowRight className="h-3.5 w-3.5" />
           </Button>
-        ) : (
-          <Button onClick={submitForValidation}
-            disabled={!editable || submitting || !balanced}
-            data-testid="ds-step-submit">
-            <Send className="h-3.5 w-3.5" /> Submit
-          </Button>
         )}
-      </div>
+        <Button onClick={submitForValidation}
+          variant={stepIdx < STEPS.length - 1 ? "outline" : "default"}
+          disabled={!editable || submitting || !balanced || periodLocked}
+          data-testid="ds-submit">
+          <Send className="h-4 w-4" /> {submitting ? "Mengajukan…" : "Ajukan"}
+        </Button>
+      </FormActionBar>
     </div>
   );
 }

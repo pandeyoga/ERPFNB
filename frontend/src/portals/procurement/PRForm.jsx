@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import { Textarea } from "@/components/ui/textarea";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import DataTable from "@/components/shared/DataTable";
@@ -45,6 +46,8 @@ export default function PRForm() {
     lines: [{ item_name: "", item_id: null, qty: 1, unit: "pcs", est_cost: 0, notes: "" }],
     notes: "",
   });
+
+  const { dirty, markSaved } = useDirtyState(form);
 
   // ---- Apply prefill from URL once ----
   useEffect(() => {
@@ -136,6 +139,7 @@ export default function PRForm() {
       const res = await api.post("/procurement/prs", payload);
       const pr = unwrap(res);
       toast.success(submit ? "PR di-submit" : "Draft PR disimpan");
+      markSaved();
       navigate(`/procurement/pr/${pr.id}`);
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal simpan");
@@ -145,7 +149,7 @@ export default function PRForm() {
   return (
     <div className="space-y-3 lg:space-y-4 max-w-5xl mx-auto" data-testid="pr-form-page">
       <div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 mb-1" data-testid="pr-back">
+        <Button variant="ghost" size="sm" onClick={async () => { if (await confirmDiscard()) navigate(-1); }} className="-ml-2 mb-1" data-testid="pr-back">
           <ArrowLeft /> Kembali
         </Button>
         <PageHeader
@@ -153,16 +157,6 @@ export default function PRForm() {
           title="PR Baru"
           subtitle="Ajukan permintaan pembelian. Simpan sebagai draft atau langsung ajukan untuk approval."
           className="mb-0 md:mb-0"
-          actions={
-            <>
-              <Button onClick={() => save(false)} disabled={saving} variant="outline" data-testid="pr-save-draft">
-                <Save /> Simpan draft
-              </Button>
-              <Button onClick={() => save(true)} disabled={saving} data-testid="pr-submit">
-                <Send /> Ajukan PR
-              </Button>
-            </>
-          }
         />
       </div>
 
@@ -178,6 +172,7 @@ export default function PRForm() {
       )}
 
       <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4" data-testid="pr-form-header-card">
+        <h3 className="md:col-span-3 text-sm md:text-base font-semibold leading-[1.3]">Detail permintaan</h3>
         <div className="space-y-1">
           <Label className="text-xs md:text-sm font-medium">Outlet *</Label>
           <SimpleSelect
@@ -203,7 +198,7 @@ export default function PRForm() {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs md:text-sm font-medium">Source</Label>
+          <Label className="text-xs md:text-sm font-medium">Sumber</Label>
           <SimpleSelect
             value={form.source}
             onValueChange={(v) => setForm(f => ({ ...f, source: v }))}
@@ -212,19 +207,19 @@ export default function PRForm() {
               { value: "KDO", label: "KDO (Kebutuhan Direksi/Operasional)" },
               { value: "BDO", label: "BDO (Bahan Direksi/Operasional)" },
             ]}
-            ariaLabel="Source"
+            ariaLabel="Sumber"
             className="glass-input w-full"
             testId="pr-source"
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="pr-request-date" className="text-xs md:text-sm font-medium">Tanggal request</Label>
+          <Label htmlFor="pr-request-date" className="text-xs md:text-sm font-medium">Tanggal Pengajuan</Label>
           <Input id="pr-request-date" type="date" value={form.request_date}
             onChange={e => setForm(f => ({ ...f, request_date: e.target.value }))}
             className="glass-input" data-testid="pr-request-date" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="pr-needed-by" className="text-xs md:text-sm font-medium">Dibutuhkan tanggal</Label>
+          <Label htmlFor="pr-needed-by" className="text-xs md:text-sm font-medium">Tanggal Dibutuhkan</Label>
           <Input id="pr-needed-by" type="date" value={form.needed_by}
             onChange={e => setForm(f => ({ ...f, needed_by: e.target.value }))}
             className="glass-input" data-testid="pr-needed-by" />
@@ -338,6 +333,16 @@ export default function PRForm() {
           onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
           className="glass-input min-h-[80px]" data-testid="pr-notes" />
       </div>
+
+      {/* Simpan/Ajukan selalu terlihat di bawah form (DESIGN_SYSTEM §10.4). */}
+      <FormActionBar dirty={dirty} hint="Simpan sebagai draft, atau ajukan untuk approval.">
+        <Button onClick={() => save(false)} disabled={saving} variant="outline" data-testid="pr-save-draft">
+          <Save /> Simpan draft
+        </Button>
+        <Button onClick={() => save(true)} disabled={saving} data-testid="pr-submit">
+          <Send /> Ajukan PR
+        </Button>
+      </FormActionBar>
     </div>
   );
 }

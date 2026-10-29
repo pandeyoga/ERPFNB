@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PageHeader from "@/components/shared/PageHeader";
 import LoadingState from "@/components/shared/LoadingState";
+import { FormActionBar } from "@/components/shared/UnsavedChanges";
 import { toast } from "sonner";
 
 const KEYS = [
@@ -33,7 +34,7 @@ export default function SystemSettings() {
   const [values, setValues] = useState({});
   const [saved, setSaved] = useState({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState({});
+  const [saving, setSaving] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -54,25 +55,29 @@ export default function SystemSettings() {
   }
   useEffect(() => { load(); }, []);
 
-  async function save(cfg) {
-    const key = cfg.key;
-    setSaving((s) => ({ ...s, [key]: true }));
+  // Satu bar simpan untuk seluruh form (DESIGN_SYSTEM §10.4): yang diubah + yang belum pernah disimpan (nilai default).
+  const valueOf = (cfg) => values[cfg.key] ?? cfg.default ?? "";
+  const changed = KEYS.filter((cfg) => valueOf(cfg) !== (saved[cfg.key] ?? cfg.default ?? ""));
+  const unsavedDefaults = KEYS.filter((cfg) => !(cfg.key in saved) && !changed.includes(cfg) && valueOf(cfg));
+  const toSave = [...changed, ...unsavedDefaults];
+
+  async function saveAll() {
+    setSaving(true);
     try {
-      await api.post("/system-settings/set", {
-        key,
-        value: values[key] ?? "",
-      });
-      toast.success(`${cfg.label} disimpan`);
+      for (const cfg of toSave) {
+        await api.post("/system-settings/set", { key: cfg.key, value: valueOf(cfg) });
+      }
+      toast.success(`${toSave.length} pengaturan disimpan`);
       load();
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal simpan");
     } finally {
-      setSaving((s) => ({ ...s, [key]: false }));
+      setSaving(false);
     }
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-3 lg:space-y-4" data-testid="admin-settings-page">
+    <div className="max-w-4xl space-y-3 lg:space-y-4" data-testid="admin-settings-page">
       <PageHeader icon={Settings} title="System Settings" subtitle="Konfigurasi umum sistem (nama aplikasi, locale, zona waktu, nilai default)." />
 
       {/* General settings */}
@@ -81,24 +86,20 @@ export default function SystemSettings() {
           <Settings className="h-4 w-4" /> Pengaturan Umum
         </h2>
         <p className="text-xs text-muted-foreground mb-3">
-          Disimpan per baris dan berlaku langsung tanpa restart. Tombol Simpan aktif bila nilai diubah atau belum pernah disimpan.
+          Berlaku langsung tanpa restart setelah disimpan.
         </p>
         {loading ? (
           <LoadingState rows={5} />
         ) : (
           <div className="space-y-3">
             {KEYS.map((cfg) => {
-              const current = values[cfg.key] ?? cfg.default ?? "";
-              const original = saved[cfg.key] ?? cfg.default ?? "";
               return (
                 <SettingRow
                   key={cfg.key}
                   cfg={cfg}
-                  value={current}
-                  dirty={current !== original || !(cfg.key in saved)}
+                  value={valueOf(cfg)}
+                  changed={changed.includes(cfg)}
                   onChange={(v) => setValues((s) => ({ ...s, [cfg.key]: v }))}
-                  onSave={() => save(cfg)}
-                  saving={!!saving[cfg.key]}
                 />
               );
             })}
@@ -108,6 +109,21 @@ export default function SystemSettings() {
           Pengaturan disimpan terenkripsi (untuk secret) atau plaintext (untuk non-secret) di database.
         </p>
       </section>
+
+      {/* Satu bar simpan di luar kartu (tidak ada kartu di dalam kartu). */}
+      {!loading && (
+        <FormActionBar
+          dirty={changed.length > 0}
+          hint={unsavedDefaults.length ? `${unsavedDefaults.length} pengaturan masih memakai nilai default — simpan untuk menetapkannya.` : "Semua pengaturan tersimpan."}
+        >
+          <Button variant="ghost" onClick={() => setValues(saved)} disabled={saving || !changed.length} data-testid="settings-reset">
+            Batal
+          </Button>
+          <Button onClick={saveAll} disabled={saving || !toSave.length} data-testid="settings-save-all">
+            <Save /> {saving ? "Menyimpan…" : `Simpan${toSave.length > 1 ? ` (${toSave.length})` : ""}`}
+          </Button>
+        </FormActionBar>
+      )}
 
       {/* Quick links section */}
       <section className="glass-card p-4" aria-labelledby="settings-links-title">
@@ -120,13 +136,14 @@ export default function SystemSettings() {
   );
 }
 
-function SettingRow({ cfg, value, dirty, onChange, onSave, saving }) {
+function SettingRow({ cfg, value, changed, onChange }) {
   const id = `setting-input-${cfg.key}`;
   return (
     <div className="flex items-end gap-2 flex-wrap">
       <div className="flex-1 min-w-[260px] space-y-1.5">
         <Label htmlFor={id} className="text-xs md:text-sm font-medium flex items-center gap-1.5">
           {cfg.icon && <cfg.icon className="h-3.5 w-3.5 text-muted-foreground" />} {cfg.label}
+          {changed && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-label="diubah" title="Diubah, belum disimpan" />}
         </Label>
         {cfg.type === "color" ? (
           <div className="flex gap-2">
@@ -138,15 +155,6 @@ function SettingRow({ cfg, value, dirty, onChange, onSave, saving }) {
           <Input id={id} value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder={cfg.placeholder} className="glass-input" data-testid={`setting-input-${cfg.key}`} />
         )}
       </div>
-      <Button
-        variant={dirty ? "default" : "outline"}
-        onClick={onSave}
-        disabled={saving || !dirty}
-        aria-label={`Simpan ${cfg.label}`}
-        data-testid={`setting-save-${cfg.key}`}
-      >
-        <Save /> {saving ? "Menyimpan…" : "Simpan"}
-      </Button>
     </div>
   );
 }

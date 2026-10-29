@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LoadingState from "@/components/shared/LoadingState";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -175,11 +176,14 @@ export default function PaymentForm() {
       } else {
         toast.success(`PAY ${created.doc_no} dibuat sebagai draft`);
       }
+      markSaved();
       navigate(`/finance/payments/${created.id}`);
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyimpan");
     } finally { setSaving(false); }
   }
+
+  const { dirty, markSaved } = useDirtyState(form, !loading);
 
   // Check if PPh is enabled for vendor payments
   const pph23Active = taxConfig?.pph23?.enabled;
@@ -192,7 +196,7 @@ export default function PaymentForm() {
     <div className="max-w-4xl" data-testid="payment-form-page">
       <PageHeader
         icon={Banknote}
-        title="New Payment"
+        title="Payment Baru"
         subtitle="Bayar vendor (dari GR outstanding atau ad-hoc), karyawan, atau pihak lain. Field bertanda * wajib diisi."
       />
       <div className="glass-card p-4 space-y-4">
@@ -218,7 +222,7 @@ export default function PaymentForm() {
         )}
 
         <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Payee Type" htmlFor="pay-payee-type" required>
+          <Field label="Tipe Payee" htmlFor="pay-payee-type" required>
             <Select value={form.payee_type} onValueChange={v => setField("payee_type", v)}>
               <SelectTrigger id="pay-payee-type" className="glass-input" data-testid="pay-payee-type">
                 <SelectValue /></SelectTrigger>
@@ -230,7 +234,7 @@ export default function PaymentForm() {
             </Select>
           </Field>
 
-          <Field label="Request Date" htmlFor="pay-date" required>
+          <Field label="Tanggal Pengajuan" htmlFor="pay-date" required>
             <Input type="date" value={form.request_date} onChange={e => setField("request_date", e.target.value)}
               id="pay-date" className="glass-input" data-testid="pay-date" />
           </Field>
@@ -244,7 +248,7 @@ export default function PaymentForm() {
             </Field>
           )}
           {form.payee_type === "employee" && (
-            <Field label="Employee" htmlFor="pay-emp" required className="md:col-span-2">
+            <Field label="Karyawan" htmlFor="pay-emp" required className="md:col-span-2">
               <Select value={form.payee_id || ""} onValueChange={v => setField("payee_id", v)}>
                 <SelectTrigger id="pay-emp" className="glass-input" data-testid="pay-emp"><SelectValue placeholder="Pilih employee..." /></SelectTrigger>
                 <SelectContent>{employees.map(e => (<SelectItem key={e.id} value={e.id}>{e.full_name} · {e.position}</SelectItem>))}</SelectContent>
@@ -252,19 +256,19 @@ export default function PaymentForm() {
             </Field>
           )}
           {form.payee_type === "other" && (
-            <Field label="Payee Name / Description" htmlFor="pay-payee-text" required className="md:col-span-2">
+            <Field label="Nama Payee / Deskripsi" htmlFor="pay-payee-text" required className="md:col-span-2">
               <Input value={form.payee_text} onChange={e => setField("payee_text", e.target.value)}
                 placeholder="mis. PLN, Telkom, dll" id="pay-payee-text" className="glass-input" data-testid="pay-payee-text" />
             </Field>
           )}
 
-          <Field label="Amount Bruto (Rp)" htmlFor="pay-amount" required>
+          <Field label="Nominal Bruto (Rp)" htmlFor="pay-amount" required>
             <Input type="number" inputMode="numeric" value={form.amount}
               onChange={e => setField("amount", e.target.value)}
               id="pay-amount" className="glass-input tabular-nums" data-testid="pay-amount" min={1} />
           </Field>
 
-          <Field label="Bank Account (dari mana dibayar)" htmlFor="pay-bank" required>
+          <Field label="Bank Account (sumber dana)" htmlFor="pay-bank" required>
             <Select value={form.bank_account_id} onValueChange={v => setField("bank_account_id", v)}>
               <SelectTrigger id="pay-bank" className="glass-input" data-testid="pay-bank"><SelectValue placeholder="Pilih bank account..." /></SelectTrigger>
               <SelectContent>{banks.map(b => (<SelectItem key={b.id} value={b.id}>{b.bank} {b.account_number} — {b.name}</SelectItem>))}</SelectContent>
@@ -281,22 +285,22 @@ export default function PaymentForm() {
             </p>
           </Field>
 
-          <Field label="Invoice No (opsional)" htmlFor="pay-invno">
+          <Field label="No. Invoice (opsional)" htmlFor="pay-invno">
             <Input value={form.invoice_no} onChange={e => setField("invoice_no", e.target.value)}
               id="pay-invno" className="glass-input" data-testid="pay-invno" />
           </Field>
 
-          <Field label="Invoice Date (opsional)" htmlFor="pay-invdate">
+          <Field label="Tanggal Invoice (opsional)" htmlFor="pay-invdate">
             <Input type="date" value={form.invoice_date} onChange={e => setField("invoice_date", e.target.value)}
               id="pay-invdate" className="glass-input" data-testid="pay-invdate" />
           </Field>
 
-          <Field label="Description" htmlFor="pay-desc" required className="md:col-span-2">
+          <Field label="Deskripsi" htmlFor="pay-desc" required className="md:col-span-2">
             <Textarea value={form.description} onChange={e => setField("description", e.target.value)}
               placeholder="Alasan/keperluan pembayaran..." rows={2} id="pay-desc" className="glass-input" data-testid="pay-desc" />
           </Field>
 
-          <Field label="Notes (internal)" htmlFor="pay-notes" className="md:col-span-2">
+          <Field label="Catatan (internal)" htmlFor="pay-notes" className="md:col-span-2">
             <Textarea value={form.notes} onChange={e => setField("notes", e.target.value)}
               placeholder="Catatan tambahan..." rows={2} id="pay-notes" className="glass-input" data-testid="pay-notes" />
           </Field>
@@ -408,16 +412,18 @@ export default function PaymentForm() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border/40" data-testid="pay-form-actions">
-          <Button variant="ghost" onClick={() => navigate(BACK_PATH)} data-testid="pay-cancel">Batal</Button>
-          <Button variant="outline" onClick={() => submit(false)} disabled={saving} data-testid="pay-save-draft">
-            <Save className="h-4 w-4" /> Simpan draft
-          </Button>
-          <Button onClick={() => submit(true)} disabled={saving} data-testid="pay-save-submit">
-            {saving ? "Menyimpan..." : "Simpan & ajukan approval"}
-          </Button>
-        </div>
       </div>
+
+      {/* Simpan/Ajukan selalu terlihat di bawah form (DESIGN_SYSTEM §10.4). */}
+      <FormActionBar dirty={dirty} hint="Field bertanda * wajib diisi." testId="pay-form-actions">
+        <Button variant="ghost" onClick={async () => { if (await confirmDiscard()) navigate(BACK_PATH); }} data-testid="pay-cancel">Batal</Button>
+        <Button variant="outline" onClick={() => submit(false)} disabled={saving} data-testid="pay-save-draft">
+          <Save className="h-4 w-4" /> Simpan draft
+        </Button>
+        <Button onClick={() => submit(true)} disabled={saving} data-testid="pay-save-submit">
+          {saving ? "Menyimpan..." : "Simpan & ajukan approval"}
+        </Button>
+      </FormActionBar>
     </div>
   );
 }

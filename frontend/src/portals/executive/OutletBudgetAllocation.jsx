@@ -24,6 +24,7 @@ import api from "@/lib/api";
 import { fmtRp } from "@/lib/format";
 import DataTable from "@/components/shared/DataTable";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import { cn } from "@/lib/utils";
 import {
@@ -196,6 +197,10 @@ export default function OutletBudgetAllocation() {
     }
   };
 
+  const { dirty } = useDirtyState(budgets, !loading);
+  // Ganti periode memuat ulang matriks → tanya dulu bila ada perubahan belum disimpan.
+  const guarded = (fn) => async (...args) => { if (await confirmDiscard()) fn(...args); };
+
   // Grand totals — combine per_bucket + combined contributions
   const totals = useMemo(() => {
     let kdo = 0, fdo = 0, bdo = 0, combined = 0, total = 0;
@@ -253,9 +258,9 @@ export default function OutletBudgetAllocation() {
         }
       />
 
-      {/* Period toolbar + form actions */}
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="allocation-period-bar">
-        <Tabs value={periodType} onValueChange={setPeriodType}>
+      {/* Filter periode = baris polos tanpa kartu; simpan ada di bar bawah (DESIGN_SYSTEM §10.3–10.4). */}
+      <div className="flex flex-wrap items-center gap-2" data-testid="allocation-period-bar">
+        <Tabs value={periodType} onValueChange={guarded(setPeriodType)}>
           <TabsList aria-label="Tipe periode">
             <TabsTrigger value="weekly" data-testid="tab-weekly">Mingguan</TabsTrigger>
             <TabsTrigger value="monthly" data-testid="tab-monthly">Bulanan</TabsTrigger>
@@ -264,7 +269,7 @@ export default function OutletBudgetAllocation() {
         <div className="flex items-center gap-1">
           <Button
             variant="ghost" size="icon"
-            onClick={() => setPeriodKey(prevPeriod(periodType, periodKey))}
+            onClick={guarded(() => setPeriodKey(prevPeriod(periodType, periodKey)))}
             aria-label="Periode sebelumnya"
             data-testid="btn-period-prev"
           >
@@ -275,7 +280,7 @@ export default function OutletBudgetAllocation() {
           </div>
           <Button
             variant="ghost" size="icon"
-            onClick={() => setPeriodKey(nextPeriod(periodType, periodKey))}
+            onClick={guarded(() => setPeriodKey(nextPeriod(periodType, periodKey)))}
             aria-label="Periode berikutnya"
             data-testid="btn-period-next"
           >
@@ -290,9 +295,6 @@ export default function OutletBudgetAllocation() {
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={copyFromPrev} data-testid="btn-copy-prev">
             <RefreshCw /> Salin dari periode lalu
-          </Button>
-          <Button onClick={save} disabled={saving} data-testid="btn-save">
-            <Save /> {saving ? "Menyimpan…" : "Simpan Budget"}
           </Button>
         </div>
       </div>
@@ -442,6 +444,12 @@ export default function OutletBudgetAllocation() {
           </div>
         </CardContent>
       </Card>
+
+      <FormActionBar dirty={dirty} hint={`Periode ${periodKey} — budget berlaku langsung setelah disimpan.`}>
+        <Button onClick={save} disabled={saving} data-testid="btn-save">
+          <Save /> {saving ? "Menyimpan…" : "Simpan Budget"}
+        </Button>
+      </FormActionBar>
 
       <Card className="bg-aurora/5 border-aurora/20">
         <CardContent className="pt-4 flex items-start gap-3 text-sm">

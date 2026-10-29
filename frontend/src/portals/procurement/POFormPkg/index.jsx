@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import ItemAutocomplete from "@/components/shared/ItemAutocomplete";
 import VendorAutocomplete from "@/components/shared/VendorAutocomplete";
 import VendorComparisonPanel from "@/components/shared/VendorComparisonPanel";
@@ -52,6 +53,8 @@ export default function POForm() {
     lines: [{ item_name: "", item_id: null, qty: 1, unit: "pcs", unit_cost: 0, discount: 0, tax_rate: 0, availability_status: null, ref_price: null, ref_quarter: null }],
     notes: "",
   });
+
+  const { dirty, markSaved } = useDirtyState(form);
 
   // Guard: warn if pre-filled outlet (from PR) is not in user's scope
   useOutletScopeGuard({
@@ -284,6 +287,7 @@ export default function POForm() {
       const res = await api.post("/procurement/pos", payload);
       const po = unwrap(res);
       toast.success("PO dibuat");
+      markSaved();
       navigate(`/procurement/po/${po.id}`);
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal simpan");
@@ -294,7 +298,7 @@ export default function POForm() {
     <>
     <div className="space-y-3 lg:space-y-4 max-w-7xl mx-auto" data-testid="po-form-page">
       <div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 mb-1" data-testid="po-back">
+        <Button variant="ghost" size="sm" onClick={async () => { if (await confirmDiscard()) navigate(-1); }} className="-ml-2 mb-1" data-testid="po-back">
           <ArrowLeft /> Kembali
         </Button>
         <PageHeader
@@ -302,11 +306,6 @@ export default function POForm() {
           title="PO Baru"
           subtitle="Pilih vendor, isi item & harga. PO tersimpan sebagai draft sebelum diajukan/dikirim."
           className="mb-0 md:mb-0"
-          actions={
-            <Button onClick={save} disabled={saving} data-testid="po-save">
-              <Save /> {saving ? "Menyimpan…" : "Simpan PO"}
-            </Button>
-          }
         />
       </div>
 
@@ -605,6 +604,13 @@ export default function POForm() {
           </div>
         </div>
       </div>
+
+      {/* Simpan selalu terlihat di bawah form (DESIGN_SYSTEM §10.4). */}
+      <FormActionBar dirty={dirty} hint="PO tersimpan sebagai draft sebelum diajukan/dikirim.">
+        <Button onClick={save} disabled={saving} data-testid="po-save">
+          <Save /> {saving ? "Menyimpan…" : "Simpan PO"}
+        </Button>
+      </FormActionBar>
     </div>
 
     {/* Alternative Vendor Modal */}

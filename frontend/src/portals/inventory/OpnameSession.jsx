@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import StatusPill from "@/components/shared/StatusPill";
 import LoadingState from "@/components/shared/LoadingState";
 import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState } from "@/components/shared/UnsavedChanges";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import useOutletScope from "@/hooks/useOutletScope";
@@ -58,6 +59,7 @@ export default function OpnameSession() {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+  const { dirty, markSaved } = useDirtyState(counts, !loading && !!sess);
 
   const filtered = useMemo(() => {
     if (!sess) return [];
@@ -89,6 +91,7 @@ export default function OpnameSession() {
     try {
       const res = await api.patch(`/inventory/opname/${id}/lines`, { lines: updates });
       setSess(unwrap(res));
+      markSaved();
       toast.success("Progres disimpan");
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal menyimpan progres");
@@ -147,21 +150,7 @@ export default function OpnameSession() {
           title={`Opname ${sess.doc_no || sess.id.slice(0, 8)}`}
           subtitle={`${outletName} · periode ${sess.period || "—"}`}
           className="mb-0 md:mb-0"
-          actions={
-            <>
-              <StatusPill status={sess.status} />
-              {editable && (
-                <>
-                  <Button onClick={saveProgress} disabled={saving} variant="outline" data-testid="opn-save">
-                    <Save /> {saving ? "Menyimpan…" : "Simpan progres"}
-                  </Button>
-                  <Button onClick={submitOpname} disabled={submitting} data-testid="opn-submit">
-                    <Send /> {submitting ? "Mengajukan…" : "Ajukan opname"}
-                  </Button>
-                </>
-              )}
-            </>
-          }
+          actions={<StatusPill status={sess.status} />}
         />
       </div>
 
@@ -262,6 +251,18 @@ export default function OpnameSession() {
           />
         </div>
       </div>
+
+      {/* Simpan/Ajukan selalu terlihat di bawah tabel hitung (DESIGN_SYSTEM §10.4). */}
+      {editable && (
+        <FormActionBar dirty={dirty} hint={`${sess.counted_items || 0}/${sess.total_items || 0} item sudah dihitung`}>
+          <Button onClick={saveProgress} disabled={saving} variant="outline" data-testid="opn-save">
+            <Save /> {saving ? "Menyimpan…" : "Simpan progres"}
+          </Button>
+          <Button onClick={submitOpname} disabled={submitting} data-testid="opn-submit">
+            <Send /> {submitting ? "Mengajukan…" : "Ajukan opname"}
+          </Button>
+        </FormActionBar>
+      )}
 
       {sess.status !== "in_progress" && (
         <div className="glass-card p-4 border-l-4 border-emerald-500 text-sm flex items-center gap-2">
