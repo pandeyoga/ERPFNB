@@ -28,8 +28,8 @@
 
 ## Bagian 1 — Draf standar "anatomi halaman"
 
-Draf standar dipisah ke **`docs/PAGE_ANATOMY_STANDARD.md`**. Bagian 2 di bawah mengukur aplikasi saat ini terhadap draf tersebut
-(nomor § merujuk ke dokumen itu).
+Standar disetujui 29 Okt 2026 dan kini menjadi **`docs/DESIGN_SYSTEM.md` §10**. Bagian 2 di bawah mengukur aplikasi (sebelum perbaikan) terhadap standar tersebut
+(§1.x di bawah = §10.x di DESIGN_SYSTEM).
 
 ## Bagian 2 — Hasil audit terhadap draf standar
 

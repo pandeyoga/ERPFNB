@@ -1,7 +1,7 @@
 # FnB Group ERP — instruksi untuk agen AI
 
 Stack: React 19 (CRA + craco) + Tailwind + shadcn/Radix di `frontend/`; FastAPI + MongoDB (motor) di `backend/`.
-Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI: Bahasa Indonesia (status/aksi/pesan), nama modul = istilah ERP.
+Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi/kalimat/status persetujuan ID (`DESIGN_SYSTEM.md` §10.5).
 
 ## UI — wajib (detail: `docs/DESIGN_SYSTEM.md`, acuan tunggal)
 
@@ -17,6 +17,17 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI: Bahasa Indonesia (status/aksi/
 - Satu `<h1>` per halaman lewat `PageHeader`; judul kartu `CardTitle`/h3 16px.
 - Kartu: `.glass-card` / `Card`, padding `p-3` atau `p-4`. Tidak ada kartu di dalam kartu
   (bungkus konten embedded dengan `.nested-cards`). Status → `StatusPill`. KPI → `CompactStatCard`. Daftar data → `DataTable`.
+- **Anatomi halaman** (`DESIGN_SYSTEM.md` §10):
+  - Posisi tombol = cakupan aksi. Aksi layar di kanan judul (`PageHeader`); aksi kartu di kanan atas kartu;
+    aksi baris di kolom terakhir (maks. 1 + "⋯").
+  - Halaman di dalam hub tetap memakai `PageHeader` biasa — otomatis mengisi subtitle & aksi header hub.
+  - Judul blok di dalam kartu (`CardTitle`); judul di luar kartu hanya untuk grup ≥ 2 kartu di dashboard; tanpa judul ganda.
+  - Filter tabel di dalam kartu tabel (`ListToolbar`); filter halaman tanpa kartu; daftar sejenis = baris dalam
+    1 kartu, bukan kartu per item; maks. 2 lapis bingkai; grid tanpa item yatim.
+  - Form yang mengubah data: `FormActionBar` (sticky bawah) + `useUnsavedChanges(dirty)`.
+  - Bahasa: istilah teknis EN (Payment, COA, Posted, Overdue, Partial); aksi, kalimat & status persetujuan ID
+    (Simpan, Disetujui, Ditolak); label = kata umum ID + istilah EN ("Tanggal Invoice", "Nominal").
+    Buat ‹dokumen› / Tambah ‹data›; uang = Nominal, hitungan = Jumlah.
 - `data-testid` kebab-case untuk elemen interaktif; **jangan ganti testid yang dipakai tour**
   (`frontend/src/contexts/tour`).
 - Pengecualian yang sah: tulis komentar `ds-ok: alasan` tepat sebelum elemen.
