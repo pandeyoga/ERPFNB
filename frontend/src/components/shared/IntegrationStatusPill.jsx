@@ -1,13 +1,13 @@
-/** Phase 12D — Integration status pill (Connected / Not Configured / Failed / Fallback). */
+/** Phase 12D — Integration status pill (Terhubung / Belum dikonfigurasi / Gagal / Memakai fallback). */
 import { CheckCircle2, XCircle, AlertCircle, Globe, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG = {
-  configured:    { icon: CheckCircle2, label: "Connected",      tone: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30" },
-  unset:         { icon: AlertCircle,  label: "Not Configured",  tone: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30" },
-  failed:        { icon: XCircle,      label: "Failed",          tone: "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-500/30" },
-  fallback:      { icon: Globe,        label: "Using fallback",  tone: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30" },
-  database:      { icon: Database,     label: "Database",        tone: "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-300 dark:border-indigo-500/30" },
+  configured:    { icon: CheckCircle2, label: "Terhubung",      tone: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30" },
+  unset:         { icon: AlertCircle,  label: "Belum dikonfigurasi", tone: "bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30" },
+  failed:        { icon: XCircle,      label: "Gagal",           tone: "bg-rose-500/15 text-rose-800 dark:text-rose-400 border-rose-500/30" },
+  fallback:      { icon: Globe,        label: "Memakai fallback", tone: "bg-blue-500/15 text-blue-800 dark:text-blue-400 border-blue-500/30" },
+  database:      { icon: Database,     label: "Database",        tone: "bg-indigo-500/15 text-indigo-800 dark:text-indigo-400 border-indigo-500/30" },
   environment:   { icon: Globe,        label: "Environment",     tone: "bg-muted/40 text-foreground border-border" },
 };
 

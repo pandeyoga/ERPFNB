@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import api, { unwrap } from "@/lib/api";
-import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import PageHeader from "@/components/shared/PageHeader";
+import DataTable from "@/components/shared/DataTable";
 import { Hash } from "lucide-react";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 
@@ -22,33 +22,28 @@ export default function NumberSeries({ embedded = false } = {}) {
 
   return (
     <div className="space-y-3" data-testid="number-series-page">
-      <PageHeader icon={Hash} title="Number Series" subtitle="Format penomoran dokumen otomatis per jenis dokumen." />
-      <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5">
-        Nomor dokumen dibuat otomatis mengikuti format di bawah (hanya-baca).
-        <InlineHelp id="number-series-format" size="xs" placement="right" />
-      </p>
-      {loading ? <LoadingState rows={6} /> : (
-        items.length === 0 ? <EmptyState title="Belum ada series" /> : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" data-testid="number-series-grid">
-            {items.map((s) => (
-              <div key={s.id} className="glass-card p-3" data-testid={`number-series-card-${s.code}`}>
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm md:text-base font-semibold flex items-center gap-1.5">
-                    <Hash className="h-4 w-4 text-aurora" /> {s.code}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full bg-foreground/10 text-xs font-medium tabular-nums" title="Nomor urut terakhir">
-                    No. terakhir: {s.current_value}
-                  </span>
-                </div>
-                <div className="text-xs font-medium tabular-nums text-muted-foreground mt-1 truncate" title={s.format}>{s.format}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Padding {s.padding} · Reset {RESET_LABEL[s.reset] || s.reset}
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
+      <PageHeader icon={Hash} title="Number Series"
+        subtitle="Format penomoran dokumen otomatis per jenis dokumen (hanya-baca)."
+        actions={<InlineHelp id="number-series-format" size="sm" placement="bottom-end" />} />
+      {/* Data sejenis yang dibandingkan per kolom = tabel, bukan grid kartu (DESIGN_SYSTEM §10.3). */}
+      <div className="glass-card overflow-hidden" data-testid="number-series-grid">
+        <DataTable
+          columns={[
+            { key: "code", label: "Kode", primary: true, sortable: true,
+              render: (s) => <span className="font-semibold">{s.code}</span> },
+            { key: "format", label: "Format", render: (s) => <span className="tabular-nums text-muted-foreground">{s.format}</span> },
+            { key: "current_value", label: "No. terakhir", numeric: true, sortable: true },
+            { key: "padding", label: "Padding", numeric: true },
+            { key: "reset", label: "Reset", render: (s) => RESET_LABEL[s.reset] || s.reset },
+          ]}
+          rows={items}
+          keyField="code"
+          loading={loading}
+          rowTestIdPrefix="number-series-card"
+          defaultSort={{ key: "code", dir: "asc" }}
+          empty={<EmptyState title="Belum ada series" />}
+        />
+      </div>
     </div>
   );
 }

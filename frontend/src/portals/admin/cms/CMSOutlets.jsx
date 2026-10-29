@@ -209,9 +209,10 @@ export default function CMSOutlets() {
           <EmptyState icon={MapPin} title="Belum ada outlet" description="Klik Tambah Outlet atau ubah filter pencarian." />
         </div>
       ) : (
-        <div className="grid gap-3">
+        // Baris sejenis dalam satu kartu, bukan kartu per outlet (DESIGN_SYSTEM §10.3).
+        <div className="glass-card overflow-hidden divide-y divide-border/50">
           {filtered.map(item => (
-            <div key={item.id} className="glass-card p-4 flex gap-4 hover:shadow-md transition-shadow"
+            <div key={item.id} className="p-4 flex gap-4 hover:bg-foreground/[0.03] transition-colors"
                  data-testid={`outlet-row-${item.id}`}>
               <MapPin className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
               <div className="flex-1 min-w-0">

@@ -14,8 +14,11 @@
  *  - actions (alias lama: action) — tombol aksi layar, rata kanan
  *  - children — baris tambahan di bawah judul (mis. chip filter/status)
  *  - hub — PageHeader milik hub (menyediakan slot untuk tab aktif)
+ *
+ * Konteks layar (mis. pemilih "Outlet aktif" di portal Outlet) masuk lewat <PageHeaderExtrasProvider extras>:
+ * PageHeader halaman menampilkannya paling kiri di area aksi — bukan kartu terpisah di atas judul (§10.3).
  */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +34,28 @@ export function HubHeaderProvider({ children }) {
     [actionsEl, subtitleEl, filled],
   );
   return <HubHeaderContext.Provider value={value}>{children}</HubHeaderContext.Provider>;
+}
+
+const ExtrasContext = createContext(null);
+
+/** extras = node konteks layar; `onConsumed(n)` memberi tahu berapa PageHeader yang menampilkannya (0 = tidak ada). */
+export function PageHeaderExtrasProvider({ extras, children }) {
+  const [consumed, setConsumed] = useState(0);
+  const value = useMemo(() => ({ extras, consumed, setConsumed }), [extras, consumed]);
+  return <ExtrasContext.Provider value={value}>{children}</ExtrasContext.Provider>;
+}
+
+export function usePageHeaderExtrasConsumed() {
+  return useContext(ExtrasContext)?.consumed ?? 0;
+}
+
+function ExtrasSlot({ ex }) {
+  const { setConsumed } = ex;
+  useLayoutEffect(() => {
+    setConsumed((n) => n + 1);
+    return () => setConsumed((n) => n - 1);
+  }, [setConsumed]);
+  return ex.extras;
 }
 
 const SUBTITLE = "text-xs md:text-sm text-muted-foreground leading-[1.3] mt-0.5";
@@ -65,6 +90,7 @@ export default function PageHeader({
   testId = "page-header",
 }) {
   const ctx = useContext(HubHeaderContext);
+  const ex = useContext(ExtrasContext);
   const slot = actions ?? action;
   if (ctx && !hub) return <HubSlotFill ctx={ctx} subtitle={subtitle} actions={slot}>{children}</HubSlotFill>;
   const hubSlots = hub && ctx;
@@ -87,8 +113,9 @@ export default function PageHeader({
             {showOwnSubtitle && <p className={SUBTITLE}>{subtitle}</p>}
           </div>
         </div>
-        {(slot || hubSlots) && (
+        {(slot || hubSlots || ex?.extras) && (
           <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-end shrink-0 ml-auto" data-testid="page-header-actions">
+            {ex?.extras && <ExtrasSlot ex={ex} />}
             {slot}
             {hubSlots && <div ref={ctx.setActionsEl} className="contents" />}
           </div>

@@ -58,7 +58,7 @@ const approvalCenterTour = {
       target: "[data-testid='approval-kpi']",
       title: "Ringkasan per Tipe",
       content:
-        "Kartu KPI per tipe dokumen — klik salah satu untuk **filter cepat** antrean ke jenis tertentu.",
+        "Tab per tipe dokumen beserta jumlahnya — klik salah satu untuk **filter cepat** antrean ke jenis tertentu.",
       placement: "bottom",
     },
     {
@@ -99,7 +99,7 @@ const myApprovalsTour = {
       target: "[data-testid='stat-total']",
       title: "Filter per Tipe",
       content:
-        "Kartu statistik per tipe dokumen. Klik untuk **filter cepat** antrean ke jenis tertentu.",
+        "Tab per tipe dokumen beserta jumlahnya. Klik untuk **filter cepat** antrean ke jenis tertentu.",
       placement: "bottom",
     },
     {

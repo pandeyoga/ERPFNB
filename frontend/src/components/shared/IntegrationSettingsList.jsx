@@ -2,7 +2,7 @@
  * Reused inside Integrations Hub tabs.
  */
 import { useState } from "react";
-import { Eye, EyeOff, Save, Trash2, Edit3, FileWarning } from "lucide-react";
+import { Eye, EyeOff, Save, Trash2, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 
 import api from "@/lib/api";
@@ -56,12 +56,13 @@ export default function IntegrationSettingsList({ items, onChange }) {
   }
 
   return (
-    <ul className="space-y-3">
+    // Key sejenis = baris dalam satu kartu, bukan kartu per key (DESIGN_SYSTEM §10.3).
+    <ul className="glass-card divide-y divide-border/50 overflow-hidden">
       {items.map((item) => {
         const isEditing = !!editing[item.key];
         const status = !item.is_set ? "unset" : (item.source === "database" ? "database" : "environment");
         return (
-          <li key={item.key} className="glass-card p-4" data-testid={`integration-row-${item.key}`}>
+          <li key={item.key} className="p-4" data-testid={`integration-row-${item.key}`}>
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -76,7 +77,7 @@ export default function IntegrationSettingsList({ items, onChange }) {
 
             {item.is_set && !isEditing && (
               <div className="text-xs mb-3 px-3 py-2 rounded bg-muted/40 inline-flex items-center gap-2">
-                <span className="text-muted-foreground">Saved:</span>
+                <span className="text-muted-foreground">Tersimpan:</span>
                 <span className="font-mono">{item.value_masked}</span>
                 {item.updated_at && (
                   <span className="text-muted-foreground">• {fmtDateTime(item.updated_at)}</span>
@@ -84,11 +85,6 @@ export default function IntegrationSettingsList({ items, onChange }) {
               </div>
             )}
 
-            {!item.is_set && !isEditing && (
-              <div className="text-xs mb-3 inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
-                <FileWarning className="h-3 w-3" /> Belum dikonfigurasi
-              </div>
-            )}
 
             {isEditing ? (
               <div className="space-y-2 mt-2">

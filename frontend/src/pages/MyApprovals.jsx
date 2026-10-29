@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
-import CompactStatCard from "@/components/shared/CompactStatCard";
+import ListToolbar, { StatusTabs } from "@/components/shared/ListToolbar";
 import ApprovalDelegations, { APPROVAL_ENTITY_LABELS } from "@/components/shared/ApprovalDelegations";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
@@ -137,27 +137,30 @@ export default function MyApprovals() {
         </TabsList>
 
         <TabsContent value="queue" className="space-y-3">
-      {/* Filter per tipe dokumen */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2" data-testid="approval-kpi">
-        <CompactStatCard size="sm" label="Semua" value={totalCount}
-          active={tab === "all"} onClick={() => setTab("all")} testId="stat-total" />
-        {filterTypes.map((key) => (
-          <CompactStatCard key={key} size="sm"
-            label={APPROVAL_ENTITY_LABELS[key] || key.replace(/_/g, " ")}
-            value={counts?.[key] ?? 0}
-            active={tab === key}
-            onClick={() => setTab(key)}
-            testId={`stat-${key}`} />
-        ))}
-      </div>
-
-      {/* List — mobile cards w/ swipe */}
-      {loading ? <LoadingState rows={6} /> : (
+      {/* Satu kartu daftar: filter tipe di atas, baris antrean bergaris pemisah — bukan kartu per item (§10.3). */}
+      <div className="glass-card overflow-hidden">
+        <ListToolbar>
+          <StatusTabs
+            value={tab}
+            onChange={setTab}
+            ariaLabel="Filter tipe dokumen"
+            testId="approval-kpi"
+            tabTestId={(k) => (k === "all" ? "stat-total" : `stat-${k}`)}
+            options={[
+              { key: "all", label: <>Semua <Count n={totalCount} /></> },
+              ...filterTypes.map((key) => ({
+                key,
+                label: <>{APPROVAL_ENTITY_LABELS[key] || key.replace(/_/g, " ")} <Count n={counts?.[key] ?? 0} /></>,
+              })),
+            ]}
+          />
+        </ListToolbar>
+      {loading ? <div className="p-3"><LoadingState rows={6} /></div> : (
         items.length === 0 ? (
           <EmptyState icon={Sparkles} title="Tidak ada approval menunggu"
             description="Semua dokumen yang membutuhkan aksi Anda sudah selesai." />
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-border/50">
             <AnimatePresence>
               {items.map((it, i) => (
                 <SwipeRow
@@ -174,6 +177,7 @@ export default function MyApprovals() {
           </div>
         )
       )}
+      </div>
 
         </TabsContent>
 
@@ -218,6 +222,10 @@ export default function MyApprovals() {
   );
 }
 
+function Count({ n }) {
+  return <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[11px] leading-4 tabular-nums">{n}</span>;
+}
+
 function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
   const Icon = ENTITY_ICONS[item.entity_type] || Inbox;
   const isSevere = guardLog?.severity === "severe";
@@ -238,9 +246,9 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
       }}
       transition={{ delay: Math.min(index * 0.025, 0.4), duration: 0.18 }}
       className={cn(
-        "glass-card p-3 cursor-grab active:cursor-grabbing select-none",
-        isSevere && "ring-2 ring-red-500/40",
-        isMild   && "ring-2 ring-amber-500/40",
+        "p-3 cursor-grab active:cursor-grabbing select-none border-l-4 border-l-transparent",
+        isSevere && "border-l-red-500 bg-red-500/5",
+        isMild   && "border-l-amber-500 bg-amber-500/5",
         busy     && "opacity-60",
       )}
     >
@@ -295,12 +303,13 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
 
         {/* Inline action buttons */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* Aksi baris = outline/ghost (tombol utama hitam/hijau hanya untuk aksi layar, §10.1). */}
           <Button
             size="sm"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onApprove(); }}
-            variant="success"
-            className="gap-1"
+            variant="outline"
+            className="gap-1 text-emerald-800 dark:text-emerald-400 border-emerald-600/40 hover:bg-emerald-500/10"
             data-testid={`quick-approve-${item.entity_id}`}
           >
             <Check className="h-3 w-3" />
@@ -308,10 +317,10 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onReject(); }}
-            className="gap-1 border-rose-300 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950"
+            className="gap-1 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10"
             data-testid={`quick-reject-${item.entity_id}`}
           >
             <X className="h-3 w-3" />

@@ -141,7 +141,7 @@ export default function DailyClose({ embedded = false }) {
           <div className="text-xs md:text-sm font-medium">Outlet</div>
           <div className="h-9 mt-1 flex items-center gap-1.5 text-sm font-medium" data-testid="dc-outlet-display">
             <Store className="h-4 w-4 text-muted-foreground" />
-            {currentOutlet ? currentOutlet.name : <span className="text-muted-foreground font-normal">Belum dipilih — pilih satu outlet di header Outlet Aktif</span>}
+            {currentOutlet ? currentOutlet.name : <span className="text-muted-foreground font-normal">Belum dipilih — pilih satu outlet di pemilih outlet (kanan atas)</span>}
           </div>
         </div>
         <div className="sm:w-48">
@@ -168,7 +168,7 @@ export default function DailyClose({ embedded = false }) {
       {!outletId && (
         <div className="glass-card p-3 text-sm text-muted-foreground flex items-center gap-2" data-testid="dc-pick-outlet-hint">
           <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 shrink-0" />
-          Checklist daily close dihitung per outlet. Pilih satu outlet di header Outlet Aktif untuk melihat checklist dan menutup hari.
+          Checklist daily close dihitung per outlet. Pilih satu outlet di pemilih outlet (kanan atas) untuk melihat checklist dan menutup hari.
         </div>
       )}
 

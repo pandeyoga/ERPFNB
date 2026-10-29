@@ -463,8 +463,8 @@ export const TOUR_VERSIONS = {
 
   // General
   "general-navigation": 1,
-  "approval-center": 1,
-  "my-approvals": 1,
+  "approval-center": 2,
+  "my-approvals": 2,
 };
 
 export function getTourVersion(tourId) {

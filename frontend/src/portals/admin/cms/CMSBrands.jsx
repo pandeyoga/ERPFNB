@@ -265,12 +265,13 @@ export default function CMSBrands() {
           />
         </div>
       ) : (
-        <div className="grid gap-3">
+        // Baris sejenis dalam satu kartu, bukan kartu per brand (DESIGN_SYSTEM §10.3).
+        <div className="glass-card overflow-hidden divide-y divide-border/50">
           {/* Select all */}
           <button
             type="button"
             onClick={toggleSelectAll}
-            className="flex items-center gap-2 w-fit text-xs text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground"
             aria-pressed={selected.size === filteredItems.length && filteredItems.length > 0}
             data-testid="brand-select-all"
           >
@@ -282,7 +283,7 @@ export default function CMSBrands() {
 
           {filteredItems.map(item => (
             <div key={item.id}
-                 className={`glass-card p-4 flex items-start gap-4 hover:shadow-md transition-shadow ${selected.has(item.id) ? "ring-2 ring-primary/30" : ""}`}
+                 className={`p-4 flex items-start gap-4 hover:bg-foreground/[0.03] transition-colors ${selected.has(item.id) ? "bg-primary/5" : ""}`}
                  data-testid={`brand-row-${item.id}`}>
               {/* Checkbox */}
               <button type="button" onClick={() => toggleSelect(item.id)} className="flex-shrink-0 mt-1"

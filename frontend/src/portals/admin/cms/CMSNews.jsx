@@ -226,12 +226,13 @@ export default function CMSNews() {
           />
         </div>
       ) : (
-        <div className="grid gap-3">
+        // Baris sejenis dalam satu kartu, bukan kartu per artikel (DESIGN_SYSTEM §10.3).
+        <div className="glass-card overflow-hidden divide-y divide-border/50">
           {/* Select all */}
           <button
             type="button"
             onClick={() => selected.size === filtered.length ? setSelected(new Set()) : setSelected(new Set(filtered.map(i=>i.id)))}
-            className="flex items-center gap-2 w-fit text-xs text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground"
             aria-pressed={selected.size === filtered.length && filtered.length > 0}
             data-testid="news-select-all"
           >
@@ -243,7 +244,7 @@ export default function CMSNews() {
 
           {filtered.map(item => (
             <div key={item.id}
-                 className={`glass-card p-4 flex gap-3 hover:shadow-md transition-shadow ${selected.has(item.id) ? "ring-2 ring-primary/30" : ""}`}
+                 className={`p-4 flex gap-3 hover:bg-foreground/[0.03] transition-colors ${selected.has(item.id) ? "bg-primary/5" : ""}`}
                  data-testid={`news-row-${item.id}`}>
               <button type="button" onClick={() => toggleSelect(item.id)} className="flex-shrink-0 mt-1"
                       aria-label={`Pilih ${item.title}`} aria-pressed={selected.has(item.id)}>

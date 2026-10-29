@@ -151,20 +151,12 @@ export default function EndOfDayWorkflow() {
             <InlineHelp id="outlet-eod-workflow" placement="bottom-end" />
           </>
         }
-      />
-
-      <div className="glass-card p-3" data-testid="eod-progress">
-        {/* Progress bar */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
-              Progress
-            </span>
-            <span className="text-xs tabular-nums text-muted-foreground">
-              {Object.keys(completed).filter(k => completed[k]).length} / {STEPS.length}
-            </span>
-          </div>
-          <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+      >
+        {/* Progres = satu baris di header (sama dengan Period Closing), bukan kartu tersendiri (§10.3). */}
+        <div className="flex items-center gap-3 max-w-xl" data-testid="eod-progress">
+          <div className="h-1.5 flex-1 rounded-full bg-foreground/10 overflow-hidden" role="progressbar"
+            aria-valuemin={0} aria-valuemax={STEPS.length} aria-valuenow={Object.keys(completed).filter(k => completed[k]).length}
+            aria-label="Progres End of Day">
             <motion.div
               className="h-full grad-aurora"
               initial={false}
@@ -172,8 +164,11 @@ export default function EndOfDayWorkflow() {
               transition={{ duration: 0.4, ease: "easeOut" }}
             />
           </div>
+          <span className="text-xs tabular-nums text-muted-foreground whitespace-nowrap">
+            {Object.keys(completed).filter(k => completed[k]).length} / {STEPS.length} langkah selesai
+          </span>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Steps — vertical accordion-style stepper */}
       <div className="space-y-3">

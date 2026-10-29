@@ -25,7 +25,17 @@ import CRMHub from "./CRMHub";
 import EndOfDayWorkflow from "./EndOfDayWorkflow";
 import OutletBudgetTracker from "./OutletBudgetTracker";
 import { OutletScopeProvider } from "./OutletScopeContext";
-import OutletScopeHeader from "./OutletScopeHeader";
+import { useLayoutEffect, useState } from "react";
+import OutletScopeHeader, { OutletScopeCompact } from "./OutletScopeHeader";
+import { PageHeaderExtrasProvider, usePageHeaderExtrasConsumed } from "@/components/shared/PageHeader";
+
+/** Pemilih outlet tampil di header halaman (PageHeader). Bar penuh hanya untuk halaman tanpa PageHeader. */
+function OutletScopeFallback() {
+  const consumed = usePageHeaderExtrasConsumed();
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => { setMounted(true); }, []);
+  return mounted && consumed === 0 ? <OutletScopeHeader /> : null;
+}
 
 export default function OutletPortal() {
   const { user } = useAuth();
@@ -33,8 +43,9 @@ export default function OutletPortal() {
   const g = makeGate(user);
   return (
     <OutletScopeProvider>
+      <PageHeaderExtrasProvider extras={<OutletScopeCompact />}>
       <div data-testid="outlet-portal">
-        <OutletScopeHeader />
+        <OutletScopeFallback />
         <Routes>
         <Route index element={<OutletHome />} />
         <Route path="crm" element={<CRMHub />} />
@@ -68,6 +79,7 @@ export default function OutletPortal() {
         <Route path="*" element={<Navigate to="/outlet" replace />} />
         </Routes>
       </div>
+      </PageHeaderExtrasProvider>
     </OutletScopeProvider>
   );
 }

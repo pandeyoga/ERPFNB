@@ -18,6 +18,48 @@ import {
 } from "@/components/ui/select";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
+/** Pemilih outlet ringkas untuk area aksi PageHeader (DESIGN_SYSTEM §10.3: konteks layar bukan kartu di atas judul). */
+export function OutletScopeCompact() {
+  const { outletId, setOutletId, scopedOutlets, isFullAccess, allowAllOption, loaded } = useOutletScopeCtx();
+  if (!loaded) return <div className="skeleton h-9 w-48 rounded-md" aria-hidden />;
+  if (scopedOutlets.length === 0) {
+    return (
+      <span className="text-xs font-medium text-amber-800 dark:text-amber-400" data-testid="outlet-scope-header">
+        Tidak ada outlet dalam scope Anda
+      </span>
+    );
+  }
+  if (!isFullAccess && scopedOutlets.length === 1) {
+    const o = scopedOutlets[0];
+    return (
+      <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium"
+        title="Outlet Anda" data-testid="outlet-scope-header">
+        <Store className="h-4 w-4 text-muted-foreground" aria-hidden /> {o.name}
+      </span>
+    );
+  }
+  return (
+    <div data-testid="outlet-scope-header">
+      <Select value={outletId || "__all__"} onValueChange={(v) => setOutletId(v === "__all__" ? "" : v)}>
+        <SelectTrigger className="glass-input w-52 justify-start gap-2 [&>svg:last-child]:ml-auto" aria-label="Pilih outlet aktif" data-testid="outlet-scope-picker">
+          {outletId ? <Store className="h-4 w-4 shrink-0 text-muted-foreground" /> : <Globe2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
+          <SelectValue placeholder="Pilih outlet" />
+        </SelectTrigger>
+        <SelectContent>
+          {allowAllOption && (
+            <SelectItem value="__all__" data-testid="outlet-option-all">Semua Outlet ({scopedOutlets.length})</SelectItem>
+          )}
+          {scopedOutlets.map((o) => (
+            <SelectItem key={o.id} value={o.id} data-testid={`outlet-option-${o.id}`}>
+              {o.name}{o.brand_name ? ` · ${o.brand_name}` : ""}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export default function OutletScopeHeader() {
   const {
     outletId,

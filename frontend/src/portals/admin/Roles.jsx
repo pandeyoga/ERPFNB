@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, ShieldCheck, Shield, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, Shield, Eye } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import PageHeader from "@/components/shared/PageHeader";
+import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
-import LoadingState from "@/components/shared/LoadingState";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { confirmDialog } from "@/components/shared/confirmDialog";
@@ -46,59 +46,57 @@ export default function Roles({ embedded = false } = {}) {
       <PageHeader
           icon={Shield}
           title="Roles & Permissions"
-          subtitle="Role sistem & custom beserta permission-nya."
+          subtitle={`${roles.length} role aktif — role sistem (label "System") tidak bisa diubah atau dihapus.`}
           actions={newButton}
         />
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">{roles.length} role aktif · role sistem (label "System") tidak bisa diubah atau dihapus</p>
-      </div>
-      {loading ? <LoadingState rows={6} /> : (
-        roles.length === 0 ? <EmptyState title="Belum ada role" /> : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="roles-grid">
-            {roles.map((r) => (
-              <div key={r.id} className="glass-card p-4" data-testid={`role-card-${r.id}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <ShieldCheck className="h-4 w-4 text-aurora" />
-                    <h3 className="text-sm md:text-base font-semibold truncate">{r.name}</h3>
+      {/* Role = data sejenis → tabel dalam satu kartu, bukan kartu per role (DESIGN_SYSTEM §10.3). */}
+      <div className="glass-card overflow-hidden" data-testid="roles-grid">
+        <DataTable
+          columns={[
+            { key: "name", label: "Role", primary: true, sortable: true,
+              render: (r) => (
+                <div className="min-w-0">
+                  <div className="font-semibold flex items-center gap-1.5">
+                    {r.name}
+                    {r.is_system && <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-xs font-medium">System</span>}
                   </div>
-                  {/* Aksi selalu terlihat (sebelumnya hanya muncul saat hover) */}
-                  {r.is_system && (
-                    <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)} className="-mt-1 -mr-1"
-                            title="Lihat permission" aria-label={`Lihat permission role ${r.name}`}
-                            data-testid={`role-view-${r.id}`}>
-                      <Eye className="!h-3.5 !w-3.5" />
-                    </Button>
-                  )}
-                  {!r.is_system && (
-                    <div className="flex gap-1 -mt-1 -mr-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)}
-                              title="Edit role" aria-label={`Edit role ${r.name}`}
-                              data-testid={`role-edit-${r.id}`}>
-                        <Edit2 className="!h-3.5 !w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => deleteRole(r, load)}
-                              className="hover:bg-destructive/10 hover:text-destructive"
-                              title="Hapus role" aria-label={`Hapus role ${r.name}`}
-                              data-testid={`role-delete-${r.id}`}>
-                        <Trash2 className="!h-3.5 !w-3.5" />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="text-xs tabular-nums text-muted-foreground">{r.code}</div>
                 </div>
-                <p className="text-xs font-medium tabular-nums text-muted-foreground mt-1">{r.code}</p>
-                {r.description && <p className="text-xs mt-2">{r.description}</p>}
-                <div className="mt-3 flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">{(r.permissions || []).length} permissions</span>
-                  {r.is_system && (
-                    <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-xs font-medium">System</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
+              ) },
+            { key: "description", label: "Deskripsi", hideOnMobile: true,
+              render: (r) => <span className="text-sm text-muted-foreground">{r.description || "—"}</span> },
+            { key: "perm_count", label: "Permission", numeric: true, sortable: true,
+              sortAccessor: (r) => (r.permissions || []).length, render: (r) => (r.permissions || []).length },
+          ]}
+          rows={roles}
+          keyField="id"
+          loading={loading}
+          rowTestIdPrefix="role-card"
+          defaultSort={{ key: "name", dir: "asc" }}
+          empty={<EmptyState title="Belum ada role" />}
+          rowAction={(r) => r.is_system ? (
+            <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)}
+                    title="Lihat permission" aria-label={`Lihat permission role ${r.name}`}
+                    data-testid={`role-view-${r.id}`}>
+              <Eye className="!h-3.5 !w-3.5" />
+            </Button>
+          ) : (
+            <div className="flex gap-1 justify-end">
+              <Button variant="ghost" size="icon-sm" onClick={() => setEditing(r)}
+                      title="Edit role" aria-label={`Edit role ${r.name}`}
+                      data-testid={`role-edit-${r.id}`}>
+                <Edit2 className="!h-3.5 !w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon-sm" onClick={() => deleteRole(r, load)}
+                      className="hover:bg-destructive/10 hover:text-destructive"
+                      title="Hapus role" aria-label={`Hapus role ${r.name}`}
+                      data-testid={`role-delete-${r.id}`}>
+                <Trash2 className="!h-3.5 !w-3.5" />
+              </Button>
+            </div>
+          )}
+        />
+      </div>
 
       <RoleDialog editing={editing} perms={perms} onClose={() => setEditing(null)}
                    onSaved={() => { setEditing(null); load(); }} />

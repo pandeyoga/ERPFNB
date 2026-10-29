@@ -206,11 +206,12 @@ export default function CMSCareers() {
           <EmptyState icon={Briefcase} title="Belum ada lowongan" description="Klik Lowongan Baru untuk membuat lowongan pertama." />
         </Card>
       ) : (
-        <div className="space-y-2">
+        // Lowongan sejenis = baris dalam satu kartu, bukan kartu per lowongan (DESIGN_SYSTEM §10.3).
+        <div className="glass-card overflow-hidden divide-y divide-border/50">
           {jobs.map((job) => (
-            <Card
+            <div
               key={job.id}
-              className={`overflow-hidden transition-opacity ${job.is_active ? "" : "opacity-60"}`}
+              className={`transition-opacity ${job.is_active ? "" : "opacity-60"}`}
               data-testid={`job-row-${job.id}`}
             >
               <CardContent className="p-4">
@@ -297,7 +298,7 @@ export default function CMSCareers() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           ))}
         </div>
       )}

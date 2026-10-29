@@ -88,7 +88,7 @@ export default function UrgentPurchaseList() {
       <PageHeader
         icon={ShoppingBag}
         title="Urgent Purchase"
-        subtitle="Pembelian mendadak di luar PR normal — disetujui finance. Filter outlet ada di header Outlet Aktif."
+        subtitle="Pembelian mendadak di luar PR normal — disetujui finance."
         className="mb-0 md:mb-0"
         actions={
           <Button onClick={() => setShowForm(true)} data-testid="up-new">

@@ -193,7 +193,7 @@ export default function FdoPage() {
             <h2 className="text-base md:text-lg font-semibold leading-tight">FDO — Floor Daily Order</h2>
             <p className="text-xs text-muted-foreground">
               Permintaan harian untuk floor/service department.
-              {!selectedOutlet && " Pilih outlet di formulir atau di header Outlet Aktif."}
+              {!selectedOutlet && " Pilih outlet di formulir atau di pemilih outlet (kanan atas)."}
             </p>
           </div>
         </div>
