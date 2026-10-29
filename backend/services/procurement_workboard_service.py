@@ -43,14 +43,15 @@ _PO_COL = {
 }
 
 
+# Label kolom mengikuti aturan bahasa UI (DESIGN_SYSTEM §10.5): status persetujuan/umum Bahasa Indonesia.
 COLUMN_DEFS: list[dict] = [
     {"key": "pr_draft", "label": "PR Draft", "tone": "muted"},
-    {"key": "pr_pending", "label": "PR Pending Approval", "tone": "amber"},
-    {"key": "pr_approved", "label": "PR Approved", "tone": "blue"},
-    {"key": "po_draft", "label": "PO Draft / Approval", "tone": "indigo"},
-    {"key": "po_sent", "label": "PO Sent", "tone": "violet"},
+    {"key": "pr_pending", "label": "PR Menunggu Approval", "tone": "amber"},
+    {"key": "pr_approved", "label": "PR Disetujui", "tone": "blue"},
+    {"key": "po_draft", "label": "PO Draft / Menunggu Approval", "tone": "indigo"},
+    {"key": "po_sent", "label": "PO Terkirim", "tone": "violet"},
     {"key": "po_partial", "label": "PO Partial", "tone": "orange"},
-    {"key": "po_received", "label": "PO Received", "tone": "green"},
+    {"key": "po_received", "label": "PO Diterima", "tone": "green"},
 ]
 
 

@@ -186,6 +186,65 @@ Zona tombol per jenis aksi (layar awal tiap URL):
 6. Aturan dimasukkan ke `docs/DESIGN_SYSTEM.md` + `CLAUDE.md`. Crawler `anatomy.js` dipakai sebagai penjaga
    regresi (temuan baru = gagal).
 
+
+---
+
+## Bagian 4 — Hasil perbaikan (29 Okt 2026)
+
+Standar disetujui dan diterapkan (`DESIGN_SYSTEM.md` §10). Diukur ulang dengan crawler yang sama (170 halaman, 550 state);
+angka = jumlah halaman unik yang masih memuat temuan.
+
+| Temuan | Sebelum | Sesudah |
+|---|---|---|
+| Kartu konteks "Outlet aktif" di atas judul (`context-above-h1`) | 18 | **0** |
+| Daftar sejenis dijadikan kartu per baris (`rows-as-cards`) | 12 | **0** |
+| Data seragam jadi grid kartu (`card-grid-uniform`) | 3 | **1** |
+| Simpan form di header halaman (`save-in-header`) | 6 | **0** |
+| Simpan jauh di atas form panjang (`save-far`) | 6 | **0** |
+| Simpan per baris (`save-per-row`) | 1 | **0** |
+| Simpan hanya di bawah lipatan (`save-below-fold`) | 1 | **0** |
+| Aksi header turun ke baris sendiri (`header-actions-wrap`) | 8 | **0** |
+| Kalimat pengantar bertumpuk (`intro-stacking`) | 20 | **1** |
+| Filter terpisah dari tabelnya (`filter-split`) | 17 | **4** |
+| Filter halaman dikotakkan (`page-filter-card`) | 38 | **14** |
+| Grid KPI dengan item yatim (`kpi-orphan`) | 1 | **0** |
+| Dua grid KPI beda jumlah kolom (`kpi-cols-jump`) | 2 | **1** |
+| Grup KPI berjudul & tidak (`kpi-group-mix`) | 2 | **1** |
+| Angka terpotong (`clipped-number`) | 5 | **3** |
+| Judul campur luar/dalam kartu (`heading-mix`) | 2 | **2** |
+| Judul ganda (heuristik) (`double-title`) | 2 | **2** |
+| Blok tanpa judul di antara blok berjudul (`untitled-sibling`) | 16 | **16** |
+| Kartu tipis (pesan/progress) (`note-card`) | 43 | **40** |
+| Bingkai 3 lapis (`frame-depth`) | 1 | **1** |
+| TabsList berbingkai di dalam kartu (`frame-in-frame`) | 9 | **9** |
+| Istilah EN/ID campur (konsep sama) (`term-mix`) | 2 | **2** |
+
+**Yang dikerjakan**
+- **Primitive baru:** `PageHeader` hub (tab mengisi subtitle & aksi header hub), `PageHeaderExtrasProvider` (pemilih outlet di
+  header), `FormActionBar` + `useDirtyState` + `UnsavedChangesGuard` (bar simpan sticky, penanda & peringatan perubahan belum
+  disimpan), `ListToolbar` + `StatusTabs` (filter di dalam kartu tabel, maks. 5 tab + "Status lain").
+- **Aksi layar di kanan judul** di 13 hub (Payments, Compensation, Budget, Users, Setup, Loyalty, Monitoring, Analytics, Tax,
+  Vendor Comparison, Stock Movements, CMS, Business Rules, Pusat Persetujuan).
+- **Simpan:** Approval Matrix (termasuk peringatan saat ganti entitas), System Settings (satu bar), PR/PO/Payment Baru, Daily Sales,
+  Opname, Budget Allocation (ganti periode juga dijaga), Smart SEO.
+- **Kartu:** Pusat Persetujuan, Number Series, Roles, Integrations, CMS (brand/outlet/berita/karier) → baris/tabel dalam satu
+  kartu; filter tabel masuk kartu tabel (±20 daftar); filter halaman tanpa kartu (±20 halaman); progress End of Day di header.
+- **Judul & grid:** Budget vs Actual (ringkasan halaman di atas + satu tabel kategori & P&L), Owner (tanpa judul ganda),
+  Sales Analytics (satu grup KPI); KPI tidak lagi memotong nominal.
+- **Bahasa:** status akuntansi EN (Partial, Overdue, Written Off, …), status persetujuan ID; label umum ID (Tanggal, Deskripsi,
+  Nominal, …); "Buat ‹dokumen›" / "Tambah ‹data›"; kolom Kanban & pill integrasi dalam Bahasa Indonesia; Payments: tab
+  "Diajukan" digabung ke "Menunggu Approval" (backend menerima beberapa status sekaligus, dengan tes regresi).
+
+**Sisa & catatan**
+- *Judul ganda / judul campur* (Owner, Sales Analytics): sisa temuan adalah bagian dashboard berisi ≥ 2 kartu berjudul
+  (mis. "Cash & Digest" → "Cash Position" + "Digest Preview"), yang sesuai standar; heuristik menghitung kemiripan kata.
+- *TabsList berbingkai di dalam kartu*: sudah tampil tanpa border lewat CSS (§10.3); crawler masih menghitung lebar border.
+- *Filter halaman dikotakkan* (14): sebagian besar kartu form (header PR/GR/RFQ, form reservasi, kalkulator pajak) yang terbaca
+  sebagai filter; sisanya Pivot & Period compare di Reports.
+- *Istilah campur* (AR invoices): "Overdue" + "Jatuh Tempo" sesuai keputusan (konsep berbeda: lewat jatuh tempo vs jatuh tempo).
+- Belum masuk putaran ini (dari audit komposisi): tab hub terpotong (Payments/Reports), toolbar CMS terlipat, kolom sempit,
+  tabel melebar (Budget Allocation, Compensation), kartu tipis & blok form tanpa judul di halaman detail.
+
 ---
 
 ## Lampiran — per halaman
