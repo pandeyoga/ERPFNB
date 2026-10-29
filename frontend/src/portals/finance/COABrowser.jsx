@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 import { fetchAll } from "@/lib/api";
+import ListToolbar from "@/components/shared/ListToolbar";
 const TYPES = [
   { v: "",          l: "Semua tipe" },
   { v: "asset",     l: "Asset" },
@@ -70,28 +71,28 @@ export default function COABrowser() {
         )}
       />
       <div className="space-y-3 lg:space-y-4">
-      <div data-testid="coa-filter-card" className="glass-card p-3 flex flex-wrap gap-3 items-end">
-        <div className="min-w-[160px]">
-          <Label className="text-xs font-medium text-muted-foreground">Tipe</Label>
-          <SimpleSelect value={type} onValueChange={setType} ariaLabel="Tipe akun"
-            options={TYPES.map(t => ({ value: t.v, label: t.l }))}
-            className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="coa-type" />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="coa-search" className="text-xs font-medium text-muted-foreground">Cari COA</Label>
-          <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input id="coa-search" value={q} onChange={e => setQ(e.target.value)}
-              placeholder="Kode / nama akun…" className="glass-input pl-9 h-9" data-testid="coa-search" />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 h-9" data-testid="coa-postable-toggle">
-          <Checkbox id="coa-postable-only" checked={postableOnly} onCheckedChange={v => setPostableOnly(!!v)} />
-          <Label htmlFor="coa-postable-only" className="text-xs md:text-sm font-medium cursor-pointer select-none">Postable saja</Label>
-        </div>
-      </div>
-
       <div data-testid="coa-table-card" className="glass-card overflow-hidden">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="coa-filter-card" className="items-end">
+          <div className="min-w-[160px]">
+            <Label className="text-xs font-medium text-muted-foreground">Tipe</Label>
+            <SimpleSelect value={type} onValueChange={setType} ariaLabel="Tipe akun"
+              options={TYPES.map(t => ({ value: t.v, label: t.l }))}
+              className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="coa-type" />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="coa-search" className="text-xs font-medium text-muted-foreground">Cari COA</Label>
+            <div className="relative mt-1">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input id="coa-search" value={q} onChange={e => setQ(e.target.value)}
+                placeholder="Kode / nama akun…" className="glass-input pl-9 h-9" data-testid="coa-search" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 h-9" data-testid="coa-postable-toggle">
+            <Checkbox id="coa-postable-only" checked={postableOnly} onCheckedChange={v => setPostableOnly(!!v)} />
+            <Label htmlFor="coa-postable-only" className="text-xs md:text-sm font-medium cursor-pointer select-none">Postable saja</Label>
+          </div>
+        </ListToolbar>
         <DataTable
           rows={filtered}
           keyField="code"

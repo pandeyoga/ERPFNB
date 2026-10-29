@@ -75,7 +75,7 @@ export default function ReservationSummary() {
       />
 
       {/* Filters */}
-      <div className="glass-card p-3 flex flex-wrap items-end gap-3" data-testid="reservation-filters">
+      <div className="flex flex-wrap items-end gap-3" data-testid="reservation-filters">
         <div className="space-y-1">
           <Label htmlFor="reservation-date-from" className="text-xs md:text-sm font-medium">Dari</Label>
           <Input id="reservation-date-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[160px]" data-testid="filter-date-from" />

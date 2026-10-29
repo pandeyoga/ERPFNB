@@ -53,7 +53,7 @@ export default function Valuation() {
         ) : null}
       />
 
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="val-toolbar">
+      <div className="flex flex-wrap gap-3 items-end" data-testid="val-toolbar">
         <div className="min-w-[220px]">
           <Label className="text-xs md:text-sm font-medium">Outlet</Label>
           <SimpleSelect

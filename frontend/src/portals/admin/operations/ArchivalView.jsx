@@ -1,3 +1,4 @@
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import { Archive as ArchiveIcon, RefreshCw, Trash2, AlertCircle } from "lucide-react";
 
@@ -56,21 +57,22 @@ export default function ArchivalView() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      {/* Toolbar (judul seksi = tab "Archival" di hub Monitoring) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">Retention per koleksi. Konfigurasi via env (RETENTION_*_DAYS).</p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="archival-refresh">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="outline" onClick={() => run(true)} disabled={running} data-testid="archival-dry-run">
-            <ArchiveIcon className="h-3.5 w-3.5" /> Dry run
-          </Button>
-          <Button onClick={() => run(false)} disabled={running} data-testid="archival-run">
-            <Trash2 className="h-3.5 w-3.5" /> {running ? "Menjalankan…" : "Jalankan Archival"}
-          </Button>
-        </div>
-      </div>
+      {/* Di hub Monitoring, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Archival"
+        subtitle="Retention per koleksi. Konfigurasi via env (RETENTION_*_DAYS)."
+        actions={<>
+            <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="archival-refresh">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" onClick={() => run(true)} disabled={running} data-testid="archival-dry-run">
+              <ArchiveIcon className="h-3.5 w-3.5" /> Dry run
+            </Button>
+            <Button onClick={() => run(false)} disabled={running} data-testid="archival-run">
+              <Trash2 className="h-3.5 w-3.5" /> {running ? "Menjalankan…" : "Jalankan Archival"}
+            </Button>
+        </>}
+      />
 
       <div className="glass-card p-4 flex items-start gap-3 border-l-4 border-amber-500">
         <AlertCircle className="h-5 w-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />

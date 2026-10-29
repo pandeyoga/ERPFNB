@@ -1,3 +1,4 @@
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState } from "react";
 import { RefreshCw, Server, Clock, AlertTriangle, Database, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
@@ -61,13 +62,16 @@ export default function MetricsView() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      {/* Toolbar (judul seksi = tab "Metrics" di hub Monitoring) */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Kesehatan sistem — auto-refresh tiap 15 detik.</p>
-        <Button variant="outline" onClick={() => load()} disabled={refreshing} data-testid="metrics-refresh">
-          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Muat ulang
-        </Button>
-      </div>
+      {/* Di hub Monitoring, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Metrics"
+        subtitle="Kesehatan sistem — auto-refresh tiap 15 detik."
+        actions={<>
+          <Button variant="outline" onClick={() => load()} disabled={refreshing} data-testid="metrics-refresh">
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Muat ulang
+          </Button>
+        </>}
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <CompactStatCard label="Uptime" value={fmtUptime(data.uptime_sec)} sub="sejak start" icon={Clock} color="aurora-1" />

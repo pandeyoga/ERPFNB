@@ -206,7 +206,7 @@ export default function ExecutiveHome() {
       </div>
 
       {/* Filter bar */}
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="exec-filterbar">
+      <div className="flex flex-wrap items-center gap-2" data-testid="exec-filterbar">
         <PeriodPicker
           value={periodMeta.preset}
           onChange={setPeriodMeta}

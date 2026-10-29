@@ -5,6 +5,7 @@
  * semua route approval mengarah ke Pusat Persetujuan) supaya fitur delegasi bisa
  * dijangkau lagi dari tab "Delegasi" di /my-approvals.
  */
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState } from "react";
 import { Loader2, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -67,15 +68,16 @@ export default function ApprovalDelegations() {
 
   return (
     <div className="space-y-3" data-testid="approval-delegations">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-base md:text-lg font-semibold">Delegasi Aktif</h2>
-          <p className="text-xs md:text-sm text-muted-foreground">Approval yang Anda delegasikan ke orang lain untuk sementara.</p>
-        </div>
-        <Button onClick={() => setOpen(true)} data-testid="create-delegation-btn">
-          <Plus /> Tambah Delegasi
-        </Button>
-      </div>
+      {/* Di Pusat Persetujuan (hub), PageHeader mengisi subtitle & aksi header (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Delegasi Aktif"
+        subtitle="Approval yang Anda delegasikan ke orang lain untuk sementara."
+        actions={(
+          <Button onClick={() => setOpen(true)} data-testid="create-delegation-btn">
+            <Plus /> Tambah Delegasi
+          </Button>
+        )}
+      />
 
       <DataTable
         rows={rows}

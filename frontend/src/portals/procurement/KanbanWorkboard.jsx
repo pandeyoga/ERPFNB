@@ -193,7 +193,7 @@ export default function KanbanWorkboard() {
         }
       />
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="wb-filters">
+      <div className="flex flex-wrap items-center gap-2" data-testid="wb-filters">
         <SimpleSelect
           value={outletId}
           onValueChange={setOutletId}

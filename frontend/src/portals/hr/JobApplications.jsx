@@ -163,7 +163,7 @@ export default function JobApplications() {
       />
 
       {/* Filters */}
-      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="job-applications-filters">
+      <div className="flex flex-wrap gap-2 items-center" data-testid="job-applications-filters">
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-[200px]" role="search">
           <Input

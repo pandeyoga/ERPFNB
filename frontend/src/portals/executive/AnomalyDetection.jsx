@@ -107,7 +107,7 @@ export default function AnomalyDetection() {
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="anomaly-filters">
+      <div className="flex flex-wrap gap-2 items-center" data-testid="anomaly-filters">
         <Filter className="h-4 w-4 text-muted-foreground" aria-hidden />
         <SimpleSelect value={filters.severity} onValueChange={(v) => setFilters((f) => ({ ...f, severity: v }))} className="w-[170px]" ariaLabel="Filter severity" testId="anomaly-filter-severity" placeholder="Semua Severity"
           options={[

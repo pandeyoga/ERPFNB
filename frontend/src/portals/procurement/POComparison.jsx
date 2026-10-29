@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 import { fetchAll } from "@/lib/api";
+import ListToolbar from "@/components/shared/ListToolbar";
 export default function POComparison({ embedded = false }) {
   const [pos, setPos] = useState([]);
   const [vendors, setVendors] = useState([]);
@@ -110,37 +111,36 @@ export default function POComparison({ embedded = false }) {
         />
 
       {/* Filters + PO picker */}
-      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="po-cmp-filters">
-        <SimpleSelect
-          value={filters.vendor_id}
-          onValueChange={(v) => setFilters((f) => ({ ...f, vendor_id: v }))}
-          options={[{ value: "", label: "Semua vendor" }, ...vendors.map((v) => ({ value: v.id, label: v.name }))]}
-          placeholder="Semua vendor"
-          ariaLabel="Filter vendor"
-          className="glass-input w-[200px]"
-          testId="po-cmp-filter-vendor"
-        />
-        <SimpleSelect
-          value={filters.status}
-          onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
-          options={[
-            { value: "", label: "Semua status" },
-            { value: "draft", label: "Draft" },
-            { value: "approved", label: "Disetujui" },
-            { value: "sent", label: "Terkirim" },
-            { value: "partial", label: "Partial" },
-            { value: "received", label: "Diterima" },
-          ]}
-          placeholder="Semua status"
-          ariaLabel="Filter status"
-          className="glass-input w-[160px]"
-          testId="po-cmp-filter-status"
-        />
-        <span className="text-xs text-muted-foreground ml-auto" data-testid="po-cmp-selected-count">{selected.length}/4 PO dipilih untuk dibandingkan</span>
-      </div>
-
-      {/* PO list */}
       <div className="glass-card overflow-hidden" data-testid="po-cmp-list-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="po-cmp-filters">
+          <SimpleSelect
+            value={filters.vendor_id}
+            onValueChange={(v) => setFilters((f) => ({ ...f, vendor_id: v }))}
+            options={[{ value: "", label: "Semua vendor" }, ...vendors.map((v) => ({ value: v.id, label: v.name }))]}
+            placeholder="Semua vendor"
+            ariaLabel="Filter vendor"
+            className="glass-input w-[200px]"
+            testId="po-cmp-filter-vendor"
+          />
+          <SimpleSelect
+            value={filters.status}
+            onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
+            options={[
+              { value: "", label: "Semua status" },
+              { value: "draft", label: "Draft" },
+              { value: "approved", label: "Disetujui" },
+              { value: "sent", label: "Terkirim" },
+              { value: "partial", label: "Partial" },
+              { value: "received", label: "Diterima" },
+            ]}
+            placeholder="Semua status"
+            ariaLabel="Filter status"
+            className="glass-input w-[160px]"
+            testId="po-cmp-filter-status"
+          />
+          <span className="text-xs text-muted-foreground ml-auto" data-testid="po-cmp-selected-count">{selected.length}/4 PO dipilih untuk dibandingkan</span>
+        </ListToolbar>
         <div className="px-4 py-3 border-b border-border/50">
           <h3 className="text-sm md:text-base font-semibold">Pilih PO</h3>
         </div>

@@ -69,7 +69,7 @@ function anatomy() {
     if (tl < 120 && !c.querySelector(CARD)) return 'note';
     return 'content';
   };
-  const cardEls = all(CARD);
+  const cardEls = all(CARD).filter((c) => !(c.parentElement && c.parentElement.classList.contains('sticky')));
   const cards = cardEls.map((c) => {
     let depth = 0; for (let p = c.parentElement; p; p = p.parentElement) if (p.matches && p.matches(CARD)) depth++;
     const titled = T.some((t) => c.contains(t) && t.closest(CARD) === c && R(t).top - R(c).top < 56);
@@ -153,6 +153,8 @@ function anatomy() {
   // ---- outline (skeleton of main column) -----------------------------------------------------------------
   const describe = (el, depth) => {
     if (el === header) return ['HEADER' + (header.querySelectorAll('button, a').length ? '+actions' : '')];
+    // FormActionBar (bar simpan sticky) bukan blok konten
+    if (el.classList && el.classList.contains('sticky') && el.querySelector(':scope > .glass-card')) return ['ACTIONBAR'];
     if (el.matches(CARD)) return [`CARD:${cardKind(el)}${T.some((t) => t.closest(CARD) === el && R(t).top - R(el).top < 56) ? '' : '(untitled)'}`];
     if (el.matches('[role=tablist]') || (el.querySelector(':scope > [role=tablist]') && !el.querySelector(CARD))) return [el === hubTabs || el.contains(hubTabs) ? 'HUB-TABS' : 'TABS'];
     if (T.includes(el)) return [`TITLE:${txt(el).slice(0, 30)}`];

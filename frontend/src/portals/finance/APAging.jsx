@@ -52,7 +52,7 @@ export default function APAging({ embedded = false }) {
       <PageHeader icon={Receipt} title="AP Aging"
           subtitle="Hutang usaha (GR belum dibayar) per vendor, dikelompokkan per umur jatuh tempo." />
 
-      <div className="glass-card p-3 flex flex-wrap items-end gap-3" data-testid="ap-toolbar">
+      <div className="flex flex-wrap items-end gap-3" data-testid="ap-toolbar">
         <div className="min-w-[160px]">
           <Label htmlFor="ap-asof" className="text-xs md:text-sm font-medium">Per tanggal</Label>
           <Input id="ap-asof" type="date" value={asOf} onChange={e => setAsOf(e.target.value)}

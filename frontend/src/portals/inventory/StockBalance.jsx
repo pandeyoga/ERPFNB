@@ -22,6 +22,7 @@ import StockBalanceMatrix from "./StockBalanceMatrix";
 import useOutletScope from "@/hooks/useOutletScope";
 import { useDebounce } from "@/hooks/useDebounce";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 function readView() {
   try { return localStorage.getItem("inv-bal-view") === "matrix" ? "matrix" : "list"; } catch { return "list"; }
@@ -101,29 +102,29 @@ function StockBalanceList() {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="stock-balance-list">
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="bal-filters">
-        <div className="min-w-[200px]">
-          <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-          <SimpleSelect
-            ariaLabel="Filter outlet"
-            value={outletId}
-            onValueChange={v => { setOutletId(v); setPage(1); }}
-            options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua"
-            className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
-            testId="inv-bal-outlet"
-          />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="inv-bal-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
-          <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
-            <Input id="inv-bal-search-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Cari nama item…" className="glass-input pl-9" data-testid="inv-bal-search" />
-          </div>
-        </div>
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="bal-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="bal-filters" className="items-end">
+          <div className="min-w-[200px]">
+            <Label className="text-xs md:text-sm font-medium">Outlet</Label>
+            <SimpleSelect
+              ariaLabel="Filter outlet"
+              value={outletId}
+              onValueChange={v => { setOutletId(v); setPage(1); }}
+              options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Semua"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              testId="inv-bal-outlet"
+            />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="inv-bal-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
+            <div className="relative mt-1">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input id="inv-bal-search-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Cari nama item…" className="glass-input pl-9" data-testid="inv-bal-search" />
+            </div>
+          </div>
+        </ListToolbar>
         <DataTable
           columns={[
             { key: "item_name", label: "Item", primary: true, sortable: true, sortAccessor: r => r.item_name || r.item_id || "",

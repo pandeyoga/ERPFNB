@@ -117,7 +117,7 @@ export default function PRConsolidation() {
       />
 
       {/* Filters */}
-      <div className="glass-card p-3 flex flex-wrap gap-2 items-center" data-testid="cons-filters">
+      <div className="flex flex-wrap gap-2 items-center" data-testid="cons-filters">
         <SimpleSelect
           value={filters.status}
           onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}

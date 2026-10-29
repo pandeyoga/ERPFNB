@@ -129,7 +129,7 @@ export default function OutletBudgetMonitor() {
       />
 
       {/* Period selector — tipe periode pakai Select agar tidak ada 2 baris tab bertumpuk */}
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="monitor-period-bar">
+      <div className="flex flex-wrap items-center gap-2" data-testid="monitor-period-bar">
         <SimpleSelect
           value={periodType}
           onValueChange={setPeriodType}

@@ -1,3 +1,4 @@
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import { RefreshCw, RotateCcw } from "lucide-react";
 
@@ -61,18 +62,19 @@ export default function RateLimitsView() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      {/* Toolbar (judul seksi = tab "Rate Limits" di hub Monitoring) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">Token-bucket in-memory per (bucket, key). Window 60 detik.</p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="rl-refresh">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="outline" onClick={resetAll} data-testid="rl-reset-all">
-            <RotateCcw className="h-3.5 w-3.5" /> Reset semua
-          </Button>
-        </div>
-      </div>
+      {/* Di hub Monitoring, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Rate limits"
+        subtitle="Token-bucket in-memory per (bucket, key). Window 60 detik."
+        actions={<>
+            <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="rl-refresh">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" onClick={resetAll} data-testid="rl-reset-all">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset semua
+            </Button>
+        </>}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
         {Object.entries(buckets).map(([name, [limit, win]]) => (

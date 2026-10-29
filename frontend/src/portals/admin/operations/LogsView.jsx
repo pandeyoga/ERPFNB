@@ -1,3 +1,4 @@
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import { RefreshCw, Search, Filter } from "lucide-react";
 
@@ -78,15 +79,16 @@ export default function LogsView() {
 
   return (
     <div className="space-y-3">
-      {/* Toolbar (judul seksi = tab "Logs" di hub Monitoring) */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-muted-foreground">
-          Log request terbaru — total {stats?.total || 0} entri · per level: {Object.entries(stats?.recent_by_level || {}).map(([k, v]) => `${k}:${v}`).join(" · ") || "-"}
-        </p>
-        <Button variant="outline" onClick={load} disabled={loading} data-testid="logs-refresh">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Muat ulang
-        </Button>
-      </div>
+      {/* Di hub Monitoring, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Logs"
+        subtitle={<>Log request terbaru — total {stats?.total || 0} entri · per level: {Object.entries(stats?.recent_by_level || {}).map(([k, v]) => `${k}:${v}`).join(" · ") || "-"}</>}
+        actions={<>
+          <Button variant="outline" onClick={load} disabled={loading} data-testid="logs-refresh">
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Muat ulang
+          </Button>
+        </>}
+      />
 
       {error && <ErrorState message={error} onRetry={load} />}
 

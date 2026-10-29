@@ -98,7 +98,7 @@ export default function PaymentRunList({ embedded = false }) {
         </div>
       )}
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-3" data-testid="prn-toolbar">
+      <div className="flex flex-wrap items-center gap-3" data-testid="prn-toolbar">
         <Tabs value={status} onValueChange={setStatus}>
           <TabsList data-testid="prn-status-tabs" aria-label="Filter status payment run">
             {STATUS_TABS.map(t => (

@@ -159,7 +159,7 @@ export default function VendorScorecard() {
         }
       />
 
-      <div className="glass-card p-3 flex flex-wrap gap-3 items-end" data-testid="scorecard-filter">
+      <div className="flex flex-wrap gap-3 items-end" data-testid="scorecard-filter">
         <div>
           <Label htmlFor="scorecard-from" className="text-xs md:text-sm font-medium">Dari</Label>
           <Input id="scorecard-from" type="date" value={from} onChange={e => setFrom(e.target.value)}

@@ -47,7 +47,7 @@ export default function CashflowReport() {
 
   return (
     <div data-testid="cashflow-report-page" className="space-y-3 lg:space-y-4">
-      <div data-testid="cf-filter-card" className="glass-card p-3 flex flex-wrap items-end gap-3">
+      <div data-testid="cf-filter-card" className="flex flex-wrap items-end gap-3">
         <div className="min-w-[160px]">
           <Label htmlFor="cf-period" className="text-xs font-medium text-muted-foreground">Periode</Label>
           <Input id="cf-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}

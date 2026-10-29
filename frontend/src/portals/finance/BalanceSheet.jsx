@@ -47,7 +47,7 @@ export default function BalanceSheet() {
 
   return (
     <div data-testid="balance-sheet-page" className="space-y-3 lg:space-y-4">
-      <div data-testid="bs-filter-card" className="glass-card p-3 flex flex-wrap items-end gap-3">
+      <div data-testid="bs-filter-card" className="flex flex-wrap items-end gap-3">
         <div className="min-w-[180px]">
           <Label htmlFor="bs-asof" className="text-xs font-medium text-muted-foreground">Per tanggal</Label>
           <Input id="bs-asof" type="date" value={asOf} onChange={e => setAsOf(e.target.value)}

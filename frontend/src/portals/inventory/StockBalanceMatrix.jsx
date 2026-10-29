@@ -25,6 +25,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 function cellClasses(cell) {
   if (cell.negative) return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
@@ -214,62 +215,62 @@ export default function StockBalanceMatrix() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="matrix-toolbar">
-        <div className="min-w-[260px]" role="group" aria-labelledby="matrix-outlet-label">
-          <span id="matrix-outlet-label" className="text-xs md:text-sm font-medium">
-            Outlet <span className="font-normal text-muted-foreground">· {selectedOutlets.length > 0 ? `${selectedOutlets.length} dipilih` : "semua"}</span>
-          </span>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {outletList.map(o => {
-              const active = selectedOutlets.includes(o.id);
-              return (
-                <Button
-                  key={o.id}
-                  type="button"
-                  size="sm"
-                  variant={active ? "default" : "outline"}
-                  aria-pressed={active}
-                  onClick={() => toggleOutlet(o.id)}
-                  data-testid={`matrix-outlet-${o.id}`}
-                >
-                  {o.name}
-                </Button>
-              );
-            })}
-            {selectedOutlets.length > 0 && (
-              <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOutlets([])} data-testid="matrix-outlet-reset">
-                <X /> Reset
-              </Button>
-            )}
-          </div>
-        </div>
-        <div className="flex-1 min-w-[220px]">
-          <Label htmlFor="matrix-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
-          <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
-            <Input id="matrix-search-input" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama / kode…" className="glass-input pl-9"
-              data-testid="matrix-search" />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 h-9">
-          <Checkbox id="matrix-include-zero-cb" checked={includeZero}
-            onCheckedChange={(v) => setIncludeZero(v === true)}
-            data-testid="matrix-include-zero" />
-          <Label htmlFor="matrix-include-zero-cb" className="text-xs md:text-sm font-medium cursor-pointer">Tampilkan item qty = 0</Label>
-        </div>
-        {belowParCount > 0 && (
-          <Button asChild variant="outline" size="sm" className="text-rose-700 dark:text-rose-300 border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15">
-            <Link to="/inventory/low-stock" data-testid="matrix-low-link">
-              <AlertTriangle />
-              {belowParCount} sel di bawah par
-              <ArrowUpRight />
-            </Link>
-          </Button>
-        )}
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="matrix-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="matrix-toolbar">
+          <div className="min-w-[260px]" role="group" aria-labelledby="matrix-outlet-label">
+            <span id="matrix-outlet-label" className="text-xs md:text-sm font-medium">
+              Outlet <span className="font-normal text-muted-foreground">· {selectedOutlets.length > 0 ? `${selectedOutlets.length} dipilih` : "semua"}</span>
+            </span>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {outletList.map(o => {
+                const active = selectedOutlets.includes(o.id);
+                return (
+                  <Button
+                    key={o.id}
+                    type="button"
+                    size="sm"
+                    variant={active ? "default" : "outline"}
+                    aria-pressed={active}
+                    onClick={() => toggleOutlet(o.id)}
+                    data-testid={`matrix-outlet-${o.id}`}
+                  >
+                    {o.name}
+                  </Button>
+                );
+              })}
+              {selectedOutlets.length > 0 && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOutlets([])} data-testid="matrix-outlet-reset">
+                  <X /> Reset
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 min-w-[220px]">
+            <Label htmlFor="matrix-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
+            <div className="relative mt-1">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input id="matrix-search-input" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Cari nama / kode…" className="glass-input pl-9"
+                data-testid="matrix-search" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 h-9">
+            <Checkbox id="matrix-include-zero-cb" checked={includeZero}
+              onCheckedChange={(v) => setIncludeZero(v === true)}
+              data-testid="matrix-include-zero" />
+            <Label htmlFor="matrix-include-zero-cb" className="text-xs md:text-sm font-medium cursor-pointer">Tampilkan item qty = 0</Label>
+          </div>
+          {belowParCount > 0 && (
+            <Button asChild variant="outline" size="sm" className="text-rose-700 dark:text-rose-300 border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15">
+              <Link to="/inventory/low-stock" data-testid="matrix-low-link">
+                <AlertTriangle />
+                {belowParCount} sel di bawah par
+                <ArrowUpRight />
+              </Link>
+            </Button>
+          )}
+        </ListToolbar>
         <DataTable
           rows={matrix.rows}
           keyField="item_id"

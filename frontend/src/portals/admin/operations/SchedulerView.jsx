@@ -1,3 +1,4 @@
+import PageHeader from "@/components/shared/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import { Play, RefreshCw, CheckCircle2, XCircle, Clock } from "lucide-react";
 
@@ -68,13 +69,16 @@ export default function SchedulerView() {
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      {/* Toolbar (judul seksi = tab "Scheduler" di hub Monitoring) */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Background jobs — {jobs.length} job terjadwal · TZ Asia/Jakarta</p>
-        <Button variant="outline" onClick={load} data-testid="scheduler-refresh">
-          <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
-        </Button>
-      </div>
+      {/* Di hub Monitoring, PageHeader mengisi subtitle & aksi header hub (DESIGN_SYSTEM §10.1). */}
+      <PageHeader
+        title="Scheduler"
+        subtitle={<>Background jobs — {jobs.length} job terjadwal · TZ Asia/Jakarta</>}
+        actions={<>
+          <Button variant="outline" onClick={load} data-testid="scheduler-refresh">
+            <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
+          </Button>
+        </>}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {jobs.map((j) => {

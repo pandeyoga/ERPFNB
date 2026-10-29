@@ -19,7 +19,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import PageHeader from "@/components/shared/PageHeader";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import ListToolbar, { StatusTabs } from "@/components/shared/ListToolbar";
 import ApprovalDelegations, { APPROVAL_ENTITY_LABELS } from "@/components/shared/ApprovalDelegations";
 import EmptyState from "@/components/shared/EmptyState";
@@ -113,112 +113,114 @@ export default function MyApprovals() {
   );
 
   return (
-    <div className="space-y-3 max-w-6xl mx-auto" data-testid="my-approvals-page">
-      <PageHeader
-        icon={Inbox}
-        title="Pusat Persetujuan"
-        subtitle="Setujui atau tolak dokumen dari semua modul tanpa membuka detail."
-        actions={
-          <Button variant="outline" onClick={load} data-testid="my-approvals-refresh">
-            <RefreshCw className={cn(loading && "animate-spin")} /> Muat ulang
-          </Button>
-        }
-      />
-
-      <Tabs value={view} onValueChange={setView} data-testid="approval-center">
-        <TabsList>
-          <TabsTrigger value="queue" data-testid="tab-queue">
-            Antrean
-            {totalCount > 0 && (
-              <span className="ml-0.5 rounded-full bg-foreground/10 px-1.5 text-xs leading-4 tabular-nums">{totalCount}</span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="delegation" data-testid="tab-delegation">Delegasi</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="queue" className="space-y-3">
-      {/* Satu kartu daftar: filter tipe di atas, baris antrean bergaris pemisah — bukan kartu per item (§10.3). */}
-      <div className="glass-card overflow-hidden">
-        <ListToolbar>
-          <StatusTabs
-            value={tab}
-            onChange={setTab}
-            ariaLabel="Filter tipe dokumen"
-            testId="approval-kpi"
-            tabTestId={(k) => (k === "all" ? "stat-total" : `stat-${k}`)}
-            options={[
-              { key: "all", label: <>Semua <Count n={totalCount} /></> },
-              ...filterTypes.map((key) => ({
-                key,
-                label: <>{APPROVAL_ENTITY_LABELS[key] || key.replace(/_/g, " ")} <Count n={counts?.[key] ?? 0} /></>,
-              })),
-            ]}
-          />
-        </ListToolbar>
-      {loading ? <div className="p-3"><LoadingState rows={6} /></div> : (
-        items.length === 0 ? (
-          <EmptyState icon={Sparkles} title="Tidak ada approval menunggu"
-            description="Semua dokumen yang membutuhkan aksi Anda sudah selesai." />
-        ) : (
-          <div className="divide-y divide-border/50">
-            <AnimatePresence>
-              {items.map((it, i) => (
-                <SwipeRow
-                  key={it.entity_id}
-                  item={it}
-                  index={i}
-                  guardLog={guardLogs[it.entity_id]}
-                  busy={actioning?.startsWith(it.entity_id)}
-                  onApprove={() => quickAction(it, "approve")}
-                  onReject={() => { setRejectModal({ item: it }); setRejectReason(""); }}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )
-      )}
-      </div>
-
-        </TabsContent>
-
-        <TabsContent value="delegation">
-          <ApprovalDelegations />
-        </TabsContent>
-      </Tabs>
-
-      {/* Reject confirm modal */}
-      <Dialog open={!!rejectModal} onOpenChange={(v) => !v && setRejectModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Tolak {rejectModal?.item?.label}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-mono">{rejectModal?.item?.describe}</span> — {fmtRp(rejectModal?.item?.amount || 0)}
-            </p>
-            <div>
-              <label className="text-xs font-semibold">Alasan</label>
-              <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder="Mis. budget belum cukup, vendor belum diverifikasi, …"
-                        rows={3} data-testid="reject-reason-input" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectModal(null)}>Batal</Button>
-            <Button variant="destructive"
-                    onClick={async () => {
-                      if (!rejectReason.trim()) { toast.error("Alasan wajib"); return; }
-                      const it = rejectModal.item;
-                      setRejectModal(null);
-                      await quickAction(it, "reject", rejectReason.trim());
-                    }}
-                    data-testid="reject-confirm-btn">
-              Konfirmasi Tolak
+    <HubHeaderProvider>
+      <div className="space-y-3 max-w-6xl mx-auto" data-testid="my-approvals-page">
+        <PageHeader hub
+          icon={Inbox}
+          title="Pusat Persetujuan"
+          subtitle="Setujui atau tolak dokumen dari semua modul tanpa membuka detail."
+          actions={
+            <Button variant="outline" onClick={load} data-testid="my-approvals-refresh">
+              <RefreshCw className={cn(loading && "animate-spin")} /> Muat ulang
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          }
+        />
+
+        <Tabs value={view} onValueChange={setView} data-testid="approval-center">
+          <TabsList>
+            <TabsTrigger value="queue" data-testid="tab-queue">
+              Antrean
+              {totalCount > 0 && (
+                <span className="ml-0.5 rounded-full bg-foreground/10 px-1.5 text-xs leading-4 tabular-nums">{totalCount}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="delegation" data-testid="tab-delegation">Delegasi</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="queue" className="space-y-3">
+        {/* Satu kartu daftar: filter tipe di atas, baris antrean bergaris pemisah — bukan kartu per item (§10.3). */}
+        <div className="glass-card overflow-hidden">
+          <ListToolbar>
+            <StatusTabs
+              value={tab}
+              onChange={setTab}
+              ariaLabel="Filter tipe dokumen"
+              testId="approval-kpi"
+              tabTestId={(k) => (k === "all" ? "stat-total" : `stat-${k}`)}
+              options={[
+                { key: "all", label: <>Semua <Count n={totalCount} /></> },
+                ...filterTypes.map((key) => ({
+                  key,
+                  label: <>{APPROVAL_ENTITY_LABELS[key] || key.replace(/_/g, " ")} <Count n={counts?.[key] ?? 0} /></>,
+                })),
+              ]}
+            />
+          </ListToolbar>
+        {loading ? <div className="p-3"><LoadingState rows={6} /></div> : (
+          items.length === 0 ? (
+            <EmptyState icon={Sparkles} title="Tidak ada approval menunggu"
+              description="Semua dokumen yang membutuhkan aksi Anda sudah selesai." />
+          ) : (
+            <div className="divide-y divide-border/50">
+              <AnimatePresence>
+                {items.map((it, i) => (
+                  <SwipeRow
+                    key={it.entity_id}
+                    item={it}
+                    index={i}
+                    guardLog={guardLogs[it.entity_id]}
+                    busy={actioning?.startsWith(it.entity_id)}
+                    onApprove={() => quickAction(it, "approve")}
+                    onReject={() => { setRejectModal({ item: it }); setRejectReason(""); }}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          )
+        )}
+        </div>
+
+          </TabsContent>
+
+          <TabsContent value="delegation">
+            <ApprovalDelegations />
+          </TabsContent>
+        </Tabs>
+
+        {/* Reject confirm modal */}
+        <Dialog open={!!rejectModal} onOpenChange={(v) => !v && setRejectModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Tolak {rejectModal?.item?.label}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-mono">{rejectModal?.item?.describe}</span> — {fmtRp(rejectModal?.item?.amount || 0)}
+              </p>
+              <div>
+                <label className="text-xs font-semibold">Alasan</label>
+                <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
+                          placeholder="Mis. budget belum cukup, vendor belum diverifikasi, …"
+                          rows={3} data-testid="reject-reason-input" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRejectModal(null)}>Batal</Button>
+              <Button variant="destructive"
+                      onClick={async () => {
+                        if (!rejectReason.trim()) { toast.error("Alasan wajib"); return; }
+                        const it = rejectModal.item;
+                        setRejectModal(null);
+                        await quickAction(it, "reject", rejectReason.trim());
+                      }}
+                      data-testid="reject-confirm-btn">
+                Konfirmasi Tolak
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </HubHeaderProvider>
   );
 }
 

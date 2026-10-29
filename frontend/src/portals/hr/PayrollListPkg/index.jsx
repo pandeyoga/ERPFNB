@@ -111,7 +111,7 @@ export default function PayrollList({ embedded = false }) {
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="hr-payroll-page">
       <PageHeader icon={DollarSign} title="Payroll"
-          subtitle="Siklus penggajian bulanan & salary master karyawan"
+          subtitle="Siklus penggajian bulanan & salary master — gaji + service share + incentive − kasbon − BPJS − PPh21."
           actions={actions} />
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -131,9 +131,6 @@ export default function PayrollList({ embedded = false }) {
 
         {/* ─── Cycles Tab ─── */}
         <TabsContent value="cycles">
-          <p className="text-xs md:text-sm text-muted-foreground mb-3">
-            Payroll cycle bulanan — gaji + service share + incentive − kasbon − BPJS − PPh21.
-          </p>
           {loading ? (
             <LoadingState rows={5} />
           ) : items.length === 0 ? (

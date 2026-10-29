@@ -63,7 +63,7 @@ export default function TrialBalance() {
 
   return (
     <div data-testid="trial-balance-page" className="space-y-3 lg:space-y-4">
-      <div data-testid="tb-filter-card" className="glass-card p-3 flex flex-wrap gap-3 items-end">
+      <div data-testid="tb-filter-card" className="flex flex-wrap gap-3 items-end">
         <div className="min-w-[140px]">
           <Label htmlFor="tb-period" className={LABEL}>Periode</Label>
           <Input id="tb-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
