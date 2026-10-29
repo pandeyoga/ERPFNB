@@ -94,7 +94,7 @@ export default function Roles({ embedded = false } = {}) {
                 <div className="mt-3 flex items-center gap-2 text-xs">
                   <span className="text-muted-foreground">{(r.permissions || []).length} permissions</span>
                   {r.is_system && (
-                    <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-[11px] font-medium">System</span>
+                    <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-xs font-medium">System</span>
                   )}
                 </div>
               </div>
@@ -209,7 +209,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                     <span>{cat}</span>
                     {!readOnly && <button
                       type="button"
-                      className="text-aurora text-[11px] font-medium normal-case tracking-normal hover:underline"
+                      className="text-aurora text-xs font-medium normal-case tracking-normal hover:underline"
                       onClick={() => {
                         const all = list.map(p => p.code);
                         const has = all.every(c => (form.permissions || []).includes(c));
@@ -234,7 +234,7 @@ function RoleDialog({ editing, perms, onClose, onSaved }) {
                           }}
                           data-testid={`role-form-perm-${p.code}`}
                         />
-                        <code className="text-[11px] font-sans font-medium tabular-nums text-muted-foreground">{p.code}</code>
+                        <code className="text-xs font-sans font-medium tabular-nums text-muted-foreground">{p.code}</code>
                         <span>{p.label}</span>
                       </label>
                     ))}

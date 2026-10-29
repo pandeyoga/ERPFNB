@@ -49,12 +49,12 @@ export default function MultiSelectFilter({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="glass-input rounded-full gap-2 px-4 h-9"
+          className="glass-input gap-2 px-3"
           data-testid={`${testId}-trigger`}
         >
           <span className="text-sm font-medium">{label}</span>
           {!isAll && (
-            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold pill-active">
+            <span className="px-1.5 py-0.5 rounded-full text-xs font-bold pill-active">
               {selCount}
             </span>
           )}
@@ -73,7 +73,7 @@ export default function MultiSelectFilter({
           <div className="flex items-center gap-1">
             <button
               onClick={selectAll}
-              className="text-[11px] text-muted-foreground hover:text-foreground"
+              className="text-xs text-muted-foreground hover:text-foreground"
               data-testid={`${testId}-all`}
             >
               Semua
@@ -81,7 +81,7 @@ export default function MultiSelectFilter({
             <span className="text-muted-foreground">·</span>
             <button
               onClick={clear}
-              className="text-[11px] text-muted-foreground hover:text-foreground"
+              className="text-xs text-muted-foreground hover:text-foreground"
               data-testid={`${testId}-clear`}
             >
               <X className="h-3 w-3 inline" />

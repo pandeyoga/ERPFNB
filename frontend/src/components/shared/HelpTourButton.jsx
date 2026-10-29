@@ -375,10 +375,10 @@ function TourOption({ tourId, isCompleted, isOutdated, isFocused, onStart }) {
   let statusIcon;
   let statusLabel;
   if (isOutdated) {
-    statusIcon = <RotateCw className="h-4 w-4 text-amber-600" />;
+    statusIcon = <RotateCw className="h-4 w-4 text-amber-800 dark:text-amber-400" />;
     statusLabel = "Tour diperbarui — coba lagi";
   } else if (isCompleted) {
-    statusIcon = <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+    statusIcon = <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />;
     statusLabel = "Pernah selesai";
   } else {
     statusIcon = <PlayCircle className="h-4 w-4" />;

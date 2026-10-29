@@ -265,7 +265,7 @@ function PreviewResult({ result, usersById, rolesById }) {
     <Card data-testid="preview-result">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
           Tier Terpilih: <strong>{result.tier.label}</strong>
         </CardTitle>
         <CardDescription>
@@ -284,19 +284,19 @@ function PreviewResult({ result, usersById, rolesById }) {
                   <Badge variant="outline">Step {i + 1}</Badge>
                   <Icon className="h-4 w-4" style={{ color: MODE_META[s.match_mode]?.color }} />
                   <span className="font-medium">{s.label}</span>
-                  <Badge variant="outline" className="text-[11px]">{s.match_mode}</Badge>
+                  <Badge variant="outline" className="text-xs">{s.match_mode}</Badge>
                 </div>
-                <Badge variant="outline" className={s.approvers_count > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}>
+                <Badge variant="outline" className={s.approvers_count > 0 ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400" : "bg-red-500/10 text-red-800 dark:text-red-400"}>
                   {s.approvers_count} approver
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground">
                 {s.approvers_count === 0 ? (
-                  <span className="text-red-500 inline-flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> Tidak ada user yang cocok — step ini akan macet.</span>
+                  <span className="text-red-700 dark:text-red-400 inline-flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> Tidak ada user yang cocok — step ini akan macet.</span>
                 ) : (
                   <div className="flex flex-wrap gap-1">
                     {s.approvers.map((a) => (
-                      <Badge key={a.id} variant="outline" className="text-[11px]">
+                      <Badge key={a.id} variant="outline" className="text-xs">
                         {a.full_name || a.id.slice(0, 8)}
                       </Badge>
                     ))}
@@ -334,12 +334,12 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
             {(tier.condition_outlet_ids?.length > 0 || tier.condition_brand_ids?.length > 0) && (
               <div className="text-xs text-muted-foreground flex flex-wrap gap-1 mt-1">
                 {tier.condition_outlet_ids?.map((id) => (
-                  <Badge key={id} variant="outline" className="text-[11px]">
+                  <Badge key={id} variant="outline" className="text-xs">
                     Outlet: {outletsById[id]?.name || id.slice(0, 8)}
                   </Badge>
                 ))}
                 {tier.condition_brand_ids?.map((id) => (
-                  <Badge key={id} variant="outline" className="text-[11px]">
+                  <Badge key={id} variant="outline" className="text-xs">
                     Brand: {brandsById[id]?.name || id.slice(0, 8)}
                   </Badge>
                 ))}
@@ -360,7 +360,7 @@ function DiagramView({ tiers, entityType, usersById, rolesById, outletsById, bra
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">{step.match_mode}</span>
                       </div>
                       <div className="text-sm font-medium mt-0.5">{step.label || `(tanpa label)`}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {step.match_mode === "user" && `${step.any_of_user_ids?.length || 0} user`}
                         {step.match_mode === "role" && `${step.any_of_role_ids?.length || 0} role`}
                         {step.match_mode === "permission" && `${step.any_of_perms?.length || 0} perm`}

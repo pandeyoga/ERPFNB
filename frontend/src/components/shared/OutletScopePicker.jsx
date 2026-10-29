@@ -38,13 +38,13 @@ export default function OutletScopePicker({
     <div className={cn("flex items-center gap-2", className)}>
       {/* Scope indicator badge for restricted users */}
       {!isFullAccess && outlets.length > 0 && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
           <Store className="h-3 w-3" />
           Outlet Anda
         </span>
       )}
       {isFullAccess && value === "" && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-medium border border-green-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-800 dark:text-green-400 font-medium border border-green-500/20 flex-shrink-0">
           <Globe2 className="h-3 w-3" />
           Semua
         </span>
@@ -71,7 +71,7 @@ export default function OutletScopePicker({
                   {o.name}
                 </span>
                 {o.brand_name && (
-                  <span className="text-[11px] text-muted-foreground pl-5">{o.brand_name}</span>
+                  <span className="text-xs text-muted-foreground pl-5">{o.brand_name}</span>
                 )}
               </span>
             </SelectItem>

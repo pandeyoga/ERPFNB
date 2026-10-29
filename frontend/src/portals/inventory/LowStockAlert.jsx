@@ -29,8 +29,8 @@ import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
 
 function severityClasses(sev) {
-  if (sev === "critical") return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
-  if (sev === "low") return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+  if (sev === "critical") return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
+  if (sev === "low") return "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30";
   return "bg-muted text-muted-foreground border-border/50";
 }
 
@@ -265,7 +265,7 @@ export default function LowStockAlert() {
                     <Package className="h-3.5 w-3.5 text-muted-foreground" />
                     {it.item_name}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{it.item_code} · {it.unit}</div>
+                  <div className="text-xs text-muted-foreground">{it.item_code} · {it.unit}</div>
                 </div>
               ) },
             { key: "outlet_name", label: "Outlet", sortable: true },
@@ -279,7 +279,7 @@ export default function LowStockAlert() {
               render: (it) => (
                 <span className="text-muted-foreground">
                   {fmtNumber(it.par_level, 1)}
-                  <span className="block text-[11px] uppercase tracking-wide opacity-70">{it.par_source}</span>
+                  <span className="block text-[11px] uppercase tracking-wide">{it.par_source}</span>
                 </span>
               ) },
             { key: "deficit", label: "Defisit", numeric: true, sortable: true,
@@ -288,20 +288,20 @@ export default function LowStockAlert() {
               render: (it) => (
                 <span>
                   <span className="font-medium">{it.suggested_reorder || 0}</span>
-                  <span className="text-[11px] text-muted-foreground"> {it.unit}</span>
+                  <span className="text-xs text-muted-foreground"> {it.unit}</span>
                 </span>
               ) },
             { key: "last_vendor", label: "Last Vendor / Price",
               render: (it) => it.last_vendor_name ? (
                 <div className="text-xs">
                   <div className="font-medium">{it.last_vendor_name}</div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {fmtRp(it.last_unit_cost)}/{it.unit}
                     {it.last_purchase_date && <> · {it.last_purchase_date}</>}
                   </div>
                 </div>
               ) : (
-                <span className="text-[11px] text-muted-foreground">Belum ada riwayat</span>
+                <span className="text-xs text-muted-foreground">Belum ada riwayat</span>
               ) },
           ]}
         />

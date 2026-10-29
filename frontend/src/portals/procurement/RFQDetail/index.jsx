@@ -356,7 +356,7 @@ export default function RFQDetail() {
                     <div key={vid} className="flex items-center justify-between text-sm" data-testid={`rfq-overview-vendor-${vid}`}>
                       <span>{vendorMap[vid] || vid}</span>
                       {quotedVendorIds.includes(vid)
-                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">Sudah menawar</Badge>
+                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20 text-xs">Sudah menawar</Badge>
                         : <Badge variant="outline" className="text-xs">Belum menawar</Badge>}
                     </div>
                   ))}
@@ -385,7 +385,7 @@ export default function RFQDetail() {
                     <div className="flex items-center justify-between">
                       <CardTitle>{vname}</CardTitle>
                       {quote
-                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Sudah menawar</Badge>
+                        ? <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Sudah menawar</Badge>
                         : <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Menunggu</Badge>
                       }
                     </div>
@@ -419,7 +419,8 @@ export default function RFQDetail() {
                       {quote && rfq.status !== "accepted" && rfq.status !== "cancelled" && (
                         <Button
                           size="sm"
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          variant="success"
+                          className="flex-1"
                           onClick={() => handleAccept(vid)}
                           disabled={accepting === vid}
                           data-testid={`rfq-quote-accept-${vid}`}
@@ -465,7 +466,7 @@ export default function RFQDetail() {
                         render: (item) => {
                           const q = item.quotes[v.vendor_id];
                           return q?.unit_price != null ? (
-                            <div className={`rounded px-2 py-0.5 text-sm inline-block ${q.is_cheapest ? "bg-emerald-500/15 text-emerald-700 font-semibold" : ""}`}>
+                            <div className={`rounded px-2 py-0.5 text-sm inline-block ${q.is_cheapest ? "bg-emerald-500/15 text-emerald-800 font-semibold" : ""}`}>
                               {formatCurrency(q.unit_price)}
                               {q.is_cheapest && <Trophy className="inline h-3 w-3 ml-1" />}
                             </div>

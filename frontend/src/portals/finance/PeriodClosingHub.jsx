@@ -148,7 +148,7 @@ export default function PeriodClosingHub() {
         actions={(
           <>
             {allDone && (
-              <Badge variant="secondary" className="gap-1.5 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
+              <Badge variant="secondary" className="gap-1.5 text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Period closing selesai
               </Badge>
             )}
@@ -190,7 +190,7 @@ export default function PeriodClosingHub() {
                 <div className="shrink-0 relative z-10 pointer-events-none">
                   {isDone ? (
                     <div className="h-9 w-9 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                     </div>
                   ) : isActive ? (
                     <div className={cn("h-9 w-9 rounded-full flex items-center justify-center bg-gradient-to-br border border-border/40", phase.accent)}>
@@ -205,7 +205,7 @@ export default function PeriodClosingHub() {
                 <div className="flex-1 min-w-0 relative z-10 pointer-events-none">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Fase {idx + 1}</span>
-                    {isDone && <Badge variant="secondary" className="h-5 text-[11px] px-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">Selesai</Badge>}
+                    {isDone && <Badge variant="secondary" className="h-5 text-xs px-1.5 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30">Selesai</Badge>}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Icon className="h-4 w-4 text-muted-foreground" />

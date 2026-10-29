@@ -24,10 +24,10 @@ const TYPE_LABEL = {
   transfer_out: "Transfer Keluar", opname_diff: "Selisih Opname", adjustment: "Penyesuaian",
 };
 const TYPE_TONE = {
-  wastage: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
-  transfer_out: "bg-sky-500/15 text-sky-700 dark:text-sky-400",
-  sale: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  issue: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  wastage: "bg-rose-500/15 text-rose-800 dark:text-rose-400",
+  transfer_out: "bg-sky-500/15 text-sky-800 dark:text-sky-400",
+  sale: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+  issue: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
 };
 
 export default function UsageLog() {
@@ -92,7 +92,7 @@ export default function UsageLog() {
       render: (r) => outletMap[r.outlet_id]?.name || r.outlet_id }] : []),
     { key: "movement_type", label: "Tipe",
       render: (r) => (
-        <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${TYPE_TONE[r.movement_type] || "bg-muted text-muted-foreground"}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_TONE[r.movement_type] || "bg-muted text-muted-foreground"}`}>
           {TYPE_LABEL[r.movement_type] || r.movement_type}
         </span>
       ) },

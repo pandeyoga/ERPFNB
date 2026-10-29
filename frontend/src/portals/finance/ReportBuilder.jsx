@@ -260,7 +260,7 @@ export default function ReportBuilder() {
             <FilterRow label="Vendor" items={vendors} selected={vendorIds} setSelected={setVendorIds} testid="builder-vendor" />
           </div>
 
-          <div className="glass-card p-2 flex flex-wrap gap-2 sticky bottom-2 z-10">
+          <div className="glass-card p-3 flex flex-wrap gap-2 sticky bottom-2 z-10">
             <Button onClick={run} disabled={running} className="flex-1 min-w-[160px]"
               data-testid="builder-run">
               <Play /> {running ? "Menjalankan…" : "Jalankan laporan"}
@@ -305,7 +305,7 @@ export default function ReportBuilder() {
                 <button type="button" onClick={() => loadSavedConfig(s)} className="flex-1 min-w-0 text-left"
                   data-testid={`saved-load-${s.id}`}>
                   <div className="text-sm font-medium truncate">{s.name}</div>
-                  {s.description && <div className="text-[11px] text-muted-foreground truncate">{s.description}</div>}
+                  {s.description && <div className="text-xs text-muted-foreground truncate">{s.description}</div>}
                 </button>
                 <Button variant="ghost" size="icon-sm" onClick={() => deleteSaved(s.id)}
                   aria-label={`Hapus laporan ${s.name}`}

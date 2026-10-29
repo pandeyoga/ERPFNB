@@ -175,21 +175,21 @@ export default function ReceiptCapture({
               <span className="text-xs font-medium text-muted-foreground inline-flex items-center gap-1.5">
                 Receipt attached
                 {uploading && (
-                  <span className="text-[11px] text-muted-foreground italic">
+                  <span className="text-xs text-muted-foreground italic">
                     (mengunggah…)
                   </span>
                 )}
                 {fileId && !uploading && (
-                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
                 )}
               </span>
-              <Button size="sm" variant="ghost" onClick={reset} className="h-7 px-2"
+              <Button size="sm" variant="ghost" onClick={reset} className="px-2"
                        data-testid="receipt-clear">
                 <X className="h-3.5 w-3.5" />
               </Button>
             </div>
             {!extracted && (
-              <Button onClick={runOCR} disabled={extracting || uploading} className="rounded-full"
+              <Button onClick={runOCR} disabled={extracting || uploading}
                        data-testid="receipt-extract-btn">
                 {extracting ? (
                   <><Sparkles className="h-3.5 w-3.5 mr-2 animate-pulse" /> Extracting…</>
@@ -199,7 +199,7 @@ export default function ReceiptCapture({
               </Button>
             )}
             {error && (
-              <div className="flex items-start gap-1.5 text-xs text-red-600">
+              <div className="flex items-start gap-1.5 text-xs text-red-700 dark:text-red-400">
                 <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -240,11 +240,11 @@ function UploadDropzone({ fileRef, onFile }) {
       <p className="text-sm font-medium mb-1">Upload foto struk</p>
       <p className="text-xs text-muted-foreground mb-2">Drop file atau klik — JPG / PNG / WEBP, maks 4MB</p>
       <div className="flex justify-center gap-2 mt-2">
-        <Button size="sm" variant="outline" className="rounded-full touch-target"
+        <Button size="sm" variant="outline" className="touch-target"
                  onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
           <Upload className="h-3.5 w-3.5 mr-1" /> Browse
         </Button>
-        <Button size="sm" variant="outline" className="rounded-full touch-target"
+        <Button size="sm" variant="outline" className="touch-target"
                  onClick={(e) => {
                    e.stopPropagation();
                    if (fileRef.current) {
@@ -269,8 +269,8 @@ function UploadDropzone({ fileRef, onFile }) {
 
 function ExtractedSummary({ data, cacheHit }) {
   const conf = data.confidence_overall ?? 0;
-  const confColor = conf >= 0.8 ? "text-emerald-600"
-                  : conf >= 0.5 ? "text-amber-600" : "text-red-600";
+  const confColor = conf >= 0.8 ? "text-emerald-700 dark:text-emerald-400"
+                  : conf >= 0.5 ? "text-amber-800 dark:text-amber-400" : "text-red-700 dark:text-red-400";
   return (
     <div className="glass-card p-3 space-y-2 text-sm" data-testid="receipt-extracted">
       <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
@@ -279,7 +279,7 @@ function ExtractedSummary({ data, cacheHit }) {
         </span>
         <div className="flex items-center gap-1.5">
           {cacheHit && (
-            <Badge variant="secondary" className="text-[11px] gap-1 px-2">
+            <Badge variant="secondary" className="text-xs gap-1 px-2">
               <Zap className="h-3 w-3" /> cache
             </Badge>
           )}
@@ -311,7 +311,7 @@ function ExtractedSummary({ data, cacheHit }) {
           </ul>
         </div>
       )}
-      <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-white/10">
+      <p className="text-xs text-muted-foreground italic pt-1 border-t border-white/10">
         Periksa hasil. Anda dapat mengubah field manual sebelum simpan.
       </p>
     </div>

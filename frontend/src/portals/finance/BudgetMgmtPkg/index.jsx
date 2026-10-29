@@ -322,7 +322,7 @@ export default function BudgetManagement({ embedded = false }) {
                     </Button>
                   )}
                   {canEdit && (
-                    <Button variant="ghost" size="icon-sm" aria-label="Hapus budget" className="text-red-500" onClick={() => handleDelete(b.id)}
+                    <Button variant="ghost" size="icon-sm" aria-label="Hapus budget" className="text-red-700 dark:text-red-400" onClick={() => handleDelete(b.id)}
                       data-testid="delete-budget-btn">
                       <Trash2 />
                     </Button>

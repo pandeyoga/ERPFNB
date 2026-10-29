@@ -155,8 +155,8 @@ export default function PayrollList({ embedded = false }) {
                   { key: "period", label: "Period", render: (it) => <span className="font-mono whitespace-nowrap">{it.period}</span> },
                   { key: "outlet", label: "Outlet", render: (it) => <span className="text-sm whitespace-nowrap">{outlets.find(o => o.id === it.outlet_id)?.name || "Group-wide"}</span> },
                   { key: "total_gross", label: "Gross", numeric: true, sortable: true, render: (it) => <span className="text-sm whitespace-nowrap">{fmtRp(it.total_gross)}</span> },
-                  { key: "total_bpjs_employee", label: "BPJS", numeric: true, render: (it) => <span className="text-xs text-amber-600 whitespace-nowrap">{it.total_bpjs_employee ? fmtRp(it.total_bpjs_employee) : "-"}</span> },
-                  { key: "total_pph21", label: "PPh21", numeric: true, render: (it) => <span className="text-xs text-red-500 whitespace-nowrap">{it.total_pph21 ? fmtRp(it.total_pph21) : "-"}</span> },
+                  { key: "total_bpjs_employee", label: "BPJS", numeric: true, render: (it) => <span className="text-xs text-amber-800 dark:text-amber-400 whitespace-nowrap">{it.total_bpjs_employee ? fmtRp(it.total_bpjs_employee) : "-"}</span> },
+                  { key: "total_pph21", label: "PPh21", numeric: true, render: (it) => <span className="text-xs text-red-700 dark:text-red-400 whitespace-nowrap">{it.total_pph21 ? fmtRp(it.total_pph21) : "-"}</span> },
                   { key: "total_take_home", label: "Take Home", numeric: true, sortable: true, render: (it) => <span className="font-semibold whitespace-nowrap">{fmtRp(it.total_take_home)}</span> },
                   { key: "status", label: "Status", align: "center", render: (it) => <StatusPill status={it.status} /> },
                 ]}
@@ -207,8 +207,8 @@ export default function PayrollList({ embedded = false }) {
                     <div>
                       <div className="font-medium text-sm flex items-center gap-1.5">
                         {sm.employee_name}
-                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-[11px] border-amber-500 text-amber-600" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
-                        {!sm.has_master && <Badge variant="outline" className="text-[11px] border-red-400 text-red-500" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
+                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-xs border-amber-500 text-amber-800 dark:text-amber-400" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
+                        {!sm.has_master && <Badge variant="outline" className="text-xs border-red-400 text-red-700 dark:text-red-400" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
                       </div>
                       <div className="text-xs text-muted-foreground">{sm.employee_code}</div>
                     </div>
@@ -216,11 +216,11 @@ export default function PayrollList({ embedded = false }) {
                   { key: "outlet", label: "Outlet", render: (sm) => <span className="text-sm">{outlets.find(o => o.id === sm.outlet_id)?.name || "-"}</span> },
                   { key: "basic_salary", label: "Gaji Pokok", numeric: true, sortable: true, render: (sm) => <span className="whitespace-nowrap">{fmtRp(sm.basic_salary)}</span> },
                   { key: "allowances_total", label: "Tunjangan", numeric: true, render: (sm) => <span className="text-sm whitespace-nowrap">{fmtRp(sm.allowances_total)}</span> },
-                  { key: "bpjs_employee", label: "BPJS (EE)", numeric: true, render: (sm) => <span className="text-xs text-amber-600 whitespace-nowrap">{fmtRp(sm.bpjs_employee)}</span> },
-                  { key: "pph21_monthly", label: "PPh21/bln", numeric: true, render: (sm) => <span className="text-xs text-red-500 whitespace-nowrap">{fmtRp(sm.pph21_monthly)}</span> },
+                  { key: "bpjs_employee", label: "BPJS (EE)", numeric: true, render: (sm) => <span className="text-xs text-amber-800 dark:text-amber-400 whitespace-nowrap">{fmtRp(sm.bpjs_employee)}</span> },
+                  { key: "pph21_monthly", label: "PPh21/bln", numeric: true, render: (sm) => <span className="text-xs text-red-700 dark:text-red-400 whitespace-nowrap">{fmtRp(sm.pph21_monthly)}</span> },
                   { key: "ptkp_status", label: "PTKP", align: "center", render: (sm) => <Badge variant="outline" className="text-xs">{sm.ptkp_status}</Badge> },
                   { key: "bpjs_enrolled", label: "BPJS", align: "center", render: (sm) => sm.bpjs_enrolled
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 mx-auto" aria-label="Terdaftar BPJS" />
+                    ? <CheckCircle2 className="h-4 w-4 text-green-700 dark:text-green-400 mx-auto" aria-label="Terdaftar BPJS" />
                     : <X className="h-4 w-4 text-muted-foreground mx-auto" aria-label="Tidak terdaftar BPJS" /> },
                 ]}
                 rowAction={(sm) => (

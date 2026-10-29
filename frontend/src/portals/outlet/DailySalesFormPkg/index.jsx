@@ -416,7 +416,7 @@ export default function DailySalesForm() {
       {form.status === "rejected" && form.rejected_reason && (
         <div className="glass-card border-l-4 border-red-500 p-4">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5" />
+            <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400 mt-0.5" />
             <div>
               <div className="text-sm font-semibold text-red-700 dark:text-red-400">Daily sales ini di-reject Finance</div>
               <div className="text-sm mt-0.5">{form.rejected_reason}</div>
@@ -481,7 +481,7 @@ export default function DailySalesForm() {
       {editable && (
         <div className="glass-card p-4 border border-dashed border-amber-500/30">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <Receipt className="h-4 w-4 text-amber-600" />
+            <Receipt className="h-4 w-4 text-amber-800 dark:text-amber-400" />
             <h3 className="text-sm md:text-base font-semibold">Voucher</h3>
             <span className="text-xs text-muted-foreground">Opsional — diskon otomatis diterapkan.</span>
           </div>
@@ -489,7 +489,7 @@ export default function DailySalesForm() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-3 py-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                   <span className="text-sm font-medium">{voucherStatus.reward_name}</span>
                   <span className="text-xs tracking-wider text-muted-foreground">{form.voucher_code}</span>
                 </div>
@@ -528,10 +528,10 @@ export default function DailySalesForm() {
               {voucherStatus && !voucherStatus.valid && (
                 <div className={cn(
                   "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full ring-1 ring-inset",
-                  voucherStatus.status === "checking" && "bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-blue-500/30",
-                  voucherStatus.status === "invalid" && "bg-red-500/15 text-red-700 dark:text-red-400 ring-red-500/30",
+                  voucherStatus.status === "checking" && "bg-blue-500/15 text-blue-800 dark:text-blue-400 ring-blue-500/30",
+                  voucherStatus.status === "invalid" && "bg-red-500/15 text-red-800 dark:text-red-400 ring-red-500/30",
                   voucherStatus.status === "expired" && "bg-amber-500/15 text-amber-800 dark:text-amber-400 ring-amber-500/30",
-                  voucherStatus.status === "used" && "bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 ring-zinc-500/30",
+                  voucherStatus.status === "used" && "bg-zinc-500/15 text-foreground dark:text-zinc-300 ring-zinc-500/30",
                 )}
                 data-testid="daily-sales-voucher-status-pill">
                   {voucherStatus.status === "checking" && <Loader2 className="h-3 w-3 animate-spin" />}

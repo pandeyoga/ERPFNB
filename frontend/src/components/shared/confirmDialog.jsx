@@ -84,7 +84,7 @@ export function ConfirmDialogHost() {
         <DialogHeader>
           <div className="flex items-start gap-3">
             {!isPrompt && (
-              <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${destructive ? "bg-red-100 text-red-600 dark:bg-red-950/50" : "bg-amber-100 text-amber-600 dark:bg-amber-950/50"}`}>
+              <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${destructive ? "bg-red-100 text-red-700 dark:text-red-400 dark:bg-red-950/50" : "bg-amber-100 text-amber-800 dark:text-amber-400 dark:bg-amber-950/50"}`}>
                 <AlertTriangle className="h-4 w-4" />
               </div>
             )}

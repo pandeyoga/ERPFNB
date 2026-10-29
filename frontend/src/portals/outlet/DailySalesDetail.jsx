@@ -106,7 +106,7 @@ export default function DailySalesDetail() {
                 </Button>
               )}
               {canReject && (
-                <Button onClick={rejectSubmit} variant="outline" className="text-red-600 hover:bg-red-500/10" data-testid="ds-reject">
+                <Button onClick={rejectSubmit} variant="outline" className="text-red-700 dark:text-red-400 hover:bg-red-500/10" data-testid="ds-reject">
                   <XCircle className="h-4 w-4" /> Tolak
                 </Button>
               )}

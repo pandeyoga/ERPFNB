@@ -102,7 +102,7 @@ export default function CMSPendingReviews() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-amber-600" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-amber-800 dark:text-amber-400" /></div>
       ) : items.length === 0 ? (
         <div className="glass-card">
           <EmptyState icon={CheckCircle2} title="Semua bersih" description="Tidak ada konten yang menunggu review saat ini." />
@@ -144,7 +144,7 @@ export default function CMSPendingReviews() {
                     </p>
                   )}
                   {item.review_comment && (
-                    <p className="text-xs text-red-600 mt-1 line-clamp-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3 shrink-0" /> {item.review_comment}</p>
+                    <p className="text-xs text-red-700 dark:text-red-400 mt-1 line-clamp-1 flex items-center gap-1"><AlertTriangle className="h-3 w-3 shrink-0" /> {item.review_comment}</p>
                   )}
                 </div>
 
@@ -197,8 +197,7 @@ export default function CMSPendingReviews() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalAction(null)}>Batal</Button>
             <Button
-              className={modalAction?.type === "approve" ? "bg-green-600 hover:bg-green-700 text-white" : ""}
-              variant={modalAction?.type === "reject" ? "destructive" : "default"}
+              variant={modalAction?.type === "reject" ? "destructive" : modalAction?.type === "approve" ? "success" : "default"}
               onClick={doAction} disabled={acting}>
               {acting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {modalAction?.type === "approve" ? "Setujui & Publish" : "Tolak"}

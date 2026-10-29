@@ -83,7 +83,7 @@ export default function ValidationQueue() {
           title="Sales Validation"
           subtitle="Daily sales yang sudah di-submit outlet. Validasi untuk membuat jurnal otomatis, atau tolak agar outlet memperbaiki."
           actions={status === "submitted" && (
-            <span className="inline-flex items-center h-8 px-3 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-sm font-semibold tabular-nums" data-testid="vq-pending-count">
+            <span className="inline-flex items-center h-8 px-3 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-400 text-sm font-semibold tabular-nums" data-testid="vq-pending-count">
               {meta.total || 0} menunggu
             </span>
           )}
@@ -142,7 +142,7 @@ export default function ValidationQueue() {
                   <Eye className="h-3.5 w-3.5" /> Detail
                 </Link>
               </Button>
-              <Button onClick={() => setReject(ds)} size="sm" variant="outline" className="text-red-600 hover:text-red-700" data-testid={`fin-vq-reject-${ds.id}`}>
+              <Button onClick={() => setReject(ds)} size="sm" variant="outline" className="text-red-700 dark:text-red-400 hover:text-red-700" data-testid={`fin-vq-reject-${ds.id}`}>
                 <XCircle className="h-3.5 w-3.5" /> Tolak
               </Button>
               <Button onClick={() => validate(ds)} disabled={!!actingId} size="sm" data-testid={`fin-vq-validate-${ds.id}`}>
@@ -176,7 +176,7 @@ export default function ValidationQueue() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <Label htmlFor="fin-vq-reject-reason">Alasan penolakan <span className="text-red-500">*</span></Label>
+            <Label htmlFor="fin-vq-reject-reason">Alasan penolakan <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Textarea id="fin-vq-reject-reason" value={reason} onChange={e => setReason(e.target.value)} placeholder="Mis: total pembayaran tidak balance" className="glass-input min-h-[100px]" data-testid="fin-vq-reject-reason" />
           </div>
           <DialogFooter>

@@ -141,7 +141,7 @@ function ImportTab({ collections, onSuccess }) {
           {preview.type === "backup" ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="bg-sky-500/15 text-sky-700 dark:text-sky-400 text-xs px-2 py-0.5 rounded-full">Full Backup</span>
+                <span className="bg-sky-500/15 text-sky-800 dark:text-sky-400 text-xs px-2 py-0.5 rounded-full">Full Backup</span>
                 <span className="text-sm text-muted-foreground">{preview.total?.toLocaleString("id-ID")} total records</span>
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
@@ -155,7 +155,7 @@ function ImportTab({ collections, onSuccess }) {
             </div>
           ) : preview.type === "array" ? (
             <div>
-              <span className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full">Single Collection</span>
+              <span className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full">Single Collection</span>
               <p className="text-sm text-muted-foreground mt-1">{preview.count} records ditemukan</p>
               {preview.keys.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -248,7 +248,7 @@ function ImportTab({ collections, onSuccess }) {
 
       {status && (
         <div className={`flex items-start gap-2 p-4 rounded-xl ${
-          status.type === "success" ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+          status.type === "success" ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-400"
             : "bg-destructive/10 border border-destructive/30 text-destructive"
         }`}>
           {status.type === "success" ? <CheckCircle className="w-5 h-5 flex-shrink-0" /> : <AlertTriangle className="w-5 h-5 flex-shrink-0" />}

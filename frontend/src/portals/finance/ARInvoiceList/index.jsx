@@ -274,13 +274,13 @@ export default function ARInvoiceList({ embedded = false }) {
                   { key: "invoice_date", label: "Tgl Invoice", sortable: true,
                     render: (inv) => <span className="text-sm whitespace-nowrap">{formatDateID(inv.invoice_date)}</span> },
                   { key: "due_date", label: "Jatuh Tempo", sortable: true,
-                    render: (inv) => <span className={`text-sm whitespace-nowrap ${inv.status === "overdue" ? "text-red-600 dark:text-red-400 font-medium" : ""}`}>{formatDateID(inv.due_date)}</span> },
+                    render: (inv) => <span className={`text-sm whitespace-nowrap ${inv.status === "overdue" ? "text-red-700 dark:text-red-400 font-medium" : ""}`}>{formatDateID(inv.due_date)}</span> },
                   { key: "total_amount", label: "Total", numeric: true, sortable: true,
                     render: (inv) => <span className="text-sm font-semibold whitespace-nowrap">{formatCurrency(inv.total_amount)}</span> },
                   { key: "outstanding", label: "Outstanding", numeric: true, sortable: true,
                     render: (inv) => inv.outstanding > 0
-                      ? <span className="text-orange-600 dark:text-orange-400 font-medium whitespace-nowrap">{formatCurrency(inv.outstanding)}</span>
-                      : <span className="text-emerald-600 dark:text-emerald-400 text-sm">Lunas</span> },
+                      ? <span className="text-orange-800 dark:text-orange-400 font-medium whitespace-nowrap">{formatCurrency(inv.outstanding)}</span>
+                      : <span className="text-emerald-700 dark:text-emerald-400 text-sm">Lunas</span> },
                   { key: "status", label: "Status",
                     render: (inv) => <StatusPill status={inv.status} /> },
                 ]}
@@ -328,7 +328,7 @@ export default function ARInvoiceList({ embedded = false }) {
                           {canWriteOff && (
                             <>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600 focus:text-red-700"
+                              <DropdownMenuItem className="text-red-700 dark:text-red-400 focus:text-red-700"
                                 onSelect={() => { setWriteOffDialog(inv); setWriteOffReason(""); }}
                                 data-testid={`write-off-${inv.invoice_no}`}>
                                 <TrendingDown className="h-3.5 w-3.5 mr-2" /> Write-off piutang
@@ -378,7 +378,7 @@ export default function ARInvoiceList({ embedded = false }) {
                     render: (c) => c.credit_terms_days || 30 },
                   { key: "total_outstanding", label: "Outstanding", numeric: true, sortable: true,
                     render: (c) => (c.total_outstanding > 0
-                      ? <span className="text-orange-600 font-semibold">{formatCurrency(c.total_outstanding)}</span>
+                      ? <span className="text-orange-800 dark:text-orange-400 font-semibold">{formatCurrency(c.total_outstanding)}</span>
                       : <span className="text-muted-foreground">-</span>) },
                 ]}
                 rowAction={(c) => (
@@ -430,7 +430,7 @@ export default function ARInvoiceList({ embedded = false }) {
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
                     <div className="font-semibold">Total outstanding</div>
-                    <div className="text-xl font-semibold tabular-nums text-orange-600 dark:text-orange-400">
+                    <div className="text-xl font-semibold tabular-nums text-orange-800 dark:text-orange-400">
                       {formatCurrency(aging.total_outstanding)}
                     </div>
                   </div>
@@ -464,13 +464,13 @@ export default function ARInvoiceList({ embedded = false }) {
                           render: (c) => <span className="text-sm text-green-700">{formatCurrency(c.buckets.current || 0)}</span> },
                         { key: "1_30", label: "1-30 Hari", numeric: true, sortable: true,
                           sortAccessor: (c) => c.buckets["1_30"] || 0,
-                          render: (c) => <span className="text-sm text-amber-600">{formatCurrency(c.buckets["1_30"] || 0)}</span> },
+                          render: (c) => <span className="text-sm text-amber-800 dark:text-amber-400">{formatCurrency(c.buckets["1_30"] || 0)}</span> },
                         { key: "31_60", label: "31-60 Hari", numeric: true, sortable: true,
                           sortAccessor: (c) => c.buckets["31_60"] || 0,
-                          render: (c) => <span className="text-sm text-orange-600">{formatCurrency(c.buckets["31_60"] || 0)}</span> },
+                          render: (c) => <span className="text-sm text-orange-800 dark:text-orange-400">{formatCurrency(c.buckets["31_60"] || 0)}</span> },
                         { key: "over_60", label: ">60 Hari", numeric: true, sortable: true,
                           sortAccessor: (c) => (c.buckets["61_90"] || 0) + (c.buckets["over_90"] || 0),
-                          render: (c) => <span className="text-sm text-red-600">{formatCurrency((c.buckets["61_90"] || 0) + (c.buckets["over_90"] || 0))}</span> },
+                          render: (c) => <span className="text-sm text-red-700 dark:text-red-400">{formatCurrency((c.buckets["61_90"] || 0) + (c.buckets["over_90"] || 0))}</span> },
                         { key: "total", label: "Total", numeric: true, sortable: true,
                           sortAccessor: (c) => c.total_outstanding || 0,
                           render: (c) => <span className="font-semibold">{formatCurrency(c.total_outstanding)}</span> },
@@ -514,8 +514,8 @@ export default function ARInvoiceList({ embedded = false }) {
                   rows={[
                     { id: "opening", label: "Saldo Awal", amount: recon.opening_balance, cls: "font-medium", amtCls: "font-semibold", paren: false },
                     { id: "issued", label: "+ Invoice Diterbitkan", amount: recon.invoices_issued, cls: "text-green-700 font-medium", amtCls: "text-green-700 font-semibold", paren: false },
-                    { id: "received", label: "- Pembayaran Diterima", amount: recon.receipts_received, cls: "text-red-600 font-medium", amtCls: "text-red-600 font-semibold", paren: true },
-                    { id: "closing", label: "Saldo Akhir", amount: recon.closing_balance, cls: "font-bold text-base", amtCls: "font-bold text-base text-orange-600", paren: false, isTotal: true },
+                    { id: "received", label: "- Pembayaran Diterima", amount: recon.receipts_received, cls: "text-red-700 dark:text-red-400 font-medium", amtCls: "text-red-700 dark:text-red-400 font-semibold", paren: true },
+                    { id: "closing", label: "Saldo Akhir", amount: recon.closing_balance, cls: "font-bold text-base", amtCls: "font-bold text-base text-orange-800 dark:text-orange-400", paren: false, isTotal: true },
                   ]}
                   keyField="id"
                   rowTestIdPrefix="recon-row"
@@ -570,7 +570,7 @@ export default function ARInvoiceList({ embedded = false }) {
       <Dialog open={!!writeOffDialog} onOpenChange={open => { if (!open) { setWriteOffDialog(null); setWriteOffReason(""); } }}>
         <DialogContent className="max-w-md" data-testid="write-off-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+            <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <TrendingDown className="h-5 w-5" /> Write Off Piutang
             </DialogTitle>
             <DialogDescription>
@@ -579,13 +579,13 @@ export default function ARInvoiceList({ embedded = false }) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-700 dark:text-red-400">
+            <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-800 dark:text-red-400">
               Tindakan ini akan membuat jurnal: <strong>Dr Beban Piutang Tak Tertagih / Cr Piutang Usaha</strong>.
               Status invoice akan berubah menjadi <strong>Write-off</strong> dan tidak bisa dikembalikan.
             </div>
             <div>
               <Label htmlFor="write-off-reason" className="text-sm font-medium">
-                Alasan Write-off <span className="text-red-500">*</span>
+                Alasan Write-off <span className="text-red-700 dark:text-red-400">*</span>
               </Label>
               <Textarea
                 id="write-off-reason"

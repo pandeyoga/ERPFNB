@@ -66,8 +66,8 @@ export default function IntegrationSettingsList({ items, onChange }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="font-semibold text-sm">{item.label}</span>
-                  <span className="font-mono text-[11px] text-muted-foreground">{item.key}</span>
-                  {item.is_secret && <Badge variant="outline" className="text-[11px]">secret</Badge>}
+                  <span className="font-mono text-xs text-muted-foreground">{item.key}</span>
+                  {item.is_secret && <Badge variant="outline" className="text-xs">secret</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">{item.description}</p>
               </div>
@@ -130,7 +130,7 @@ export default function IntegrationSettingsList({ items, onChange }) {
                 {item.is_set && item.source === "database" && (
                   <Button size="sm" variant="ghost" onClick={() => remove(item)}
                           disabled={busyKey === item.key}
-                          className="text-rose-600 hover:text-rose-700 gap-1">
+                          className="text-rose-700 dark:text-rose-400 hover:text-rose-700 gap-1">
                     <Trash2 className="h-3.5 w-3.5" /> Reset
                   </Button>
                 )}

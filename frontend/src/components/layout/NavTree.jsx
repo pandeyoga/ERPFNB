@@ -45,7 +45,7 @@ function FavStar({ active, onToggle, testId }) {
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(); }}
       className={cn(
         "ml-auto inline-flex shrink-0 items-center transition-opacity",
-        active ? "opacity-100 text-amber-500" : "opacity-0 group-hover/item:opacity-50 hover:!opacity-100"
+        active ? "opacity-100 text-amber-800 dark:text-amber-400" : "opacity-0 group-hover/item:opacity-50 hover:!opacity-100"
       )}
     >
       <Star className="h-3 w-3" fill={active ? "currentColor" : "none"} />
@@ -137,7 +137,7 @@ export default function NavTree({ onNavigate }) {
         {Icon && <Icon className="h-4 w-4 shrink-0" />}
         <span className="flex-1 truncate">{opts.label || item.name}</span>
         {item.badge && (
-          <span className="text-[11px] leading-none font-semibold px-1.5 py-0.5 rounded bg-foreground/10 text-foreground/70">{item.badge}</span>
+          <span className="text-xs leading-none font-semibold px-1.5 py-0.5 rounded bg-foreground/10 text-foreground/70">{item.badge}</span>
         )}
         <FavStar active={favs.includes(key)} onToggle={() => toggleFav(key)} testId={`fav-toggle-${portalId}-${item.id}`} />
       </Link>

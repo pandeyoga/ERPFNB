@@ -74,7 +74,7 @@ function CohortHeatmap({ data }) {
     if (val === undefined || val === null) return "bg-muted/30 text-muted-foreground";
     if (val >= 80) return "bg-emerald-500 text-white";
     if (val >= 60) return "bg-emerald-400 text-white";
-    if (val >= 40) return "bg-yellow-400 text-gray-900";
+    if (val >= 40) return "bg-yellow-400 text-foreground";
     if (val >= 20) return "bg-orange-400 text-white";
     if (val > 0)  return "bg-red-400 text-white";
     return "bg-muted/30 text-muted-foreground";
@@ -377,15 +377,15 @@ export default function CRMAnalytics({ embedded = false }) {
                   { key: "active_prev", label: "Active Prev", numeric: true, sortable: true },
                   { key: "retained", label: "Retained", numeric: true, sortable: true },
                   { key: "new", label: "Baru", numeric: true, sortable: true,
-                    render: (r) => <span className="text-blue-600">+{r.new}</span> },
+                    render: (r) => <span className="text-blue-700 dark:text-blue-400">+{r.new}</span> },
                   { key: "retention_rate", label: "Retention", numeric: true, sortable: true,
                     render: (r) => (
-                      <span className={`font-medium ${r.retention_rate >= 80 ? 'text-emerald-600' : r.retention_rate >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                      <span className={`font-medium ${r.retention_rate >= 80 ? 'text-emerald-700 dark:text-emerald-400' : r.retention_rate >= 60 ? 'text-amber-800 dark:text-amber-400' : 'text-red-700 dark:text-red-400'}`}>
                         {r.retention_rate}%
                       </span>
                     ) },
                   { key: "churn_rate", label: "Churn", numeric: true, sortable: true,
-                    render: (r) => <span className="text-red-500">{r.churn_rate}%</span> },
+                    render: (r) => <span className="text-red-700 dark:text-red-400">{r.churn_rate}%</span> },
                 ]}
               />
             </div>
@@ -488,7 +488,7 @@ export default function CRMAnalytics({ embedded = false }) {
                   render: (c) => <span className="font-medium">{fmt(c.total_spend)}</span> },
                 { key: "visit_count", label: "Visits", numeric: true, sortable: true },
                 { key: "clv_annual", label: "CLV (Annual)", numeric: true, sortable: true,
-                  render: (c) => <span className="text-violet-600 font-medium">{fmt(c.clv_annual)}</span> },
+                  render: (c) => <span className="text-violet-700 dark:text-violet-400 font-medium">{fmt(c.clv_annual)}</span> },
                 { key: "is_active", label: "Status", align: "center", render: (c) => (
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'

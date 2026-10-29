@@ -17,9 +17,9 @@ export default function ApprovalChain({ chain = [] }) {
         const isRejected = step.action === "rejected";
         const Icon = isApproved ? Check : (isRejected ? X : Clock);
         const colorCls = isApproved
-          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-          : (isRejected ? "bg-red-500/15 text-red-700 dark:text-red-400"
-             : "bg-amber-500/15 text-amber-700 dark:text-amber-400");
+          ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+          : (isRejected ? "bg-red-500/15 text-red-800 dark:text-red-400"
+             : "bg-amber-500/15 text-amber-800 dark:text-amber-400");
         return (
           <div key={i} className="flex items-start gap-3">
             <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${colorCls}`}>
@@ -32,10 +32,10 @@ export default function ApprovalChain({ chain = [] }) {
                 {" · "}{step.action}
               </div>
               {step.approver_name && (
-                <div className="text-[11px] text-muted-foreground">oleh {step.approver_name}</div>
+                <div className="text-xs text-muted-foreground">oleh {step.approver_name}</div>
               )}
               {step.note && <div className="text-xs text-muted-foreground mt-0.5">{step.note}</div>}
-              <div className="text-[11px] text-muted-foreground">{fmtRelative(step.at)}</div>
+              <div className="text-xs text-muted-foreground">{fmtRelative(step.at)}</div>
             </div>
           </div>
         );

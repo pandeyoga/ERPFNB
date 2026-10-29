@@ -136,7 +136,7 @@ export default function ReservationSummary() {
                     { key: "outlet_name", label: "Outlet", primary: true, sortable: true, render: (o) => <span className="font-medium">{o.outlet_name}</span> },
                     { key: "count", label: "Reservasi", numeric: true, sortable: true },
                     { key: "pax", label: "Tamu", numeric: true, sortable: true },
-                    { key: "completed", label: "Selesai", numeric: true, sortable: true, render: (o) => <span className="text-green-600 dark:text-green-400">{o.completed}</span> },
+                    { key: "completed", label: "Selesai", numeric: true, sortable: true, render: (o) => <span className="text-green-700 dark:text-green-400">{o.completed}</span> },
                   ]}
                   rows={summary.by_outlet || []}
                   keyField="outlet_id"

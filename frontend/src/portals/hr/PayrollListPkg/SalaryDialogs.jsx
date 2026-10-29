@@ -143,7 +143,7 @@ function SalaryMasterDialog({ smData, outlets, onClose, onSaved }) {
                 const v = validateNPWP(form.npwp);
                 return !v.valid
                   ? <p className="text-xs text-destructive">{v.message}</p>
-                  : <p className="text-xs text-green-600 inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Format NPWP valid</p>;
+                  : <p className="text-xs text-green-700 dark:text-green-400 inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Format NPWP valid</p>;
               })()}
             </div>
           </div>
@@ -242,7 +242,7 @@ function SalaryImportDialog({ open, onOpenChange, onImported }) {
           </div>
           {result && (
             <div className="rounded-md border p-3 space-y-1 text-sm">
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                 <CheckCircle2 className="h-4 w-4" />
                 {result.imported} baru · {result.updated} diperbarui
               </div>

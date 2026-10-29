@@ -144,7 +144,7 @@ export default function PaymentRunList({ embedded = false }) {
                   <span className="inline-flex items-center gap-1">
                     <StatusPill status={r.status} />
                     {r.has_wht && (
-                      <span className="inline-flex px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                      <span className="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-amber-500/15 text-amber-800 dark:text-amber-400"
                         title="Mengandung payment dengan withholding tax">WHT</span>
                     )}
                   </span>
@@ -163,7 +163,7 @@ export default function PaymentRunList({ embedded = false }) {
               </Button>
             )}
           />
-          <div className="px-4 py-2 border-t border-border/40 text-[11px] text-muted-foreground"
+          <div className="px-4 py-2 border-t border-border/40 text-xs text-muted-foreground"
             data-testid="prn-meta">Total: {meta.total} Payment Run</div>
         </div>
       )}
@@ -268,13 +268,13 @@ function CreateRunDialog({ onClose, onCreated }) {
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="prn-form-date">Payment Date <span className="text-red-500">*</span></Label>
+                <Label htmlFor="prn-form-date">Payment Date <span className="text-red-700 dark:text-red-400">*</span></Label>
                 <Input id="prn-form-date" type="date" value={form.payment_date}
                   onChange={e => setForm(f => ({ ...f, payment_date: e.target.value }))}
                   className="glass-input" data-testid="prn-form-date" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="prn-form-bank">Bank Account <span className="text-red-500">*</span></Label>
+                <Label htmlFor="prn-form-bank">Bank Account <span className="text-red-700 dark:text-red-400">*</span></Label>
                 <Select value={form.bank_account_id}
                   onValueChange={v => setForm(f => ({ ...f, bank_account_id: v }))}>
                   <SelectTrigger id="prn-form-bank" className="glass-input" data-testid="prn-form-bank">
@@ -365,11 +365,11 @@ function CreateRunDialog({ onClose, onCreated }) {
                           data-testid={`prn-pay-amount-${p.doc_no}`}>{fmtRp(p.amount)}</td>
                         <td className="px-3 py-2">
                           {p.wh_type && parseFloat(p.wh_amount || 0) > 0 ? (
-                            <span className="inline-flex px-1.5 py-0.5 rounded text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                            <span className="inline-flex px-1.5 py-0.5 rounded text-xs bg-amber-500/15 text-amber-800 dark:text-amber-400"
                               title={`PPh WHT: ${fmtRp(p.wh_amount)}`}>
                               WHT {fmtRp(p.wh_amount)}
                             </span>
-                          ) : <span className="text-[11px] text-muted-foreground">—</span>}
+                          ) : <span className="text-xs text-muted-foreground">—</span>}
                         </td>
                       </tr>
                     ))}

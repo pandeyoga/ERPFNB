@@ -39,10 +39,10 @@ a[href*="emergent.sh"],
     --secondary: 220 14% 92%;
     --secondary-foreground: 222 47% 9%;
     --muted: 220 14% 94%;
-    --muted-foreground: 215 16% 44%;
+    --muted-foreground: 215 16% 40%; /* 44% → 40%: teks sekunder ≥ 4.5:1 (WCAG AA) juga di atas kartu kaca */
     --accent: 240 70% 63%;             /* aurora indigo */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 52%;
+    --destructive: 0 72% 48%; /* 52% → 48%: teks merah di latar terang ≥ 4.5:1 */
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 89%;
     --input: 220 13% 89%;
@@ -117,6 +117,15 @@ a[href*="emergent.sh"],
 @layer base {
   * {
     @apply border-border;
+  }
+  /* Header tabel mentah (sub-tabel di panel expand/dialog) = gaya header DataTable:
+     11px uppercase semibold muted. Kelas utilitas pada <th> tetap menang. */
+  th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
   }
   html, body, #root {
     height: 100%;
@@ -492,3 +501,7 @@ a[href*="emergent.sh"],
 .loyalty-card-forest  { background: linear-gradient(135deg, rgba(20,55,35,0.75) 0%, rgba(55,130,85,0.22) 100%); }
 .loyalty-card-espresso{ background: linear-gradient(135deg, rgba(40,22,10,0.75) 0%, rgba(138,90,60,0.22) 100%); }
 
+/* Legenda Recharts: teks memakai warna teks (default Recharts = warna seri → kontras < 3:1);
+   penanda warna seri tetap pada ikon legenda. Di luar @layer agar tidak dibuang Tailwind
+   (class ini dibuat Recharts, tidak muncul di source). */
+.recharts-legend-item-text { color: hsl(var(--foreground)) !important; }

@@ -22,7 +22,7 @@ export default function RuleHistoryPanel({ items = [], onSelect, currentId, empt
           <History className="h-4 w-4 text-foreground/60" />
           <h3 className="text-sm font-semibold">Riwayat Aturan</h3>
         </div>
-        <span className="text-[11px] text-muted-foreground">{items.length} versi</span>
+        <span className="text-xs text-muted-foreground">{items.length} versi</span>
       </div>
 
       {items.length === 0 ? (
@@ -40,7 +40,7 @@ export default function RuleHistoryPanel({ items = [], onSelect, currentId, empt
                   type="button"
                   onClick={() => onSelect?.(r)}
                   className={cn(
-                    "w-full text-left rounded-lg border border-border/40 px-3 py-2.5",
+                    "w-full text-left rounded-md border border-border/40 px-3 py-2.5",
                     "transition-colors hover:bg-foreground/[0.03]",
                     isCurrent && "border-foreground/30 bg-foreground/[0.04]",
                   )}
@@ -53,14 +53,14 @@ export default function RuleHistoryPanel({ items = [], onSelect, currentId, empt
                         <StatusPill status={status} />
                       </div>
                       <p className="text-sm font-medium truncate mt-1">{r.name || r.rule_type}</p>
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                         <Clock className="h-3 w-3" />
                         {r.effective_from ? fmtDate(r.effective_from) : "sejak awal"} — {r.effective_to ? fmtDate(r.effective_to) : "tanpa batas"}
                       </p>
                     </div>
                     {(r.overlaps_with?.length || 0) > 0 && (
                       <span
-                        className="shrink-0 text-[11px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                        className="shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300"
                         title="Periode bentrok"
                       >
                         Bentrok
@@ -73,7 +73,7 @@ export default function RuleHistoryPanel({ items = [], onSelect, currentId, empt
           })}
         </ul>
       )}
-      <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="mt-3 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <ArrowUpDown className="h-3 w-3" />
           Versi terbaru di atas

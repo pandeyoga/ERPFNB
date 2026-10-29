@@ -122,7 +122,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
         data-testid="exec-qa-collapsed"
         aria-expanded={false}
       >
-        <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
+        <Sparkles className="h-4 w-4 text-violet-700 dark:text-violet-400 shrink-0" />
         <span className="text-sm font-semibold">Asisten AI {scopeLabel || "Eksekutif"}</span>
         <span className="text-xs text-muted-foreground hidden sm:inline truncate">— tanya KPI, anomali, vendor, cashflow…</span>
         <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -134,7 +134,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
       <div className={cn("flex items-center justify-between mb-3", hideHeader && "justify-end")}>
         <div className={cn(hideHeader && "hidden")}>
           <h3 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Asisten AI {scopeLabel || "Eksekutif"}
+            <Sparkles className="h-4 w-4 text-violet-700 dark:text-violet-400" /> Asisten AI {scopeLabel || "Eksekutif"}
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             Tanya pakai teks atau voice (id-ID) — dijawab dalam Bahasa Indonesia.
@@ -164,7 +164,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
         </div>
       </div>
 
-      {showKpi && <div className="mb-3"><KpiSnapshotStrip /></div>}
+      {showKpi && <div className="mb-3 nested-cards"><KpiSnapshotStrip /></div>}
 
       {history.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center" data-testid="exec-qa-empty">
@@ -178,16 +178,18 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
           </p>
           <div className="flex flex-wrap gap-2 justify-center max-w-2xl">
             {SUGGESTIONS.map((s, i) => (
-              <button
+              <Button
                 key={i}
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => send(s)}
                 disabled={busy}
-                className="text-xs px-3 py-1.5 rounded-full border border-border/60 bg-background hover:bg-foreground/5 transition"
+                className="h-auto min-h-8 whitespace-normal py-1 font-normal"
                 data-testid={`exec-qa-suggest-${i}`}
               >
                 {s}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -215,7 +217,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
                       <button
                         type="button"
                         onClick={() => setExpandedTools(s => ({ ...s, [expandedKey]: !s[expandedKey] }))}
-                        className="text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                        className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
                         data-testid={`exec-qa-tool-toggle-${i}`}
                       >
                         <Wrench className="h-3 w-3" />
@@ -225,7 +227,7 @@ export default function ConversationalQA({ scopeLabel, showKpi = true, collapsib
                       {isToolsExpanded && (
                         <div className="mt-1 space-y-1">
                           {m.tool_calls.map((tc, ti) => (
-                            <div key={ti} className="text-[11px] text-muted-foreground bg-background/60 rounded px-2 py-1 border border-border/40">
+                            <div key={ti} className="text-xs text-muted-foreground bg-background/60 rounded px-2 py-1 border border-border/40">
                               <span className="font-mono font-semibold text-violet-700 dark:text-violet-300">{tc.tool}</span>
                               {tc.params && Object.keys(tc.params).length > 0 && (
                                 <span> · <span className="font-mono">{JSON.stringify(tc.params)}</span></span>

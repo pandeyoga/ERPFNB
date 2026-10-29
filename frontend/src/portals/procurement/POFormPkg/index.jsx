@@ -452,9 +452,9 @@ export default function POForm() {
                     />
                     {ln.ref_price && (
                       <div className="text-xs mt-0.5 flex items-center gap-1">
-                        <span className="text-blue-600">Ref {ln.ref_quarter}: Rp {fmt(ln.ref_price)}</span>
+                        <span className="text-blue-700 dark:text-blue-400">Ref {ln.ref_quarter}: Rp {fmt(ln.ref_price)}</span>
                         {deviation != null && (
-                          <span className={`font-semibold ${Math.abs(deviation) > 10 ? "text-red-600" : deviation > 0 ? "text-orange-600" : "text-green-600"}`}>
+                          <span className={`font-semibold ${Math.abs(deviation) > 10 ? "text-red-700 dark:text-red-400" : deviation > 0 ? "text-orange-800 dark:text-orange-400" : "text-green-700 dark:text-green-400"}`}>
                             ({deviation > 0 ? "+" : ""}{deviation.toFixed(1)}%)
                           </span>
                         )}
@@ -462,7 +462,7 @@ export default function POForm() {
                     )}
                     {isUnavailable && (
                       <div className="flex items-center gap-1 mt-1">
-                        <span className="text-xs text-red-600 flex items-center gap-1">
+                        <span className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" />Tidak tersedia dari vendor ini
                         </span>
                         <Button size="sm" variant="link" className="h-auto p-0 text-xs" onClick={() => openAltVendor(i)} data-testid={`po-line-alt-link-${i}`}>
@@ -471,16 +471,16 @@ export default function POForm() {
                       </div>
                     )}
                     {ln._needs_split && (
-                      <div className="text-xs mt-1 text-orange-600 flex items-center gap-1">
+                      <div className="text-xs mt-1 text-orange-800 dark:text-orange-400 flex items-center gap-1">
                         <AlertTriangle className="h-3 w-3" />
                         Split ke: <strong>{ln._alt_vendor_name}</strong>
-                        <span className="text-gray-400">(PO terpisah)</span>
+                        <span className="text-muted-foreground">(PO terpisah)</span>
                       </div>
                     )}
                     {vendorItem && !isUnavailable && vendorItem.current_price > 0 && !ln._needs_split && (
-                      <div className="text-xs mt-0.5 text-green-600">
+                      <div className="text-xs mt-0.5 text-green-700 dark:text-green-400">
                         Harga vendor: Rp {fmt(vendorItem.current_price)}
-                        {vendorItem.last_gr_date && <span className="text-gray-400 ml-1">(GR {vendorItem.last_gr_date})</span>}
+                        {vendorItem.last_gr_date && <span className="text-muted-foreground ml-1">(GR {vendorItem.last_gr_date})</span>}
                       </div>
                     )}
                   </div>
@@ -504,18 +504,18 @@ export default function POForm() {
                     <Input type="number" min="0" value={ln.unit_cost} aria-label={`Harga satuan baris ${i + 1}`} onChange={e => setLine(i, "unit_cost", e.target.value)}
                       className="glass-input h-9 text-right tabular-nums w-32" data-testid={`po-line-unit-cost-${i}`} />
                     {vendorItem?.last_unit_cost && (
-                      <div className="absolute hidden group-hover:block z-50 bottom-full right-0 mb-1 w-56 bg-gray-900 text-white rounded-lg shadow-xl p-3 text-xs text-left">
+                      <div className="absolute hidden group-hover:block z-50 bottom-full right-0 mb-1 w-56 bg-foreground text-background rounded-lg shadow-xl p-3 text-xs text-left">
                         <div className="font-semibold mb-2">Vendor Price Info</div>
-                        <div className="space-y-1 text-gray-200">
+                        <div className="space-y-1 text-background/80">
                           <div className="flex justify-between"><span>Last PO:</span><span className="font-medium">Rp {fmt(vendorItem.last_unit_cost)}</span></div>
                           {vendorItem.last_gr_date && (
-                            <div className="flex justify-between text-xs text-gray-400"><span>Date:</span><span>{vendorItem.last_gr_date}</span></div>
+                            <div className="flex justify-between text-xs text-muted-foreground"><span>Date:</span><span>{vendorItem.last_gr_date}</span></div>
                           )}
                           {ln.unit_cost > 0 && (
-                            <div className="mt-2 pt-2 border-t border-gray-700">
+                            <div className="mt-2 pt-2 border-t border-background/20">
                               <div className="flex justify-between">
                                 <span>Change:</span>
-                                <span className={`font-semibold ${ln.unit_cost > vendorItem.last_unit_cost ? 'text-red-400' : ln.unit_cost < vendorItem.last_unit_cost ? 'text-green-400' : 'text-gray-300'}`}>
+                                <span className={`font-semibold ${ln.unit_cost > vendorItem.last_unit_cost ? 'text-red-700 dark:text-red-400' : ln.unit_cost < vendorItem.last_unit_cost ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}`}>
                                   {ln.unit_cost > vendorItem.last_unit_cost ? '+' : ln.unit_cost < vendorItem.last_unit_cost ? '' : ''}
                                   {((ln.unit_cost - vendorItem.last_unit_cost) / vendorItem.last_unit_cost * 100).toFixed(1)}%
                                 </span>
@@ -561,7 +561,7 @@ export default function POForm() {
                 )}
                 {ln.item_id && isUnavailable && (
                   <Button variant="ghost" size="icon-sm" onClick={() => openAltVendor(i)}
-                    className="text-orange-500"
+                    className="text-orange-800 dark:text-orange-400"
                     title="Cari vendor alternatif" aria-label={`Cari vendor alternatif untuk baris ${i + 1}`}
                     data-testid={`po-line-alt-${i}`}>
                     <ChevronRight />
@@ -612,7 +612,7 @@ export default function POForm() {
       <DialogContent className="max-w-lg" data-testid="po-alt-vendor-dialog">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <AlertTriangle className="h-5 w-5 text-orange-800 dark:text-orange-400" />
             Cari Vendor Alternatif
           </DialogTitle>
         </DialogHeader>
@@ -624,9 +624,9 @@ export default function POForm() {
             </div>
           )}
           {loadingAlt ? (
-            <div className="text-center py-6 text-gray-400" data-testid="po-alt-loading">Mencari vendor alternatif...</div>
+            <div className="text-center py-6 text-muted-foreground" data-testid="po-alt-loading">Mencari vendor alternatif...</div>
           ) : altVendors.length === 0 ? (
-            <div className="text-center py-6 text-gray-400" data-testid="po-alt-empty">
+            <div className="text-center py-6 text-muted-foreground" data-testid="po-alt-empty">
               <AlertTriangle className="h-10 w-10 mx-auto mb-2 opacity-30" />
               <div>Tidak ada vendor lain yang menyuplai item ini</div>
               <div className="text-xs mt-1">Pertimbangkan Urgent Purchase atau tambah vendor baru</div>
@@ -636,23 +636,23 @@ export default function POForm() {
               data-testid={`po-alt-vendor-${v.vendor_id}`}>
               <div>
                 <div className="font-medium text-sm">{v.vendor_name}</div>
-                <div className="text-xs text-gray-500">{v.vendor_code}</div>
+                <div className="text-xs text-muted-foreground">{v.vendor_code}</div>
                 {v.ref_price && (
-                  <div className="text-xs text-gray-400 mt-0.5">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     Ref: Rp {fmt(v.ref_price)}
                   </div>
                 )}
               </div>
               <div className="text-right">
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold text-foreground">
                   {v.current_price > 0 ? `Rp ${fmt(v.current_price)}` : "Harga belum ada"}
                 </div>
                 {v.deviation_pct != null && (
-                  <div className={`text-xs font-medium ${v.deviation_pct > 10 ? "text-red-600" : v.deviation_pct < 0 ? "text-green-600" : "text-orange-600"}`}>
+                  <div className={`text-xs font-medium ${v.deviation_pct > 10 ? "text-red-700 dark:text-red-400" : v.deviation_pct < 0 ? "text-green-700 dark:text-green-400" : "text-orange-800 dark:text-orange-400"}`}>
                     {v.deviation_pct > 0 ? "+" : ""}{v.deviation_pct.toFixed(1)}% vs ref
                   </div>
                 )}
-                <div className={`text-xs mt-0.5 ${v.availability_status === "available" ? "text-green-600" : "text-red-600"}`}>
+                <div className={`text-xs mt-0.5 ${v.availability_status === "available" ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
                   {v.availability_status === "available" ? "✓ Tersedia" : "✗ Tidak Tersedia"}
                 </div>
               </div>

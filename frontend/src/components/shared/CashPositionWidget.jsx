@@ -46,12 +46,12 @@ export default function CashPositionWidget({ to = "/finance/payments-hub?tab=cas
           </span>
           <div>
             <div className="text-sm font-semibold">Cash Position</div>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               {position.account_count} akun likuid
             </div>
           </div>
         </div>
-        <span className={cn("px-2 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1", health.tone)}>
+        <span className={cn("px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1", health.tone)}>
           <HealthIcon className="h-3 w-3" />
           {health.label}
           {position.days_runway && ` • ${position.days_runway}d`}
@@ -69,7 +69,7 @@ export default function CashPositionWidget({ to = "/finance/payments-hub?tab=cas
             <div className="text-xs font-bold mt-0.5">
               Rp {fmtNumber((types[t]?.total || 0) / 1_000_000, 1)} jt
             </div>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               {types[t]?.count || 0} akun
             </div>
           </div>

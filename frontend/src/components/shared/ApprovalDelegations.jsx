@@ -110,7 +110,7 @@ export default function ApprovalDelegations() {
             render: (d) => <span className="text-sm text-muted-foreground">{d.reason || "—"}</span> },
         ]}
         rowAction={(d) => (
-          <Button size="icon-sm" variant="ghost" className="text-rose-600"
+          <Button size="icon-sm" variant="ghost" className="text-rose-700 dark:text-rose-400"
             onClick={() => revoke(d.id)}
             aria-label="Cabut delegasi"
             data-testid={`revoke-delegation-${d.id}`}>

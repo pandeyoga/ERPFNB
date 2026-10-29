@@ -1,4 +1,5 @@
 {
+  "_status": "Token ringkas (mesin). ACUAN TUNGGAL: docs/DESIGN_SYSTEM.md. Versi lama berisi aturan yang bertentangan (font mono JetBrains, hover translate kartu KPI, label tracking 0.05em, gap-6) — sudah diganti.",
   "theme_archetype": {
     "domain": "Enterprise ERP Dashboard / Finance",
     "theme": "Light + Dark (Hybrid Support)",
@@ -33,57 +34,53 @@
     }
   },
   "typography": {
-    "primary_font": "Inter",
-    "tabular_font": "JetBrains Mono or IBM Plex Mono (Fallback: Inter with 'tabular-nums')",
-    "rules": {
-      "headings": "Tracking tight (tracking-tighter), leading-none, semi-bold to bold. Keep sizes moderate (max text-3xl for dashboards) to maintain ERP density.",
-      "financial_figures": "MUST use 'tabular-nums' utility class to ensure character widths match, preventing jumping numbers in tables and waterfalls. Align RIGHT.",
-      "labels": "text-xs, uppercase, tracking-[0.05em], text-secondary."
-    }
+    "font": "Inter saja; angka pakai tabular-nums (font-mono dipetakan ke Inter tabular)",
+    "page_title_h1": "text-xl md:text-2xl font-semibold (24px) — hanya PageHeader",
+    "section_title_h2": "text-base md:text-lg font-semibold (18px)",
+    "card_title": "text-sm md:text-base font-semibold (16px)",
+    "body": "text-sm (14px)",
+    "control": "text-[13px]",
+    "caption": "text-xs text-muted-foreground (12px)",
+    "micro_label": "text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground — satu-satunya pemakaian 11px",
+    "min_font_px": 12
   },
-  "spacing_and_layout": {
-    "philosophy": "Dense but calm. Eliminate unnecessary padding in data tables to show more rows, but maintain generous padding around the main page layout and KPI cards.",
-    "dashboard_grid": "Grid layout (grid-cols-1 md:grid-cols-2 xl:grid-cols-4) with gap-4 or gap-6 for KPI cards.",
-    "surfaces": "Glassmorphism components MUST use 'backdrop-blur-xl', 'backdrop-saturate-150', and a 1px border. Shadow should be soft 'shadow-[0_8px_32px_rgba(0,0,0,0.04)]'."
+  "sizes_px": {
+    "button_default": 36,
+    "button_sm": 32,
+    "button_icon": 36,
+    "button_icon_sm": 32,
+    "input": 36,
+    "tab_trigger": 32,
+    "chip": "= button sm (32)",
+    "status_pill": 20,
+    "kpi_card_sm": 72,
+    "kpi_card_md": 88,
+    "table_row_min": 36,
+    "help_target_min": 24,
+    "icon_in_button": 16,
+    "icon_in_tab": 14
   },
-  "components": {
-    "kpi_executive_cards": {
-      "purpose": "4 KPI metric cards (Revenue, Gross Profit, Net Profit, Δ Net).",
-      "structure": "Glass-card with top-left metric title, top-right Lucide icon (opacity 50). Center large tabular number. Bottom section for Compare delta (chip with positive/negative color).",
-      "interactions": "MUST be clickable. Use 'cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all duration-200'. Add 'group' class to card and 'group-hover:text-indigo-500' to icons for subtle feedback."
-    },
-    "waterfall_chart": {
-      "purpose": "Profit Walk visualization from Revenue down to Net Profit.",
-      "implementation_recharts": "1. Map data to compute 'running' totals. 2. Pass '[low, high]' array to Recharts <Bar dataKey=\"range\"> to make bars float. 3. Use custom 'shape' or 'cell' to color Gains (Green/Aurora), Losses (Red/Orange), and Totals (Solid Aurora).",
-      "connector_lines": "Recharts doesn't natively draw connector lines. Create a custom SVG overlay or use <ReferenceLine> / <Customized> component to draw thin lines (stroke-width 1, dashed, border color) connecting the top of the previous bar to the top of the next.",
-      "labels": "Include direct value labels on top of bars. Do not rely solely on tooltips for executive ERPs."
-    },
-    "expandable_financial_table": {
-      "purpose": "Detail per Stage table (Stage | Period | Compare | Δ | Δ% | Running) with high usability.",
-      "structure": "Use Shadcn Table. Financial columns MUST be text-right and tabular-nums. Use sticky header.",
-      "interactions": "Rows must have 'hover:bg-muted/50 cursor-pointer'. Add a ChevronRight icon to the first cell that rotates 90deg when expanded.",
-      "expanded_state": "When clicked, insert a conditional <TableRow> containing a full-width <TableCell colSpan={6}>. Inside, render a sub-table or bento-style breakdown (e.g., Drivers, By-Outlet) with a slightly darker/indented background to indicate hierarchy."
-    },
-    "daily_sales_wizard": {
-      "purpose": "Consolidated entry wizard replacing disjointed menus.",
-      "structure": "Horizontal Stepper (Channel -> Revenue -> Tax -> Payment -> Review).",
-      "ui_pattern": "Use active/inactive step indicators (pills). The active step uses the 'pill-active' aurora gradient. Forms inside should use Shadcn form components, laid out cleanly in a max-w-2xl container. Add clear 'Next' and 'Back' button placement at the bottom."
-    },
-    "top_drivers_list": {
-      "purpose": "Quick snapshot of what is impacting the numbers the most.",
-      "structure": "Dense list layout. Left: Driver name + subtle category badge. Right: Monetary impact (green/red) + sparkline if possible."
-    }
+  "radius_px": {
+    "card": 18,
+    "control": 12,
+    "tab_trigger": 10,
+    "pill": "full"
   },
-  "motion_and_interactions": {
-    "page_transitions": "Framer motion on page load: initial opacity-0 translate-y-4, animate to opacity-100 translate-y-0. Stagger children by 0.05s.",
-    "hover_states": "Tables: 'hover:bg-white/5' (dark) or 'hover:bg-black/5' (light). Buttons: Subtle scale-up 'active:scale-95'.",
-    "skeleton_loading": "Use Shadcn <Skeleton>. Instead of plain gray pulses, give skeletons a subtle shimmer matching the aurora vibe (e.g., purple/indigo hue at 10% opacity)."
+  "spacing": {
+    "grid": 4,
+    "section_gap": "space-y-3 lg:space-y-4",
+    "card_padding": "p-3 | p-4 | 0 (pembungkus tabel)"
   },
-  "instructions_to_main_agent": {
-    "1": "DO NOT use standard Shadcn flat cards for the dashboard. Apply the glassmorphism utility classes defined here to match the 'Torado Group' visual DNA.",
-    "2": "When building the Recharts waterfall, strictly follow the [low, high] array logic for floating bars. Render connector lines manually using the Recharts <Customized> component if possible.",
-    "3": "For the expandable table, ensure 'tabular-nums' is applied to all number columns. Build the expanded row as a seamless extension of the parent row.",
-    "4": "Consolidate the Daily Sales and Sales Wizard into a single Stepper component. Use Framer Motion (AnimatePresence) to slide between steps.",
-    "5": "Testing: Add `data-testid` attributes to all interactive elements (e.g., `data-testid=\"kpi-card-revenue\"`, `data-testid=\"expand-row-btn\"`)."
-  }
+  "contrast": {
+    "text_min_ratio": 4.5,
+    "ui_min_ratio": 3,
+    "status_text": "-700 (amber/yellow/orange -800) + dark:-400",
+    "muted_foreground_light": "215 16% 40%"
+  },
+  "instructions_to_main_agent": [
+    "Baca docs/DESIGN_SYSTEM.md sebelum membuat/mengubah UI.",
+    "Pakai primitive components/ui + components/shared; jangan override ukuran Button lewat className.",
+    "Jalankan python3 scripts/ux_audit.py --strict (0 ERROR) sebelum selesai.",
+    "Tambahkan data-testid kebab-case; jangan ganti testid yang dipakai tour."
+  ]
 }

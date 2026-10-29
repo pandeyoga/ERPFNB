@@ -29,6 +29,16 @@ import EmptyState from "@/components/shared/EmptyState";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { fmtRp, fmtPct } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+/** Warna teks yang terbaca di atas warna brand (hex): putih untuk warna gelap, gelap untuk warna terang. */
+function readableOn(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim());
+  if (!m) return "#fff";
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255)
+    .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 0.18 ? "#0f172a" : "#fff";
+}
 import { toast } from "sonner";
 
 // /executive/brand-mix mengembalikan { period, grand_total, rows: [{ brand_id, brand_name,
@@ -150,21 +160,21 @@ export default function BrandMixOverview({ embedded = false }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                 <XAxis
                   dataKey="brand"
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12 }}
                   angle={-25}
                   textAnchor="end"
                   height={60}
                 />
                 <YAxis
                   yAxisId="left"
-                  tick={{ fontSize: 11 }}
+                  tick={{ fontSize: 12 }}
                   tickFormatter={(v) => {
                     if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                     if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
                     return v;
                   }}
                 />
-                {hasGp && <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} unit="%" />}
+                {hasGp && <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} unit="%" />}
                 <Tooltip
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
@@ -231,7 +241,7 @@ export default function BrandMixOverview({ embedded = false }) {
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-[calc(var(--radius)-2px)] flex items-center justify-center text-white text-sm font-semibold shrink-0" style={{ backgroundColor: color }}>
+                    <div className="h-10 w-10 rounded-[calc(var(--radius)-2px)] flex items-center justify-center text-sm font-semibold shrink-0" style={{ backgroundColor: color, color: readableOn(color) }}>
                       {(b.brand_name || b.name || "?").slice(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0">

@@ -134,7 +134,7 @@ export default function TransferDetail() {
               </div>
               <div className="min-w-[120px]">
                 <div className="text-xs font-semibold">{t.label}</div>
-                <div className="text-[11px] text-muted-foreground">{t.time ? fmtDateTime(t.time) : "—"}</div>
+                <div className="text-xs text-muted-foreground">{t.time ? fmtDateTime(t.time) : "—"}</div>
               </div>
               {i < timeline.length - 1 && <div className="h-px w-8 bg-border" />}
             </div>

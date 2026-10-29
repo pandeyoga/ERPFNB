@@ -127,7 +127,7 @@ export default function ItemPriceHistory({ itemId, currentPrice, unit }) {
                     Active
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted/40 dark:bg-slate-800 text-muted-foreground dark:text-slate-400">
                     Closed
                   </span>
                 ) },
@@ -188,7 +188,7 @@ export default function ItemPriceHistory({ itemId, currentPrice, unit }) {
               <Button
                 onClick={handleAddPrice}
                 disabled={saving}
-                className="flex-1 rounded-full"
+                className="flex-1"
                 data-testid="save-price-btn"
               >
                 {saving ? "Saving..." : "Save Price"}
@@ -213,7 +213,7 @@ function VarianceBadge({ variance }) {
   
   if (Math.abs(value) < 0.01) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted/40 dark:bg-slate-800 text-muted-foreground dark:text-slate-400">
         <Minus className="h-3 w-3" />
         0%
       </span>

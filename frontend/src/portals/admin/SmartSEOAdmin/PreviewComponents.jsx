@@ -57,8 +57,8 @@ function CharCounter({ value = "", min, max }) {
   const over = len > max;
   return (
     <span className={cn(
-      "text-[11px] font-medium tabular-nums ml-1",
-      ok ? "text-emerald-500" : over ? "text-red-500" : "text-amber-500"
+      "text-xs font-medium tabular-nums ml-1",
+      ok ? "text-emerald-700 dark:text-emerald-400" : over ? "text-red-700 dark:text-red-400" : "text-amber-800 dark:text-amber-400"
     )}>
       {len}/{max}
     </span>
@@ -73,7 +73,7 @@ function IntentBadge({ intent }) {
     transactional: { label: "Transactional", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   };
   const { label, cls } = map[intent] || { label: intent, cls: "bg-gray-100 text-gray-700" };
-  return <span className={cn("px-2 py-0.5 rounded-full text-[11px] font-semibold border", cls)}>{label}</span>;
+  return <span className={cn("px-2 py-0.5 rounded-full text-xs font-semibold border", cls)}>{label}</span>;
 }
 
 function SerpPreview({ title, description, path }) {
@@ -88,7 +88,7 @@ function SerpPreview({ title, description, path }) {
           <p className="text-[13px] text-gray-600">{displayUrl}</p>
         </div>
       </div>
-      <p className="text-blue-600 text-lg font-medium hover:underline cursor-pointer leading-tight">
+      <p className="text-blue-700 dark:text-blue-400 text-lg font-medium hover:underline cursor-pointer leading-tight">
         {fullTitle.slice(0, 65)}{fullTitle.length > 65 ? "..." : ""}
       </p>
       <p className="text-gray-600 text-sm mt-1 leading-snug">

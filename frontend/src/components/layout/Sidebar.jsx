@@ -47,7 +47,7 @@ function CollapsedRail({ nav, pathname }) {
             <TooltipContent side="right" className="max-w-[260px]">
               <div className="text-xs font-semibold">{e.name}</div>
               {e.type === "group" && e.sections?.length > 0 && (
-                <div className="text-[11px] text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {e.sections.map((s) => s.name).join(" · ")}
                 </div>
               )}

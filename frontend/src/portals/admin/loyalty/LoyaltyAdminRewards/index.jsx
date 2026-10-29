@@ -504,7 +504,7 @@ export default function LoyaltyAdminRewards({ embedded = false }) {
             </DialogDescription>
           </DialogHeader>
           {restocking?.stock === null || restocking?.stock === undefined ? (
-            <p className="text-sm text-amber-600">
+            <p className="text-sm text-amber-800 dark:text-amber-400">
               Reward ini memiliki stok unlimited. Atur batas stok terlebih dahulu melalui Edit.
             </p>
           ) : (
@@ -564,7 +564,7 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
           />
         ) : null}
         <div className="fallback-icon w-full h-full items-center justify-center" style={{ display: imgSrc ? "none" : "flex" }}>
-          <Gift className="h-10 w-10 text-amber-400/50" />
+          <Gift className="h-10 w-10 text-amber-800 dark:text-amber-400/50" />
         </div>
       </div>
 
@@ -580,7 +580,7 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
               {CATEGORY_LABELS[r.category] || r.category}
             </Badge>
             {!r.is_active && (
-              <Badge variant="outline" className="border-red-300 text-red-600 text-xs">Nonaktif</Badge>
+              <Badge variant="outline" className="border-red-300 text-red-700 dark:text-red-400 text-xs">Nonaktif</Badge>
             )}
           </div>
         </div>
@@ -594,11 +594,11 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
           <div>
             <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Stok</div>
             <div className={`font-medium ${
-              r.stock !== null && r.stock !== undefined && r.stock <= 5 ? "text-red-600" : ""
+              r.stock !== null && r.stock !== undefined && r.stock <= 5 ? "text-red-700 dark:text-red-400" : ""
             }`}>
               {r.stock === null || r.stock === undefined ? "∞" : r.stock}
               {r.stock !== null && r.stock !== undefined && r.stock <= 5 && (
-                <AlertTriangle className="inline h-3 w-3 ml-1 text-red-500" />
+                <AlertTriangle className="inline h-3 w-3 ml-1 text-red-700 dark:text-red-400" />
               )}
             </div>
           </div>
@@ -640,9 +640,9 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
             data-testid={`toggle-reward-${r.id}`}
           >
             {r.is_active ? (
-              <PowerOff className="h-3.5 w-3.5 text-red-500" />
+              <PowerOff className="h-3.5 w-3.5 text-red-700 dark:text-red-400" />
             ) : (
-              <Power className="h-3.5 w-3.5 text-emerald-500" />
+              <Power className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
             )}
           </Button>
         </div>

@@ -1,0 +1,942 @@
+[
+ {
+  "route": "/executive/analytics",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/brand/:brandId",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/outlet/:outletId",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/profit-walk",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/period-compare",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/reservations",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/budget-approvals",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/outlet-budgets",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/budget-monitor",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/budget-increase-requests",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/ai-qa",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/anomaly",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/brand",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/executive/analytics-hub",
+  "portal": "/executive",
+  "src": "portals/executive/ExecutivePortal.jsx"
+ },
+ {
+  "route": "/finance/validation",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payments-hub",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payments",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payments/new",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payments/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payment-runs",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payment-runs/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payment-run-templates",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payment-run-templates/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/payment-requests/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/journals",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/journals/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/manual-journal",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/reports",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/ap-aging",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/tax",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/tax-center",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/efaktur",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/ebupot",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/assets",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/assets/:id",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/budget-hub",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/budget",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/budget/manage",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/ar-invoices",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/bank-recon",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/cash-position",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/forecasting",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/anomalies",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/vendor-scorecard",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/periods",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/period-closing",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/period-closing/:period",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/closing-wizard",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/coa",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/finance/reservation-deposits",
+  "portal": "/finance",
+  "src": "portals/finance/FinancePortal.jsx"
+ },
+ {
+  "route": "/hr/compensation",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/advances",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/service-charge",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/incentive",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/voucher",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/foc",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/lb-fund",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/payroll",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/leaves",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/job-applications",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/hr/job-listings",
+  "portal": "/hr",
+  "src": "portals/HRPortal.jsx"
+ },
+ {
+  "route": "/inventory/balance",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/low-stock",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/movements-hub",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/transfers",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/transfers/:id",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/adjustments",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/opname",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/opname/:id",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/valuation",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/inventory/market-list",
+  "portal": "/inventory",
+  "src": "portals/inventory/InventoryPortal.jsx"
+ },
+ {
+  "route": "/outlet/crm",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-sales",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-sales/new",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-sales/:id",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-sales/:id/edit",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/petty-cash",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-orders",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/urgent-purchase",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/daily-close",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/end-of-day",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/inventory/stock-check",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/inventory/transfers",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/inventory/usage",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/voucher-redeem",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/loyalty/input-poin",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/reservations",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/reservations/new",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/reservations/:id/edit",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/outlet/budget",
+  "portal": "/outlet",
+  "src": "portals/outlet/OutletPortal.jsx"
+ },
+ {
+  "route": "/owner/briefing",
+  "portal": "/owner",
+  "src": "portals/owner/OwnerPortal.jsx"
+ },
+ {
+  "route": "/owner/cash",
+  "portal": "/owner",
+  "src": "portals/owner/OwnerPortal.jsx"
+ },
+ {
+  "route": "/owner/ai-assistant",
+  "portal": "/owner",
+  "src": "portals/owner/OwnerPortal.jsx"
+ },
+ {
+  "route": "/owner/digest-settings",
+  "portal": "/owner",
+  "src": "portals/owner/OwnerPortal.jsx"
+ },
+ {
+  "route": "/procurement/kanban",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/vendor-comparison",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/vendor-recommend",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/price-intelligence",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/vendor-catalog",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/rfq",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/rfq/new",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/rfq/:id",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/pr",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/pr/new",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/pr/:id",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/po",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/po/new",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/po/:id",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/gr",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/gr/new",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/consolidation",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/po-comparison",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/vendors",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/procurement/vendor-scorecard",
+  "portal": "/procurement",
+  "src": "portals/procurement/ProcurementPortal.jsx"
+ },
+ {
+  "route": "/admin/users",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/roles",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/user-management",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/setup",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/master/:entity",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/configuration",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/sales-schemas",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/petty-cash-policies",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/service-charge-policies",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/incentive-schemes",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/anomaly-thresholds",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/effective-dating",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/workflows",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/approvals",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/bulk-import",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/number-series",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/audit-log",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/integrations",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/integrations/:tab",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/tax",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/operations/*",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/settings",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty/customers",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty/customers/:customerId",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty/rewards",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty/redemptions",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/loyalty/analytics",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/brands",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/outlets",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/news",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/menu",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/careers",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/media",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/reviews",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/analytics",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/cms/pages",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/report-schedules",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/smart-seo",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/data-management",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/admin/tour-analytics",
+  "portal": "/admin",
+  "src": "portals/admin/AdminPortal.jsx"
+ },
+ {
+  "route": "/reports/daily-sales",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/outlet-performance",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/fdo-history",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/stock-balance",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/stock-movement",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/inventory-valuation",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/po-summary",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/gr-summary",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/vendor-performance",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/journal-ledger",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/trial-balance",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/ap-aging",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/reports/pl-group",
+  "portal": "/reports",
+  "src": "portals/ReportsPortal.jsx"
+ },
+ {
+  "route": "/login",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/no-access",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/register",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/login",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/card",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/rewards",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/history",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/loyalty/profile",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/erp",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/portal-select",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/my-approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/hr/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/finance/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/procurement/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/outlet/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/owner/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/executive/approvals",
+  "portal": "app",
+  "src": "App.js"
+ },
+ {
+  "route": "/master",
+  "portal": "app",
+  "src": "App.js"
+ }
+]

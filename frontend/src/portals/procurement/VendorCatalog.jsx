@@ -27,7 +27,7 @@ const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 const DeviationBadge = ({ pct }) => {
   if (pct == null) return <span className="text-muted-foreground text-xs">Tanpa ref</span>;
-  const cls = pct > 10 ? "bg-red-500/15 text-red-700 dark:text-red-300" : pct < -10 ? "bg-green-500/15 text-green-700 dark:text-green-300" : pct > 0 ? "bg-orange-500/15 text-orange-700 dark:text-orange-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300";
+  const cls = pct > 10 ? "bg-red-500/15 text-red-800 dark:text-red-300" : pct < -10 ? "bg-green-500/15 text-green-800 dark:text-green-300" : pct > 0 ? "bg-orange-500/15 text-orange-800 dark:text-orange-300" : "bg-blue-500/15 text-blue-800 dark:text-blue-300";
   const icon = pct > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />;
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded-full ${cls}`}>
@@ -138,9 +138,9 @@ export default function VendorCatalog() {
 
   const sourceTag = (source) => {
     const map = {
-      po: { cls: "bg-blue-500/15 text-blue-700 dark:text-blue-300", label: "PO" },
-      gr: { cls: "bg-green-500/15 text-green-700 dark:text-green-300", label: "GR" },
-      manual: { cls: "bg-purple-500/15 text-purple-700 dark:text-purple-300", label: "Manual" },
+      po: { cls: "bg-blue-500/15 text-blue-800 dark:text-blue-300", label: "PO" },
+      gr: { cls: "bg-green-500/15 text-green-800 dark:text-green-300", label: "GR" },
+      manual: { cls: "bg-purple-500/15 text-purple-800 dark:text-purple-300", label: "Manual" },
     };
     const t = map[source] || { cls: "bg-foreground/10 text-muted-foreground", label: source };
     return <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${t.cls}`}>{t.label}</span>;
@@ -263,7 +263,7 @@ export default function VendorCatalog() {
                           <span className="font-semibold">
                             {item.current_price > 0 ? `Rp ${fmt(item.current_price)}` : "—"}
                           </span>
-                          {item.last_gr_date && <div className="text-xs text-green-600 dark:text-green-400">dari GR {item.last_gr_date}</div>}
+                          {item.last_gr_date && <div className="text-xs text-green-700 dark:text-green-400">dari GR {item.last_gr_date}</div>}
                         </div>
                       ) },
                     { key: "ref_price", label: "Harga ref. market", numeric: true,
@@ -302,7 +302,7 @@ export default function VendorCatalog() {
                       <Button size="icon-sm" variant="ghost" onClick={() => toggleAvailability(item)}
                         title={item.availability_status === "available" ? "Tandai tidak tersedia" : "Tandai tersedia"}
                         aria-label={`${item.availability_status === "available" ? "Tandai tidak tersedia" : "Tandai tersedia"}: ${item.item_name}`}
-                        className={item.availability_status === "available" ? "text-muted-foreground hover:text-red-500" : "text-red-500 hover:text-green-500"}
+                        className={item.availability_status === "available" ? "text-muted-foreground hover:text-red-500" : "text-red-700 dark:text-red-400 hover:text-green-500"}
                         data-testid={`vendor-catalog-toggle-${item.item_id}`}>
                         {item.availability_status === "available"
                           ? <XCircle />
@@ -356,7 +356,7 @@ export default function VendorCatalog() {
                     render: (h) => <span className="font-semibold text-sm">Rp {fmt(h.new_price)}</span> },
                   { key: "change_pct", label: "Perubahan", align: "center",
                     render: (h) => h.change_pct != null ? (
-                      <span className={`text-xs font-semibold ${h.change_pct > 0 ? "text-red-600" : h.change_pct < 0 ? "text-green-600" : "text-muted-foreground"}`}>
+                      <span className={`text-xs font-semibold ${h.change_pct > 0 ? "text-red-700 dark:text-red-400" : h.change_pct < 0 ? "text-green-700 dark:text-green-400" : "text-muted-foreground"}`}>
                         {h.change_pct > 0 ? "+" : ""}{h.change_pct?.toFixed(1)}%
                       </span>
                     ) : "-" },
@@ -365,7 +365,7 @@ export default function VendorCatalog() {
                       <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                         h.source === "gr" ? "bg-green-500/15 text-green-700 dark:text-green-300" :
                         h.source === "po" ? "bg-blue-500/15 text-blue-700 dark:text-blue-300" :
-                        "bg-purple-500/15 text-purple-700 dark:text-purple-300"
+                        "bg-purple-500/15 text-purple-800 dark:text-purple-300"
                       }`}>{h.source?.toUpperCase()}</span>
                     ) },
                   { key: "source_doc_no", label: "Dokumen",

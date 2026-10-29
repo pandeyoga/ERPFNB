@@ -24,7 +24,7 @@ import EmptyState from "@/components/shared/EmptyState";
 
 const TIER_BADGE = {
   bronze: "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200",
-  silver: "bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100",
+  silver: "bg-muted text-foreground dark:bg-slate-700 dark:text-slate-100",
   gold: "bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200",
 };
 
@@ -195,11 +195,11 @@ export default function LoyaltyAdminCustomerDetail() {
             {c.loyalty_tier}
           </Badge>
           {detail.is_active ? (
-            <Badge variant="outline" className="border-emerald-500/40 text-emerald-600">
+            <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400">
               Aktif
             </Badge>
           ) : (
-            <Badge variant="outline" className="border-red-500/40 text-red-600">
+            <Badge variant="outline" className="border-red-500/40 text-red-700 dark:text-red-400">
               Nonaktif
             </Badge>
           )}
@@ -313,7 +313,7 @@ export default function LoyaltyAdminCustomerDetail() {
                       <li key={t.id} className="flex items-center justify-between px-4 py-3" data-testid={`tx-${t.id}`}>
                         <div className="flex items-center gap-3">
                           <div
-                            className={`h-9 w-9 rounded-full flex items-center justify-center ${pos ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600"}`}
+                            className={`h-9 w-9 rounded-full flex items-center justify-center ${pos ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400" : "bg-red-500/15 text-red-800 dark:text-red-400"}`}
                           >
                             {pos ? (
                               <TrendingUp className="h-4 w-4" />
@@ -328,7 +328,7 @@ export default function LoyaltyAdminCustomerDetail() {
                             </div>
                           </div>
                         </div>
-                        <div className={`font-semibold tabular-nums ${pos ? "text-emerald-600" : "text-red-600"}`}>
+                        <div className={`font-semibold tabular-nums ${pos ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"}`}>
                           {pos ? "+" : ""}
                           {t.points.toLocaleString()}
                         </div>
@@ -351,7 +351,7 @@ export default function LoyaltyAdminCustomerDetail() {
                   {redemptions.map((r) => (
                     <li key={r.id} className="flex items-center justify-between px-4 py-3" data-testid={`redemption-${r.id}`}>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-9 w-9 rounded-full bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-400 flex items-center justify-center shrink-0">
                           <Gift className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
@@ -371,7 +371,7 @@ export default function LoyaltyAdminCustomerDetail() {
                         <Badge variant="secondary" className="capitalize">
                           {r.status}
                         </Badge>
-                        <div className="font-semibold text-red-600 tabular-nums">
+                        <div className="font-semibold text-red-700 dark:text-red-400 tabular-nums">
                           -{r.points_used.toLocaleString()}
                         </div>
                       </div>

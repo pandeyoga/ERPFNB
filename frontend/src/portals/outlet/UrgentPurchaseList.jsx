@@ -431,7 +431,7 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
                 }}
               />
               {form.suggested_gl_code && (
-                <div className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-1 inline-flex items-center gap-1">
+                <div className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 inline-flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" /> COA {form.suggested_gl_code} akan diterapkan saat approval.
                 </div>
               )}
@@ -468,7 +468,7 @@ function UrgentPurchaseForm({ open, userOutlets, paymentMethods, defaultOutletId
               className="glass-input mt-1 min-h-[60px]"
               data-testid="up-guard-reason"
             />
-            <div className="text-[11px] text-muted-foreground mt-1.5">
+            <div className="text-xs text-muted-foreground mt-1.5">
               Alasan akan disimpan sebagai bukti audit untuk approver.
             </div>
           </div>

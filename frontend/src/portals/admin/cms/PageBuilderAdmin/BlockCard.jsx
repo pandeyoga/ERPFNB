@@ -51,13 +51,13 @@ function BlockCard({ block, index, total, onChange, onDelete, onMoveUp, onMoveDo
         <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         <span className="font-medium text-sm flex-1">{cfg?.label || block.type}</span>
         <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onMoveUp} disabled={index === 0}>
+          <Button size="icon-sm" variant="ghost" onClick={onMoveUp} disabled={index === 0}>
             <ChevronUp className="h-3.5 w-3.5" />
           </Button>
-          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onMoveDown} disabled={index === total - 1}>
+          <Button size="icon-sm" variant="ghost" onClick={onMoveDown} disabled={index === total - 1}>
             <ChevronDown className="h-3.5 w-3.5" />
           </Button>
-          <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={onDelete}>
+          <Button size="icon-sm" variant="ghost" className="text-destructive" onClick={onDelete}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>

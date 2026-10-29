@@ -62,7 +62,7 @@ export default function AIJournalGenerator({ onGenerated }) {
   return (
     <div className="space-y-4">
       {/* Input */}
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-5 w-5 text-purple-700 dark:text-purple-400" />
           <h3 className="text-sm md:text-base font-semibold">AI Journal Entry Generator</h3>
@@ -106,7 +106,7 @@ export default function AIJournalGenerator({ onGenerated }) {
 
       {/* Result */}
       {result && (
-        <div className="glass-card p-5 border-2 border-purple-500/30">
+        <div className="glass-card p-4 border-2 border-purple-500/30">
           <div className="flex items-start justify-between mb-3">
             <div>
               <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export default function AIJournalGenerator({ onGenerated }) {
           <div className="flex gap-2">
             <Button
               onClick={handleUseGenerated}
-              className="rounded-full gap-2 flex-1"
+              className="gap-2 flex-1"
               data-testid="ai-journal-use"
             >
               <ArrowRight className="h-4 w-4" /> Gunakan Journal Entry Ini

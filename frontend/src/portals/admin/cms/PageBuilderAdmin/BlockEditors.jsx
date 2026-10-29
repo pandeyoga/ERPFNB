@@ -237,7 +237,7 @@ function GalleryBlockEditor({ block, onChange }) {
               <div key={img.id || idx} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium">Image {idx + 1}</span>
-                  <Button type="button" size="icon" variant="ghost" aria-label="Hapus image" className="h-6 w-6 text-destructive" 
+                  <Button type="button" size="icon-sm" variant="ghost" aria-label="Hapus image" className="text-destructive" 
                           onClick={() => removeImage(idx)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -331,7 +331,7 @@ function MenuShowcaseBlockEditor({ block, onChange }) {
               <div key={item.id || idx} className="border rounded-lg p-3 space-y-2 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium">Item {idx + 1}</span>
-                  <Button type="button" size="icon" variant="ghost" aria-label="Hapus item" className="h-6 w-6 text-destructive" 
+                  <Button type="button" size="icon-sm" variant="ghost" aria-label="Hapus item" className="text-destructive" 
                           onClick={() => removeItem(idx)}>
                     <Trash2 className="h-3 w-3" />
                   </Button>

@@ -130,7 +130,7 @@ export default function MyApprovals() {
           <TabsTrigger value="queue" data-testid="tab-queue">
             Antrean
             {totalCount > 0 && (
-              <span className="ml-0.5 rounded-full bg-foreground/10 px-1.5 text-[11px] leading-4 tabular-nums">{totalCount}</span>
+              <span className="ml-0.5 rounded-full bg-foreground/10 px-1.5 text-xs leading-4 tabular-nums">{totalCount}</span>
             )}
           </TabsTrigger>
           <TabsTrigger value="delegation" data-testid="tab-delegation">Delegasi</TabsTrigger>
@@ -238,7 +238,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
       }}
       transition={{ delay: Math.min(index * 0.025, 0.4), duration: 0.18 }}
       className={cn(
-        "glass-card px-3 py-2 cursor-grab active:cursor-grabbing select-none",
+        "glass-card p-3 cursor-grab active:cursor-grabbing select-none",
         isSevere && "ring-2 ring-red-500/40",
         isMild   && "ring-2 ring-amber-500/40",
         busy     && "opacity-60",
@@ -269,7 +269,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
               <span
                 className={cn(
                   "inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wide px-1.5 py-0.5 rounded-full font-bold",
-                  isSevere ? "bg-red-500/20 text-red-700 dark:text-red-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300",
+                  isSevere ? "bg-red-500/20 text-red-800 dark:text-red-300" : "bg-amber-500/20 text-amber-800 dark:text-amber-300",
                 )}
                 title={guardLog.message}
               >
@@ -278,7 +278,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
             <span>
               {item.step_label ? <>menunggu <b className="text-foreground">{item.step_label}</b></> : "menunggu persetujuan"}
             </span>
@@ -299,7 +299,8 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
             size="sm"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onApprove(); }}
-            className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            variant="success"
+            className="gap-1"
             data-testid={`quick-approve-${item.entity_id}`}
           >
             <Check className="h-3 w-3" />
@@ -310,7 +311,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
             variant="outline"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onReject(); }}
-            className="gap-1 border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
+            className="gap-1 border-rose-300 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950"
             data-testid={`quick-reject-${item.entity_id}`}
           >
             <X className="h-3 w-3" />
@@ -326,7 +327,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
 
       {/* Mobile swipe hint — satu kali di baris pertama saja */}
       {index === 0 && (
-        <p className="md:hidden text-[11px] text-muted-foreground/60 mt-1.5 text-center italic">
+        <p className="md:hidden text-xs text-muted-foreground/60 mt-1.5 text-center italic">
           Swipe kanan = setujui · kiri = tolak
         </p>
       )}

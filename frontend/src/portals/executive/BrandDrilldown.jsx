@@ -136,7 +136,7 @@ export default function BrandDrilldown() {
                   <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
                     <div className="h-full grad-aurora" style={{ width: `${Math.min(100, o.share_pct).toFixed(1)}%` }} />
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {(o.share_pct ?? 0).toFixed(1)}% · klik untuk detail outlet
                   </div>
                 </button>
@@ -170,12 +170,12 @@ function BackButton({ onClick }) {
 function CostStructureTable({ cs }) {
   const rows = [
     { label: "Revenue", value: cs.revenue, color: "text-foreground" },
-    { label: "COGS", value: cs.cogs, color: "text-amber-600" },
-    { label: "Gross Profit", value: cs.revenue - cs.cogs, color: "text-emerald-600", bold: true },
-    { label: "OpEx", value: cs.opex, color: "text-red-600" },
+    { label: "COGS", value: cs.cogs, color: "text-amber-800 dark:text-amber-400" },
+    { label: "Gross Profit", value: cs.revenue - cs.cogs, color: "text-emerald-700 dark:text-emerald-400", bold: true },
+    { label: "OpEx", value: cs.opex, color: "text-red-700 dark:text-red-400" },
     { label: "Service Charge (in revenue)", value: cs.service, color: "text-muted-foreground", muted: true },
     { label: "Tax (in revenue)", value: cs.tax, color: "text-muted-foreground", muted: true },
-    { label: "Net", value: cs.net, color: cs.net >= 0 ? "text-emerald-600" : "text-red-600", bold: true },
+    { label: "Net", value: cs.net, color: cs.net >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400", bold: true },
   ];
   const max = Math.max(...rows.map(r => Math.abs(r.value || 0)), 1);
   return (

@@ -78,7 +78,7 @@ export default function IncentiveSchemeEditor(props) {
                       onChange={(e) => set("incentive_pct", Number(e.target.value || 0))}
                       data-testid="incentive-pct"
                     />
-                    <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">
+                    <p className="text-xs text-muted-foreground mt-1 tabular-nums">
                       {((Number(ruleData.incentive_pct ?? 0.01)) * 100).toFixed(2)}% dari total penjualan.
                     </p>
                   </div>
@@ -187,7 +187,7 @@ export default function IncentiveSchemeEditor(props) {
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                           {!valid && (
-                            <p className="col-span-12 text-[11px] text-destructive flex items-center gap-1">
+                            <p className="col-span-12 text-xs text-destructive flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3" /> Rentang tidak valid atau bentrok dengan tier lain.
                             </p>
                           )}

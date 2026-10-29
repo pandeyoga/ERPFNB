@@ -67,7 +67,7 @@ function RescheduleDialog({ reservation, open, onClose, onSuccess }) {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4 text-indigo-600" /> Jadwal Ulang Reservasi
+            <CalendarClock className="h-4 w-4 text-indigo-700 dark:text-indigo-400" /> Jadwal Ulang Reservasi
           </DialogTitle>
           <DialogDescription>
             Ubah jadwal untuk <strong>{reservation?.customer_name}</strong>.
@@ -102,7 +102,7 @@ function RescheduleDialog({ reservation, open, onClose, onSuccess }) {
             </p>
             <div className="space-y-1">
               {reservation.reschedule_history.slice(-3).map((h, i) => (
-                <p key={i} className="text-xs text-indigo-600 dark:text-indigo-300">
+                <p key={i} className="text-xs text-indigo-700 dark:text-indigo-300">
                   {fmtDate(h.changed_at)}: {h.old_date} {h.old_time} → {h.new_date} {h.new_time}
                   {h.reason && ` (${h.reason})`}
                 </p>

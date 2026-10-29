@@ -63,20 +63,20 @@ export default function StockCheck() {
     const n = Number(qty || 0);
     if (n <= 0) {
       return (
-        <span className="text-[11px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-400 font-medium inline-flex items-center gap-1">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-800 dark:text-rose-400 font-medium inline-flex items-center gap-1">
           <AlertTriangle className="h-3 w-3" /> Habis
         </span>
       );
     }
     if (n <= LOW_STOCK_THRESHOLD) {
       return (
-        <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium inline-flex items-center gap-1">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-400 font-medium inline-flex items-center gap-1">
           <AlertTriangle className="h-3 w-3" /> Rendah
         </span>
       );
     }
     return (
-      <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+      <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 font-medium">
         Cukup
       </span>
     );

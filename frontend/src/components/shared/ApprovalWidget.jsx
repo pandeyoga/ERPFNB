@@ -74,7 +74,7 @@ export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" })
       <CardContent className="pt-0">
         {total === 0 ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            <CheckCircle className="h-6 w-6 mx-auto mb-1 text-emerald-500" />
+            <CheckCircle className="h-6 w-6 mx-auto mb-1 text-emerald-700 dark:text-emerald-400" />
             Semua sudah ditangani
           </div>
         ) : (
@@ -101,9 +101,9 @@ export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" })
                   )}
                 </div>
                 {item.is_overdue ? (
-                  <AlertTriangle className="h-4 w-4 text-red-500 shrink-0 ml-2" />
+                  <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400 shrink-0 ml-2" />
                 ) : item.hours_until_deadline != null && item.hours_until_deadline < 4 ? (
-                  <Clock className="h-4 w-4 text-amber-500 shrink-0 ml-2" />
+                  <Clock className="h-4 w-4 text-amber-800 dark:text-amber-400 shrink-0 ml-2" />
                 ) : null}
               </div>
             ))}

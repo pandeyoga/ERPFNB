@@ -77,7 +77,7 @@ export default function POComparison({ embedded = false }) {
       label: (
         <div data-testid={`po-cmp-col-${po.id}`}>
           <div className="font-mono">{po.doc_no || po.id.slice(0, 8)}</div>
-          <div className="text-[11px] text-muted-foreground normal-case">{vendorMap[po.vendor_id]?.name || "—"}</div>
+          <div className="text-xs text-muted-foreground normal-case">{vendorMap[po.vendor_id]?.name || "—"}</div>
         </div>
       ),
       render: (row) => {
@@ -88,11 +88,11 @@ export default function POComparison({ embedded = false }) {
           <div className={cn("rounded-md px-1.5 py-1 -mx-1", isBest && "bg-emerald-500/10")} data-testid={`po-cmp-cell-${row._idx}-${po.id}`}>
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-xs text-muted-foreground">{cell.qty} {row.unit}</span>
-              <span className={cn("tabular-nums font-semibold", isBest && "text-emerald-600 dark:text-emerald-400")}>
+              <span className={cn("tabular-nums font-semibold", isBest && "text-emerald-700 dark:text-emerald-400")}>
                 {fmtRp(cell.unit_cost)}
               </span>
             </div>
-            <div className="text-[11px] text-muted-foreground tabular-nums text-right">
+            <div className="text-xs text-muted-foreground tabular-nums text-right">
               Total: {fmtRp(cell.total)}
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function POComparison({ embedded = false }) {
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {vendorMap[po.vendor_id]?.name || "—"} · {po.lines?.length || 0} item · {fmtRp(po.grand_total || 0)}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{fmtDate(po.order_date || po.po_date || po.created_at)}</div>
+                    <div className="text-xs text-muted-foreground">{fmtDate(po.order_date || po.po_date || po.created_at)}</div>
                   </div>
                   <Button
                     onClick={() => isSelected ? removeFromCompare(po.id) : addToCompare(po)}
@@ -210,7 +210,7 @@ export default function POComparison({ embedded = false }) {
               }
             />
           </div>
-          <div className="px-4 py-2 border-t border-border/50 text-[11px] text-muted-foreground">
+          <div className="px-4 py-2 border-t border-border/50 text-xs text-muted-foreground">
             Sel hijau = harga terbaik untuk item tersebut di antara PO yang dibandingkan.
           </div>
         </div>

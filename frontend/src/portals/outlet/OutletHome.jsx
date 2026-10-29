@@ -71,11 +71,11 @@ export default function OutletHome() {
         actions={
           <>
             {isAggregate && scopeOutletCount > 1 && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-800 dark:text-blue-400 font-medium border border-blue-500/20">
                 Data digabung
               </span>
             )}
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 font-medium">
               Live
             </span>
           </>
@@ -214,11 +214,11 @@ export default function OutletHome() {
                     <div className="text-base font-semibold tabular-nums">{fmtRp(bal)}</div>
                   </div>
                   {low ? (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1 shrink-0">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-400 font-medium flex items-center gap-1 shrink-0">
                       <AlertTriangle className="h-3 w-3" /> Saldo Rendah
                     </span>
                   ) : (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1 shrink-0">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 font-medium flex items-center gap-1 shrink-0">
                       <CheckCircle2 className="h-3 w-3" /> Cukup
                     </span>
                   )}

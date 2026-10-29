@@ -93,7 +93,7 @@ export default function BrandMixDonut({ rows = [], onSliceClick, size = 180 }) {
             {focused ? `${focused.share_pct?.toFixed?.(1) ?? "0"}%` : fmtRp(grandTotal)}
           </div>
           {focused && (
-            <div className="text-[11px] text-muted-foreground tabular-nums">{fmtRp(focused.value)}</div>
+            <div className="text-xs text-muted-foreground tabular-nums">{fmtRp(focused.value)}</div>
           )}
         </div>
       </div>

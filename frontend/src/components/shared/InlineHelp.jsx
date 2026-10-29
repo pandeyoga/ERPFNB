@@ -83,6 +83,8 @@ export function InlineHelp({
   if (!content) return null;
 
   const sizeClass = size === "xs" ? "h-3.5 w-3.5" : size === "sm" ? "h-4 w-4" : "h-5 w-5";
+  // Area klik minimal 24×24px (WCAG 2.2 target size); margin negatif menjaga tata letak sama.
+  const hitClass = size === "xs" ? "h-6 w-6 -m-[5px]" : size === "sm" ? "h-6 w-6 -m-1" : "h-6 w-6 -m-0.5";
   const placementClass = PLACEMENT_CLASSES[placement] || PLACEMENT_CLASSES.top;
 
   return (
@@ -93,10 +95,10 @@ export function InlineHelp({
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen((v) => !v); } }}
         aria-label={`Bantuan: ${title || "info"}`}
         className={`
-          inline-flex items-center justify-center rounded-full
-          text-foreground/40 hover:text-foreground/70 hover:bg-foreground/10
+          inline-flex shrink-0 items-center justify-center rounded-full
+          text-muted-foreground hover:text-foreground hover:bg-foreground/10
           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-          ${sizeClass}
+          ${hitClass}
         `}
       >
         <HelpCircle className={sizeClass} />

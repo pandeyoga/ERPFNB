@@ -54,12 +54,12 @@ const COL_TONE = {
 };
 const COL_PILL_TONE = {
   muted: "bg-foreground/10 text-foreground/70",
-  amber: "bg-amber-500/20 text-amber-700 dark:text-amber-300",
-  blue: "bg-blue-500/20 text-blue-700 dark:text-blue-300",
-  indigo: "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300",
-  violet: "bg-violet-500/20 text-violet-700 dark:text-violet-300",
-  orange: "bg-orange-500/20 text-orange-700 dark:text-orange-300",
-  green: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300",
+  amber: "bg-amber-500/20 text-amber-800 dark:text-amber-300",
+  blue: "bg-blue-500/20 text-blue-800 dark:text-blue-300",
+  indigo: "bg-indigo-500/20 text-indigo-800 dark:text-indigo-300",
+  violet: "bg-violet-500/20 text-violet-800 dark:text-violet-300",
+  orange: "bg-orange-500/20 text-orange-800 dark:text-orange-300",
+  green: "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300",
 };
 
 export default function KanbanWorkboard() {
@@ -225,15 +225,15 @@ export default function KanbanWorkboard() {
           className="glass-input w-[170px]"
           testId="wb-filter-days"
         />
-        <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto" data-testid="wb-legend">
+        <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto" data-testid="wb-legend">
           <span className="inline-flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Setujui PR/PO
+            <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" /> Setujui PR/PO
           </span>
           <span className="inline-flex items-center gap-1">
-            <Send className="h-3 w-3 text-violet-600" /> Kirim ke vendor
+            <Send className="h-3 w-3 text-violet-700 dark:text-violet-400" /> Kirim ke vendor
           </span>
           <span className="inline-flex items-center gap-1">
-            <Truck className="h-3 w-3 text-orange-600" /> Terima barang (buka form GR)
+            <Truck className="h-3 w-3 text-orange-800 dark:text-orange-400" /> Terima barang (buka form GR)
           </span>
         </div>
       </div>
@@ -300,7 +300,7 @@ function KanbanColumn({ column, cards, count, dimmed }) {
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground/80 truncate" title={column.label}>
           {column.label}
         </h3>
-        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0 tabular-nums`}>
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${pillTone} flex-shrink-0 tabular-nums`}>
           {count}
         </span>
       </div>
@@ -344,7 +344,7 @@ function KanbanCard({ card, dragging = false }) {
           <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
           <span className="font-mono text-xs font-medium truncate" title={card.title}>{card.title}</span>
         </div>
-        <Button asChild variant="ghost" size="icon-sm" className="h-7 w-7 -mr-1 shrink-0">
+        <Button asChild variant="ghost" size="icon-sm" className="-mr-1 shrink-0">
           <Link to={card.url} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}
             aria-label={`Buka detail ${card.title}`} data-testid={`wb-card-open-${card.id}`}>
             <ExternalLink className="h-3.5 w-3.5" />

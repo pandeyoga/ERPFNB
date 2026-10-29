@@ -196,7 +196,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   />
                   <span className="leading-tight">
                     <span className="block">{r.name}</span>
-                    <span className="text-[11px] font-medium tabular-nums text-muted-foreground">{r.code}</span>
+                    <span className="text-xs font-medium tabular-nums text-muted-foreground">{r.code}</span>
                   </span>
                 </label>
               ))}
@@ -208,10 +208,10 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
             title="Level Akses"
             badge={
               isAllOutlets && isAllBrands
-                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 font-medium flex items-center gap-1"><Globe2 className="h-3 w-3" /> Full Access</span>
+                ? <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-800 dark:text-green-400 font-medium flex items-center gap-1"><Globe2 className="h-3 w-3" /> Full Access</span>
                 : selectedOutletCount > 0
-                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium flex items-center gap-1"><Store className="h-3 w-3" /> {selectedOutletCount} outlet dipilih</span>
-                : <span className="text-[11px] px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium">Tidak ada akses</span>
+                ? <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium flex items-center gap-1"><Store className="h-3 w-3" /> {selectedOutletCount} outlet dipilih</span>
+                : <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium">Tidak ada akses</span>
             }
           >
             {/* Quick access level buttons */}
@@ -222,7 +222,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all",
                   isAllOutlets && isAllBrands
-                    ? "border-green-500/50 bg-green-500/10 text-green-600"
+                    ? "border-green-500/50 bg-green-500/10 text-green-800 dark:text-green-400"
                     : "border-border hover:border-green-500/50 hover:bg-green-500/5 text-muted-foreground"
                 )}
                 aria-pressed={isAllOutlets && isAllBrands}
@@ -231,7 +231,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 <Globe2 className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Full Access</span>
-                  <span className="block text-[11px] opacity-70">Owner, Executive, Finance, Procurement</span>
+                  <span className="block text-xs">Owner, Executive, Finance, Procurement</span>
                 </span>
               </button>
               <button
@@ -240,7 +240,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all",
                   !isAllOutlets && selectedOutletCount > 0
-                    ? "border-amber-500/50 bg-amber-500/10 text-amber-600"
+                    ? "border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-400"
                     : selectedOutletCount === 0
                     ? "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
                     : "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
@@ -251,7 +251,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 <Store className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Outlet Staff</span>
-                  <span className="block text-[11px] opacity-70">Pilih outlet spesifik di bawah</span>
+                  <span className="block text-xs">Pilih outlet spesifik di bawah</span>
                 </span>
               </button>
             </div>
@@ -279,7 +279,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                         style={{ background: brand.color || "#888" }}
                       />
                       {(form.brand_ids || []).includes(brand.id) && (
-                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 ml-auto">Brand ✓</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-800 dark:text-blue-400 ml-auto">Brand ✓</span>
                       )}
                     </label>
                     {/* Outlet rows */}
@@ -360,7 +360,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   ariaLabel="Outlet default"
                   testId="user-default-outlet"
                 />
-                <p className="text-[11px] text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Outlet yang otomatis dipilih saat user membuka halaman baru
                 </p>
               </Field>

@@ -33,10 +33,10 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
 const TYPE_META = {
-  bank:        { label: "Bank",       icon: Building2,  tone: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 dark:text-indigo-300" },
+  bank:        { label: "Bank",       icon: Building2,  tone: "text-indigo-700 bg-indigo-50 dark:bg-indigo-950/40 dark:text-indigo-300" },
   petty_cash:  { label: "Petty Cash", icon: Banknote,   tone: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300" },
   ewallet:     { label: "E-Wallet",   icon: Smartphone, tone: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300" },
-  other:       { label: "Lainnya",    icon: CreditCard, tone: "text-slate-700 bg-slate-50 dark:bg-slate-900/40 dark:text-slate-300" },
+  other:       { label: "Lainnya",    icon: CreditCard, tone: "text-foreground bg-muted/40 dark:bg-slate-900/40 dark:text-slate-300" },
 };
 
 const HEALTH_TONE = {
@@ -247,7 +247,7 @@ export default function CashPosition({ embedded = false }) {
                       data-testid={`cash-account-${a.code}`}>
                     <div className="flex flex-col min-w-0">
                       <span className="font-medium truncate">{a.name}</span>
-                      <span className="text-[11px] text-muted-foreground truncate">
+                      <span className="text-xs text-muted-foreground truncate">
                         {a.outlet_name || a.bank_name || a.code}
                       </span>
                     </div>
@@ -256,7 +256,7 @@ export default function CashPosition({ embedded = false }) {
                         <div className="font-semibold whitespace-nowrap" data-testid={`cash-balance-${a.code}`}>{fmtRp(a.current_balance)}</div>
                         {canUpdate && (
                           <Button variant="link" size="sm" onClick={() => setSelected(a)}
-                            className="h-auto p-0 text-[11px]"
+                            className="h-auto p-0 text-xs"
                             data-testid={`cash-update-${a.code}`}>
                             Update saldo
                           </Button>
@@ -298,10 +298,10 @@ export default function CashPosition({ embedded = false }) {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={projection.series}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }}
+                <XAxis dataKey="date" tick={{ fontSize: 12 }}
                        tickFormatter={(d) => d.slice(5)}
                        interval={Math.max(1, Math.floor((projection.series.length - 1) / 8))} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
                 <Tooltip content={<GlassTooltip valueFormatter={fmtRp} labelFormatter={(d) => `Tanggal: ${d}`} />} />
                 <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
                 <Line type="monotone" dataKey="balance" name="Saldo" stroke="hsl(var(--aurora-1))" strokeWidth={2.5} dot={false} />
@@ -322,7 +322,7 @@ export default function CashPosition({ embedded = false }) {
           </div>
           <div className="text-xs space-y-0.5">
             <div className="text-muted-foreground">Net change</div>
-            <div className={cn("font-semibold", (projection?.end_change || 0) < 0 ? "text-rose-600" : "text-emerald-600")} data-testid="cash-proj-change">
+            <div className={cn("font-semibold", (projection?.end_change || 0) < 0 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400")} data-testid="cash-proj-change">
               {(projection?.end_change || 0) >= 0 ? "+" : ""}{fmtRp(projection?.end_change || 0)}
             </div>
           </div>
@@ -374,12 +374,12 @@ export default function CashPosition({ embedded = false }) {
                   { key: "recorded_at", label: "Tanggal", sortable: true, primary: true,
                     render: (h) => <span className="text-xs">{fmtDateTime(h.recorded_at)}</span> },
                   { key: "source", label: "Source",
-                    render: (h) => <Badge variant="outline" className="text-[11px]">{h.source}</Badge> },
+                    render: (h) => <Badge variant="outline" className="text-xs">{h.source}</Badge> },
                   { key: "balance", label: "Saldo", numeric: true, sortable: true,
                     render: (h) => <span className="font-medium">{fmtRp(h.balance)}</span> },
                   { key: "delta", label: "Delta", numeric: true,
                     render: (h) => (
-                      <span className={cn("text-xs", (h.delta || 0) > 0 ? "text-emerald-600" : (h.delta || 0) < 0 ? "text-rose-600" : "text-muted-foreground")}>
+                      <span className={cn("text-xs", (h.delta || 0) > 0 ? "text-emerald-700 dark:text-emerald-400" : (h.delta || 0) < 0 ? "text-rose-700 dark:text-rose-400" : "text-muted-foreground")}>
                         {h.delta > 0 ? "+" : ""}{fmtRp(h.delta || 0)}
                       </span>
                     ) },

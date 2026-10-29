@@ -254,11 +254,11 @@ export default function ApprovalMatrixBuilder() {
                   <div className="text-xs font-medium tabular-nums text-muted-foreground">{et.value}</div>
                 </div>
                 {et.has_workflow ? (
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[11px]">
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30 text-xs">
                     v{et.version}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[11px]">belum ada</Badge>
+                  <Badge variant="outline" className="text-xs">belum ada</Badge>
                 )}
               </button>
             ))}

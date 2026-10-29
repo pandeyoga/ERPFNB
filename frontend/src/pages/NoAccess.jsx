@@ -17,7 +17,7 @@ export default function NoAccess() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-background" data-testid="no-access-page">
       <div className="glass-card p-6 w-full max-w-md text-center">
         <div className="h-12 w-12 mx-auto rounded-[calc(var(--radius)-2px)] bg-amber-500/15 flex items-center justify-center mb-3">
-          <Lock className="h-6 w-6 text-amber-600" />
+          <Lock className="h-6 w-6 text-amber-800 dark:text-amber-400" />
         </div>
         <h1 className="text-xl md:text-2xl font-semibold leading-tight">Akses Belum Tersedia</h1>
         <p className="text-sm text-muted-foreground mt-1.5">

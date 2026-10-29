@@ -78,7 +78,7 @@ export default function VendorComparisonPanel({
   if (error) {
     return (
       <div className={`glass-card p-4 ${className}`}>
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function VendorComparisonPanel({
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-foreground/70" />
           <h3 className="font-semibold text-sm">Vendor Comparison</h3>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             ({data.period_days}d, {data.items.length} item{data.items.length>1?"s":""})
           </span>
         </div>
@@ -143,7 +143,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
         <div>
           <div className="font-medium text-sm">{item.item_name}</div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             {item.total_vendors} vendor · spread <strong>{item.spread_pct}%</strong>
           </div>
         </div>
@@ -177,7 +177,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{v.vendor_name}</div>
-                <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                   <span>{v.purchase_count}× beli</span>
                   <span>·</span>
                   <span>{fmtDate(v.last_purchase_date)}</span>
@@ -193,7 +193,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
                 <div className="text-sm font-semibold tabular-nums">{fmtRp(v.last_unit_cost)}</div>
                 {!isCheapest && (
                   <div className={`text-[11px] tabular-nums flex items-center justify-end gap-0.5 ${
-                    diffFromCheapest > 0 ? "text-orange-600 dark:text-orange-400" : "text-emerald-600 dark:text-emerald-400"
+                    diffFromCheapest > 0 ? "text-orange-800 dark:text-orange-400" : "text-emerald-700 dark:text-emerald-400"
                   }`}>
                     {diffFromCheapest > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {diffPct >= 0 ? "+" : ""}{diffPct.toFixed(1)}%
@@ -218,7 +218,7 @@ function ItemBlock({ item, compact, onSelectVendor, onShowHistory, history, onCl
                     size="sm"
                     variant={isCheapest ? "default" : "outline"}
                     onClick={() => onSelectVendor(v.vendor_id, item, v)}
-                    className={`h-7 text-[11px] px-2 rounded-md ${isCheapest ? "pill-active" : ""}`}
+                    className={`h-7 text-xs px-2 rounded-md ${isCheapest ? "pill-active" : ""}`}
                     data-testid={`vc-select-${v.vendor_id}`}
                   >
                     Pilih
@@ -268,10 +268,10 @@ function HistoryBlock({ item, vendorId, onClose }) {
           { key: "date", label: "Tanggal", primary: true, render: (h) => fmtDate(h.date) },
           { key: "qty", label: "Qty", numeric: true },
           { key: "unit_cost", label: "Unit Cost", numeric: true, render: (h) => <span className="font-medium">{fmtRp(h.unit_cost)}</span> },
-          { key: "doc_no", label: "Doc", render: (h) => <span className="text-muted-foreground font-mono text-[11px]">{h.doc_no}</span> },
+          { key: "doc_no", label: "Doc", render: (h) => <span className="text-muted-foreground font-mono text-xs">{h.doc_no}</span> },
         ]}
       />
-      <div className="mt-2 grid grid-cols-3 gap-2 text-[11px] text-muted-foreground border-t border-border/30 pt-2">
+      <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground border-t border-border/30 pt-2">
         <span>Min: <strong className="text-foreground">{fmtRp(v.min_unit_cost)}</strong></span>
         <span>Avg: <strong className="text-foreground">{fmtRp(v.avg_unit_cost)}</strong></span>
         <span>Max: <strong className="text-foreground">{fmtRp(v.max_unit_cost)}</strong></span>

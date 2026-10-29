@@ -125,9 +125,9 @@ export default function MetricsView() {
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_status || {}).map(([k, v]) => {
               const s = parseInt(k, 10);
-              const color = s >= 500 ? "bg-red-500/15 text-red-700 dark:text-red-400"
-                          : s >= 400 ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                          : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
+              const color = s >= 500 ? "bg-red-500/15 text-red-800 dark:text-red-400"
+                          : s >= 400 ? "bg-amber-500/15 text-amber-800 dark:text-amber-400"
+                          : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400";
               return (
                 <motion.span key={k} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                               className={`px-3 py-1.5 rounded-full text-xs font-medium ${color}`}>
@@ -141,7 +141,7 @@ export default function MetricsView() {
           <h3 className="text-sm md:text-base font-semibold mb-3">By Method</h3>
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.requests?.by_method || {}).map(([k, v]) => (
-              <span key={k} className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">
+              <span key={k} className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-800 dark:text-blue-400">
                 {k}: {fmtNumber(v)}
               </span>
             ))}

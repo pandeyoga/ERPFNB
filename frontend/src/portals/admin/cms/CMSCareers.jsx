@@ -226,7 +226,7 @@ export default function CMSCareers() {
                         {job.job_type}
                       </Badge>
                       {!job.is_active && (
-                        <Badge variant="outline" className="text-xs border-red-300 text-red-600">Nonaktif</Badge>
+                        <Badge variant="outline" className="text-xs border-red-300 text-red-700 dark:text-red-400">Nonaktif</Badge>
                       )}
                       {job.brand && (
                         <Badge variant="outline" className="text-xs">{job.brand}</Badge>
@@ -290,7 +290,7 @@ export default function CMSCareers() {
                       aria-label={job.is_active ? "Nonaktifkan lowongan" : "Aktifkan lowongan"}
                       data-testid={`toggle-job-${job.id}`}
                     >
-                      {job.is_active ? <PowerOff className="h-3.5 w-3.5 text-red-500" /> : <Power className="h-3.5 w-3.5 text-emerald-500" />}
+                      {job.is_active ? <PowerOff className="h-3.5 w-3.5 text-red-700 dark:text-red-400" /> : <Power className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />}
                     </Button>
                   </div>
                 </div>

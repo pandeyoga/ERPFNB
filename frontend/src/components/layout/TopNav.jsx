@@ -106,7 +106,7 @@ export default function TopNav({ onSearchOpen }) {
             )}
           >
             <span className="text-sm font-semibold tracking-tight truncate">FnB Group ERP</span>
-            <span className="text-[11px] text-muted-foreground truncate">Multi-brand F&amp;B</span>
+            <span className="text-xs text-muted-foreground truncate">Multi-brand F&amp;B</span>
           </span>
         </button>
       </div>
@@ -142,7 +142,7 @@ export default function TopNav({ onSearchOpen }) {
             {scopeOutlets.slice(0, 2).map((o) => (
               <span
                 key={o.id}
-                className="inline-flex items-center gap-1 text-[11px] h-6 px-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20"
+                className="inline-flex items-center gap-1 text-xs h-6 px-2 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-semibold border border-amber-500/20"
                 title="Anda hanya dapat melihat data outlet ini"
               >
                 <Store className="h-3 w-3" />
@@ -150,7 +150,7 @@ export default function TopNav({ onSearchOpen }) {
               </span>
             ))}
             {scopeOutlets.length > 2 && (
-              <span className="text-[11px] text-muted-foreground">+{scopeOutlets.length - 2}</span>
+              <span className="text-xs text-muted-foreground">+{scopeOutlets.length - 2}</span>
             )}
           </div>
         )}
@@ -171,7 +171,7 @@ export default function TopNav({ onSearchOpen }) {
         >
           <Search className="h-4 w-4" />
           <span className="flex-1 text-left">Cari…</span>
-          <kbd className="text-[11px] px-1.5 py-0.5 rounded bg-foreground/10" aria-hidden="true">⌘K</kbd>
+          <kbd className="text-xs px-1.5 py-0.5 rounded bg-foreground/10" aria-hidden="true">⌘K</kbd>
         </button>
         <button
           onClick={onSearchOpen}

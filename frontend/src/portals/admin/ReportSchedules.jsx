@@ -32,16 +32,16 @@ const CHANNEL_ICONS = {
 };
 
 const CHANNEL_COLORS = {
-  email: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  telegram: "bg-sky-500/10 text-sky-600 border-sky-500/20",
-  whatsapp: "bg-green-500/10 text-green-600 border-green-500/20",
+  email: "bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20",
+  telegram: "bg-sky-500/10 text-sky-800 dark:text-sky-400 border-sky-500/20",
+  whatsapp: "bg-green-500/10 text-green-800 dark:text-green-400 border-green-500/20",
 };
 
 const STATUS_COLORS = {
-  sent: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  error: "bg-red-500/10 text-red-500 border-red-500/20",
-  not_configured: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  running: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  sent: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20",
+  error: "bg-red-500/10 text-red-800 dark:text-red-400 border-red-500/20",
+  not_configured: "bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20",
+  running: "bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20",
 };
 
 const DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];

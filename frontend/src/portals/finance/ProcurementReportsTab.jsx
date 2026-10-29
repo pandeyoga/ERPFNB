@@ -65,7 +65,7 @@ function ReportCard({ icon: Icon, title, description, accentClass, children, onE
         disabled={disabled}
         data-testid={testId}
       >
-        <FileSpreadsheet className="text-emerald-500" />
+        <FileSpreadsheet className="text-emerald-700 dark:text-emerald-400" />
         {exportLabel}
       </Button>
     </div>
@@ -111,7 +111,7 @@ export default function ProcurementReportsTab() {
           icon={ClipboardList}
           title="Purchase Request (PR)"
           description="Daftar semua PR beserta status, outlet, dan jumlah lines. Filter per status dan outlet."
-          accentClass="bg-blue-500/10 text-blue-500"
+          accentClass="bg-blue-500/10 text-blue-800 dark:text-blue-400"
           testId="export-pr-xlsx"
           disabled={downloading}
           onExport={() => exportXlsx(
@@ -178,7 +178,7 @@ export default function ProcurementReportsTab() {
           icon={ShoppingCart}
           title="Purchase Order (PO)"
           description="Daftar PO lengkap dengan vendor, total nilai, dan status pengiriman."
-          accentClass="bg-violet-500/10 text-violet-500"
+          accentClass="bg-violet-500/10 text-violet-800 dark:text-violet-400"
           testId="export-po-xlsx"
           disabled={downloading}
           onExport={() => exportXlsx(
@@ -224,7 +224,7 @@ export default function ProcurementReportsTab() {
           icon={Truck}
           title="Goods Receipt Summary"
           description="Ringkasan penerimaan barang per periode — jumlah GR, total nilai, dan vendor."
-          accentClass="bg-emerald-500/10 text-emerald-500"
+          accentClass="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
           testId="export-gr-xlsx"
           disabled={downloading}
           onExport={() => exportXlsx(
@@ -266,7 +266,7 @@ export default function ProcurementReportsTab() {
           icon={Star}
           title="Vendor Performance"
           description="Analisis performa vendor: lead time, fill rate, ketepatan harga, dan skor akhir."
-          accentClass="bg-amber-500/10 text-amber-500"
+          accentClass="bg-amber-500/10 text-amber-800 dark:text-amber-400"
           testId="export-vendor-perf-xlsx"
           disabled={downloading}
           onExport={() => exportXlsx(

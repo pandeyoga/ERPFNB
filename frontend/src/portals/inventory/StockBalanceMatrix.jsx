@@ -27,12 +27,12 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 function cellClasses(cell) {
-  if (cell.negative) return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+  if (cell.negative) return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
   if (cell.below_par && cell.par_level > 0) return "bg-rose-500/12 text-rose-700 dark:text-rose-300 border-rose-500/30";
   if (cell.zero) return "bg-amber-500/12 text-amber-700 dark:text-amber-300 border-amber-500/30";
-  if (cell.par_level > 0 && cell.qty >= cell.par_level * 1.5) return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+  if (cell.par_level > 0 && cell.qty >= cell.par_level * 1.5) return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
   if (cell.par_level > 0) return "bg-emerald-500/8 text-emerald-700 dark:text-emerald-300 border-emerald-500/20";
-  return "bg-foreground/5 text-foreground/60 border-border/40";
+  return "bg-foreground/5 text-muted-foreground border-border/40";
 }
 
 /* ----------------------- Cell movements dialog ----------------------- */
@@ -111,13 +111,13 @@ const MatrixCell = memo(function MatrixCell({ rowId, cell, onClick }) {
     <button
       type="button"
       onClick={handleClick}
-      className={`w-full inline-flex flex-col items-center gap-0.5 px-2 py-1.5 rounded border text-[11px] tabular-nums font-semibold hover:scale-[1.02] transition-transform ${cellClasses(cell)}`}
+      className={`w-full inline-flex flex-col items-center gap-0.5 px-2 py-1.5 rounded border text-xs tabular-nums font-semibold hover:scale-[1.02] transition-transform ${cellClasses(cell)}`}
       title={`Par: ${cell.par_level || 0} (${cell.par_source}) · klik untuk lihat riwayat`}
       data-testid={`matrix-cell-${rowId}-${cell.outlet_id}`}
     >
       <span>{fmtNumber(cell.qty, cell.qty % 1 === 0 ? 0 : 1)}</span>
       {cell.par_level > 0 && (
-        <span className="text-[11px] font-normal opacity-70">par {fmtNumber(cell.par_level, 0)}</span>
+        <span className="text-xs font-normal">par {fmtNumber(cell.par_level, 0)}</span>
       )}
     </button>
   );
@@ -196,7 +196,7 @@ export default function StockBalanceMatrix() {
       render: (row) => (
         <div data-testid={`matrix-row-${row.item_id}`}>
           <div className="font-medium text-sm">{row.item_name}</div>
-          <div className="text-[11px] text-muted-foreground">{row.item_code} · {row.unit}</div>
+          <div className="text-xs text-muted-foreground">{row.item_code} · {row.unit}</div>
         </div>
       ) },
     ...matrix.outlets.map((o) => ({
@@ -283,9 +283,9 @@ export default function StockBalanceMatrix() {
               {matrix.outlets.map(o => {
                 const t = matrix.totals.by_outlet[o.id] || {};
                 return (
-                  <td key={o.id} className="px-2 py-2 text-center text-[11px] tabular-nums">
+                  <td key={o.id} className="px-2 py-2 text-center text-xs tabular-nums">
                     <div className="text-xs">{fmtNumber(t.qty || 0, 0)}</div>
-                    <div className="text-[11px] text-muted-foreground">{fmtRp(t.value || 0)}</div>
+                    <div className="text-xs text-muted-foreground">{fmtRp(t.value || 0)}</div>
                   </td>
                 );
               })}
@@ -297,7 +297,7 @@ export default function StockBalanceMatrix() {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 px-1 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 px-1 text-xs text-muted-foreground">
         <span className="font-semibold">Legend:</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-rose-500/30 border border-rose-500/40" /> Di bawah par / negatif

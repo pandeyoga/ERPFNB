@@ -44,7 +44,7 @@ function AccessBadge({ u, outlets = [], brands = [] }) {
   const lvl = resolveAccessLevel(u, outlets);
   if (lvl === "full")
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
+      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-800 dark:text-green-400 font-medium">
         <Globe2 className="h-3 w-3" /> Full Access
       </span>
     );
@@ -55,18 +55,18 @@ function AccessBadge({ u, outlets = [], brands = [] }) {
     return (
       <div className="flex flex-wrap gap-1">
         {names.slice(0, 2).map((n) => (
-          <span key={n} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">
+          <span key={n} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium">
             <Store className="h-3 w-3" /> {n}
           </span>
         ))}
         {names.length > 2 && (
-          <span className="text-[11px] text-muted-foreground">+{names.length - 2}</span>
+          <span className="text-xs text-muted-foreground">+{names.length - 2}</span>
         )}
       </div>
     );
   }
   return (
-    <span className="text-[11px] text-muted-foreground">Tidak ada outlet</span>
+    <span className="text-xs text-muted-foreground">Tidak ada outlet</span>
   );
 }
 

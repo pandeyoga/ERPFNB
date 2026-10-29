@@ -360,7 +360,7 @@ function KdoBdoForm({ kind, meta, open, userOutlets, defaultOutletId, onClose, o
         {favorites.length > 0 && (
           <div className="mt-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <Star className="h-3.5 w-3.5 text-amber-500" />
+              <Star className="h-3.5 w-3.5 text-amber-800 dark:text-amber-400" />
               <span className="text-xs md:text-sm font-medium">
                 Sering dipesan (30 hari terakhir)
               </span>

@@ -32,10 +32,10 @@ function scheduleStatus(publishAt, unpublishAt, currentStatus) {
   const unpubDate = unpublishAt ? new Date(unpublishAt) : null;
 
   if (pubDate && pubDate > now && currentStatus !== "published") {
-    return { label: `Scheduled: ${pubDate.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`, variant: "secondary", color: "text-amber-600" };
+    return { label: `Scheduled: ${pubDate.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`, variant: "secondary", color: "text-amber-800 dark:text-amber-400" };
   }
   if (unpubDate && unpubDate > now && currentStatus === "published") {
-    return { label: `Expires: ${unpubDate.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`, variant: "outline", color: "text-blue-600" };
+    return { label: `Expires: ${unpubDate.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`, variant: "outline", color: "text-blue-700 dark:text-blue-400" };
   }
   if (unpubDate && unpubDate <= now && currentStatus === "published") {
     return { label: "Will unpublish on next scheduler run", variant: "destructive", color: "" };

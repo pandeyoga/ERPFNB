@@ -154,7 +154,7 @@ export default function FileDropZone({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
             <span className="font-medium text-sm truncate">{att.filename || "file"}</span>
           </div>
           <div className="text-xs text-muted-foreground flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function FileDropZone({
               <span>{(att.size_bytes / 1024).toFixed(1)} KB</span>
             )}
             {att.content_type && (
-              <span className="px-1.5 py-0 rounded-full bg-foreground/5 text-[11px]">
+              <span className="px-1.5 py-0 rounded-full bg-foreground/5 text-xs">
                 {att.content_type.split("/")[1]}
               </span>
             )}
@@ -183,7 +183,7 @@ export default function FileDropZone({
           variant="ghost"
           size="sm"
           onClick={reset}
-          className="h-7 px-2"
+          className="px-2"
           aria-label="Hapus file"
           data-testid={`${testId}-remove`}
         >
@@ -235,7 +235,7 @@ export default function FileDropZone({
             type="button"
             size="sm"
             variant="outline"
-            className="rounded-full touch-target"
+            className="touch-target"
             onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
             data-testid={`${testId}-browse"`}
           >
@@ -246,7 +246,7 @@ export default function FileDropZone({
               type="button"
               size="sm"
               variant="outline"
-              className="rounded-full touch-target"
+              className="touch-target"
               onClick={(e) => {
                 e.stopPropagation();
                 if (fileRef.current) {
@@ -270,7 +270,7 @@ export default function FileDropZone({
         </div>
       )}
       {error && (
-        <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-red-600">
+        <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-red-700 dark:text-red-400">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           <span>{error}</span>
         </div>

@@ -63,8 +63,8 @@ export default function BalanceSheet() {
         <>
           <div data-testid="bs-balance-status" className={`glass-card p-3 flex flex-wrap items-center gap-3 ${data.totals.is_balanced ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/30"}`}>
             {data.totals.is_balanced
-              ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              : <AlertTriangle className="h-5 w-5 text-amber-600" />}
+              ? <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+              : <AlertTriangle className="h-5 w-5 text-amber-800 dark:text-amber-400" />}
             <div className="flex-1">
               <div className="font-semibold text-sm">
                 {data.totals.is_balanced ? "Seimbang — Aset = Liabilitas + Ekuitas" : `Tidak seimbang: selisih ${fmtRp(data.totals.diff)}`}
@@ -96,9 +96,9 @@ export default function BalanceSheet() {
 
 function Section({ title, rows, total, accent, sectionId }) {
   const toneBg = {
-    emerald: "bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
-    amber: "bg-amber-500/5 text-amber-700 dark:text-amber-400",
-    sky: "bg-sky-500/5 text-sky-700 dark:text-sky-400",
+    emerald: "bg-emerald-500/5 text-emerald-800 dark:text-emerald-400",
+    amber: "bg-amber-500/5 text-amber-800 dark:text-amber-400",
+    sky: "bg-sky-500/5 text-sky-800 dark:text-sky-400",
   }[accent] || "";
   return (
     <div data-testid={`bs-section-${sectionId}`} className="glass-card overflow-hidden">

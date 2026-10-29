@@ -72,7 +72,7 @@ export default function InventoryHome() {
           <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
             <div>
               <h2 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-rose-600" />
+                <AlertTriangle className="h-4 w-4 text-rose-700 dark:text-rose-400" />
                 Top {Math.min(8, lowStock.items.length)} item di bawah par
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -91,19 +91,19 @@ export default function InventoryHome() {
                    className="glass-input rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
                 <span className={`text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border shrink-0 ${
                   it.severity === "critical"
-                    ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                    : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                    ? "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30"
+                    : "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
                 }`}>
                   {it.severity}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{it.item_name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {it.outlet_name} · qty {fmtNumber(it.qty, 0)} / par {fmtNumber(it.par_level, 0)}
                   </div>
                 </div>
                 {it.suggested_reorder > 0 && (
-                  <span className="text-[11px] font-semibold tabular-nums text-emerald-700 dark:text-emerald-300 shrink-0">
+                  <span className="text-xs font-semibold tabular-nums text-emerald-700 dark:text-emerald-300 shrink-0">
                     +{it.suggested_reorder}
                   </span>
                 )}
@@ -119,9 +119,9 @@ export default function InventoryHome() {
           <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
             <div>
               <h2 className="text-sm md:text-base font-semibold inline-flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-600" />
+                <Clock className="h-4 w-4 text-amber-800 dark:text-amber-400" />
                 Market Price List — menunggu review
-                <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-amber-500/15 text-amber-800 dark:text-amber-300">
                   {pendingMarket.count}
                 </span>
               </h2>
@@ -138,10 +138,10 @@ export default function InventoryHome() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {(pendingMarket.items || []).slice(0, 4).map((it) => (
               <div key={it.id} className="glass-input rounded-xl px-3 py-2 flex items-center gap-2 text-xs">
-                <Package className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <Package className="h-3.5 w-3.5 text-amber-800 dark:text-amber-400 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{it.name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {it.code} · {it.unit_default || "-"} · dari {it.created_from || "auto"}
                   </div>
                 </div>

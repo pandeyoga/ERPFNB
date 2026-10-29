@@ -143,7 +143,7 @@ export default function EndOfDayWorkflow() {
         actions={
           <>
             {allDone && (
-              <Badge variant="secondary" className="gap-1.5 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
+              <Badge variant="secondary" className="gap-1.5 text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Semua langkah selesai
               </Badge>
@@ -160,7 +160,7 @@ export default function EndOfDayWorkflow() {
             <span className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
               Progress
             </span>
-            <span className="text-[11px] tabular-nums text-muted-foreground">
+            <span className="text-xs tabular-nums text-muted-foreground">
               {Object.keys(completed).filter(k => completed[k]).length} / {STEPS.length}
             </span>
           </div>
@@ -205,7 +205,7 @@ export default function EndOfDayWorkflow() {
                 <div className="shrink-0 relative z-10 pointer-events-none">
                   {isDone ? (
                     <div className="h-9 w-9 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                     </div>
                   ) : isActive ? (
                     <div className={cn(
@@ -229,12 +229,12 @@ export default function EndOfDayWorkflow() {
                       Langkah {idx + 1}
                     </span>
                     {isDone && (
-                      <Badge variant="secondary" className="h-4 text-[11px] px-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                      <Badge variant="secondary" className="h-4 text-xs px-1.5 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30">
                         Selesai
                       </Badge>
                     )}
                     {isLocked && (
-                      <Badge variant="secondary" className="h-4 text-[11px] px-1.5">
+                      <Badge variant="secondary" className="h-4 text-xs px-1.5">
                         Belum dimulai
                       </Badge>
                     )}
@@ -268,7 +268,8 @@ export default function EndOfDayWorkflow() {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 pt-2 border-t border-border/30">
-                      <div className="py-2">
+                      {/* nested-cards: kartu halaman yang di-embed tampil datar di dalam kartu langkah */}
+                      <div className="py-2 nested-cards">
                         {step.render()}
                       </div>
 
@@ -326,7 +327,7 @@ export default function EndOfDayWorkflow() {
 
       {/* Footer tip */}
       <div className="px-1 text-xs text-muted-foreground flex items-center gap-2">
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
         Tip: progress disimpan otomatis di browser per tanggal. Aman tutup tab dan lanjut lagi nanti.
       </div>
     </div>

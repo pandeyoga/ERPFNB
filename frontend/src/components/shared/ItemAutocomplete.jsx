@@ -107,7 +107,7 @@ export default function ItemAutocomplete({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{it.name}</div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                     <span>{it.code}</span>
                     <span>·</span>
                     <span>{it.unit}</span>
@@ -121,14 +121,14 @@ export default function ItemAutocomplete({
                   </div>
                   {/* Market List Reference Price hint */}
                   {showMarketRef && refPrice && (
-                    <div className="text-[11px] text-blue-600 dark:text-blue-400 flex items-center gap-1.5 mt-0.5">
+                    <div className="text-xs text-blue-700 dark:text-blue-400 flex items-center gap-1.5 mt-0.5">
                       <Tag className="h-2.5 w-2.5 shrink-0" />
                       <span>Ref <b>{refPrice.quarter_label}</b>: <span className="font-semibold">{fmtRp(refPrice.ref_price)}</span>{it.unit ? `/${it.unit}` : ""}</span>
                     </div>
                   )}
                   {hasHint && (
                     <div
-                      className="text-[11px] text-emerald-700 dark:text-emerald-300/90 flex items-center gap-1.5 mt-0.5"
+                      className="text-xs text-emerald-700 dark:text-emerald-300/90 flex items-center gap-1.5 mt-0.5"
                       data-testid={`ia-hint-${it.id}`}
                     >
                       <Store className="h-2.5 w-2.5 shrink-0" />

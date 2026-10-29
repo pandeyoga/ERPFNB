@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 const TIER_BADGE = {
   bronze: "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200",
-  silver: "bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100",
+  silver: "bg-muted text-foreground dark:bg-slate-700 dark:text-slate-100",
   gold: "bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200",
 };
 
@@ -137,7 +137,7 @@ export default function LoyaltyAdminCustomers({ embedded = false }) {
               { key: "loyalty_tier", label: "Tier", sortable: true, render: (c) => <Badge className={`capitalize ${TIER_BADGE[c.loyalty_tier] || ""}`} variant="secondary">{c.loyalty_tier}</Badge> },
               { key: "total_points", label: "Points", numeric: true, sortable: true, render: (c) => <span className="font-semibold">{c.total_points.toLocaleString()}</span> },
               { key: "lifetime_points", label: "Lifetime", numeric: true, sortable: true, hideOnMobile: true, render: (c) => <span className="text-muted-foreground">{c.lifetime_points.toLocaleString()}</span> },
-              { key: "is_active", label: "Status", align: "center", sortable: true, render: (c) => c.is_active ? <Badge variant="outline" className="border-emerald-500/40 text-emerald-600">Aktif</Badge> : <Badge variant="outline" className="border-red-500/40 text-red-600">Nonaktif</Badge> },
+              { key: "is_active", label: "Status", align: "center", sortable: true, render: (c) => c.is_active ? <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400">Aktif</Badge> : <Badge variant="outline" className="border-red-500/40 text-red-700 dark:text-red-400">Nonaktif</Badge> },
             ]}
             rows={items}
             loading={loading}

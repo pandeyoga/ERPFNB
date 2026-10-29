@@ -238,7 +238,7 @@ export default function OutletBudgetAllocation() {
                 onClick={() => navigate("/executive/budget-increase-requests")}
                 data-testid="btn-pending-requests"
               >
-                <Bell className="text-amber-500" />
+                <Bell className="text-amber-800 dark:text-amber-400" />
                 {pendingCount} permintaan menunggu
               </Button>
             )}
@@ -361,7 +361,7 @@ export default function OutletBudgetAllocation() {
                         onClick={() => setRowMode(ol.id, "per_bucket")}
                         aria-pressed={!isCombined}
                         className={cn(
-                          "h-7 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
+                          "h-8 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
                           !isCombined ? "pill-active" : "text-muted-foreground hover:bg-foreground/5"
                         )}
                         data-testid={`mode-per-${ol.code}`}
@@ -373,7 +373,7 @@ export default function OutletBudgetAllocation() {
                         onClick={() => setRowMode(ol.id, "combined")}
                         aria-pressed={isCombined}
                         className={cn(
-                          "h-7 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
+                          "h-8 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
                           isCombined ? "pill-active" : "text-muted-foreground hover:bg-foreground/5"
                         )}
                         data-testid={`mode-combined-${ol.code}`}
@@ -385,7 +385,7 @@ export default function OutletBudgetAllocation() {
                 } },
                 ...BUCKETS.map((bk) => ({
                   key: `bucket_${bk}`,
-                  label: <span className={bk === "kdo" ? "text-emerald-600" : bk === "fdo" ? "text-blue-600" : "text-purple-600"}>{bk.toUpperCase()}</span>,
+                  label: <span className={bk === "kdo" ? "text-emerald-700 dark:text-emerald-400" : bk === "fdo" ? "text-blue-700 dark:text-blue-400" : "text-purple-700 dark:text-purple-400"}>{bk.toUpperCase()}</span>,
                   render: (ol) => {
                     const b = budgets[ol.id] || {};
                     const isCombined = (b.budget_mode || "per_bucket") === "combined";
@@ -404,7 +404,7 @@ export default function OutletBudgetAllocation() {
                     );
                   },
                 })),
-                { key: "combined", label: <span className="text-sky-600">Gabungan</span>, render: (ol) => {
+                { key: "combined", label: <span className="text-sky-700 dark:text-sky-400">Gabungan</span>, render: (ol) => {
                   const b = budgets[ol.id] || {};
                   const isCombined = (b.budget_mode || "per_bucket") === "combined";
                   return (
@@ -432,7 +432,7 @@ export default function OutletBudgetAllocation() {
                 { key: "source", label: "Source", render: (ol) => {
                   const b = budgets[ol.id] || {};
                   return b.id ? (
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">Aktif</Badge>
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30">Aktif</Badge>
                   ) : (
                     <Badge variant="outline" className="bg-muted text-muted-foreground">Belum diset</Badge>
                   );

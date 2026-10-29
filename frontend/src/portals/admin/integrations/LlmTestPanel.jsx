@@ -50,7 +50,7 @@ export default function LlmTestPanel() {
         </span>
         <div>
           <h3 className="font-semibold text-sm">Tes LLM</h3>
-          <p className="text-[11px] text-muted-foreground">Verifikasi API key, provider, dan model</p>
+          <p className="text-xs text-muted-foreground">Verifikasi API key, provider, dan model</p>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export default function LlmTestPanel() {
           <div className="flex gap-1 flex-wrap mt-1 mb-1">
             {PROMPTS.map((p) => (
               <button key={p} type="button" onClick={() => setPrompt(p)} title={p}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-muted hover:bg-muted/70">
+                      className="text-xs px-2 py-0.5 rounded-full bg-muted hover:bg-muted/70">
                 {p.slice(0, 24)}…
               </button>
             ))}
@@ -97,7 +97,7 @@ export default function LlmTestPanel() {
             {result.ok ? (
               <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-xs">
                 <div className="text-emerald-700 font-semibold mb-1">Berhasil ({result.elapsed_ms} ms)</div>
-                <div className="text-[11px] text-muted-foreground mb-1">
+                <div className="text-xs text-muted-foreground mb-1">
                   {result.provider} / {result.model}
                 </div>
                 <div className="text-xs">{result.response}</div>
@@ -105,13 +105,13 @@ export default function LlmTestPanel() {
             ) : (
               <div className="p-2 rounded bg-rose-50 border border-rose-200 text-xs">
                 <div className="text-rose-700 font-semibold mb-1">Gagal</div>
-                <div className="text-[11px]">{result.reason} {result.error}</div>
+                <div className="text-xs">{result.reason} {result.error}</div>
               </div>
             )}
           </div>
         )}
 
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Default memakai Emergent Universal Key. Set <code>OPENAI_API_KEY</code>/<code>ANTHROPIC_API_KEY</code>/<code>GEMINI_API_KEY</code>
           + ubah <code>LLM_PROVIDER_PRIMARY</code> untuk pakai key langsung.
         </p>

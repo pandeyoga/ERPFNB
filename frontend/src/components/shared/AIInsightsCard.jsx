@@ -62,7 +62,7 @@ export default function AIInsightsCard() {
               {data.trend && data.trend.delta_pct != null && (
                 <li className="flex justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
                   <span>7 hari terakhir: {fmtRp(data.trend.last_7_total || 0)}</span>
-                  <span className={cn(data.trend.delta_pct >= 0 ? "text-emerald-600" : "text-red-600")}>
+                  <span className={cn(data.trend.delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
                     {data.trend.delta_pct >= 0 ? "+" : ""}{data.trend.delta_pct.toFixed(1)}%
                   </span>
                 </li>
@@ -86,7 +86,7 @@ export default function AIInsightsCard() {
                 </div>
                 <div className="text-right">
                   <div className="font-semibold tabular-nums">{fmtRp(a.total)}</div>
-                  <div className={cn("text-[11px]", a.deviation_pct >= 0 ? "text-emerald-600" : "text-red-600")}>
+                  <div className={cn("text-xs", a.deviation_pct >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
                     {a.deviation_pct >= 0 ? "+" : ""}{a.deviation_pct.toFixed(1)}% vs rata2
                   </div>
                 </div>

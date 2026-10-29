@@ -29,16 +29,16 @@ export function Stepper({ steps, currentIdx, onJump }) {
                 type="button"
                 onClick={() => onJump?.(i)}
                 className={cn(
-                  "h-9 px-3 rounded-full inline-flex items-center gap-1.5 border text-xs font-medium transition-colors whitespace-nowrap",
+                  "h-8 px-3 rounded-full inline-flex items-center gap-1.5 border text-[13px] font-medium transition-colors whitespace-nowrap",
                   active && "bg-foreground text-background border-foreground",
-                  !active && done && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+                  !active && done && "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30",
                   !active && !done && "bg-background text-muted-foreground border-border/60 hover:bg-foreground/5",
                 )}
                 data-testid={`ds-step-${s.key}-pill`}
               >
                 {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Icon className="h-3.5 w-3.5" />}
                 <span>
-                  <span className="opacity-60 mr-1">{i + 1}.</span>{s.label}
+                  <span className="mr-1">{i + 1}.</span>{s.label}
                 </span>
               </button>
               {i < steps.length - 1 && <span className="h-px w-4 bg-border" />}
@@ -55,16 +55,16 @@ export function AutosaveBadge({ status }) {
   let label, classes, Icon;
   if (status === "saving") {
     label = "Menyimpan…"; Icon = Loader2;
-    classes = "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30";
+    classes = "bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30";
   } else if (status === "saved") {
     label = "Tersimpan"; Icon = CheckCircle2;
-    classes = "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+    classes = "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
   } else {
     label = "Gagal autosave"; Icon = AlertTriangle;
-    classes = "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+    classes = "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
   }
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${classes}`}
+    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${classes}`}
       data-testid="ds-autosave-badge">
       <Icon className={`h-3 w-3 ${status === "saving" ? "animate-spin" : ""}`} />
       {label}
@@ -253,8 +253,8 @@ export function PaymentStep({ form, addPayment, setPaymentVal, removePayment, pa
       </div>
       <div className={cn(
         "mt-4 flex items-center justify-between p-3 rounded-lg border text-sm",
-        balanced ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
+        balanced ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30",
       )} data-testid="ds-pay-balance">
         <span className="flex items-center gap-1.5 font-medium">
           {balanced ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}

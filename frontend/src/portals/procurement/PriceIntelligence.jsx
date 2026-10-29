@@ -20,7 +20,7 @@ const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 const DevBadge = ({ pct }) => {
   if (pct == null) return <span className="text-muted-foreground text-xs">—</span>;
-  const cls = pct > 10 ? "bg-red-500/15 text-red-700 dark:text-red-300" : pct < -10 ? "bg-green-500/15 text-green-700 dark:text-green-300" : pct > 0 ? "bg-orange-500/15 text-orange-700 dark:text-orange-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300";
+  const cls = pct > 10 ? "bg-red-500/15 text-red-800 dark:text-red-300" : pct < -10 ? "bg-green-500/15 text-green-800 dark:text-green-300" : pct > 0 ? "bg-orange-500/15 text-orange-800 dark:text-orange-300" : "bg-blue-500/15 text-blue-800 dark:text-blue-300";
   const icon = pct > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />;
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>
@@ -100,7 +100,7 @@ export default function PriceIntelligence() {
           <Card data-testid="price-intel-deviations-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-blue-600" />
+                <BarChart2 className="h-4 w-4 text-blue-700 dark:text-blue-400" />
                 Deviasi harga vendor vs referensi Market List
               </CardTitle>
             </CardHeader>
@@ -137,9 +137,9 @@ export default function PriceIntelligence() {
                     render: (d) => <DevBadge pct={d.deviation_pct} /> },
                   { key: "availability_status", label: "Status", align: "center",
                     render: (d) => d.availability_status === "unavailable" ? (
-                      <Badge variant="outline" className="text-red-600 border-red-300 text-xs">Tidak tersedia</Badge>
+                      <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 text-xs">Tidak tersedia</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-green-600 border-green-300 text-xs">Tersedia</Badge>
+                      <Badge variant="outline" className="text-green-700 dark:text-green-400 border-green-300 text-xs">Tersedia</Badge>
                     ) },
                 ]}
               />
@@ -152,7 +152,7 @@ export default function PriceIntelligence() {
           <Card data-testid="price-intel-risk-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4 text-orange-500" />
+                <ShieldAlert className="h-4 w-4 text-orange-800 dark:text-orange-400" />
                 Single-source risk
               </CardTitle>
             </CardHeader>
@@ -170,7 +170,7 @@ export default function PriceIntelligence() {
                         <div className="text-sm font-medium truncate">{item.item_name}</div>
                         <div className="text-xs text-muted-foreground">{item.category_name}</div>
                       </div>
-                      <span className="text-xs bg-orange-500/15 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded-full shrink-0">1 vendor</span>
+                      <span className="text-xs bg-orange-500/15 text-orange-800 dark:text-orange-300 px-2 py-0.5 rounded-full shrink-0">1 vendor</span>
                     </div>
                   ))}
                 </div>

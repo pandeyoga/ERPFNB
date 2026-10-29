@@ -96,7 +96,7 @@ export default function CMSAnalytics() {
           {trend.length > 0 && (
             <div className="glass-card p-4">
               <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <TrendingUp className="h-4 w-4 text-blue-700 dark:text-blue-400" />
                 Daily Page Views — {days} hari terakhir
               </h3>
               <ResponsiveContainer width="100%" height={220}>
@@ -127,7 +127,7 @@ export default function CMSAnalytics() {
             <div className="glass-card overflow-hidden">
               <div className="p-4 border-b flex items-center justify-between gap-3 flex-wrap">
                 <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-amber-600" />
+                  <Eye className="h-4 w-4 text-amber-800 dark:text-amber-400" />
                   Konten Terpopuler ({days} hari)
                 </h3>
                 <SegmentedFilter

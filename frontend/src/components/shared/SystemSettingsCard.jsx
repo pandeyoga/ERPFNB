@@ -172,15 +172,15 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm">{item.label}</span>
-                        <span className="font-mono text-[11px] text-muted-foreground">{item.key}</span>
-                        {item.is_secret && <Badge variant="outline" className="text-[11px]">secret</Badge>}
+                        <span className="font-mono text-xs text-muted-foreground">{item.key}</span>
+                        {item.is_secret && <Badge variant="outline" className="text-xs">secret</Badge>}
                         {item.is_set ? (
-                          <Badge variant="default" className="text-[11px] gap-1">
+                          <Badge variant="default" className="text-xs gap-1">
                             {item.source === "database" ? <Database className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
                             {item.source}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[11px] text-amber-700 border-amber-300">
+                          <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">
                             <FileWarning className="h-3 w-3 mr-1" /> belum diset
                           </Badge>
                         )}
@@ -262,7 +262,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                       {item.is_set && item.source === "database" && (
                         <Button size="sm" variant="ghost" onClick={() => remove(item)}
                                 disabled={busyKey === item.key}
-                                className="text-rose-600 hover:text-rose-700 gap-1">
+                                className="text-rose-700 dark:text-rose-400 hover:text-rose-700 gap-1">
                           <Trash2 className="h-3.5 w-3.5" /> Reset
                         </Button>
                       )}

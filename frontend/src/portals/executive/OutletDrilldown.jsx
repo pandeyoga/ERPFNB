@@ -198,11 +198,11 @@ export default function OutletDrilldown() {
 function PLBreakdown({ pl }) {
   const rows = [
     { label: "Revenue", value: pl.revenue, bold: true, color: "text-foreground" },
-    { label: "COGS (GR)", value: -pl.cogs, color: "text-amber-600" },
-    { label: "Gross Profit", value: pl.gross_profit, bold: true, color: pl.gross_profit >= 0 ? "text-emerald-600" : "text-red-600" },
-    { label: "OpEx — Petty Cash", value: -pl.petty_cash_expense, color: "text-red-600" },
-    { label: "OpEx — Urgent Purchase", value: -pl.urgent_purchase_expense, color: "text-red-600" },
-    { label: "Net", value: pl.net, bold: true, color: pl.net >= 0 ? "text-emerald-600" : "text-red-600" },
+    { label: "COGS (GR)", value: -pl.cogs, color: "text-amber-800 dark:text-amber-400" },
+    { label: "Gross Profit", value: pl.gross_profit, bold: true, color: pl.gross_profit >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400" },
+    { label: "OpEx — Petty Cash", value: -pl.petty_cash_expense, color: "text-red-700 dark:text-red-400" },
+    { label: "OpEx — Urgent Purchase", value: -pl.urgent_purchase_expense, color: "text-red-700 dark:text-red-400" },
+    { label: "Net", value: pl.net, bold: true, color: pl.net >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400" },
   ];
   return (
     <div className="space-y-3" data-testid="outlet-pl">

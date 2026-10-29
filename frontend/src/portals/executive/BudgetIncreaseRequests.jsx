@@ -217,7 +217,7 @@ export default function BudgetIncreaseRequests() {
               </div>
               {decision.kind === "approve" && (
                 <div>
-                  <Label htmlFor="approved-amount" className="text-xs md:text-sm font-medium">Jumlah disetujui (Rp) <span className="text-rose-600">*</span></Label>
+                  <Label htmlFor="approved-amount" className="text-xs md:text-sm font-medium">Jumlah disetujui (Rp) <span className="text-rose-700 dark:text-rose-400">*</span></Label>
                   <Input
                     id="approved-amount"
                     type="number" min="0" step="100000"
@@ -231,7 +231,7 @@ export default function BudgetIncreaseRequests() {
               <div>
                 <Label htmlFor="decision-note" className="text-xs md:text-sm font-medium">
                   {decision.kind === "reject"
-                    ? <>Alasan penolakan <span className="text-rose-600">*</span></>
+                    ? <>Alasan penolakan <span className="text-rose-700 dark:text-rose-400">*</span></>
                     : "Catatan (opsional)"}
                 </Label>
                 <Textarea
@@ -318,7 +318,7 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
           <div className="flex justify-end gap-2 pt-1">
             <Button
               size="sm" variant="outline"
-              className="text-rose-600 hover:text-rose-700"
+              className="text-rose-700 dark:text-rose-400 hover:text-rose-700"
               onClick={() => onReject(req)}
               data-testid={`btn-reject-${req.id}`}
             >

@@ -143,12 +143,12 @@ export default function BrandInstagramPosts({ brand }) {
 
       {/* Instagram branding hint */}
       <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-pink-100 rounded-xl">
-        <Instagram className="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-gray-600">
+        <Instagram className="w-4 h-4 text-pink-700 dark:text-pink-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-muted-foreground">
           Tambahkan post Instagram brand ini secara manual dengan URL gambar dan caption. Posts akan tampil di halaman brand publik sebagai Instagram Feed section.
           {brand.instagram && (
             <a href={`https://instagram.com/${brand.instagram?.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-               className="ml-1 text-pink-500 hover:underline inline-flex items-center gap-1">
+               className="ml-1 text-pink-700 dark:text-pink-400 hover:underline inline-flex items-center gap-1">
               Lihat profil {brand.instagram} <ExternalLink className="w-3 h-3" />
             </a>
           )}
@@ -158,16 +158,16 @@ export default function BrandInstagramPosts({ brand }) {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && posts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-200 rounded-xl">
-          <Instagram className="w-10 h-10 text-gray-300 mb-3" />
-          <p className="text-sm font-medium text-gray-500">Belum ada IG posts untuk {brand.name}</p>
-          <p className="text-xs text-gray-400 mt-1">Klik "Tambah Post" untuk menambahkan</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-xl">
+          <Instagram className="w-10 h-10 text-muted-foreground mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Belum ada IG posts untuk {brand.name}</p>
+          <p className="text-xs text-muted-foreground mt-1">Klik "Tambah Post" untuk menambahkan</p>
         </div>
       )}
 
@@ -180,11 +180,11 @@ export default function BrandInstagramPosts({ brand }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={`relative rounded-xl overflow-hidden border-2 group ${
-                post.active !== false ? "border-transparent" : "border-gray-200 opacity-50"
+                post.active !== false ? "border-transparent" : "border-border opacity-50"
               }`}
             >
               {/* Image */}
-              <div className="relative aspect-square bg-gray-100">
+              <div className="relative aspect-square bg-muted/40">
                 <img
                   src={post.thumbnail_url || post.image_url}
                   alt={post.caption?.slice(0, 30)}
@@ -197,12 +197,12 @@ export default function BrandInstagramPosts({ brand }) {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1">
                   {post.is_pinned && (
-                    <span className="bg-yellow-400 text-yellow-900 text-[11px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                    <span className="bg-yellow-400 text-yellow-900 text-xs px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
                       <Pin className="w-2.5 h-2.5" /> PIN
                     </span>
                   )}
                   {post.active === false && (
-                    <span className="bg-gray-800/80 text-white text-[11px] px-1.5 py-0.5 rounded-full">Hidden</span>
+                    <span className="bg-gray-800/80 text-white text-xs px-1.5 py-0.5 rounded-full">Hidden</span>
                   )}
                 </div>
 
@@ -238,16 +238,16 @@ export default function BrandInstagramPosts({ brand }) {
               </div>
 
               {/* Caption + stats */}
-              <div className="p-2 bg-white">
-                <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{post.caption}</p>
+              <div className="p-2 bg-background">
+                <p className="text-xs text-foreground line-clamp-2 leading-relaxed">{post.caption}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Heart className="w-3 h-3" /> {post.likes?.toLocaleString("id-ID")}
                   </span>
-                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <MessageCircle className="w-3 h-3" /> {post.comments?.toLocaleString("id-ID")}
                   </span>
-                  <span className="text-[11px] text-gray-300 ml-auto">{fmtDate(post.posted_at)}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{fmtDate(post.posted_at)}</span>
                 </div>
               </div>
             </motion.div>
@@ -275,8 +275,8 @@ export default function BrandInstagramPosts({ brand }) {
             >
               <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10">
                 <div className="flex items-center gap-2">
-                  <Instagram className="w-5 h-5 text-pink-500" />
-                  <h3 className="font-semibold text-gray-900">Tambah Instagram Post — {brand.name}</h3>
+                  <Instagram className="w-5 h-5 text-pink-700 dark:text-pink-400" />
+                  <h3 className="font-semibold text-foreground">Tambah Instagram Post — {brand.name}</h3>
                 </div>
                 <Button variant="ghost" size="icon-sm" onClick={() => setFormOpen(false)} aria-label="Tutup">
                   <X className="w-5 h-5" />
@@ -286,7 +286,7 @@ export default function BrandInstagramPosts({ brand }) {
               <div className="p-4 grid sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto">
                 {/* Image preview */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="ig-post-url-gambar-utama" className="block text-xs font-medium text-gray-700 mb-1.5">URL Gambar Utama *</label>
+                  <label htmlFor="ig-post-url-gambar-utama" className="block text-xs font-medium text-foreground mb-1.5">URL Gambar Utama *</label>
                   <div className="flex gap-2">
                     <input id="ig-post-url-gambar-utama"
                       type="url"
@@ -306,7 +306,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label htmlFor="ig-post-url-thumbnail" className="block text-xs font-medium text-gray-700 mb-1.5">URL Thumbnail (opsional)</label>
+                  <label htmlFor="ig-post-url-thumbnail" className="block text-xs font-medium text-foreground mb-1.5">URL Thumbnail (opsional)</label>
                   <input id="ig-post-url-thumbnail"
                     type="url"
                     value={form.thumbnail_url}
@@ -317,7 +317,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label htmlFor="ig-post-url-post-instagram" className="block text-xs font-medium text-gray-700 mb-1.5">URL Post Instagram (opsional)</label>
+                  <label htmlFor="ig-post-url-post-instagram" className="block text-xs font-medium text-foreground mb-1.5">URL Post Instagram (opsional)</label>
                   <input id="ig-post-url-post-instagram"
                     type="url"
                     value={form.post_url}
@@ -328,7 +328,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label htmlFor="ig-post-caption" className="block text-xs font-medium text-gray-700 mb-1.5">Caption *</label>
+                  <label htmlFor="ig-post-caption" className="block text-xs font-medium text-foreground mb-1.5">Caption *</label>
                   <textarea id="ig-post-caption"
                     value={form.caption}
                     onChange={(e) => setForm(f => ({ ...f, caption: e.target.value }))}
@@ -339,7 +339,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label htmlFor="ig-post-jumlah-likes" className="block text-xs font-medium text-gray-700 mb-1.5">Jumlah Likes</label>
+                  <label htmlFor="ig-post-jumlah-likes" className="block text-xs font-medium text-foreground mb-1.5">Jumlah Likes</label>
                   <input id="ig-post-jumlah-likes"
                     type="number"
                     value={form.likes}
@@ -350,7 +350,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label htmlFor="ig-post-jumlah-komentar" className="block text-xs font-medium text-gray-700 mb-1.5">Jumlah Komentar</label>
+                  <label htmlFor="ig-post-jumlah-komentar" className="block text-xs font-medium text-foreground mb-1.5">Jumlah Komentar</label>
                   <input id="ig-post-jumlah-komentar"
                     type="number"
                     value={form.comments}
@@ -361,7 +361,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Tipe Post</label>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">Tipe Post</label>
                   <SimpleSelect
                     value={form.post_type}
                     onValueChange={(v) => setForm(f => ({ ...f, post_type: v }))}
@@ -372,7 +372,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label htmlFor="ig-post-tanggal-post" className="block text-xs font-medium text-gray-700 mb-1.5">Tanggal Post</label>
+                  <label htmlFor="ig-post-tanggal-post" className="block text-xs font-medium text-foreground mb-1.5">Tanggal Post</label>
                   <input id="ig-post-tanggal-post"
                     type="date"
                     value={form.posted_at ? form.posted_at.slice(0, 10) : ""}
@@ -424,11 +424,11 @@ export default function BrandInstagramPosts({ brand }) {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Hapus Post?</h3>
-                  <p className="text-xs text-gray-500">Post akan disembunyikan dari website</p>
+                  <h3 className="font-semibold text-foreground">Hapus Post?</h3>
+                  <p className="text-xs text-muted-foreground">Post akan disembunyikan dari website</p>
                 </div>
               </div>
               <div className="flex justify-end gap-2">

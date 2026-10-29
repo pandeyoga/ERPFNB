@@ -64,9 +64,9 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   const getVarianceColor = (pct, category) => {
     if (pct === null || pct === undefined) return "text-muted-foreground";
     // For revenue, negative variance is bad (under-budget)
-    if (category === "REV") return pct < -5 ? "text-red-600 dark:text-red-400" : pct > 5 ? "text-green-600 dark:text-green-400" : "text-muted-foreground";
+    if (category === "REV") return pct < -5 ? "text-red-700 dark:text-red-400" : pct > 5 ? "text-green-700 dark:text-green-400" : "text-muted-foreground";
     // For expenses, positive variance is bad (over-budget)
-    return pct > 10 ? "text-red-600 dark:text-red-400" : pct < -10 ? "text-green-600 dark:text-green-400" : "text-muted-foreground";
+    return pct > 10 ? "text-red-700 dark:text-red-400" : pct < -10 ? "text-green-700 dark:text-green-400" : "text-muted-foreground";
   };
 
   const hasBudgets = data && (data.category_rollup?.length > 0 || data.coa_level?.some(r => r.budget > 0));
@@ -255,7 +255,7 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium tabular-nums">{row.coa_code}</span>
                         <span className="text-xs text-muted-foreground">{row.coa_name}</span>
-                        <Badge variant="outline" className="text-[11px]">{row.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{row.category}</Badge>
                       </div>
                     ) },
                   { key: "budget", label: "Budget", numeric: true, sortable: true,

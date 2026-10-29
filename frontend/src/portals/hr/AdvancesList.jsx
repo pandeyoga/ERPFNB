@@ -260,7 +260,7 @@ function AdvanceSchedule({ it }) {
           <div key={idx} className={cn("rounded-md border border-border/60 p-2.5 text-xs", s.paid && "opacity-60")}>
             <div className="flex items-center justify-between mb-1">
               <span className="font-mono">{s.period}</span>
-              {s.paid ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />}
+              {s.paid ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" /> : <AlertTriangle className="h-3.5 w-3.5 text-amber-800 dark:text-amber-400" />}
             </div>
             <div className="font-semibold tabular-nums">{fmtRp(s.amount)}</div>
             <div className="text-muted-foreground">jatuh tempo {fmtDate(s.due_date)}</div>

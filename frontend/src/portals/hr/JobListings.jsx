@@ -200,7 +200,7 @@ export default function JobListings() {
                 <div className={cn(
                   "flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium shrink-0",
                   job.is_active
-                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                    ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
                     : "bg-muted text-muted-foreground"
                 )}>
                   {job.is_active
@@ -243,7 +243,7 @@ export default function JobListings() {
                   data-testid={`toggle-job-${job.id}`}
                 >
                   {job.is_active
-                    ? <><ToggleRight className="text-emerald-600" /> Nonaktifkan</>
+                    ? <><ToggleRight className="text-emerald-700 dark:text-emerald-400" /> Nonaktifkan</>
                     : <><ToggleLeft /> Aktifkan</>
                   }
                 </Button>

@@ -44,10 +44,11 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
   const getHeatColor = (value, min, max) => {
     if (!value || value === 0) return "bg-muted/20";
     const normalized = (value - min) / (max - min || 1);
-    if (normalized > 0.75) return "bg-gradient-to-br from-rose-500/80 to-rose-600/90 text-white";
-    if (normalized > 0.5) return "bg-gradient-to-br from-orange-500/70 to-orange-600/80 text-white";
-    if (normalized > 0.25) return "bg-gradient-to-br from-amber-500/60 to-amber-600/70";
-    return "bg-gradient-to-br from-emerald-500/40 to-emerald-600/50";
+    // Warna isi solid + teks gelap (bukan gradien + teks putih, < 3:1); intensitas lewat hue hijau → merah.
+    if (normalized > 0.75) return "bg-rose-500/30 text-rose-900 dark:text-rose-100";
+    if (normalized > 0.5) return "bg-orange-500/25 text-orange-900 dark:text-orange-100";
+    if (normalized > 0.25) return "bg-amber-500/20 text-amber-900 dark:text-amber-100";
+    return "bg-emerald-500/15 text-emerald-900 dark:text-emerald-100";
   };
 
   if (loading || !data) {
@@ -116,7 +117,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
                       metric === "revenue" ? fmtRp(cell.revenue) : `${fmtNumber(cell.trx)} trx`
                     }`}
                   >
-                    <span className="font-semibold text-[11px] tabular-nums">
+                    <span className="font-semibold text-xs tabular-nums">
                       {metric === "revenue"
                         ? value >= 1_000_000
                           ? `${(value / 1_000_000).toFixed(1)}M`

@@ -118,7 +118,7 @@ export default function RuleEditorShell({
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Identitas</h4>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Scope: <span className="font-medium text-foreground/80">{scope.scope_type}</span> / <span className="font-medium text-foreground/80">{scope.scope_id}</span>
           </span>
         </div>
@@ -131,7 +131,7 @@ export default function RuleEditorShell({
             placeholder={`Contoh: ${ruleTypeLabel} — Outlet Senayan`}
             data-testid="config-editor-name-input"
           />
-          {errors.name && <p className="text-[11px] text-destructive mt-1">{errors.name}</p>}
+          {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
         </div>
         <div>
           <Label htmlFor="rule-desc" className="text-xs md:text-sm font-medium">Deskripsi (opsional)</Label>
@@ -170,10 +170,10 @@ export default function RuleEditorShell({
               onChange={(e) => setEffTo(e.target.value)}
               data-testid="config-editor-effective-to-input"
             />
-            {errors.effective_to && <p className="text-[11px] text-destructive mt-1">{errors.effective_to}</p>}
+            {errors.effective_to && <p className="text-xs text-destructive mt-1">{errors.effective_to}</p>}
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground">Kosongkan untuk berlaku tanpa batas.</p>
+        <p className="text-xs text-muted-foreground">Kosongkan untuk berlaku tanpa batas.</p>
         <div className="flex items-center gap-2 pt-1">
           <Switch
             id="rule-active"
@@ -211,7 +211,7 @@ export default function RuleEditorShell({
       "sticky bottom-0 z-10 py-3 mt-3 flex items-center justify-between gap-2 border-t border-border/40 bg-background/95 backdrop-blur-sm",
       variant === "dialog" ? "-mx-5 px-5" : "-mx-6 px-6",
     )}>
-      <div className="text-[11px] text-muted-foreground">
+      <div className="text-xs text-muted-foreground">
         {isEdit ? `v${rule.version || "?"} — ID: ${rule.id?.slice(0, 8)}…` : "Aturan baru"}
       </div>
       <div className="flex items-center gap-2">

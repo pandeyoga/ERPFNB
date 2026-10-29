@@ -136,7 +136,7 @@ export default function PaymentDetail() {
               <div className="text-xs text-muted-foreground" data-testid="pay-no-workflow">Tidak ada workflow approval untuk tier ini — cukup satu langkah.</div>
             )}
             {st.tier && (
-              <div className="mt-3 text-[11px] text-muted-foreground" data-testid="pay-tier-info">
+              <div className="mt-3 text-xs text-muted-foreground" data-testid="pay-tier-info">
                 Tier: <span className="font-semibold">{st.tier.label}</span>
               </div>
             )}
@@ -147,7 +147,7 @@ export default function PaymentDetail() {
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Aksi</div>
               {canSubmit && <Button disabled={acting} onClick={() => doAction("submit")} className="w-full" data-testid="pay-submit">Ajukan approval</Button>}
               {canApprove && <Button disabled={acting} onClick={() => doAction("approve", { note: "" })} className="w-full" data-testid="pay-approve"><Check className="h-4 w-4" /> Setujui</Button>}
-              {canReject && <Button disabled={acting} variant="outline" onClick={() => setShowReject(true)} className="w-full text-red-600 hover:text-red-700" data-testid="pay-reject"><X className="h-4 w-4" /> Tolak</Button>}
+              {canReject && <Button disabled={acting} variant="outline" onClick={() => setShowReject(true)} className="w-full text-red-700 dark:text-red-400 hover:text-red-700" data-testid="pay-reject"><X className="h-4 w-4" /> Tolak</Button>}
               {canMarkPaid && <Button disabled={acting} onClick={() => setShowPay(true)} className="w-full" data-testid="pay-markpaid"><CreditCard className="h-4 w-4" /> Tandai dibayar</Button>}
               {canCancel && <Button disabled={acting} variant="ghost" onClick={() => setShowCancel(true)} className="w-full" data-testid="pay-cancel">Batalkan PAY</Button>}
             </div>
@@ -158,7 +158,7 @@ export default function PaymentDetail() {
       {/* Reject dialog */}
       <Dialog open={showReject} onOpenChange={setShowReject}>
         <DialogContent data-testid="pay-reject-dialog"><DialogHeader><DialogTitle>Tolak PAY {doc.doc_no}</DialogTitle></DialogHeader>
-          <div className="space-y-2"><Label htmlFor="pay-reject-reason">Alasan penolakan <span className="text-red-500">*</span></Label>
+          <div className="space-y-2"><Label htmlFor="pay-reject-reason">Alasan penolakan <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Textarea id="pay-reject-reason" value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3} data-testid="pay-reject-reason" />
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowReject(false)} data-testid="pay-reject-cancel">Batal</Button>
@@ -171,7 +171,7 @@ export default function PaymentDetail() {
       <Dialog open={showPay} onOpenChange={setShowPay}>
         <DialogContent data-testid="pay-markpaid-dialog"><DialogHeader><DialogTitle>Tandai dibayar — {doc.doc_no}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label htmlFor="pay-paydate">Payment Date <span className="text-red-500">*</span></Label>
+            <div><Label htmlFor="pay-paydate">Payment Date <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="pay-paydate" type="date" value={payForm.payment_date} onChange={e => setPayForm(f => ({ ...f, payment_date: e.target.value }))} className="mt-1" data-testid="pay-paydate" />
             </div>
             <PeriodLockBanner
@@ -182,7 +182,7 @@ export default function PaymentDetail() {
             <div><Label htmlFor="pay-payref">Payment Reference (ref bank, no. transfer, dll)</Label>
               <Input id="pay-payref" value={payForm.payment_ref} onChange={e => setPayForm(f => ({ ...f, payment_ref: e.target.value }))} placeholder="mis. TF-20260420-001" className="mt-1" data-testid="pay-payref" />
             </div>
-            <div><Label>Bank Account (dari) <span className="text-red-500">*</span></Label>
+            <div><Label>Bank Account (dari) <span className="text-red-700 dark:text-red-400">*</span></Label>
               <SimpleSelect ariaLabel="Bank Account (dari)" value={payForm.bank_account_id} onValueChange={v => setPayForm(f => ({ ...f, bank_account_id: v }))} className="glass-input mt-1 w-full" testId="pay-paybank" placeholder="Pilih..."
                 options={[{ value: "", label: "Pilih..." }, ...banks.map(b => ({ value: b.id, label: `${b.bank} ${b.account_number} — ${b.name}` }))]} />
             </div>
@@ -196,7 +196,7 @@ export default function PaymentDetail() {
       {/* Cancel dialog */}
       <Dialog open={showCancel} onOpenChange={setShowCancel}>
         <DialogContent data-testid="pay-cancel-dialog"><DialogHeader><DialogTitle>Batalkan PAY {doc.doc_no}</DialogTitle></DialogHeader>
-          <div className="space-y-2"><Label htmlFor="pay-cancel-reason">Alasan pembatalan <span className="text-red-500">*</span></Label>
+          <div className="space-y-2"><Label htmlFor="pay-cancel-reason">Alasan pembatalan <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Textarea id="pay-cancel-reason" value={cancelReason} onChange={e => setCancelReason(e.target.value)} rows={3} data-testid="pay-cancel-reason" />
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowCancel(false)} data-testid="pay-cancel-close">Tutup</Button>

@@ -181,7 +181,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
                   {item.dietary_tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {item.dietary_tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline" className="text-[11px] py-0 px-1.5">{tag}</Badge>
+                        <Badge key={tag} variant="outline" className="text-xs py-0 px-1.5">{tag}</Badge>
                       ))}
                     </div>
                   )}
@@ -194,7 +194,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
               { key: "is_available", label: "Tersedia", align: "center", hideOnMobile: true,
                 render: (item) => <Badge variant={item.is_available ? "default" : "secondary"} className="text-xs">{item.is_available ? "Ya" : "Tidak"}</Badge> },
               { key: "is_featured", label: "Featured", align: "center", hideOnMobile: true,
-                render: (item) => item.is_featured ? <Star className="h-4 w-4 text-amber-500 mx-auto fill-amber-500" /> : null },
+                render: (item) => item.is_featured ? <Star className="h-4 w-4 text-amber-800 dark:text-amber-400 mx-auto fill-amber-500" /> : null },
             ]}
             rowAction={(item) => (
               <div className="flex gap-1 justify-end" data-testid={`admin-menu-row-actions-${item.id}`}>
@@ -285,7 +285,7 @@ function ItemsTab({ brands, selectedBrandId, onBrandChange }) {
                 {DIETARY_OPTIONS.map(opt => (
                   <button key={opt.value} type="button"
                     onClick={() => toggleTag(opt.value)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    className={`inline-flex h-8 items-center px-3 rounded-md text-[13px] font-medium border transition-colors ${
                       form.dietary_tags.includes(opt.value)
                         ? "text-white border-transparent" : "text-muted-foreground border-border hover:border-foreground/30"
                     }`}

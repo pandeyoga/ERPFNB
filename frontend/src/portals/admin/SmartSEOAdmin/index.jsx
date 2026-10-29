@@ -298,7 +298,7 @@ export default function SmartSEO() {
                 >
                   <span className="truncate">{pg.page_name}</span>
                   {saved ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
                   ) : (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
                   )}
@@ -328,7 +328,7 @@ export default function SmartSEO() {
           {/* AI Keyword Input */}
           <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-4">
-              <Target className="w-4 h-4 text-violet-500" />
+              <Target className="w-4 h-4 text-violet-700 dark:text-violet-400" />
               <h3 className="text-sm md:text-base font-semibold">AI Keyword Analysis</h3>
             </div>
             <div className="space-y-3">
@@ -368,14 +368,14 @@ export default function SmartSEO() {
               {/* AI Processing Banner */}
               {(analyzing || generating) && (
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-200" data-testid="ai-processing-banner">
-                  <RefreshCw className="w-4 h-4 animate-spin text-violet-600 flex-shrink-0" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-violet-700 dark:text-violet-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">
                       {analyzing ? "AI menganalisis keyword..." : "AI generate konten SEO..."}
                     </p>
-                    <p className="text-[11px] text-violet-500">Harap tunggu, proses AI membutuhkan ~15-25 detik</p>
+                    <p className="text-xs text-violet-700 dark:text-violet-400">Harap tunggu, proses AI membutuhkan ~15-25 detik</p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs text-violet-500 tabular-nums flex-shrink-0">
+                  <span className="flex items-center gap-1 text-xs text-violet-700 dark:text-violet-400 tabular-nums flex-shrink-0">
                     <Clock className="w-3.5 h-3.5" />
                     {aiElapsed}s
                   </span>
@@ -392,7 +392,7 @@ export default function SmartSEO() {
                     aria-expanded={showAnalysis}
                   >
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-violet-500" />
+                      <Zap className="w-4 h-4 text-violet-700 dark:text-violet-400" />
                       <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">Hasil Analisis AI</span>
                       <IntentBadge intent={analysis.primary_intent} />
                     </div>
@@ -414,19 +414,19 @@ export default function SmartSEO() {
                           <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Keyword Clusters</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {analysis.keyword_clusters.slice(0, 4).map((cluster, i) => (
-                              <div key={i} className="bg-white dark:bg-background/50 rounded-lg p-2.5 border border-border/50">
+                              <div key={i} className="bg-background dark:bg-background/50 rounded-lg p-2.5 border border-border/50">
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-xs font-semibold">{cluster.cluster_name}</span>
                                   <IntentBadge intent={cluster.intent} />
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {cluster.keywords?.slice(0, 4).map((kw, j) => (
-                                    <span key={j} className="text-[11px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
+                                    <span key={j} className="text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
                                   ))}
                                 </div>
                                 <div className="flex gap-2 mt-1.5">
-                                  <span className="text-[11px] text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
-                                  <span className="text-[11px] text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
+                                  <span className="text-xs text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
+                                  <span className="text-xs text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
                                 </div>
                               </div>
                             ))}
@@ -441,7 +441,7 @@ export default function SmartSEO() {
                           <ul className="space-y-1">
                             {analysis.quick_wins.map((win, i) => (
                               <li key={i} className="flex items-start gap-1.5 text-xs">
-                                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                                <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
                                 {win}
                               </li>
                             ))}
@@ -455,7 +455,7 @@ export default function SmartSEO() {
                           <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">AI Suggestions</p>
                           {analysis.suggested_title && <p className="text-xs"><span className="font-medium">Title:</span> {analysis.suggested_title}</p>}
                           {analysis.suggested_description && <p className="text-xs"><span className="font-medium">Desc:</span> {analysis.suggested_description}</p>}
-                          <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
+                          <Button size="sm" variant="outline" onClick={() => {
                             setForm(f => ({
                               ...f,
                               title: analysis.suggested_title || f.title,
@@ -498,7 +498,7 @@ export default function SmartSEO() {
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   data-testid="seo-title-input"
                 />
-                <p className="text-[11px] text-muted-foreground mt-0.5">Ideal: 50–60 karakter (tampil di tab browser & SERP)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Ideal: 50–60 karakter (tampil di tab browser & SERP)</p>
               </div>
 
               {/* Meta Description */}
@@ -515,7 +515,7 @@ export default function SmartSEO() {
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   data-testid="seo-description-input"
                 />
-                <p className="text-[11px] text-muted-foreground mt-0.5">Ideal: 148–160 karakter (tampil di SERP snippet)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Ideal: 148–160 karakter (tampil di SERP snippet)</p>
               </div>
 
               {/* Keywords */}
@@ -658,7 +658,7 @@ export default function SmartSEO() {
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {["Organization", "WebSite", "Restaurant", "LocalBusiness", "BreadcrumbList"].map(s => (
-                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[11px] font-medium">
+                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">
                   <Check className="w-3 h-3" /> {s}
                 </span>
               ))}

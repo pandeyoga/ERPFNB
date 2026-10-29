@@ -40,11 +40,11 @@ const ENTITY_ICONS = {
 };
 
 const ENTITY_COLORS = {
-  items:     "from-blue-500/15 to-cyan-500/15 text-blue-600",
-  vendors:   "from-purple-500/15 to-violet-500/15 text-purple-600",
-  employees: "from-green-500/15 to-emerald-500/15 text-green-600",
-  coa:       "from-amber-500/15 to-yellow-500/15 text-amber-600",
-  customers: "from-rose-500/15 to-pink-500/15 text-rose-600",
+  items:     "from-blue-500/15 to-cyan-500/15 text-blue-700 dark:text-blue-400",
+  vendors:   "from-purple-500/15 to-violet-500/15 text-purple-700 dark:text-purple-400",
+  employees: "from-green-500/15 to-emerald-500/15 text-green-700 dark:text-green-400",
+  coa:       "from-amber-500/15 to-yellow-500/15 text-amber-800 dark:text-amber-400",
+  customers: "from-rose-500/15 to-pink-500/15 text-rose-700 dark:text-rose-400",
 };
 
 const STEP_LABELS = ["Pilih entitas", "Unduh template", "Unggah & pratinjau", "Konfirmasi import", "Selesai"];

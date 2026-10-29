@@ -13,10 +13,10 @@ import { fmtDateTime } from "@/lib/format";
 
 const LEVELS = ["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
 const LEVEL_STYLES = {
-  DEBUG: "bg-zinc-200 text-zinc-700",
-  INFO: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  WARNING: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  ERROR: "bg-red-500/15 text-red-700 dark:text-red-400",
+  DEBUG: "bg-muted text-foreground",
+  INFO: "bg-blue-500/15 text-blue-800 dark:text-blue-400",
+  WARNING: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  ERROR: "bg-red-500/15 text-red-800 dark:text-red-400",
   CRITICAL: "bg-red-700/25 text-red-800 dark:text-red-300 font-bold",
 };
 
@@ -129,7 +129,7 @@ export default function LogsView() {
               { key: "ts", label: "Timestamp", primary: true, sortable: true, render: (row) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(row.ts)}</span> },
               { key: "level", label: "Level", sortable: true, render: (row) => { const lvl = row.level || "INFO"; return <span className={`px-2 py-0.5 rounded text-xs font-medium ${LEVEL_STYLES[lvl] || LEVEL_STYLES.INFO}`}>{lvl}</span>; } },
               { key: "route", label: "Method/Route", render: (row) => <span className="text-xs font-medium tabular-nums break-all">{row.method ? <><span className="text-muted-foreground">{row.method}</span> {row.route}</> : row.msg?.slice(0, 80)}</span> },
-              { key: "status_code", label: "Status", numeric: true, sortable: true, render: (row) => { const code = row.status_code; const cls = !code ? "" : code >= 500 ? "text-red-600 font-semibold" : code >= 400 ? "text-amber-600 font-semibold" : "text-emerald-600"; return <span className={cls}>{code || "-"}</span>; } },
+              { key: "status_code", label: "Status", numeric: true, sortable: true, render: (row) => { const code = row.status_code; const cls = !code ? "" : code >= 500 ? "text-red-700 dark:text-red-400 font-semibold" : code >= 400 ? "text-amber-800 dark:text-amber-400 font-semibold" : "text-emerald-700 dark:text-emerald-400"; return <span className={cls}>{code || "-"}</span>; } },
               { key: "duration_ms", label: "ms", numeric: true, sortable: true, render: (row) => row.duration_ms?.toFixed(1) || "-" },
               { key: "request_id", label: "Request ID", render: (row) => <span className="text-xs font-medium tabular-nums text-muted-foreground">{row.request_id?.slice(0, 8) || "-"}</span> },
             ]}

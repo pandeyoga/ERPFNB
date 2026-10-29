@@ -106,8 +106,8 @@ export default function Integrations() {
                   {stat.total > 0 && (
                     <span
                       className={cn(
-                        "px-1.5 rounded-full text-[11px] tabular-nums bg-foreground/10",
-                        complete && "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+                        "px-1.5 rounded-full text-xs tabular-nums bg-foreground/10",
+                        complete && "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
                       )}
                       title={`${stat.set} dari ${stat.total} setting terisi`}
                     >

@@ -167,7 +167,7 @@ export default function PRForm() {
       </div>
 
       {prefillBanner && (
-        <div className="glass-card p-3 bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-300 flex items-start gap-2"
+        <div className="glass-card p-3 bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-2"
              data-testid="pr-prefill-banner">
           <Sparkles className="h-4 w-4 mt-0.5 shrink-0" />
           <div>

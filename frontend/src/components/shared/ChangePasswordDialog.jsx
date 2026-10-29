@@ -116,7 +116,7 @@ export default function ChangePasswordDialog({ open, onOpenChange }) {
           {form.new_password.length > 0 && (
             <ul className="grid grid-cols-1 gap-1 rounded-lg bg-muted/40 p-2.5" data-testid="change-pwd-rules">
               {rulesPass.map((r) => (
-                <li key={r.id} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                <li key={r.id} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-green-700 dark:text-green-400" : "text-muted-foreground"}`}>
                   {r.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
                   {r.label}
                 </li>

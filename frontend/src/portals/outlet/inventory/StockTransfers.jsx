@@ -295,7 +295,7 @@ function CreateTransferDialog({ open, onClose, outlets, onCreated }) {
                   className="glass-input w-20" aria-label={`Qty item ${i + 1}`} data-testid={`transfer-qty-${i}`} />
                 {lines.length > 1 && (
                   <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => rmLine(i)} aria-label={`Hapus item ${i + 1}`}>
-                    <Trash2 className="h-4 w-4 text-rose-500" />
+                    <Trash2 className="h-4 w-4 text-rose-700 dark:text-rose-400" />
                   </Button>
                 )}
               </div>

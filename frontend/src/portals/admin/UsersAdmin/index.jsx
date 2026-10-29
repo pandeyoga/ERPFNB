@@ -114,11 +114,11 @@ export default function Users({ embedded = false } = {}) {
       {/* Legend */}
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <Globe2 className="h-3.5 w-3.5 text-green-500" />
+          <Globe2 className="h-3.5 w-3.5 text-green-700 dark:text-green-400" />
           <span>Full Access — semua brand &amp; outlet</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <Store className="h-3.5 w-3.5 text-amber-500" />
+          <Store className="h-3.5 w-3.5 text-amber-800 dark:text-amber-400" />
           <span>Outlet Staff — hanya outlet yang di-assign</span>
         </span>
         <InlineHelp id="rbac-access-level" size="xs" placement="right" />
@@ -132,10 +132,10 @@ export default function Users({ embedded = false } = {}) {
               <div>
                 <div className="font-medium">{u.full_name}</div>
                 {u.default_outlet_id && (
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Store className="h-3 w-3" />
                     {outlets.find((o) => o.id === u.default_outlet_id)?.name || "—"}
-                    <span className="text-muted-foreground/60">(default)</span>
+                    <span className="text-muted-foreground">(default)</span>
                   </div>
                 )}
               </div>
@@ -146,10 +146,10 @@ export default function Users({ embedded = false } = {}) {
               return (
                 <div className="flex flex-wrap gap-1">
                   {userRoles.slice(0, 2).map((r) => (
-                    <span key={r.id} className="text-[11px] px-2 py-0.5 rounded-full glass-input">{r.name}</span>
+                    <span key={r.id} className="text-xs px-2 py-0.5 rounded-full glass-input">{r.name}</span>
                   ))}
                   {userRoles.length > 2 && (
-                    <span className="text-[11px] text-muted-foreground">+{userRoles.length - 2}</span>
+                    <span className="text-xs text-muted-foreground">+{userRoles.length - 2}</span>
                   )}
                 </div>
               );
@@ -173,7 +173,7 @@ export default function Users({ embedded = false } = {}) {
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">Roles ({userRoles.length})</div>
                   <div className="flex flex-wrap gap-1.5">
                     {userRoles.length ? userRoles.map((r) => (
-                      <span key={r.id} className="text-[11px] px-2 py-0.5 rounded-full glass-input">{r.name}</span>
+                      <span key={r.id} className="text-xs px-2 py-0.5 rounded-full glass-input">{r.name}</span>
                     )) : <span className="text-muted-foreground text-xs">Tidak ada role</span>}
                   </div>
                 </div>

@@ -333,7 +333,7 @@ export default function VoucherRedemption() {
                   {/* Reward info */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Gift className="h-4 w-4 text-amber-600" />
+                      <Gift className="h-4 w-4 text-amber-800 dark:text-amber-400" />
                       <span className="font-semibold text-sm">{verifyResult.reward_name || "-"}</span>
                     </div>
 
@@ -346,7 +346,7 @@ export default function VoucherRedemption() {
                         <div className="text-xs text-muted-foreground">Berlaku Hingga</div>
                         <div className={`font-semibold mt-0.5 ${
                           daysUntil(verifyResult.expiry) !== null && daysUntil(verifyResult.expiry) <= 7
-                            ? "text-red-600" : ""
+                            ? "text-red-700 dark:text-red-400" : ""
                         }`}>
                           {fmtDate(verifyResult.expiry) || "Tidak ada batas"}
                           {daysUntil(verifyResult.expiry) !== null && daysUntil(verifyResult.expiry) > 0 && (
@@ -361,7 +361,7 @@ export default function VoucherRedemption() {
                     {/* Customer info */}
                     {verifyResult.customer && (
                       <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                        <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1 flex items-center gap-1">
+                        <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1 flex items-center gap-1">
                           <User className="h-3 w-3" /> Customer
                         </div>
                         <div className="flex items-center gap-2">
@@ -460,7 +460,7 @@ export default function VoucherRedemption() {
                 <CardContent className="pt-4">
                   <div className="text-center mb-4">
                     <div className="h-12 w-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-2">
-                      <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                      <CheckCircle2 className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
                     </div>
                     <h3 className="text-base md:text-lg font-semibold text-emerald-700 dark:text-emerald-400">{claimResult.message}</h3>
                   </div>
@@ -516,8 +516,8 @@ function StepIndicator({ step }) {
           <div key={i} className="flex items-center flex-1">
             <div className={`flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
               active ? "bg-primary/10 text-primary" :
-              done   ? "text-muted-foreground" :
-                       "text-muted-foreground/40"
+              done   ? "text-foreground" :
+                       "text-muted-foreground"
             }`}>
               <Icon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{s.label}</span>

@@ -165,9 +165,9 @@ function Section({ icon, title, hint, enabled, onToggle, children, testid }) {
           <div>
             <div className="font-semibold text-sm flex items-center gap-2">
               {title}
-              {!enabled && <Badge variant="outline" className="text-[11px]">Off</Badge>}
+              {!enabled && <Badge variant="outline" className="text-xs">Off</Badge>}
             </div>
-            <p className="text-[11px] text-muted-foreground">{hint}</p>
+            <p className="text-xs text-muted-foreground">{hint}</p>
           </div>
         </div>
         <Switch checked={enabled} onCheckedChange={onToggle} aria-label={`${enabled ? "Nonaktifkan" : "Aktifkan"} ${title}`} data-testid={`${testid}-enabled`} />

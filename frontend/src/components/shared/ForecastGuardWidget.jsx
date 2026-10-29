@@ -42,15 +42,15 @@ export default function ForecastGuardWidget() {
         <div className="flex items-center gap-2">
           <div className={cn(
             "h-9 w-9 rounded-xl flex items-center justify-center",
-            data?.severe_count > 0 ? "bg-red-500/15 text-red-700 dark:text-red-300"
-            : data?.mild_count > 0 ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-            : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+            data?.severe_count > 0 ? "bg-red-500/15 text-red-800 dark:text-red-300"
+            : data?.mild_count > 0 ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+            : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
           )}>
             {allClean ? <ShieldCheck className="h-4.5 w-4.5" /> : <ShieldAlert className="h-4.5 w-4.5" />}
           </div>
           <div>
             <h3 className="font-semibold leading-tight">Forecast Guard Activity</h3>
-            <p className="text-[11px] text-muted-foreground">Pengeluaran yang melewati forecast — last {days}d</p>
+            <p className="text-xs text-muted-foreground">Pengeluaran yang melewati forecast — last {days}d</p>
           </div>
         </div>
         <SegmentedFilter
@@ -65,10 +65,10 @@ export default function ForecastGuardWidget() {
 
       {!loading && allClean && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-          <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
           <div className="text-sm">
             <div className="font-semibold text-emerald-700 dark:text-emerald-300">Semua bersih</div>
-            <div className="text-[11px] text-muted-foreground">Tidak ada pengeluaran yang melewati forecast dalam {days} hari terakhir.</div>
+            <div className="text-xs text-muted-foreground">Tidak ada pengeluaran yang melewati forecast dalam {days} hari terakhir.</div>
           </div>
         </div>
       )}
@@ -94,11 +94,11 @@ export default function ForecastGuardWidget() {
                   <span className="text-sm font-medium flex-1 truncate">{o.outlet_name}</span>
                   <Pill count={o.severe} variant="severe" />
                   <Pill count={o.mild} variant="mild" />
-                  <span className="text-[11px] tabular-nums text-muted-foreground w-20 text-right">
+                  <span className="text-xs tabular-nums text-muted-foreground w-20 text-right">
                     {fmtRp(o.total_amount)}
                   </span>
                   {o.max_deviation_pct > 0 && (
-                    <span className="text-[11px] tabular-nums font-semibold text-red-700 dark:text-red-300 w-12 text-right">
+                    <span className="text-xs tabular-nums font-semibold text-red-700 dark:text-red-300 w-12 text-right">
                       max +{o.max_deviation_pct.toFixed(0)}%
                     </span>
                   )}
@@ -138,8 +138,8 @@ export default function ForecastGuardWidget() {
 
 function SummaryTile({ label, count, valueText, variant, testid }) {
   const styles = {
-    severe: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20",
-    mild: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+    severe: "bg-red-500/10 text-red-800 dark:text-red-300 border-red-500/20",
+    mild: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/20",
     amount: "bg-muted/20 text-foreground border-border/30",
   };
   return (
@@ -159,7 +159,7 @@ function Pill({ count, variant }) {
     : "bg-amber-500/20 text-amber-800 dark:text-amber-200";
   return (
     <span className={cn(
-      "text-[11px] font-bold px-1.5 py-0.5 rounded-full tabular-nums",
+      "text-xs font-bold px-1.5 py-0.5 rounded-full tabular-nums",
       cls,
     )}>
       {variant === "severe" ? "S" : "M"} {count}
@@ -177,15 +177,15 @@ function RecentRow({ row }) {
       className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/15 hover:bg-muted/35 transition-colors group">
       <AlertTriangle
         className={cn("h-3.5 w-3.5 flex-shrink-0",
-          isSevere ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400")} />
+          isSevere ? "text-red-700 dark:text-red-400" : "text-amber-800 dark:text-amber-400")} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 text-xs">
           <span className="font-mono opacity-80">{row.source_doc_no || row.source_id?.slice(0, 8)}</span>
-          <span className="text-[11px] uppercase tracking-wider opacity-60">{row.source_type?.replace("_", " ")}</span>
-          <span className="text-[11px] opacity-60">·</span>
-          <span className="text-[11px] truncate opacity-80">{row.outlet_name}</span>
+          <span className="text-[11px] uppercase tracking-wider">{row.source_type?.replace("_", " ")}</span>
+          <span className="text-xs opacity-60">·</span>
+          <span className="text-xs truncate opacity-80">{row.outlet_name}</span>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
           <span className="tabular-nums font-semibold text-foreground">{fmtRp(row.amount)}</span>
           <span>·</span>
           <span className={cn("font-semibold tabular-nums",

@@ -326,7 +326,7 @@ function ExportTab({ collections }) {
 
           {status && (
             <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
-              status.type === "success" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-destructive/10 text-destructive"
+              status.type === "success" ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400" : "bg-destructive/10 text-destructive"
             }`}>
               {status.type === "success" ? <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" /> : <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />}
               {status.msg}

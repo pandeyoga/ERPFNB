@@ -66,7 +66,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
               </span>
             )}
             {aggregateMode && (
-              <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20 flex items-center gap-1">
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-800 dark:text-blue-400 font-medium border border-blue-500/20 flex items-center gap-1">
                 <Globe2 className="h-2.5 w-2.5" />
                 {data?.outlet_name || "outlet pertama"}
               </span>
@@ -75,7 +75,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </div>
         {!current ? (
-          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-sm">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 text-sm">
             <AlertCircle className="h-4 w-4" />
             Budget belum ditetapkan Executive
           </div>
@@ -91,7 +91,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
                     <span className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: BUCKET_COLORS[bk] }}>
                       {bk}
                     </span>
-                    <span className={`text-[11px] font-semibold ${paceColor(cell.status)}`}>
+                    <span className={`text-xs font-semibold ${paceColor(cell.status)}`}>
                       {(cell.pct_used || 0).toFixed(0)}%
                     </span>
                   </div>
@@ -99,7 +99,7 @@ export default function OutletBudgetMiniWidget({ scope = "monthly" }) {
                     value={Math.min(100, cell.pct_used || 0)}
                     className="h-1.5"
                   />
-                  <div className="mt-1 text-[11px] text-muted-foreground tabular-nums">
+                  <div className="mt-1 text-xs text-muted-foreground tabular-nums">
                     sisa {fmtRp(cell.remaining)}
                   </div>
                 </div>
@@ -126,7 +126,7 @@ function CombinedGauge({ current }) {
         </span>
       </div>
       <Progress value={Math.min(100, cell.pct_used || 0)} className="h-2.5" />
-      <div className="mt-1.5 flex items-center justify-between text-[11px] tabular-nums">
+      <div className="mt-1.5 flex items-center justify-between text-xs tabular-nums">
         <span className="text-muted-foreground">
           {fmtRp(cell.actual || 0)} / {fmtRp(cell.budget || 0)}
         </span>

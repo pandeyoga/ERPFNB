@@ -221,7 +221,7 @@ export default function FdoPage() {
         <Card data-testid="fdo-favorites-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-500" />Item Sering Dipesan
+              <Star className="h-4 w-4 text-amber-800 dark:text-amber-400" />Item Sering Dipesan
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -366,7 +366,7 @@ export default function FdoPage() {
                           <div>
                             <div className="font-medium text-sm">{ln.name}</div>
                             {ln.ref_price && (
-                              <div className="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
+                              <div className="text-xs text-blue-700 dark:text-blue-400 flex items-center gap-1 mt-0.5">
                                 <Info className="h-3 w-3" />Ref {ln.ref_quarter}: Rp {fmt(ln.ref_price)}
                               </div>
                             )}
@@ -392,7 +392,7 @@ export default function FdoPage() {
                           : <span className="text-xs text-muted-foreground">-</span> },
                     ]}
                     rowAction={(ln) => (
-                      <Button type="button" variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)} className="text-red-500 hover:text-red-600" aria-label={`Hapus ${ln.name}`} data-testid={`fdo-form-line-${ln._idx}-remove`}>
+                      <Button type="button" variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)} className="text-red-700 dark:text-red-400 hover:text-red-600" aria-label={`Hapus ${ln.name}`} data-testid={`fdo-form-line-${ln._idx}-remove`}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}

@@ -31,7 +31,7 @@ export default function OutletScopeHeader() {
 
   if (!loaded) {
     return (
-      <div className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3">
+      <div className="glass-card flex items-center gap-3 p-3 mb-3">
         <div className="skeleton h-4 w-32 rounded" />
       </div>
     );
@@ -45,7 +45,7 @@ export default function OutletScopeHeader() {
         className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-3"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
           <Store className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -61,7 +61,7 @@ export default function OutletScopeHeader() {
             )}
           </div>
         </div>
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
           Outlet Anda
         </span>
       </div>
@@ -71,10 +71,10 @@ export default function OutletScopeHeader() {
   if (scopedOutlets.length === 0) {
     return (
       <div
-        className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3 border-amber-500/30"
+        className="glass-card flex items-center gap-3 p-3 mb-3 border-amber-500/30"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-amber-500/15 text-amber-800 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -91,7 +91,7 @@ export default function OutletScopeHeader() {
 
   return (
     <div
-      className="glass-card flex items-center gap-3 px-4 py-2.5 mb-3 flex-wrap"
+      className="glass-card flex items-center gap-3 p-3 mb-3 flex-wrap"
       data-testid="outlet-scope-header"
     >
       <div className="flex items-center gap-2.5 flex-shrink-0">
@@ -149,7 +149,7 @@ export default function OutletScopeHeader() {
                   {o.name}
                 </span>
                 {o.brand_name && (
-                  <span className="text-[11px] text-muted-foreground pl-5">
+                  <span className="text-xs text-muted-foreground pl-5">
                     {o.brand_name}
                   </span>
                 )}
@@ -160,13 +160,13 @@ export default function OutletScopeHeader() {
       </Select>
 
       {isFullAccess && !currentOutlet && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 font-medium border border-emerald-500/20 flex-shrink-0">
           <Globe2 className="h-3 w-3" />
           Agregat
         </span>
       )}
       {!isFullAccess && !currentOutlet && scopedOutlets.length > 1 && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
           <Store className="h-3 w-3" />
           Outlet Anda
         </span>

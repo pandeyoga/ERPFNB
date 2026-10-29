@@ -255,7 +255,7 @@ export default function GlobalSearch({ open, onClose }) {
                       {" "}<span className="font-mono bg-foreground/5 px-1.5 py-0.5 rounded">low stock</span>,
                       {" "}atau nama item / vendor
                     </div>
-                    <div className="text-[11px] mt-3 flex items-center justify-center gap-2 flex-wrap">
+                    <div className="text-xs mt-3 flex items-center justify-center gap-2 flex-wrap">
                       <span className="inline-flex items-center gap-1">
                         <kbd className="px-1.5 py-0.5 rounded bg-foreground/5">↑↓</kbd> navigasi
                       </span>

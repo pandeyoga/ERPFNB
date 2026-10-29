@@ -258,7 +258,7 @@ export default function ExecutiveHome() {
         </Button>
       </div>
       {lastRefresh && (
-        <div className="text-[11px] text-muted-foreground -mt-1 px-1" data-testid="exec-last-refresh">
+        <div className="text-xs text-muted-foreground -mt-1 px-1" data-testid="exec-last-refresh">
           Refresh terakhir: {fmtDate(lastRefresh.toISOString(), "DD MMM YYYY HH:mm")} {liveMode && "(auto 60s)"}
         </div>
       )}

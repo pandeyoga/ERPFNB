@@ -20,10 +20,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const TONE_VALUE = {
   default: "",
-  success: "text-emerald-600 dark:text-emerald-400",
-  warning: "text-amber-600 dark:text-amber-400",
-  danger: "text-rose-600 dark:text-rose-400",
-  info: "text-sky-600 dark:text-sky-400",
+  success: "text-emerald-700 dark:text-emerald-400",
+  warning: "text-amber-800 dark:text-amber-400",
+  danger: "text-rose-700 dark:text-rose-400",
+  info: "text-sky-700 dark:text-sky-400",
 };
 
 export default function CompactStatCard({

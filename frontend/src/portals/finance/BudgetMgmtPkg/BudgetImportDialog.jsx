@@ -88,7 +88,7 @@ function BudgetImportDialog({ open, onOpenChange, onImported }) {
           {result && (
             <div className="rounded-md border p-3 space-y-1 text-sm">
               {result.success ? (
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
                   <CheckCircle2 className="h-4 w-4" />
                   {result.imported} baris berhasil diimpor untuk periode {result.period}
                 </div>

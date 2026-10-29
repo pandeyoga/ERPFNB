@@ -60,11 +60,11 @@ function OutletCard({ outlet, kind = "top" }) {
       <div className="flex items-start justify-between gap-2 mb-2">
         <Badge variant="secondary" className={cn(
           "uppercase tracking-wider text-[11px] font-semibold",
-          isTop ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+          isTop ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300" : "bg-rose-500/15 text-rose-800 dark:text-rose-300"
         )}>
           {isTop ? "Top Performer" : "Perlu Perhatian"}
         </Badge>
-        <Icon className={cn("size-4", isTop ? "text-emerald-600" : "text-rose-600")} />
+        <Icon className={cn("size-4", isTop ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")} />
       </div>
       <h3 className="text-sm md:text-base font-semibold">{outlet.outlet_name}</h3>
       <div className="text-lg font-semibold tabular-nums mt-0.5">{fmtRp(outlet.revenue)}</div>
@@ -251,7 +251,7 @@ export default function DailyBriefing() {
       <div data-testid="briefing-hero" className="glass-card p-4 grad-aurora-soft">
         <div className="flex items-start gap-3">
           <div className="size-9 rounded-[calc(var(--radius)-2px)] bg-background/70 flex items-center justify-center shrink-0">
-            <TimeIcon className="size-[18px] text-amber-600" />
+            <TimeIcon className="size-[18px] text-amber-800 dark:text-amber-400" />
           </div>
           <div className="min-w-0">
             <h2 className="text-base md:text-lg font-semibold">{data.greeting}</h2>
@@ -307,7 +307,7 @@ export default function DailyBriefing() {
           ? <OutletCard outlet={h.attention_outlet} kind="attention" />
           : (
             <div className="glass-card p-4 flex items-center justify-center text-sm text-muted-foreground" data-testid="no-attention-outlet">
-              <Trophy className="size-4 mr-2 text-emerald-600" /> Tidak ada outlet yang turun signifikan kemarin.
+              <Trophy className="size-4 mr-2 text-emerald-700 dark:text-emerald-400" /> Tidak ada outlet yang turun signifikan kemarin.
             </div>
           )
         }
@@ -317,7 +317,7 @@ export default function DailyBriefing() {
       {data.urgent_actions?.length > 0 && (
         <section data-testid="urgent-actions-section" className="space-y-2">
           <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
-            <Zap className="size-4 text-amber-500" /> Tindakan Prioritas ({data.urgent_actions.length})
+            <Zap className="size-4 text-amber-800 dark:text-amber-400" /> Tindakan Prioritas ({data.urgent_actions.length})
           </h2>
           <div className="space-y-2">
             {data.urgent_actions.map((a, idx) => (

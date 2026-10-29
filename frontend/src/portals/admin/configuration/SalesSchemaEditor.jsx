@@ -162,7 +162,7 @@ export default function SalesSchemaEditor(props) {
                   onChange={(next) => setRuleData({ ...ruleData, channels: next })}
                   renderItem={(c, i) => (
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-medium tabular-nums px-1.5 py-0.5 rounded bg-foreground/[0.05]">{c.code}</span>
+                      <span className="text-xs font-medium tabular-nums px-1.5 py-0.5 rounded bg-foreground/[0.05]">{c.code}</span>
                       <Input
                         value={c.name}
                         onChange={(e) => {
@@ -217,10 +217,10 @@ export default function SalesSchemaEditor(props) {
                     }}
                     aria-pressed={pm.active !== false}
                     title={pm.active !== false ? "Aktif — klik untuk nonaktifkan" : "Nonaktif — klik untuk aktifkan"}
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs border ${pm.active !== false ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "border-border/50 bg-foreground/[0.03] text-muted-foreground"}`}
+                    className={`inline-flex h-8 items-center gap-2 rounded-md px-3 text-[13px] border ${pm.active !== false ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" : "border-border/50 bg-foreground/[0.03] text-muted-foreground"}`}
                     data-testid={`payment-toggle-${pm.code}`}
                   >
-                    <span className="font-medium tabular-nums text-[11px]">{pm.code}</span>
+                    <span className="font-medium tabular-nums text-xs">{pm.code}</span>
                     <span>{pm.name}</span>
                   </button>
                 ))}
@@ -275,7 +275,7 @@ export default function SalesSchemaEditor(props) {
                           aria-label={`Bucket ${i + 1} wajib`}
                           data-testid={`bucket-required-${i}`}
                         />
-                        <span className="text-[11px] text-muted-foreground">Wajib</span>
+                        <span className="text-xs text-muted-foreground">Wajib</span>
                       </div>
                       <Button
                         size="icon-sm"

@@ -153,7 +153,7 @@ export default function PaymentList({ embedded = false }) {
           }
         />
         {items.length > 0 && (
-          <div className="px-4 py-2 border-t border-border/40 text-[11px] text-muted-foreground" data-testid="pay-table-meta">
+          <div className="px-4 py-2 border-t border-border/40 text-xs text-muted-foreground" data-testid="pay-table-meta">
             Total: {meta.total} PAY
           </div>
         )}

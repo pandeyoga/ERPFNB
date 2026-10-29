@@ -61,9 +61,9 @@ const TRIAGE_STATUSES = ["open", "acknowledged", "investigating", "resolved", "f
 
 function severityStyle(sev) {
   const b = sevBucket(sev);
-  if (b === "severe") return "bg-red-500/15 text-red-700 dark:text-red-300 ring-1 ring-red-500/30";
-  if (b === "mild") return "bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/30";
-  return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/30";
+  if (b === "severe") return "bg-red-500/15 text-red-800 dark:text-red-300 ring-1 ring-red-500/30";
+  if (b === "mild") return "bg-amber-500/15 text-amber-800 dark:text-amber-300 ring-1 ring-amber-500/30";
+  return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-500/30";
 }
 
 function periodRange(fPeriod) {
@@ -321,10 +321,10 @@ export default function AnomalyFeed({ embedded = false }) {
       {/* Last scan indicator */}
       {lastScan && (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground" data-testid="anomaly-last-scan-info">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
           Scan terakhir: <strong>{fmtRelative(lastScan.last_scan_at)}</strong>
           {lastScan.counts && (
-            <span className="ml-1 text-muted-foreground/70">
+            <span className="ml-1 text-muted-foreground">
               · Sales: {lastScan.counts.sales_deviation || 0}
               · Vendor: {lastScan.counts.vendor || 0}
               · AP: {lastScan.counts.ap_cash_spike || 0}
@@ -568,7 +568,7 @@ function ScanDialog({ scanning, scanResult, onClose, onRunScan }) {
               <Input id="scan-period" type="month" value={period}
                 onChange={e => setPeriod(e.target.value)}
                 className="glass-input h-9 text-sm" data-testid="scan-period" />
-              <p className="text-[11px] text-muted-foreground">Digunakan untuk deteksi spike kas/AP bulan tertentu</p>
+              <p className="text-xs text-muted-foreground">Digunakan untuk deteksi spike kas/AP bulan tertentu</p>
             </div>
           </div>
         ) : (
@@ -627,9 +627,9 @@ function AnomalyRow({ ev, onOpen }) {
         <div className="mt-1 shrink-0">
           <div className={cn(
             "h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center",
-            bucket === "severe" ? "bg-red-500/15 text-red-700 dark:text-red-300" :
-            bucket === "mild" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" :
-            "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+            bucket === "severe" ? "bg-red-500/15 text-red-800 dark:text-red-300" :
+            bucket === "mild" ? "bg-amber-500/15 text-amber-800 dark:text-amber-300" :
+            "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
           )}>
             <AlertTriangle className="h-4 w-4" />
           </div>
@@ -643,11 +643,11 @@ function AnomalyRow({ ev, onOpen }) {
               {SEVERITY_LABELS[sev] || sev}
             </span>
             <StatusPill status={ev.status} />
-            <span className="text-[11px] px-2 py-0.5 rounded bg-foreground/5 text-muted-foreground">
+            <span className="text-xs px-2 py-0.5 rounded bg-foreground/5 text-muted-foreground">
               {ev.type_label || ev.type}
             </span>
             {ev.outlet_name && (
-              <span className="text-[11px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <span className="text-xs px-2 py-0.5 rounded bg-sky-500/10 text-sky-800 dark:text-sky-300">
                 {ev.outlet_name}
               </span>
             )}
@@ -664,7 +664,7 @@ function AnomalyRow({ ev, onOpen }) {
           </div>
           
           {/* Metadata row */}
-          <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
             <span>{fmtRelative(ev.created_at)}</span>
             {ev.period && <span>· Periode: {ev.period}</span>}
           </div>
@@ -675,7 +675,7 @@ function AnomalyRow({ ev, onOpen }) {
           {dev !== null && (
             <div className={cn(
               "text-sm font-semibold tabular-nums px-2 py-0.5 rounded",
-              dev >= 0 ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+              dev >= 0 ? "bg-red-500/10 text-red-800 dark:text-red-400" : "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400",
             )}>
               {dev >= 0 ? "+" : ""}{dev.toFixed(1)}%
             </div>
@@ -822,7 +822,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                 <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                   Aktual (teramati)
                 </div>
-                <div className="text-lg font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+                <div className="text-lg font-bold text-amber-800 dark:text-amber-400 tabular-nums">
                   {event.type === "vendor_leadtime" 
                     ? `${event.observed_value?.toFixed?.(1) || event.observed_value} hari`
                     : fmtRp(event.observed_value)
@@ -834,7 +834,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                 <div className="text-[11px] uppercase text-muted-foreground tracking-wide font-semibold mb-1">
                   Ekspektasi (baseline)
                 </div>
-                <div className="text-lg font-bold text-sky-600 dark:text-sky-400 tabular-nums">
+                <div className="text-lg font-bold text-sky-700 dark:text-sky-400 tabular-nums">
                   {event.type === "vendor_leadtime"
                     ? `${event.baseline_value?.toFixed?.(1) || event.baseline_value} hari`
                     : fmtRp(event.baseline_value)
@@ -851,7 +851,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                       </div>
                       <div className={cn(
                         "text-xl font-bold tabular-nums",
-                        event.deviation_pct >= 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"
+                        event.deviation_pct >= 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"
                       )}>
                         {event.deviation_pct >= 0 ? "+" : ""}{event.deviation_pct.toFixed(1)}%
                       </div>
@@ -985,7 +985,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                   <div key={i} className="border-l-2 border-sky-500/30 pl-3 text-xs">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold text-foreground">{c.user_name}</span>
-                      <span className="text-[11px] text-muted-foreground">{fmtRelative(c.timestamp)}</span>
+                      <span className="text-xs text-muted-foreground">{fmtRelative(c.timestamp)}</span>
                     </div>
                     <div className="text-muted-foreground mb-1">
                       Aksi: <StatusPill status={c.action} />
@@ -1018,7 +1018,7 @@ function AnomalyDetail({ event, onClose, onTriage, users = [] }) {
                 ]}
               />
               {assignedTo && assignedTo !== event.assigned_to && (
-                <div className="text-xs text-amber-600 dark:text-amber-400">
+                <div className="text-xs text-amber-800 dark:text-amber-400">
                   Penugasan disimpan saat Anda memilih aksi triage di bawah.
                 </div>
               )}

@@ -25,9 +25,9 @@ const LABEL = "text-xs font-medium text-muted-foreground";
 
 function mapeColor(mape) {
   if (mape == null) return "text-muted-foreground bg-muted/40";
-  if (mape <= 10) return "text-emerald-700 bg-emerald-500/15 dark:text-emerald-300";
-  if (mape <= 20) return "text-amber-700 bg-amber-500/15 dark:text-amber-300";
-  return "text-red-700 bg-red-500/15 dark:text-red-300";
+  if (mape <= 10) return "text-emerald-800 bg-emerald-500/15 dark:text-emerald-300";
+  if (mape <= 20) return "text-amber-800 bg-amber-500/15 dark:text-amber-300";
+  return "text-red-800 bg-red-500/15 dark:text-red-300";
 }
 
 export default function Forecasting({ embedded = false }) {
@@ -224,10 +224,10 @@ export default function Forecasting({ embedded = false }) {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] }} />
                       <span className="text-sm font-semibold capitalize">{m}</span>
-                      {isActive && <Badge className="ml-auto bg-foreground text-background text-[11px] h-5">aktif</Badge>}
+                      {isActive && <Badge className="ml-auto bg-foreground text-background text-xs h-5">aktif</Badge>}
                     </div>
                     <div className="text-lg font-semibold tabular-nums">{fmtRp(total)}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1">
+                    <div className="text-xs text-muted-foreground mt-1">
                       {fc.map(f => f.period.slice(5)).join(" / ")}: {fc.map(f => `${(f.value / 1e6).toFixed(0)}jt`).join(" / ")}
                     </div>
                   </div>
@@ -257,7 +257,7 @@ export default function Forecasting({ embedded = false }) {
                     render: (o) => <span className="text-muted-foreground">±{fmtRp(o.confidence_band)}</span> },
                   { key: "accuracy_mape", label: "MAPE", numeric: true, sortable: true,
                     render: (o) => (
-                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-semibold", mapeColor(o.accuracy_mape))}>
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold", mapeColor(o.accuracy_mape))}>
                         {o.accuracy_mape == null ? "—" : `${o.accuracy_mape}%`}
                       </span>
                     ) },
@@ -270,7 +270,7 @@ export default function Forecasting({ embedded = false }) {
                     <td className="px-4 py-2.5 text-right"><GrowthBadge pct={dashboard.consolidated.growth_pct} /></td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">±{fmtRp(dashboard.consolidated.confidence_band)}</td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-semibold", mapeColor(dashboard.consolidated.accuracy_mape))}>
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold", mapeColor(dashboard.consolidated.accuracy_mape))}>
                         {dashboard.consolidated.accuracy_mape == null ? "—" : `${dashboard.consolidated.accuracy_mape}%`}
                       </span>
                     </td>
@@ -321,11 +321,11 @@ function Segmented({ value, onChange, options, testIdPrefix, labelledBy, capital
 function GrowthBadge({ pct }) {
   if (pct == null) return <span className="text-muted-foreground">—</span>;
   const positive = pct > 0;
-  const cls = positive ? "text-emerald-700 dark:text-emerald-400 bg-emerald-500/10"
-    : pct < 0 ? "text-red-700 dark:text-red-400 bg-red-500/10"
+  const cls = positive ? "text-emerald-800 dark:text-emerald-400 bg-emerald-500/10"
+    : pct < 0 ? "text-red-800 dark:text-red-400 bg-red-500/10"
     : "text-muted-foreground bg-muted/40";
   return (
-    <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-semibold tabular-nums", cls)}>
+    <span className={cn("text-xs px-2 py-0.5 rounded-full font-semibold tabular-nums", cls)}>
       {positive ? "+" : ""}{pct}%
     </span>
   );
@@ -455,7 +455,7 @@ function MonthlyBars({ history, forecast, color }) {
         const key = `${r.type}-${r.period}`;
         return (
           <div key={key} className="flex flex-col items-center gap-1.5 min-w-[60px]" data-testid={`month-bar-${key}`}>
-            <div className="text-[11px] tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}jt</div>
+            <div className="text-xs tabular-nums text-foreground font-semibold">{(r.value / 1e6).toFixed(0)}jt</div>
             <div className="w-12 rounded-t-md transition-all"
               style={{
                 height: `${Math.max(4, h)}px`,
@@ -465,7 +465,7 @@ function MonthlyBars({ history, forecast, color }) {
                 ...(r.type === "forecast" ? { borderTop: `3px solid ${color}` } : {}),
               }}
             />
-            <div className={cn("text-[11px]", r.type === "forecast" ? "font-bold" : "text-muted-foreground")}>
+            <div className={cn("text-xs", r.type === "forecast" ? "font-bold" : "text-muted-foreground")}>
               {r.period.slice(2)}
             </div>
             {r.type === "forecast" && (

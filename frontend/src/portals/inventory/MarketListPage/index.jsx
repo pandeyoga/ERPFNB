@@ -49,12 +49,12 @@ const VarianceBadge = ({ pct }) => {
   const abs = Math.abs(pct);
   // AUDIT FIX: Color coding untuk variance - red untuk naik (bad), green untuk turun (good)
   if (pct > 5) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-300 font-semibold text-xs">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/15 text-red-800 dark:text-red-300 font-semibold text-xs">
       <TrendingUp className="h-3 w-3" />+{pct.toFixed(1)}%
     </span>
   );
   if (pct < -5) return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold text-xs">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-semibold text-xs">
       <TrendingDown className="h-3 w-3" />{pct.toFixed(1)}%
     </span>
   );
@@ -347,7 +347,7 @@ export default function MarketListPage() {
               >
                 {q.label}
                 {q.status === "active" && (
-                  <span className="text-[11px] font-semibold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1 rounded">Aktif</span>
+                  <span className="text-xs font-semibold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-1 rounded">Aktif</span>
                 )}
               </Button>
             ))}
@@ -457,7 +457,7 @@ export default function MarketListPage() {
               { key: "brand", label: "Brand", render: (item) => (
                 <div className="flex gap-1 flex-wrap">
                   {(item.brand_availability || []).map(b => (
-                    <span key={b} className="text-xs bg-sky-500/10 text-sky-700 dark:text-sky-300 px-1.5 py-0.5 rounded">{b.toUpperCase()}</span>
+                    <span key={b} className="text-xs bg-sky-500/10 text-sky-800 dark:text-sky-300 px-1.5 py-0.5 rounded">{b.toUpperCase()}</span>
                   ))}
                 </div>
               ) },

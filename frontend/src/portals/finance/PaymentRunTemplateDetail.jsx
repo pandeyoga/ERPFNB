@@ -114,13 +114,13 @@ export default function PaymentRunTemplateDetail() {
           </span>
           <span>Bank: {tmpl.bank_account_name || tmpl.bank_account_id}</span>
           {tmpl.auto_approve && (
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400">
               Auto-approve aktif
             </span>
           )}
           {tmpl.apply_count > 0 && (
             <span className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              <CheckCircle2 className="h-3 w-3 text-emerald-700 dark:text-emerald-400" />
               Applied {tmpl.apply_count}× (terakhir {fmtRelative(tmpl.last_applied_at)})
             </span>
           )}
@@ -182,7 +182,7 @@ export default function PaymentRunTemplateDetail() {
                   <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
                 <Button variant="ghost" size="icon-sm" onClick={() => removeItem(it.id)} disabled={saving}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-700 dark:text-red-400 hover:text-red-700"
                   data-testid={`tmpl-remove-item-${it.id}`}
                   title="Hapus item" aria-label="Hapus item">
                   <Trash2 className="h-3.5 w-3.5" />
@@ -320,7 +320,7 @@ function ItemFormDialog({ item, onClose, onSave, saving }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="item-form-desc">Keterangan / Deskripsi <span className="text-red-500">*</span></Label>
+            <Label htmlFor="item-form-desc">Keterangan / Deskripsi <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="item-form-desc" value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               placeholder="Mis: Sewa kantor Mei 2026" className="glass-input"
@@ -329,14 +329,14 @@ function ItemFormDialog({ item, onClose, onSave, saving }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="item-form-amount">Amount (Rp) <span className="text-red-500">*</span></Label>
+              <Label htmlFor="item-form-amount">Amount (Rp) <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="item-form-amount" type="number" value={form.amount}
                 onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
                 placeholder="0" className="glass-input"
                 data-testid="item-form-amount" />
             </div>
             <div className="space-y-1.5">
-              <Label>COA Debit (Beban) <span className="text-red-500">*</span></Label>
+              <Label>COA Debit (Beban) <span className="text-red-700 dark:text-red-400">*</span></Label>
               <SimpleSelect
                 ariaLabel="COA Debit (Beban)"
                 value={form.gl_debit_id}
@@ -381,7 +381,7 @@ function ItemFormDialog({ item, onClose, onSave, saving }) {
               </div>
             </div>
             {calcWht > 0 && (
-              <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 rounded px-2 py-1">
+              <div className="text-xs text-amber-800 dark:text-amber-400 bg-amber-500/10 rounded px-2 py-1">
                 WHT yang dipotong: <strong>{fmtRp(calcWht)}</strong> · Net ke bank: <strong>{fmtRp(parseFloat(form.amount) - calcWht)}</strong>
               </div>
             )}
@@ -436,7 +436,7 @@ function ApplyDialog({ template, onClose, onApplied }) {
             <div className="flex justify-between"><span>Bank:</span><span className="text-xs">{template.bank_account_name}</span></div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="detail-apply-date">Payment Date <span className="text-red-500">*</span></Label>
+            <Label htmlFor="detail-apply-date">Payment Date <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="detail-apply-date" type="date" value={paymentDate}
               onChange={e => setPaymentDate(e.target.value)}
               className="glass-input" data-testid="detail-apply-date" />

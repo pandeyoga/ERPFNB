@@ -56,11 +56,11 @@ export default function LBFundLedger({ embedded = false }) {
             {
               key: "direction", label: "Masuk/Keluar", align: "center", sortable: true,
               render: it => it.direction === "in" ? (
-                <span className="inline-flex items-center gap-1 text-emerald-600 text-xs" data-testid={`lb-fund-dir-in-${it.id}`}>
+                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-xs" data-testid={`lb-fund-dir-in-${it.id}`}>
                   <ArrowDownCircle className="h-3.5 w-3.5" /> Masuk
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-red-600 text-xs" data-testid={`lb-fund-dir-out-${it.id}`}>
+                <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-400 text-xs" data-testid={`lb-fund-dir-out-${it.id}`}>
                   <ArrowUpCircle className="h-3.5 w-3.5" /> Keluar
                 </span>
               ),

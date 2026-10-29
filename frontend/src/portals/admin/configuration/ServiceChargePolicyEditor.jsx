@@ -43,7 +43,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("service_charge_pct", Number(e.target.value || 0))}
                   data-testid="sc-service-charge-pct"
                 />
-                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(sc * 100).toFixed(2)}% dari penjualan</p>
+                <p className="text-xs text-muted-foreground mt-1 tabular-nums">{(sc * 100).toFixed(2)}% dari penjualan</p>
               </div>
               <div>
                 <Label htmlFor="sc-lb-pct" className="text-xs md:text-sm font-medium">Potongan L&amp;B %</Label>
@@ -57,7 +57,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("lb_pct", Number(e.target.value || 0))}
                   data-testid="sc-lb-pct"
                 />
-                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(lb * 100).toFixed(2)}% potongan loss/breakage</p>
+                <p className="text-xs text-muted-foreground mt-1 tabular-nums">{(lb * 100).toFixed(2)}% potongan loss/breakage</p>
               </div>
               <div>
                 <Label htmlFor="sc-ld-pct" className="text-xs md:text-sm font-medium">Potongan L&amp;D %</Label>
@@ -71,7 +71,7 @@ export default function ServiceChargePolicyEditor(props) {
                   onChange={(e) => setField("ld_pct", Number(e.target.value || 0))}
                   data-testid="sc-ld-pct"
                 />
-                <p className="text-[11px] text-muted-foreground mt-1 tabular-nums">{(ld * 100).toFixed(2)}% potongan loss/damage</p>
+                <p className="text-xs text-muted-foreground mt-1 tabular-nums">{(ld * 100).toFixed(2)}% potongan loss/damage</p>
               </div>
             </div>
 
@@ -93,7 +93,7 @@ export default function ServiceChargePolicyEditor(props) {
                     <RadioGroupItem id={`sc-method-${m.value}`} value={m.value} className="mt-1" />
                     <div>
                       <div className="text-sm font-medium">{m.label}</div>
-                      <div className="text-[11px] text-muted-foreground">{m.hint}</div>
+                      <div className="text-xs text-muted-foreground">{m.hint}</div>
                     </div>
                   </label>
                 ))}
@@ -115,7 +115,7 @@ export default function ServiceChargePolicyEditor(props) {
             </div>
 
             {(lb + ld) > sc && sc > 0 && (
-              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300" data-testid="sc-warning">
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300" data-testid="sc-warning">
                 Total potongan ({((lb + ld) * 100).toFixed(2)}%) melebihi service charge ({(sc * 100).toFixed(2)}%).
               </div>
             )}

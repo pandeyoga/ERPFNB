@@ -324,16 +324,12 @@ export default function CMSOutlets() {
               <Label>Fasilitas</Label>
               <div className="flex flex-wrap gap-2">
                 {ALL_FEATURES.map(feat => (
-                  <button key={feat} type="button"
+                  <Button key={feat} type="button" size="sm"
+                          variant={form.features.includes(feat) ? "default" : "outline"}
                           onClick={() => toggleFeature(feat)}
-                          aria-pressed={form.features.includes(feat)}
-                          className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-                            form.features.includes(feat)
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-background border-muted-foreground/30 text-muted-foreground hover:border-primary"
-                          }`}>
+                          aria-pressed={form.features.includes(feat)}>
                     {feat}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

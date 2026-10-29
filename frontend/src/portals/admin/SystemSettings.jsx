@@ -104,7 +104,7 @@ export default function SystemSettings() {
             })}
           </div>
         )}
-        <p className="text-[11px] text-muted-foreground mt-3">
+        <p className="text-xs text-muted-foreground mt-3">
           Pengaturan disimpan terenkripsi (untuk secret) atau plaintext (untuk non-secret) di database.
         </p>
       </section>

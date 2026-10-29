@@ -122,7 +122,7 @@ export default function VendorScorecard() {
       render: (r) => (
         <div>
           <div className="font-medium">{r.vendor_name}</div>
-          <div className="text-[11px] text-muted-foreground">{r.vendor_code}</div>
+          <div className="text-xs text-muted-foreground">{r.vendor_code}</div>
         </div>
       ) },
     { key: "total_spend", label: "Spend", numeric: true, sortable: true,
@@ -238,14 +238,14 @@ export default function VendorScorecard() {
                           <div key={po.po_id} className="text-xs px-2 py-1.5 rounded bg-muted/30 flex items-center justify-between">
                             <div>
                               <div className="font-mono">{po.doc_no}</div>
-                              <div className="text-[11px] text-muted-foreground">{po.order_date}</div>
+                              <div className="text-xs text-muted-foreground">{po.order_date}</div>
                             </div>
                             <div className="text-right">
                               <div className="tabular-nums font-medium">{fmtRp(po.grand_total)}</div>
-                              <div className="text-[11px]">
-                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 h-4 text-[11px] px-1.5">on-time</Badge>}
-                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-0 h-4 text-[11px] px-1.5">late</Badge>}
-                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-[11px] px-1.5">no GR</Badge>}
+                              <div className="text-xs">
+                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-0 h-4 text-xs px-1.5">on-time</Badge>}
+                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-800 dark:text-red-300 border-0 h-4 text-xs px-1.5">late</Badge>}
+                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-xs px-1.5">no GR</Badge>}
                               </div>
                             </div>
                           </div>

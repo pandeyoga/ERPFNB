@@ -130,7 +130,7 @@ export default function ScopePicker({ className, onChange }) {
                     <div className="flex flex-col">
                       <span>{o.label}</span>
                       {o.sub && (
-                        <span className="text-[11px] text-muted-foreground">{o.sub}</span>
+                        <span className="text-xs text-muted-foreground">{o.sub}</span>
                       )}
                     </div>
                   </SelectItem>

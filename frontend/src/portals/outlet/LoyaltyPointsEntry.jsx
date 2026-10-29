@@ -143,7 +143,7 @@ function ConfirmPhase({ customer, rawPhone, wasNew, onConfirm, onReset, loading 
         </div>
         <div className="flex-1 min-w-0">
           {wasNew ? (
-            <div className="flex items-center gap-1.5 mb-0.5 text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-1.5 mb-0.5 text-emerald-700 dark:text-emerald-400">
               <UserPlus className="h-3.5 w-3.5" />
               <span className="text-xs font-semibold">Akun baru akan dibuat</span>
             </div>
@@ -282,11 +282,11 @@ function SuccessPhase({ result, onNext }) {
       data-testid="cashier-success"
     >
       <div className="h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-emerald-500/10 border border-emerald-500/30">
-        <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+        <CheckCircle2 className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
       </div>
 
       <p className="text-sm text-muted-foreground mb-1">Poin berhasil ditambahkan</p>
-      <p className="text-3xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400 mb-0.5" data-testid="cashier-success-points">
+      <p className="text-3xl font-semibold tabular-nums text-emerald-700 dark:text-emerald-400 mb-0.5" data-testid="cashier-success-points">
         +{result.points_awarded?.toLocaleString("id-ID")}
       </p>
       <p className="text-sm text-muted-foreground mb-4">poin</p>
@@ -301,7 +301,7 @@ function SuccessPhase({ result, onNext }) {
             {result.customer?.full_name}
           </p>
           {result.was_created && (
-            <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 bg-emerald-500/10 text-emerald-800 dark:text-emerald-400">
               <UserPlus className="h-3 w-3" /> Akun baru
             </span>
           )}

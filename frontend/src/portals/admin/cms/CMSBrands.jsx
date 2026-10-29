@@ -306,7 +306,7 @@ export default function CMSBrands() {
                     <WorkflowBadge status={item.workflow_status} />
                   )}
                   {item.publish_at && item.status !== "published" && new Date(item.publish_at) > new Date() && (
-                    <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+                    <Badge variant="outline" className="text-xs text-amber-800 dark:text-amber-400 border-amber-300">
                       Scheduled
                     </Badge>
                   )}
@@ -336,14 +336,14 @@ export default function CMSBrands() {
                         aria-label={item.status === "published" ? "Jadikan draft" : "Publish brand"}
                         title={item.status === "published" ? "Jadikan Draft" : "Publish"}>
                   {item.status === "published"
-                    ? <Eye className="h-4 w-4 text-green-600" />
+                    ? <Eye className="h-4 w-4 text-green-700 dark:text-green-400" />
                     : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                 </Button>
                 <Button size="icon" variant="ghost" aria-label="Edit brand" onClick={() => openEdit(item)}
                         data-testid={`edit-brand-${item.id}`}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="ghost" className="text-pink-500 hover:text-pink-700 hover:bg-pink-50"
+                <Button size="icon" variant="ghost" className="text-pink-700 dark:text-pink-400 hover:text-pink-700 hover:bg-pink-50"
                         onClick={() => setIgBrand(item)}
                         title="Kelola Instagram Posts"
                         aria-label="Kelola Instagram Posts"
@@ -484,8 +484,8 @@ export default function CMSBrands() {
                   {igBrand.name?.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm text-gray-900">Instagram Posts</h3>
-                  <p className="text-xs text-gray-500">{igBrand.name} · {igBrand.instagram || `@${igBrand.code}`}</p>
+                  <h3 className="font-semibold text-sm text-foreground">Instagram Posts</h3>
+                  <p className="text-xs text-muted-foreground">{igBrand.name} · {igBrand.instagram || `@${igBrand.code}`}</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIgBrand(null)} aria-label="Tutup panel Instagram" data-testid="ig-posts-close">

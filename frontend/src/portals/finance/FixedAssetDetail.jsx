@@ -206,7 +206,7 @@ export default function FixedAssetDetail() {
               { key: "dep_amount", label: "Depresiasi", numeric: true,
                 render: (row) => <span className="text-sm">{formatCurrency(row.dep_amount)}</span> },
               { key: "accumulated_dep", label: "Akum. Dep.", numeric: true,
-                render: (row) => <span className="text-sm text-red-600 dark:text-red-400">({formatCurrency(row.accumulated_dep)})</span> },
+                render: (row) => <span className="text-sm text-red-700 dark:text-red-400">({formatCurrency(row.accumulated_dep)})</span> },
               { key: "book_value", label: "Nilai Buku", numeric: true,
                 render: (row) => <span className="text-sm font-semibold">{formatCurrency(row.book_value)}</span> },
             ]}
@@ -282,10 +282,10 @@ export default function FixedAssetDetail() {
       <Dialog open={disposeOpen} onOpenChange={setDisposeOpen}>
         <DialogContent data-testid="dispose-dialog">
           <DialogHeader>
-            <DialogTitle className="text-red-600 dark:text-red-400">Pelepasan Aset</DialogTitle>
+            <DialogTitle className="text-red-700 dark:text-red-400">Pelepasan Aset</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-md text-sm text-red-700 dark:text-red-300" data-testid="dispose-warning">
+            <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-md text-sm text-red-800 dark:text-red-300" data-testid="dispose-warning">
               <AlertTriangle className="inline h-4 w-4 mr-1" />
               Aksi ini permanen. Aset akan dikeluarkan dari register dan jurnal disposal akan diposting.
             </div>

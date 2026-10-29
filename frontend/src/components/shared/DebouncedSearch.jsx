@@ -84,6 +84,7 @@ export function DebouncedSearch({
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         )}
         {showClear && value && !loading && !isSearching && (
+          // ds-ok: tombol hapus di dalam input (adornment 24px di input h-9)
           <Button
             variant="ghost"
             size="sm"

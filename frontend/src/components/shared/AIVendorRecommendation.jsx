@@ -22,9 +22,9 @@ import { toast } from "sonner";
 function RankBadge({ rank }) {
   const Icon = rank === 0 ? Trophy : rank === 1 ? Award : Medal;
   const cls =
-    rank === 0 ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30" :
-    rank === 1 ? "bg-zinc-400/20 text-zinc-700 dark:text-zinc-300 border-zinc-400/30" :
-                 "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30";
+    rank === 0 ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/30" :
+    rank === 1 ? "bg-zinc-400/20 text-foreground dark:text-zinc-300 border-muted-foreground/30" :
+                 "bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-500/30";
   return (
     <div className={`h-7 w-7 rounded-full flex items-center justify-center border ${cls} shrink-0`}>
       <Icon className="h-3.5 w-3.5" />
@@ -35,7 +35,7 @@ function RankBadge({ rank }) {
 function Candidates({ data, onSelect, compact = false }) {
   if (!data) return null;
   if (data.error) {
-    return <div className="text-xs text-rose-600 italic">{data.error}</div>;
+    return <div className="text-xs text-rose-700 dark:text-rose-400 italic">{data.error}</div>;
   }
   if (!data.candidates || data.candidates.length === 0) {
     return (
@@ -56,11 +56,11 @@ function Candidates({ data, onSelect, compact = false }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <div className="font-semibold text-sm truncate">{c.vendor_name}</div>
-              <div className="text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30 tabular-nums">
+              <div className="text-[11px] uppercase tracking-wide font-semibold px-1.5 py-0.5 rounded border bg-violet-500/10 text-violet-800 dark:text-violet-300 border-violet-500/30 tabular-nums">
                 {(c.score * 100).toFixed(0)}%
               </div>
             </div>
-            <div className="text-[11px] text-muted-foreground tabular-nums mt-0.5 flex flex-wrap gap-x-2">
+            <div className="text-xs text-muted-foreground tabular-nums mt-0.5 flex flex-wrap gap-x-2">
               <span>avg {fmtRp(c.metrics?.avg_cost || 0)}</span>
               <span>last {fmtRp(c.metrics?.last_cost || 0)}</span>
               {c.metrics?.lead_time_avg != null && (
@@ -72,14 +72,14 @@ function Candidates({ data, onSelect, compact = false }) {
               )}
             </div>
             {!compact && c.rationale && (
-              <div className="text-[11px] text-foreground/80 mt-1 italic leading-snug">
+              <div className="text-xs text-foreground/80 mt-1 italic leading-snug">
                 “{c.rationale}”
               </div>
             )}
             {onSelect && (
               <Button
                 size="sm" variant="outline"
-                className="mt-1.5 h-6 px-2 text-[11px] rounded-full gap-1"
+                className="mt-1.5 gap-1"
                 onClick={() => onSelect(c)}
                 data-testid={`vrec-select-${c.vendor_id}`}
               >
@@ -109,7 +109,7 @@ export function AIVendorRecommendationInline({ itemId, prId, topK = 3, onSelect,
 
   if (loading) {
     return (
-      <div className="text-[11px] text-muted-foreground italic inline-flex items-center gap-1" data-testid="vrec-loading">
+      <div className="text-xs text-muted-foreground italic inline-flex items-center gap-1" data-testid="vrec-loading">
         <Loader2 className="h-3 w-3 animate-spin" /> Mencari rekomendasi vendor…
       </div>
     );
@@ -150,7 +150,7 @@ export function AIVendorRecommendationModal({ itemId, prId, topK = 3, onSelect, 
     <>
       <Button
         size="sm" variant="outline"
-        className="rounded-full gap-1.5 text-xs h-7 border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 text-violet-700 dark:text-violet-300"
+        className="gap-1.5 border-violet-500/30 bg-violet-500/5 hover:bg-violet-500/15 text-violet-800 dark:text-violet-300"
         onClick={load}
         data-testid="vrec-modal-trigger"
       >
@@ -160,7 +160,7 @@ export function AIVendorRecommendationModal({ itemId, prId, topK = 3, onSelect, 
         <DialogContent className="glass-card max-w-xl" data-testid="vrec-modal">
           <DialogHeader>
             <DialogTitle className="inline-flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-violet-500" />
+              <Sparkles className="h-4 w-4 text-violet-700 dark:text-violet-400" />
               Rekomendasi Vendor (AI)
             </DialogTitle>
             <DialogDescription>
@@ -200,7 +200,7 @@ export function AIVendorRecommendationModal({ itemId, prId, topK = 3, onSelect, 
               </div>
             )}
             {!loading && data?.weights && (
-              <div className="mt-3 text-[11px] text-muted-foreground text-center">
+              <div className="mt-3 text-xs text-muted-foreground text-center">
                 Bobot: harga {(data.weights.price * 100).toFixed(0)}% ·
                 lead time {(data.weights.lead_time * 100).toFixed(0)}% ·
                 scorecard {(data.weights.scorecard * 100).toFixed(0)}% ·

@@ -103,15 +103,15 @@ export default function CashCsvUploader({ onClose, onDone }) {
             <div className="grid grid-cols-3 gap-3 mb-3">
               <div className="glass-card p-3 text-center">
                 <div className="text-xs text-muted-foreground">Updated</div>
-                <div className="text-2xl font-bold text-emerald-600">{result.updated}</div>
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{result.updated}</div>
               </div>
               <div className="glass-card p-3 text-center">
                 <div className="text-xs text-muted-foreground">Skipped</div>
-                <div className="text-2xl font-bold text-amber-600">{result.skipped}</div>
+                <div className="text-2xl font-bold text-amber-800 dark:text-amber-400">{result.skipped}</div>
               </div>
               <div className="glass-card p-3 text-center">
                 <div className="text-xs text-muted-foreground">Errors</div>
-                <div className="text-2xl font-bold text-rose-600">{result.errors?.length || 0}</div>
+                <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">{result.errors?.length || 0}</div>
               </div>
             </div>
             {result.rows?.length > 0 && (
@@ -128,7 +128,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
                     { key: "prev", label: "Sebelumnya", numeric: true, render: (r) => <span className="font-mono">{fmtRp(r.prev)}</span> },
                     { key: "new", label: "Baru", numeric: true, render: (r) => <span className="font-mono font-semibold">{fmtRp(r.new)}</span> },
                     { key: "delta", label: "Delta", numeric: true, render: (r) => (
-                      <span className={cn("font-mono", r.delta > 0 ? "text-emerald-600" : r.delta < 0 ? "text-rose-600" : "")}>
+                      <span className={cn("font-mono", r.delta > 0 ? "text-emerald-700 dark:text-emerald-400" : r.delta < 0 ? "text-rose-700 dark:text-rose-400" : "")}>
                         {r.delta > 0 ? "+" : ""}{fmtRp(r.delta)}
                       </span>
                     ) },
@@ -141,7 +141,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
                 <div className="text-xs font-semibold text-rose-700 mb-1">Errors</div>
                 <ul className="text-xs space-y-0.5">
                   {result.errors.map((e, i) => (
-                    <li key={i} className="text-rose-600">Row {e.row}: {e.reason}</li>
+                    <li key={i} className="text-rose-700 dark:text-rose-400">Row {e.row}: {e.reason}</li>
                   ))}
                 </ul>
               </div>

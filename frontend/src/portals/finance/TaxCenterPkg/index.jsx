@@ -254,7 +254,7 @@ export default function TaxCenter({ embedded = false, section }) {
                       onClick={() => saveMethod(m.v)}
                       disabled={!config.pph21.enabled || saving}
                       className={cn(
-                        "flex-1 rounded-lg border p-3 text-sm text-left transition-colors",
+                        "flex-1 rounded-md border p-3 text-sm text-left transition-colors",
                         config.pph21.method === m.v
                           ? "border-violet-500/50 bg-violet-500/10 text-violet-800 dark:text-violet-200 font-medium"
                           : "border-border hover:border-foreground/30 text-muted-foreground",
@@ -411,7 +411,7 @@ function PPh21SPTExport() {
   return (
     <div data-testid="pph21-spt-export" className="glass-card p-4">
       <h3 className="text-sm md:text-base font-semibold flex items-center gap-2 mb-1">
-        <FileDown className="h-4 w-4 text-violet-600 dark:text-violet-300" /> Ekspor SPT Masa PPh 21
+        <FileDown className="h-4 w-4 text-violet-700 dark:text-violet-300" /> Ekspor SPT Masa PPh 21
       </h3>
       <p className="text-xs md:text-sm text-muted-foreground mb-3">
         Ekspor data pemotongan PPh 21 dari payroll cycle dalam format CSV (kompatibel e-SPT DJP).

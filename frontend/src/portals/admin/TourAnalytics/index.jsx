@@ -327,8 +327,8 @@ function SkipBadge({ rate }) {
     rate <= 0.2
       ? "text-muted-foreground"
       : rate <= 0.4
-      ? "text-amber-600 dark:text-amber-400"
-      : "text-red-600 dark:text-red-400 font-medium";
+      ? "text-amber-800 dark:text-amber-400"
+      : "text-red-700 dark:text-red-400 font-medium";
   return <span className={`text-xs tabular-nums ${cls}`}>{fmtPct(rate)}</span>;
 }
 
@@ -418,7 +418,7 @@ function TourDetailDialog({ tourId, days, onClose }) {
             {/* Skip drop-off */}
             {detail.skip_dropoffs.length > 0 && (
               <div>
-                <h3 className="text-sm md:text-base font-semibold mb-2 flex items-center gap-1.5 text-amber-600">
+                <h3 className="text-sm md:text-base font-semibold mb-2 flex items-center gap-1.5 text-amber-800 dark:text-amber-400">
                   <TrendingDown className="h-4 w-4" />
                   Skip Drop-off (langkah dimana user keluar)
                 </h3>

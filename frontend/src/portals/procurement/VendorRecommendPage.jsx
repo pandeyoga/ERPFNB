@@ -26,9 +26,9 @@ import { toast } from "sonner";
 function RankBadge({ rank }) {
   const Icon = rank === 0 ? Trophy : rank === 1 ? Award : Medal;
   const cls =
-    rank === 0 ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30" :
-    rank === 1 ? "bg-zinc-400/20 text-zinc-700 dark:text-zinc-300 border-zinc-400/30" :
-                 "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30";
+    rank === 0 ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/30" :
+    rank === 1 ? "bg-zinc-400/20 text-foreground dark:text-zinc-300 border-muted-foreground/30" :
+                 "bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-500/30";
   return (
     <div className={`h-8 w-8 rounded-full flex items-center justify-center border ${cls} shrink-0`}>
       <Icon className="h-4 w-4" />
@@ -119,7 +119,7 @@ export default function VendorRecommendPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="glass-card p-6 text-center text-sm text-muted-foreground" data-testid="vrec-loading">
+        <div className="glass-card p-4 text-center text-sm text-muted-foreground" data-testid="vrec-loading">
           <Loader2 className="h-5 w-5 animate-spin inline-block mr-2" />
           Sedang menganalisa data harga, lead time, dan scorecard…
         </div>
@@ -129,7 +129,7 @@ export default function VendorRecommendPage() {
       {!loading && data && data.candidates !== undefined && (
         <div className="glass-card p-4 space-y-3" data-testid="vrec-page-candidates">
           <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Vendor teratas
+            <Sparkles className="h-4 w-4 text-violet-700 dark:text-violet-400" /> Vendor teratas
           </h2>
           {data.candidates.length === 0 && (
             <div className="text-sm text-muted-foreground italic" data-testid="vrec-empty-candidates">
@@ -143,7 +143,7 @@ export default function VendorRecommendPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="font-semibold" data-testid={`vrec-cand-name-${c.vendor_id}`}>{c.vendor_name}</div>
-                  <div className="text-[11px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded border bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30 tabular-nums" data-testid={`vrec-cand-score-${c.vendor_id}`}>
+                  <div className="text-[11px] uppercase tracking-wide font-semibold px-2 py-0.5 rounded border bg-violet-500/10 text-violet-800 dark:text-violet-300 border-violet-500/30 tabular-nums" data-testid={`vrec-cand-score-${c.vendor_id}`}>
                     Score {(c.score * 100).toFixed(0)}%
                   </div>
                 </div>
@@ -183,7 +183,7 @@ export default function VendorRecommendPage() {
             </div>
           ))}
           {data.weights && (
-            <div className="text-[11px] text-muted-foreground text-center pt-2" data-testid="vrec-weights">
+            <div className="text-xs text-muted-foreground text-center pt-2" data-testid="vrec-weights">
               Bobot: harga {(data.weights.price * 100).toFixed(0)}% ·
               lead time {(data.weights.lead_time * 100).toFixed(0)}% ·
               scorecard {(data.weights.scorecard * 100).toFixed(0)}% ·
@@ -197,7 +197,7 @@ export default function VendorRecommendPage() {
       {!loading && data && data.lines !== undefined && (
         <div className="glass-card p-4 space-y-3" data-testid="vrec-page-pr">
           <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Rekomendasi per item dalam PR
+            <Sparkles className="h-4 w-4 text-violet-700 dark:text-violet-400" /> Rekomendasi per item dalam PR
           </h2>
           {data.consensus?.length > 0 && (
             <div className="p-3 rounded-lg border border-violet-500/30 bg-violet-500/5" data-testid="vrec-consensus">
@@ -219,13 +219,13 @@ export default function VendorRecommendPage() {
                 data-testid={`vrec-pr-line-${ln.item_id || ln.item_name}`}>
                 <div className="font-medium text-sm">{ln.item_name}</div>
                 {ln.candidates?.length === 0 && (
-                  <div className="text-[11px] text-muted-foreground italic mt-1">
+                  <div className="text-xs text-muted-foreground italic mt-1">
                     {ln.note || "Belum ada riwayat"}
                   </div>
                 )}
                 {(ln.candidates || []).slice(0, 3).map((c, i) => (
                   <div key={c.vendor_id} className="flex items-center gap-2 mt-1.5 text-xs">
-                    <span className="text-[11px] tabular-nums w-6 text-muted-foreground">#{i + 1}</span>
+                    <span className="text-xs tabular-nums w-6 text-muted-foreground">#{i + 1}</span>
                     <span className="flex-1 truncate">{c.vendor_name}</span>
                     <span className="tabular-nums text-muted-foreground">{fmtRp(c.metrics?.avg_cost || 0)}</span>
                     <span className="tabular-nums text-violet-700 dark:text-violet-300 font-semibold">

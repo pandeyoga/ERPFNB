@@ -158,12 +158,12 @@ function TemplateCard({ template: t, onApply, onEdit, onDelete }) {
           value={t.last_applied_at ? fmtRelative(t.last_applied_at) : "Belum pernah"} />
       </div>
 
-      <div className="text-[11px] text-muted-foreground truncate">
+      <div className="text-xs text-muted-foreground truncate">
         Bank: {t.bank_account_name || t.bank_account_id}
       </div>
 
       {t.auto_approve && (
-        <div className="inline-flex px-2 py-0.5 rounded-full text-[11px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+        <div className="inline-flex px-2 py-0.5 rounded-full text-xs bg-emerald-500/15 text-emerald-800 dark:text-emerald-400">
           Auto-Approve: On
         </div>
       )}
@@ -176,7 +176,7 @@ function TemplateCard({ template: t, onApply, onEdit, onDelete }) {
           title="Edit template" aria-label={`Edit template ${t.name}`}>
           <Pencil className="h-3.5 w-3.5" />
         </Button>
-        <Button variant="outline" size="icon-sm" className="text-red-600 hover:text-red-700"
+        <Button variant="outline" size="icon-sm" className="text-red-700 dark:text-red-400 hover:text-red-700"
           onClick={onDelete} data-testid={`prn-tmpl-delete-${t.id}`} title="Hapus template" aria-label={`Hapus template ${t.name}`}>
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -247,14 +247,14 @@ function ApplyDialog({ template, onClose, onApplied }) {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Auto-approve & create run:</span>
-              <span className={template.auto_approve ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+              <span className={template.auto_approve ? "text-emerald-700 dark:text-emerald-400 font-medium" : "text-muted-foreground"}>
                 {template.auto_approve ? "Ya — langsung ke Payment Run" : "Tidak — PRs perlu approval"}
               </span>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="apply-dialog-date">Payment Date <span className="text-red-500">*</span></Label>
+            <Label htmlFor="apply-dialog-date">Payment Date <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="apply-dialog-date" type="date" value={paymentDate}
               onChange={e => setPaymentDate(e.target.value)}
               className="glass-input" data-testid="apply-dialog-date" />
@@ -327,7 +327,7 @@ function CreateTemplateDialog({ onClose, onCreated }) {
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label htmlFor="tmpl-form-name">Nama Template <span className="text-red-500">*</span></Label>
+            <Label htmlFor="tmpl-form-name">Nama Template <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="tmpl-form-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Mis: Vendor Tetap Bulanan" className="glass-input"
               data-testid="tmpl-form-name" />
@@ -341,7 +341,7 @@ function CreateTemplateDialog({ onClose, onCreated }) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label>Bank Account <span className="text-red-500">*</span></Label>
+              <Label>Bank Account <span className="text-red-700 dark:text-red-400">*</span></Label>
               <SimpleSelect
                 ariaLabel="Bank Account"
                 value={form.bank_account_id}
@@ -357,7 +357,7 @@ function CreateTemplateDialog({ onClose, onCreated }) {
               <Input id="tmpl-form-day" type="number" min={1} max={28} value={form.schedule_day}
                 onChange={e => setForm(f => ({ ...f, schedule_day: parseInt(e.target.value) }))}
                 className="glass-input" data-testid="tmpl-form-day" />
-              <p className="text-[11px] text-muted-foreground">Hari ke-1 s/d 28 tiap bulan</p>
+              <p className="text-xs text-muted-foreground">Hari ke-1 s/d 28 tiap bulan</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

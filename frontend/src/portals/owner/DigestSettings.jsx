@@ -19,10 +19,10 @@ import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 const CHANNEL_META = {
-  telegram: { icon: MessageCircle, label: "Telegram",   placeholder: "Chat ID (mis. 123456789)", tone: "text-sky-600 bg-sky-50 dark:bg-sky-950/40" },
-  whatsapp: { icon: Phone,         label: "WhatsApp",   placeholder: "Nomor (mis. +628123456789)", tone: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40" },
-  inapp:    { icon: Bell,          label: "In-App Notification", placeholder: "akan muncul di bell icon", tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/40" },
-  email:    { icon: Mail,          label: "Email",      placeholder: "owner@email.com (butuh RESEND_API_KEY)", tone: "text-amber-600 bg-amber-50 dark:bg-amber-950/40" },
+  telegram: { icon: MessageCircle, label: "Telegram",   placeholder: "Chat ID (mis. 123456789)", tone: "text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40" },
+  whatsapp: { icon: Phone,         label: "WhatsApp",   placeholder: "Nomor (mis. +628123456789)", tone: "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40" },
+  inapp:    { icon: Bell,          label: "In-App Notification", placeholder: "akan muncul di bell icon", tone: "text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40" },
+  email:    { icon: Mail,          label: "Email",      placeholder: "owner@email.com (butuh RESEND_API_KEY)", tone: "text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40" },
 };
 
 export default function DigestSettings() {
@@ -173,8 +173,8 @@ export default function DigestSettings() {
                     <div className="text-sm font-semibold flex items-center gap-2">
                       {meta.label}
                       {s.enabled
-                        ? <Badge variant="default" className="text-[11px]">Aktif</Badge>
-                        : <Badge variant="outline" className="text-[11px]">Dijeda</Badge>}
+                        ? <Badge variant="default" className="text-xs">Aktif</Badge>
+                        : <Badge variant="outline" className="text-xs">Dijeda</Badge>}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       Target: <span className="font-mono">{s.target}</span>
@@ -186,7 +186,7 @@ export default function DigestSettings() {
                   </Button>
                   <Button variant="ghost" size="icon-sm" onClick={() => remove(s)} disabled={busy}
                           aria-label={`Hapus subscription ${meta.label}`} title="Hapus" data-testid={`digest-delete-${s.id}`}>
-                    <Trash2 className="text-rose-600" />
+                    <Trash2 className="text-rose-700 dark:text-rose-400" />
                   </Button>
                 </li>
               );
@@ -223,7 +223,7 @@ export default function DigestSettings() {
                 </Button>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="digest-target" className="text-xs md:text-sm font-medium">Target <span className="text-rose-600">*</span></Label>
+                <Label htmlFor="digest-target" className="text-xs md:text-sm font-medium">Target <span className="text-rose-700 dark:text-rose-400">*</span></Label>
                 <Input id="digest-target" value={target} onChange={(e) => setTarget(e.target.value)}
                        placeholder={CHANNEL_META[adding].placeholder} data-testid="owner-target-input" required />
               </div>
@@ -256,15 +256,15 @@ export default function DigestSettings() {
       {/* Telegram setup walkthrough */}
       <div className="glass-card p-4" data-testid="telegram-setup-card">
         <div className="flex items-center gap-2 mb-2">
-          <span className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-sky-50 dark:bg-sky-950/40 text-sky-600 flex items-center justify-center shrink-0">
+          <span className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
             <MessageCircle className="h-4 w-4" />
           </span>
           <div>
             <h2 className="text-sm md:text-base font-semibold">Cara Setup Telegram Bot</h2>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               Status: {telegramConfigured
-                ? <span className="text-emerald-600">Terkonfigurasi • @{botUsername || "bot"}</span>
-                : <span className="text-amber-600">Belum dikonfigurasi</span>}
+                ? <span className="text-emerald-700 dark:text-emerald-400">Terkonfigurasi • @{botUsername || "bot"}</span>
+                : <span className="text-amber-800 dark:text-amber-400">Belum dikonfigurasi</span>}
             </div>
           </div>
         </div>

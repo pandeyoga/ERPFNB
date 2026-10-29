@@ -79,7 +79,7 @@ export default function RateLimitsView() {
           <div key={name} className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm md:text-base font-semibold">{name}</h3>
-              <span className="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-400">{limit}/{win}s</span>
+              <span className="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-800 dark:text-blue-400">{limit}/{win}s</span>
             </div>
             <div className="text-xs text-muted-foreground mb-2">{(top[name] || []).length} key aktif</div>
             <div className="space-y-1 max-h-[280px] overflow-auto pr-1">
@@ -91,7 +91,7 @@ export default function RateLimitsView() {
                 return (
                   <div key={i} className="text-xs">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[11px] font-medium tabular-nums truncate max-w-[180px]" title={row.key}>{row.key}</span>
+                      <span className="text-xs font-medium tabular-nums truncate max-w-[180px]" title={row.key}>{row.key}</span>
                       <span className="tabular-nums font-medium">{fmtNumber(row.count)}/{limit}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">

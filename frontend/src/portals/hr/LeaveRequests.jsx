@@ -177,7 +177,7 @@ export default function LeaveRequests() {
           <TabsTrigger value="approval" data-testid="tab-approval-queue">
             Menunggu persetujuan
             {pendingLeaves.length > 0 && (
-              <Badge variant="destructive" className="ml-1 text-[11px] px-1.5 py-0">{pendingLeaves.length}</Badge>
+              <Badge variant="destructive" className="ml-1 text-xs px-1.5 py-0">{pendingLeaves.length}</Badge>
             )}
           </TabsTrigger>
         </TabsList>

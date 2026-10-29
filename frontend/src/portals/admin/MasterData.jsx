@@ -364,7 +364,7 @@ function renderCell(v, col, schema) {
     return <StatusPill status={v} />;
   }
   if (typeof v === "boolean") {
-    return <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium",
+    return <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium",
       v ? "status-active" : "status-disabled")}>{v ? "Ya" : "Tidak"}</span>;
   }
   if (col === "color" && typeof v === "string" && v.startsWith("#")) {
@@ -493,7 +493,7 @@ const fmtIDR = (n) => fmtRp(Number(n || 0)); // DUP-10
 
 function SalaryCell({ summary }) {
   if (!summary) return <span className="text-muted-foreground">—</span>;
-  if (!summary.has_master) return <span className="text-[11px] px-2 py-0.5 rounded-full status-disabled">Belum diatur</span>;
+  if (!summary.has_master) return <span className="text-xs px-2 py-0.5 rounded-full status-disabled">Belum diatur</span>;
   return <span className="tabular-nums">{fmtIDR(summary.basic_salary)}</span>;
 }
 
@@ -518,7 +518,7 @@ function SalaryReadOnly({ summary, isNew }) {
       ) : !summary ? (
         <p className="text-xs text-muted-foreground">Anda tidak punya akses melihat data gaji.</p>
       ) : !summary.has_master ? (
-        <p className="text-xs text-amber-600" data-testid="employee-salary-missing">Belum diatur — karyawan ini akan memblokir generate payroll sampai Salary Master diisi.</p>
+        <p className="text-xs text-amber-800 dark:text-amber-400" data-testid="employee-salary-missing">Belum diatur — karyawan ini akan memblokir generate payroll sampai Salary Master diisi.</p>
       ) : (
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
           {rows.map(([l, v]) => (
@@ -557,7 +557,7 @@ function OutletField({ field, value, onChange }) {
         ariaLabel={field.label}
         data-testid="master-field-outlet-select"
       />
-      <p className="text-[11px] text-muted-foreground">Menentukan payroll per-outlet & alokasi service charge.</p>
+      <p className="text-xs text-muted-foreground">Menentukan payroll per-outlet & alokasi service charge.</p>
     </div>
   );
 }
@@ -613,7 +613,7 @@ function FieldRender({ field, value, onChange, isNew, uniq }) {
         className="glass-input"
         data-testid={id}
       />
-      {disabled && <p className="text-[11px] text-muted-foreground">Kode tidak bisa diubah setelah dibuat.</p>}
+      {disabled && <p className="text-xs text-muted-foreground">Kode tidak bisa diubah setelah dibuat.</p>}
     </div>
   );
 }

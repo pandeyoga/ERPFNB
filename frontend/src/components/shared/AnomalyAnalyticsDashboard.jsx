@@ -95,19 +95,19 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
           icon={AlertTriangle}
           label="Severe"
           value={data.counts.severe}
-          color="text-red-600 dark:text-red-400"
+          color="text-red-700 dark:text-red-400"
         />
         <StatCard
           icon={Clock}
           label="Open"
           value={data.counts.open}
-          color="text-amber-600 dark:text-amber-400"
+          color="text-amber-800 dark:text-amber-400"
         />
         <StatCard
           icon={CheckCircle2}
           label="Resolved"
           value={data.counts.resolved}
-          color="text-emerald-600 dark:text-emerald-400"
+          color="text-emerald-700 dark:text-emerald-400"
         />
       </div>
 
@@ -132,7 +132,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
                 ))}
               </Pie>
               <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -143,8 +143,8 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={data.statusData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
               <Bar dataKey="value" fill="#5B5FE3" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -156,7 +156,7 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
       <div className="glass-card p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm">Anomaly Types (Last {days} days)</h3>
-          <div className="flex items-center gap-1 text-[11px]">
+          <div className="flex items-center gap-1 text-xs">
             <span className="h-2 w-2 rounded-full bg-red-500" />
             <span className="mr-2">Severe</span>
             <span className="h-2 w-2 rounded-full bg-amber-500" />
@@ -166,10 +166,10 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={data.typeData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
-            <XAxis type="number" tick={{ fontSize: 11 }} />
-            <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={150} />
+            <XAxis type="number" tick={{ fontSize: 12 }} />
+            <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={150} />
             <Tooltip />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Bar dataKey="severe" stackId="a" fill={SEVERITY_COLORS.severe} name="Severe" />
             <Bar dataKey="mild" stackId="a" fill={SEVERITY_COLORS.mild} name="Mild" />
           </BarChart>
@@ -185,12 +185,12 @@ export default function AnomalyAnalyticsDashboard({ days = 30 }) {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
               <XAxis
                 dataKey="outlet_name"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 angle={-20}
                 textAnchor="end"
                 height={80}
               />
-              <YAxis tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip content={<GlassTooltip valueFormatter={(v) => Number(v).toLocaleString("id-ID")} />} />
               <Bar dataKey="total" fill="#5B5FE3" radius={[4, 4, 0, 0]} />
             </BarChart>

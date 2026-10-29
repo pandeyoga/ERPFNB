@@ -8,18 +8,19 @@ import {
 import api, { unwrap } from "@/lib/api";
 import { fmtNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
 function Tile({ label, value, sub, icon: Icon, tone = "text-foreground" }) {
   return (
-    <div className="glass-card px-3 py-2.5 flex items-center gap-2 min-w-[140px]">
+    <div className="glass-card p-3 flex items-center gap-2 min-w-[140px]">
       <span className={cn("h-7 w-7 rounded-lg flex items-center justify-center", tone)}>
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="flex-1 min-w-0">
         <div className="text-[11px] text-muted-foreground uppercase tracking-wide truncate">{label}</div>
         <div className="text-sm font-bold leading-tight truncate">{value}</div>
-        {sub && <div className="text-[11px] text-muted-foreground truncate">{sub}</div>}
+        {sub && <div className="text-xs text-muted-foreground truncate">{sub}</div>}
       </div>
     </div>
   );
@@ -82,18 +83,20 @@ export default function KpiSnapshotStrip() {
       <Tile label="AP 7d" value={fmtJt(data.ap_due)} icon={Receipt} tone="bg-aurora-4/15 text-aurora-4" />
       <Tile label="Approvals" value={data.pending} icon={ClipboardCheck} tone="bg-aurora-2/15 text-aurora-2" />
       <Tile label="Anomalies" value={data.anomalies} icon={AlertTriangle}
-            tone={data.anomalies ? "bg-rose-100 text-rose-700" : "bg-muted text-muted-foreground"} />
-      <button
+            tone={data.anomalies ? "bg-rose-500/15 text-rose-800 dark:text-rose-300" : "bg-muted text-muted-foreground"} />
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={load}
         disabled={refreshing}
-        className="h-8 px-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 inline-flex items-center gap-1 ml-auto"
+        className="ml-auto text-muted-foreground"
         data-testid="kpi-strip-refresh"
         aria-label="Muat ulang ringkasan KPI"
       >
-        <RefreshCw className={cn("h-3 w-3", refreshing && "animate-spin")} />
+        <RefreshCw className={cn(refreshing && "animate-spin")} />
         Muat ulang
-      </button>
+      </Button>
     </div>
   );
 }

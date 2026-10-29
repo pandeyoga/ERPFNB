@@ -73,7 +73,7 @@ export default function ArchivalView() {
       </div>
 
       <div className="glass-card p-4 flex items-start gap-3 border-l-4 border-amber-500">
-        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <AlertCircle className="h-5 w-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
         <div className="text-sm">
           <p><strong>Saran:</strong> jalankan “Dry run” dulu untuk melihat berapa dokumen yang akan dipindah, baru jalankan archival sebenarnya. Job ini juga otomatis dijadwalkan setiap Minggu jam 02:00 WIB.</p>
         </div>

@@ -111,7 +111,7 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="ar-invoice-customer-name">Nama Customer <span className="text-red-500">*</span></Label>
+              <Label htmlFor="ar-invoice-customer-name">Nama Customer <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="ar-invoice-customer-name" value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
                 placeholder="Nama customer" data-testid="invoice-customer-name" />
             </div>
@@ -134,7 +134,7 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="ar-invoice-date">Tanggal Invoice <span className="text-red-500">*</span></Label>
+              <Label htmlFor="ar-invoice-date">Tanggal Invoice <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="ar-invoice-date" type="date" value={form.invoice_date}
                 onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))}
                 data-testid="invoice-date" />
@@ -289,7 +289,7 @@ export function CustomerCreateDialog({ open, onOpenChange, onCreated }) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="ar-customer-name-input">Nama Customer <span className="text-red-500">*</span></Label>
+            <Label htmlFor="ar-customer-name-input">Nama Customer <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="ar-customer-name-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Nama perusahaan / individu" data-testid="customer-name-input" />
           </div>
@@ -400,18 +400,18 @@ export function ReceiptDialog({ invoice, onClose, onRecorded }) {
             </div>
             <div className="flex justify-between mt-1 font-semibold">
               <span>Outstanding</span>
-              <span className="text-orange-600" data-testid="receipt-outstanding">{formatCurrency(invoice.outstanding)}</span>
+              <span className="text-orange-800 dark:text-orange-400" data-testid="receipt-outstanding">{formatCurrency(invoice.outstanding)}</span>
             </div>
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="ar-receipt-date">Tanggal Terima <span className="text-red-500">*</span></Label>
+            <Label htmlFor="ar-receipt-date">Tanggal Terima <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="ar-receipt-date" type="date" value={form.receipt_date}
               onChange={e => setForm(f => ({ ...f, receipt_date: e.target.value }))}
               data-testid="receipt-date" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="ar-receipt-amount">Jumlah Diterima <span className="text-red-500">*</span></Label>
+            <Label htmlFor="ar-receipt-amount">Jumlah Diterima <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="ar-receipt-amount" type="number" value={form.amount}
               onChange={e => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
               data-testid="receipt-amount" />
@@ -485,7 +485,7 @@ export function InvoiceDetailDialog({ invoice, onClose, onSend, onPayment }) {
             </div>
             <div>
               <div className="text-muted-foreground">Jatuh Tempo</div>
-              <div className={invoice.status === "overdue" ? "text-red-600 font-medium" : ""} data-testid="invoice-detail-due-date">
+              <div className={invoice.status === "overdue" ? "text-red-700 dark:text-red-400 font-medium" : ""} data-testid="invoice-detail-due-date">
                 {formatDateID(invoice.due_date)}
               </div>
             </div>
@@ -527,7 +527,7 @@ export function InvoiceDetailDialog({ invoice, onClose, onSend, onPayment }) {
                   </tr>
                 )}
                 {invoice.outstanding > 0 && (
-                  <tr className="text-orange-600 font-bold">
+                  <tr className="text-orange-800 dark:text-orange-400 font-bold">
                     <td colSpan={5} className="px-4 py-2 text-right tabular-nums">Outstanding</td>
                     <td className="px-4 py-2 text-right tabular-nums">{formatCurrency(invoice.outstanding)}</td>
                   </tr>
@@ -605,7 +605,7 @@ export function CustomerEditDialog({ customer, onClose, onSaved }) {
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="ar-customer-edit-name">Nama Customer <span className="text-red-500">*</span></Label>
+            <Label htmlFor="ar-customer-edit-name">Nama Customer <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Input id="ar-customer-edit-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Nama perusahaan / individu" data-testid="customer-edit-name" />
           </div>
@@ -734,7 +734,7 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label htmlFor="ar-invoice-edit-customer-name">Nama Customer <span className="text-red-500">*</span></Label>
+              <Label htmlFor="ar-invoice-edit-customer-name">Nama Customer <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="ar-invoice-edit-customer-name" value={form.customer_name} onChange={e => setForm(f => ({ ...f, customer_name: e.target.value }))}
                 placeholder="Nama customer" data-testid="invoice-edit-customer-name" />
             </div>
@@ -756,7 +756,7 @@ export function InvoiceEditDialog({ invoice, onClose, onSaved }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="ar-invoice-edit-date">Tanggal Invoice <span className="text-red-500">*</span></Label>
+              <Label htmlFor="ar-invoice-edit-date">Tanggal Invoice <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="ar-invoice-edit-date" type="date" value={form.invoice_date}
                 onChange={e => setForm(f => ({ ...f, invoice_date: e.target.value }))}
                 data-testid="invoice-edit-date" />
@@ -904,7 +904,7 @@ export function ReminderDialog({ invoice, onClose, onSent }) {
           <div className="bg-muted/40 rounded-lg p-3 text-sm" data-testid="reminder-summary">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Outstanding</span>
-              <span className="font-semibold text-orange-600">{formatCurrency(invoice.outstanding)}</span>
+              <span className="font-semibold text-orange-800 dark:text-orange-400">{formatCurrency(invoice.outstanding)}</span>
             </div>
             <div className="flex justify-between mt-1">
               <span className="text-muted-foreground">Jatuh Tempo</span>

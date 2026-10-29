@@ -124,7 +124,7 @@ export default function DailyClose({ embedded = false }) {
             className="mb-0 md:mb-0"
           />
           <div className="glass-card p-3 flex items-start gap-2 text-sm border-l-4 border-l-sky-500" data-testid="dc-deprecated-banner">
-            <Info className="h-4 w-4 mt-0.5 text-sky-600 shrink-0" />
+            <Info className="h-4 w-4 mt-0.5 text-sky-700 dark:text-sky-400 shrink-0" />
             <div className="flex-1">
               Daily Close kini menjadi <b>Langkah 4</b> di alur <b>End of Day</b> (Daily Sales → Daily Orders → Petty Cash → Daily Close).
             </div>
@@ -167,7 +167,7 @@ export default function DailyClose({ embedded = false }) {
 
       {!outletId && (
         <div className="glass-card p-3 text-sm text-muted-foreground flex items-center gap-2" data-testid="dc-pick-outlet-hint">
-          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 shrink-0" />
           Checklist daily close dihitung per outlet. Pilih satu outlet di header Outlet Aktif untuk melihat checklist dan menutup hari.
         </div>
       )}
@@ -189,17 +189,17 @@ export default function DailyClose({ embedded = false }) {
               <div className="text-base font-semibold flex items-center gap-2">
                 {closed ? (
                   <>
-                    <Lock className="h-4 w-4 text-emerald-600" />
+                    <Lock className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                     Sudah ditutup
                   </>
                 ) : allOk ? (
                   <>
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                     Siap ditutup
                   </>
                 ) : (
                   <>
-                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400" />
                     {okCount}/{items.length} checklist OK
                   </>
                 )}
@@ -251,8 +251,8 @@ export default function DailyClose({ embedded = false }) {
                   <div
                     className={cn(
                       "h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center shrink-0",
-                      it.ok ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                            : "bg-amber-500/20 text-amber-700 dark:text-amber-400",
+                      it.ok ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-400"
+                            : "bg-amber-500/20 text-amber-800 dark:text-amber-400",
                     )}
                   >
                     {it.ok ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}

@@ -224,13 +224,13 @@ export default function ManualJournalForm() {
 
       <div className="glass-card p-4 grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
         <div>
-          <Label htmlFor="mje-date" className="text-xs md:text-sm font-medium">Entry Date <span className="text-red-500">*</span></Label>
+          <Label htmlFor="mje-date" className="text-xs md:text-sm font-medium">Entry Date <span className="text-red-700 dark:text-red-400">*</span></Label>
           <Input id="mje-date" type="date" value={form.entry_date}
             onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))}
             className="glass-input mt-1" data-testid="mje-date" />
         </div>
         <div className="md:col-span-2">
-          <Label htmlFor="mje-desc" className="text-xs md:text-sm font-medium">Description <span className="text-red-500">*</span></Label>
+          <Label htmlFor="mje-desc" className="text-xs md:text-sm font-medium">Description <span className="text-red-700 dark:text-red-400">*</span></Label>
           <Input id="mje-desc" value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="mis. Reklasifikasi expense April 2026"
@@ -404,7 +404,7 @@ export default function ManualJournalForm() {
           hasSevereGuard ? "border-red-500/40" : "border-amber-500/40",
         )}>
           <Label htmlFor="mje-guard-reason" className="text-xs md:text-sm font-medium">
-            Alasan / Justifikasi <span className="text-red-500">*</span> (wajib karena {hasSevereGuard ? "jauh " : ""}di atas forecast)
+            Alasan / Justifikasi <span className="text-red-700 dark:text-red-400">*</span> (wajib karena {hasSevereGuard ? "jauh " : ""}di atas forecast)
           </Label>
           <Textarea
             id="mje-guard-reason"
@@ -414,7 +414,7 @@ export default function ManualJournalForm() {
             className="glass-input mt-1 min-h-[60px]"
             data-testid="mje-guard-reason"
           />
-          <div className="text-[11px] text-muted-foreground mt-1.5">
+          <div className="text-xs text-muted-foreground mt-1.5">
             Alasan ini akan digabung ke description JE untuk audit trail.
           </div>
         </div>

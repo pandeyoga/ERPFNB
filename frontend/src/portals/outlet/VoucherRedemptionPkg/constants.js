@@ -24,18 +24,18 @@ import { toast } from "sonner";
 
 const TIER_CONFIG = {
   bronze:   { label: "Bronze",   className: "bg-amber-100 text-amber-800 border-amber-200" },
-  silver:   { label: "Silver",   className: "bg-gray-100 text-gray-700 border-gray-200" },
+  silver:   { label: "Silver",   className: "bg-muted/40 text-foreground border-border" },
   gold:     { label: "Gold",     className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
   platinum: { label: "Platinum", className: "bg-purple-100 text-purple-800 border-purple-200" },
 };
 
 const STATUS_CONFIG = {
-  valid:            { label: "Voucher Valid",       icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
-  expired:          { label: "Voucher Kadaluarsa",  icon: XCircle,      color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  used:             { label: "Voucher Sudah Dipakai",icon: XCircle,     color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  already_claimed:  { label: "Sudah Diklaim",       icon: XCircle,      color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  invalid:          { label: "Kode Tidak Valid",    icon: AlertTriangle, color: "text-amber-600",  bg: "bg-amber-50 border-amber-200" },
-  customer_mismatch:{ label: "Bukan Milik Customer",icon: AlertTriangle, color: "text-amber-600",  bg: "bg-amber-50 border-amber-200" },
+  valid:            { label: "Voucher Valid",       icon: CheckCircle2, color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 border-emerald-200" },
+  expired:          { label: "Voucher Kadaluarsa",  icon: XCircle,      color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  used:             { label: "Voucher Sudah Dipakai",icon: XCircle,     color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  already_claimed:  { label: "Sudah Diklaim",       icon: XCircle,      color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  invalid:          { label: "Kode Tidak Valid",    icon: AlertTriangle, color: "text-amber-800 dark:text-amber-400",  bg: "bg-amber-50 border-amber-200" },
+  customer_mismatch:{ label: "Bukan Milik Customer",icon: AlertTriangle, color: "text-amber-800 dark:text-amber-400",  bg: "bg-amber-50 border-amber-200" },
 };
 
 const STEP = { LOOKUP: 0, VERIFY: 1, CONFIRM: 2, SUCCESS: 3 };

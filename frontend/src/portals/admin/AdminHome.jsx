@@ -59,7 +59,7 @@ export default function AdminHome() {
           subtitle={`Halo${firstName ? `, ${firstName}` : ""} — kelola users, roles, master data, dan konfigurasi sistem.`}
           actions={(
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 font-medium">
                 Online
               </span>
               <span>v0.3.0</span>
@@ -127,9 +127,9 @@ export default function AdminHome() {
                 <LinkTile
                   to="/admin/setup?tab=bulk-import"
                   icon={FileSpreadsheet}
-                  iconClass="bg-blue-500/15 text-blue-600 dark:text-blue-400"
+                  iconClass="bg-blue-500/15 text-blue-800 dark:text-blue-400"
                   title="Bulk Excel Import"
-                  badge={<span className="px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-400 text-[11px] font-medium">Baru</span>}
+                  badge={<span className="px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-800 dark:text-blue-400 text-xs font-medium">Baru</span>}
                   desc="Items · Vendors · Employees · COA · Customers — template, pratinjau, upsert"
                   testId="tile-bulk-import"
                 />
@@ -159,7 +159,7 @@ export default function AdminHome() {
               <LinkTile
                 to="/admin/operations/tour-analytics"
                 icon={BarChart3}
-                iconClass="bg-purple-500/15 text-purple-600 dark:text-purple-300"
+                iconClass="bg-purple-500/15 text-purple-800 dark:text-purple-300"
                 title="Tour Analytics"
                 desc="Lacak penggunaan & efektivitas Help & Tour"
                 testId="tile-tour-analytics"

@@ -201,11 +201,11 @@ export default function EBupotExport({ embedded = false }) {
                   render: (row) => <span className="text-xs font-medium tabular-nums">{row.bukti_potong_no}</span> },
                 { key: "status", label: "Status",
                   render: (row) => row.validation_issues?.length > 0 ? (
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs gap-1">
+                    <Badge variant="outline" className="bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20 text-xs gap-1">
                       <AlertCircle className="h-3 w-3" />{row.validation_issues.length} peringatan
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs gap-1">
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20 text-xs gap-1">
                       <CheckCircle2 className="h-3 w-3" />OK
                     </Badge>
                   ) },

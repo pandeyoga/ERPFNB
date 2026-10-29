@@ -64,10 +64,10 @@ export default function VendorScorecardList() {
 
   function scoreColor(s) {
     if (s == null) return "bg-foreground/5 text-muted-foreground";
-    if (s >= 85) return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
-    if (s >= 70) return "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30";
-    if (s >= 50) return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
-    return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+    if (s >= 85) return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
+    if (s >= 70) return "bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30";
+    if (s >= 50) return "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30";
+    return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
   }
   function scoreLabel(s) {
     if (s == null) return "—";
@@ -115,7 +115,7 @@ export default function VendorScorecardList() {
               render: (v) => (
                 <div>
                   <div className="font-semibold" data-testid={`scorecard-name-${v.vendor_id}`}>{v.vendor_name || v.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{v.vendor_code || v.code}</div>
+                  <div className="text-xs text-muted-foreground">{v.vendor_code || v.code}</div>
                 </div>
               ) },
             { key: "po_count", label: "Jumlah PO", numeric: true, sortable: true, sortAccessor: (v) => v.po_count || 0,
@@ -127,7 +127,7 @@ export default function VendorScorecardList() {
                 <span data-testid={`scorecard-ontime-${v.vendor_id}`}>
                   {v.on_time_pct != null ? (
                     <span className="inline-flex items-center gap-1">
-                      {Number(v.on_time_pct) >= 80 ? <TrendingUp className="h-3 w-3 text-emerald-500" /> : <TrendingDown className="h-3 w-3 text-rose-500" />}
+                      {Number(v.on_time_pct) >= 80 ? <TrendingUp className="h-3 w-3 text-emerald-700 dark:text-emerald-400" /> : <TrendingDown className="h-3 w-3 text-rose-700 dark:text-rose-400" />}
                       {pct(v.on_time_pct)}
                     </span>
                   ) : "—"}
@@ -186,7 +186,7 @@ function VendorScoreDrilldown({ v, scoreLabel }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
         {metrics.map((m) => (
           <div key={m.label}>
-            <div className="text-[11px] text-muted-foreground">{m.label}</div>
+            <div className="text-xs text-muted-foreground">{m.label}</div>
             <div className="font-semibold tabular-nums">{m.value}</div>
           </div>
         ))}

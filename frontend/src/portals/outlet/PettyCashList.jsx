@@ -293,7 +293,7 @@ function TypePill({ type }) {
   const cfg = map[type] || map.purchase;
   const Icon = cfg.Icon;
   return (
-    <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 bg-${cfg.color}-500/15 text-${cfg.color}-700 dark:text-${cfg.color}-400`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 bg-${cfg.color}-500/15 text-${cfg.color}-700 dark:text-${cfg.color}-400`}>
       <Icon className="h-3 w-3" />
       {cfg.label}
     </span>

@@ -62,7 +62,7 @@ export default function AICategorizeChip({
 
   if (loading) {
     return (
-      <div className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground italic" data-testid={`${testId}-loading`}>
+      <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground italic" data-testid={`${testId}-loading`}>
         <Loader2 className="h-3 w-3 animate-spin" /> Menganalisa…
       </div>
     );
@@ -75,7 +75,7 @@ export default function AICategorizeChip({
       <button
         type="button"
         onClick={() => setRevealed(true)}
-        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground italic"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground italic"
         data-testid={`${testId}-low-conf`}
       >
         <Sparkles className="h-3 w-3" /> Saran AI tersedia (conf {confPct}%) — klik untuk lihat
@@ -83,8 +83,8 @@ export default function AICategorizeChip({
     );
   }
   const confColorClass = passesThreshold
-    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-    : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+    ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30"
+    : "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30";
 
   async function handleLearn() {
     setLearning(true);
@@ -111,15 +111,15 @@ export default function AICategorizeChip({
 
   return (
     <div
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border bg-background/80 backdrop-blur text-[11px]"
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border bg-background/80 backdrop-blur text-xs"
       data-testid={testId}
     >
-      <Sparkles className="h-3 w-3 text-violet-500 shrink-0" />
+      <Sparkles className="h-3 w-3 text-violet-700 dark:text-violet-400 shrink-0" />
       <span className="text-muted-foreground">Saran:</span>
       <span className="font-semibold tabular-nums">{suggestion.gl_code}</span>
       <span className="text-foreground/80 truncate max-w-[160px]">{suggestion.gl_name}</span>
       {suggestion.cost_center_outlet_name && (
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           · {suggestion.cost_center_outlet_name}
         </span>
       )}

@@ -157,7 +157,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
             <span className="font-mono tabular-nums">{valueFormatter(hovered.running ?? 0)}</span>
           </div>
           {hovered.delta_pct != null && (
-            <div className={cn("flex items-center gap-1 pt-0.5", hovered.delta_pct >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+            <div className={cn("flex items-center gap-1 pt-0.5", hovered.delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
               {hovered.delta_pct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               <span className="font-mono font-semibold">{hovered.delta_pct >= 0 ? "+" : ""}{hovered.delta_pct}% vs compare</span>
             </div>
@@ -166,7 +166,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
       )}
 
       {/* legend */}
-      <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
+      <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         <Legend color={SEMANTIC.positive} label="Naik" />
         <Legend color={SEMANTIC.negative} label="Turun" />
         <Legend color={SEMANTIC.subtotal} label="Subtotal" />

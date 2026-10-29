@@ -123,7 +123,7 @@ export default function EffectiveDatingTimelinePage() {
           className="glass-card p-3 border border-amber-500/40 flex items-start gap-2"
           data-testid="config-timeline-overlap-warning"
         >
-          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+          <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 mt-0.5" />
           <p className="text-xs text-amber-700 dark:text-amber-300">
             <strong>{totalOverlaps}</strong> aturan memiliki periode yang bentrok. Periksa kembali agar perhitungan konsisten.
           </p>
@@ -163,7 +163,7 @@ function TimelineAxis({ axis }) {
     <div className="relative" aria-hidden>
       <div className="grid pl-44 mb-1" style={{ gridTemplateColumns: `repeat(${axis.length}, 1fr)` }}>
         {axis.map((m) => (
-          <div key={monthKey(m)} className="text-[11px] text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
+          <div key={monthKey(m)} className="text-xs text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
             {m.toLocaleDateString("id-ID", { month: "short", year: "2-digit" })}
           </div>
         ))}
@@ -187,7 +187,7 @@ function TimelineRow({ ruleType, items, axis }) {
       <div className="flex items-center gap-3">
         <div className="w-44 shrink-0">
           <p className="text-sm font-medium">{RULE_LABELS[ruleType] || ruleType}</p>
-          <p className="text-[11px] text-muted-foreground">{items.length} versi</p>
+          <p className="text-xs text-muted-foreground">{items.length} versi</p>
         </div>
         <div className="flex-1 relative h-12 rounded-md bg-foreground/[0.02] border border-border/30 overflow-hidden">
           <div
@@ -230,7 +230,7 @@ function TimelineRow({ ruleType, items, axis }) {
                       <div className="font-medium">{r.name || ruleType}</div>
                       <div className="text-muted-foreground">{effectiveText(r)}</div>
                       {overlap && (
-                        <div className="text-amber-600">Bentrok dengan {r.overlaps_with.length} versi lain</div>
+                        <div className="text-amber-800 dark:text-amber-400">Bentrok dengan {r.overlaps_with.length} versi lain</div>
                       )}
                     </div>
                   </TooltipContent>

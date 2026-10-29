@@ -35,7 +35,7 @@ const STATUS_CONFIG = {
   rescheduled: { label: "Dijadwal Ulang", color: "bg-indigo-100 text-indigo-700 border-indigo-300", dot: "bg-indigo-500" },
   completed:   { label: "Selesai",        color: "bg-emerald-100 text-emerald-700 border-emerald-300", dot: "bg-emerald-500" },
   cancelled:   { label: "Dibatalkan",     color: "bg-red-100 text-red-700 border-red-300",          dot: "bg-red-400" },
-  no_show:     { label: "Tidak Hadir",    color: "bg-gray-100 text-gray-600 border-gray-300",       dot: "bg-gray-400" },
+  no_show:     { label: "Tidak Hadir",    color: "bg-muted/40 text-muted-foreground border-border",       dot: "bg-muted-foreground" },
 };
 
 const TIER_CONFIG = {
@@ -51,11 +51,11 @@ const RES_TAB_LABEL = { all: "Semua", pending: "Menunggu", confirmed: "Dikonfirm
 function QATile({ to, onClick, icon: Icon, label, sublabel, accent = "aurora-1", testId }) {
   const accentClasses = {
     "aurora-1": "grad-aurora-soft text-foreground",
-    "green":    "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    "blue":     "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    "purple":   "bg-violet-500/10 text-violet-700 dark:text-violet-400",
-    "amber":    "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    "rose":     "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+    "green":    "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400",
+    "blue":     "bg-blue-500/10 text-blue-800 dark:text-blue-400",
+    "purple":   "bg-violet-500/10 text-violet-800 dark:text-violet-400",
+    "amber":    "bg-amber-500/10 text-amber-800 dark:text-amber-400",
+    "rose":     "bg-rose-500/10 text-rose-800 dark:text-rose-400",
   };
 
   const inner = (
@@ -103,11 +103,11 @@ function ReservationRow({ r, onAction, loading }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm leading-none">{r.customer_name}</span>
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${sc.color}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${sc.color}`}>
             {sc.label}
           </span>
           {isPast && r.status === "pending" && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 font-medium">
+            <span className="inline-flex items-center gap-1 text-xs text-amber-800 dark:text-amber-400 font-medium">
               <AlertTriangle className="h-3 w-3" /> Belum dikonfirmasi
             </span>
           )}
@@ -117,7 +117,7 @@ function ReservationRow({ r, onAction, loading }) {
           <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.customer_phone}</span>
           {r.area_preference && <span>Area: {r.area_preference}</span>}
           {r.special_requests?.type && (
-            <span className="text-rose-500 inline-flex items-center gap-1"><Flag className="h-3 w-3" /> {r.special_requests.type}</span>
+            <span className="text-rose-700 dark:text-rose-400 inline-flex items-center gap-1"><Flag className="h-3 w-3" /> {r.special_requests.type}</span>
           )}
         </div>
       </div>
@@ -431,10 +431,10 @@ export default function CRMHub() {
                 {/* Stats row */}
                 <div className="grid grid-cols-2 gap-2.5">
                   {[
-                    { label: "Total Member", val: loyaltyStats?.total_customers ?? 0, icon: Users, accent: "text-blue-600" },
-                    { label: "Member Aktif", val: loyaltyStats?.active_customers ?? 0, icon: Zap, accent: "text-emerald-600" },
-                    { label: "Poin Beredar", val: (loyaltyStats?.total_points_outstanding ?? 0).toLocaleString("id-ID"), icon: Star, accent: "text-amber-600" },
-                    { label: "Redemption/30d", val: loyaltyStats?.redemptions_30d ?? 0, icon: Gift, accent: "text-violet-600" },
+                    { label: "Total Member", val: loyaltyStats?.total_customers ?? 0, icon: Users, accent: "text-blue-700 dark:text-blue-400" },
+                    { label: "Member Aktif", val: loyaltyStats?.active_customers ?? 0, icon: Zap, accent: "text-emerald-700 dark:text-emerald-400" },
+                    { label: "Poin Beredar", val: (loyaltyStats?.total_points_outstanding ?? 0).toLocaleString("id-ID"), icon: Star, accent: "text-amber-800 dark:text-amber-400" },
+                    { label: "Redemption/30d", val: loyaltyStats?.redemptions_30d ?? 0, icon: Gift, accent: "text-violet-700 dark:text-violet-400" },
                   ].map(({ label, val, icon: Ic, accent }) => (
                     <div key={label} className="rounded-lg border border-border/60 p-2.5">
                       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -492,7 +492,7 @@ export default function CRMHub() {
               <div className="text-center py-6">
                 <Users className="h-7 w-7 mx-auto mb-2 text-muted-foreground/30" />
                 <p className="text-xs text-muted-foreground">Belum ada member terdaftar.</p>
-                <Link to="/admin/loyalty?tab=customers" className="text-xs text-foreground/60 hover:text-foreground underline mt-1 block">
+                <Link to="/admin/loyalty?tab=customers" className="text-xs text-muted-foreground hover:text-foreground underline mt-1 block">
                   Tambah member manual
                 </Link>
               </div>
@@ -510,8 +510,10 @@ export default function CRMHub() {
                         <p className="text-xs text-muted-foreground truncate">{m.phone || m.email || "—"}</p>
                       </div>
                       <div className="flex-shrink-0">
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                          style={{ backgroundColor: tierConf.color + "22", color: tierConf.color }}>
+                        {/* Warna tier hanya pada titik & latar tipis; teks tetap warna teks (kontras AA). */}
+                        <span className="inline-flex h-5 items-center gap-1.5 text-xs px-2 rounded-full font-medium text-foreground"
+                          style={{ backgroundColor: tierConf.color + "22" }}>
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tierConf.color }} aria-hidden />
                           {tierConf.label}
                         </span>
                       </div>
@@ -526,7 +528,7 @@ export default function CRMHub() {
           {loyaltyStats && (
             <div className="glass-card p-4 flex items-center gap-3">
               <div className="h-9 w-9 rounded-[calc(var(--radius)-2px)] bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="h-4 w-4 text-amber-600" />
+                <TrendingUp className="h-4 w-4 text-amber-800 dark:text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">Poin earned (30 hari)</p>

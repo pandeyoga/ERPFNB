@@ -19,10 +19,10 @@ const normSeverity = (sev) => {
 };
 
 const SEVERITY_STYLES = {
-  critical: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-  high: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
-  medium: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  low: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+  critical: "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30",
+  high: "bg-orange-500/15 text-orange-800 dark:text-orange-300 border-orange-500/30",
+  medium: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
+  low: "bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30",
 };
 
 export default function AnomalyDetection() {
@@ -161,7 +161,7 @@ export default function AnomalyDetection() {
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{a.title || a.label || a.type}</div>
                   <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.description || a.message || a.detail}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1 flex gap-3">
+                  <div className="text-xs text-muted-foreground mt-1 flex gap-3">
                     <span>{fmtDate(a.detected_at || a.created_at)}</span>
                     {a.amount != null && <span>Nilai: {fmtRp(Number(a.amount))}</span>}
                     {a.outlet_name && <span>Outlet: {a.outlet_name}</span>}

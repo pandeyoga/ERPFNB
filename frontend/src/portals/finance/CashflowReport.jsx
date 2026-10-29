@@ -77,7 +77,7 @@ export default function CashflowReport() {
                 {Object.entries(data.by_category).map(([key, cat]) => (
                   <button key={key} type="button" aria-expanded={expandedCat === key}
                     onClick={() => setExpandedCat(expandedCat === key ? null : key)}
-                    className={cn("w-full text-left p-3 rounded-lg border transition",
+                    className={cn("w-full text-left p-3 rounded-md border transition",
                       expandedCat === key ? "bg-foreground/5 border-foreground/30" : "border-border/30 hover:bg-foreground/5")}
                     data-testid={`cf-cat-${key}`}>
                     <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export default function CashflowReport() {
                         {cat.net >= 0 ? "+" : ""}{fmtRp(cat.net)}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-1">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                       <span>Masuk: {fmtRp(cat.inflow)}</span>
                       <span>Keluar: {fmtRp(cat.outflow)}</span>
                       <span className="ml-auto">{cat.rows.length} transaksi</span>
@@ -102,7 +102,7 @@ export default function CashflowReport() {
                             </span>
                           </div>
                         ))}
-                        {cat.rows.length > 10 && <div className="text-[11px] text-muted-foreground">+{cat.rows.length - 10} lagi</div>}
+                        {cat.rows.length > 10 && <div className="text-xs text-muted-foreground">+{cat.rows.length - 10} lagi</div>}
                       </div>
                     )}
                   </button>
@@ -183,7 +183,7 @@ function DailyChart({ daily, opening }) {
           );
         })}
       </svg>
-      <div className="text-[11px] text-muted-foreground mt-1">
+      <div className="text-xs text-muted-foreground mt-1">
         Sumbu Y: Rp {(min / 1e6).toFixed(0)}jt — {(max / 1e6).toFixed(0)}jt · garis putus-putus = saldo awal
       </div>
     </div>

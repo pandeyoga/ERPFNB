@@ -276,7 +276,7 @@ export default function PaymentForm() {
               <SelectTrigger id="pay-gldebit" className="glass-input" data-testid="pay-gldebit"><SelectValue placeholder="Pilih COA debit..." /></SelectTrigger>
               <SelectContent>{coas.map(c => (<SelectItem key={c.id} value={c.id}>{c.code} · {c.name} <span className="text-muted-foreground">({c.type})</span></SelectItem>))}</SelectContent>
             </Select>
-            <p className="text-[11px] text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Untuk bayar vendor (link ke GR): gunakan COA Accounts Payable (2101). Untuk expense langsung: gunakan expense COA.
             </p>
           </Field>
@@ -313,7 +313,7 @@ export default function PaymentForm() {
               className="w-full flex items-center justify-between px-4 py-3 bg-amber-500/5 hover:bg-amber-500/10 transition-colors text-sm"
             >
               <div className="flex items-center gap-2">
-                <Calculator size={15} className="text-amber-600 dark:text-amber-400" />
+                <Calculator size={15} className="text-amber-800 dark:text-amber-400" />
                 <span className="font-medium text-amber-800 dark:text-amber-300">
                   PPh Withholding
                   {form.wh_type && (
@@ -322,17 +322,17 @@ export default function PaymentForm() {
                     </span>
                   )}
                   {!anyPphActive && !form.wh_type && (
-                    <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">(aktifkan di Admin → Tax)</span>
+                    <span className="ml-2 text-xs text-amber-800 dark:text-amber-400">(aktifkan di Admin → Tax)</span>
                   )}
                 </span>
               </div>
-              {whOpen ? <ChevronDown size={16} className="text-amber-600 dark:text-amber-400" /> : <ChevronRight size={16} className="text-amber-600 dark:text-amber-400" />}
+              {whOpen ? <ChevronDown size={16} className="text-amber-800 dark:text-amber-400" /> : <ChevronRight size={16} className="text-amber-800 dark:text-amber-400" />}
             </button>
 
             {whOpen && (
               <div className="p-4 space-y-4">
                 {!anyPphActive && (
-                  <div className="text-sm text-amber-700 dark:text-amber-300 bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
+                  <div className="text-sm text-amber-800 dark:text-amber-300 bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
                     PPh 23 dan PPh 4(2) belum diaktifkan. Aktifkan di <strong>Admin → Tax / Pajak</strong> untuk menggunakan fitur ini.
                   </div>
                 )}
@@ -376,11 +376,11 @@ export default function PaymentForm() {
                       <div className="font-semibold tabular-nums" data-testid="pay-wh-gross">{fmtRp(gross)}</div>
                     </div>
                     <div>
-                      <div className="text-red-600 dark:text-red-400 text-xs mb-1">PPh Dipotong ({(form.wh_rate*100).toFixed(0)}%)</div>
-                      <div className="font-semibold tabular-nums text-red-600 dark:text-red-400" data-testid="pay-wh-amount">— {fmtRp(whAmount)}</div>
+                      <div className="text-red-700 dark:text-red-400 text-xs mb-1">PPh Dipotong ({(form.wh_rate*100).toFixed(0)}%)</div>
+                      <div className="font-semibold tabular-nums text-red-700 dark:text-red-400" data-testid="pay-wh-amount">— {fmtRp(whAmount)}</div>
                     </div>
                     <div>
-                      <div className="text-emerald-600 dark:text-emerald-400 text-xs mb-1">Net ke Vendor</div>
+                      <div className="text-emerald-700 dark:text-emerald-400 text-xs mb-1">Net ke Vendor</div>
                       <div className="font-semibold tabular-nums text-emerald-700 dark:text-emerald-400" data-testid="pay-wh-net">{fmtRp(netToPay)}</div>
                     </div>
                   </div>
@@ -426,7 +426,7 @@ function Field({ label, htmlFor, required = false, children, className = "" }) {
   return (
     <div className={className}>
       <Label htmlFor={htmlFor} className="text-xs md:text-sm font-medium">
-        {label}{required && <span className="text-red-500"> *</span>}
+        {label}{required && <span className="text-red-700 dark:text-red-400"> *</span>}
       </Label>
       <div className="mt-1">{children}</div>
     </div>

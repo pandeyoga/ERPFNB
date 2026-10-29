@@ -102,9 +102,9 @@ export default function TrialBalance() {
             : "border-l-4 border-amber-500",
         )}>
           {data.totals.is_balanced_period ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
           ) : (
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400" />
           )}
           <span className="font-medium inline-flex items-center gap-1.5">
             {data.totals.is_balanced_period

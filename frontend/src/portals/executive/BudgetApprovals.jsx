@@ -35,7 +35,7 @@ function BudgetLines({ b }) {
           <div className="min-w-0 flex items-center gap-2">
             <span className="font-mono text-xs text-muted-foreground">{l.coa_code}</span>
             <span className="truncate">{l.coa_name}</span>
-            {l.category && <Badge variant="secondary" className="text-[11px]">{l.category}</Badge>}
+            {l.category && <Badge variant="secondary" className="text-xs">{l.category}</Badge>}
           </div>
           <span className="tabular-nums font-medium shrink-0">{formatCurrency(l.amount)}</span>
         </div>
@@ -152,7 +152,7 @@ export default function BudgetApprovals() {
             }
             rowAction={(b) => (
               <div className="flex items-center justify-end gap-1">
-                <Button variant="outline" size="sm" className="text-rose-600 hover:text-rose-700" onClick={() => handleReject(b.id)} data-testid={`reject-btn-${b.id}`}>
+                <Button variant="outline" size="sm" className="text-rose-700 dark:text-rose-400 hover:text-rose-700" onClick={() => handleReject(b.id)} data-testid={`reject-btn-${b.id}`}>
                   <XCircle /> Tolak
                 </Button>
                 <Button size="sm" onClick={() => handleApprove(b.id)} data-testid={`approve-btn-${b.id}`}>

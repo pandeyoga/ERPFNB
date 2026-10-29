@@ -65,14 +65,14 @@ function VoucherCard({ voucher, onSelect, selected }) {
   return (
     <button
       type="button"
-      className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-all ${
+      className={`w-full text-left flex items-center gap-3 p-3 rounded-md border transition-all ${
         selected ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/40"
       }`}
       onClick={() => onSelect(voucher)}
       data-testid={`voucher-card-${voucher.id}`}
     >
       <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-        <Ticket className="h-4 w-4 text-amber-600" />
+        <Ticket className="h-4 w-4 text-amber-800 dark:text-amber-400" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm truncate">{voucher.reward_name}</div>
@@ -83,7 +83,7 @@ function VoucherCard({ voucher, onSelect, selected }) {
       <div className="text-right shrink-0">
         <div className="text-xs font-medium">{(voucher.points_used || 0).toLocaleString()} pts</div>
         {days !== null && (
-          <div className={`text-xs ${ days <= 7 ? "text-red-600 font-semibold" : "text-muted-foreground" }`}>
+          <div className={`text-xs ${ days <= 7 ? "text-red-700 dark:text-red-400 font-semibold" : "text-muted-foreground" }`}>
             {days <= 0 ? "Kedaluwarsa" : `${days} hari lagi`}
           </div>
         )}
@@ -143,7 +143,7 @@ function TodayLog({ items, loading, onRefresh }) {
                 </div>
                 <div className="text-muted-foreground mt-0.5 truncate">{item.customer_name || "-"}</div>
                 {item.voucher_code && (
-                  <span className="mt-0.5 block text-[11px] tracking-wider text-muted-foreground">{item.voucher_code}</span>
+                  <span className="mt-0.5 block text-xs tracking-wider text-muted-foreground">{item.voucher_code}</span>
                 )}
               </div>
             ))}

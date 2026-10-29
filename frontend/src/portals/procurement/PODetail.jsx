@@ -347,17 +347,17 @@ export default function PODetail() {
             {(po.email_log || []).slice().reverse().map((log, i) => {
               const status = log.status || "unknown";
               const statusStyle = (
-                status === "sent" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" :
-                status === "failed" ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
-                status === "mocked" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30" :
-                status === "queued" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30" :
+                status === "sent" ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30" :
+                status === "failed" ? "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30" :
+                status === "mocked" ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30" :
+                status === "queued" ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30" :
                 "bg-muted text-muted-foreground border-border/50"
               );
               return (
                 <div key={i} className="rounded-lg border border-border/50 p-3 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <div className="font-medium">{log.subject}</div>
-                    <span className="text-muted-foreground text-[11px]">{fmtDate(log.sent_at)}</span>
+                    <span className="text-muted-foreground text-xs">{fmtDate(log.sent_at)}</span>
                   </div>
                   <div className="text-muted-foreground mt-1">
                     → {(log.to || []).join(", ")}
@@ -367,23 +367,23 @@ export default function PODetail() {
                       {status}
                     </span>
                     {log.provider && (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         via <span className="font-medium">{log.provider}</span>
                       </span>
                     )}
                     {log.pdf_attached && (
-                      <span className="text-[11px] text-muted-foreground inline-flex items-center gap-0.5">
+                      <span className="text-xs text-muted-foreground inline-flex items-center gap-0.5">
                         <FileDown className="h-3 w-3" /> PDF terlampir
                       </span>
                     )}
                     {log.provider_message_id && (
-                      <span className="text-[11px] text-muted-foreground font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         id: {String(log.provider_message_id).slice(0, 12)}…
                       </span>
                     )}
                   </div>
                   {log.error && (
-                    <div className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 italic break-all">
+                    <div className="text-xs text-rose-700 dark:text-rose-400 mt-1 italic break-all">
                       Error: {log.error}
                     </div>
                   )}
@@ -466,7 +466,7 @@ export default function PODetail() {
                 className="glass-input mt-1 min-h-[160px]"
                 data-testid="po-email-message" />
             </div>
-            <p className="text-[11px] text-muted-foreground bg-emerald-500/10 border border-emerald-500/30 rounded-md p-2">
+            <p className="text-xs text-muted-foreground bg-emerald-500/10 border border-emerald-500/30 rounded-md p-2">
               <strong>Email aktif via Resend.</strong> PDF PO akan dilampirkan otomatis. Catatan: dalam mode sandbox, email hanya bisa dikirim ke alamat yang sudah diverifikasi di akun Resend (atau ke <code>delivered@resend.dev</code> sebagai test address).
             </p>
           </div>

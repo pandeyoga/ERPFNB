@@ -129,7 +129,7 @@ export default function TaxConfig({ embedded = false } = {}) {
       {/* Info + tautan ke konfigurasi lengkap (sebelumnya banner + kartu terpisah yang isinya sama) */}
       <div className="glass-card p-3 flex items-center justify-between gap-3 flex-wrap" data-testid="tax-config-info-banner">
         <div className="flex items-start gap-2 min-w-0">
-          <Info className="h-4 w-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+          <Info className="h-4 w-4 text-sky-700 dark:text-sky-400 mt-0.5 shrink-0" />
           <p className="text-sm text-muted-foreground">
             Ringkasan status pajak. Kalkulator PPh 21, tabel tarif PPh 23/4(2), riwayat withholding per periode,
             dan ekspor ada di Finance → Pajak.

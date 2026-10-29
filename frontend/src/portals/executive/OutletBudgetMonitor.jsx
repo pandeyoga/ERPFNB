@@ -322,18 +322,18 @@ function HeatmapView({ heatmap, outletsById }) {
   }
   const colorFor = (cell) => {
     if (!cell) return "bg-muted/30 text-muted-foreground";
-    if (cell.status === "red") return "bg-red-500/30 text-red-700 dark:text-red-300";
-    if (cell.status === "amber") return "bg-amber-500/30 text-amber-700 dark:text-amber-300";
-    return "bg-emerald-500/30 text-emerald-700 dark:text-emerald-300";
+    if (cell.status === "red") return "bg-red-500/30 text-red-800 dark:text-red-300";
+    if (cell.status === "amber") return "bg-amber-500/30 text-amber-800 dark:text-amber-300";
+    return "bg-emerald-500/30 text-emerald-800 dark:text-emerald-300";
   };
   return (
     <Card>
       <CardHeader>
         <CardTitle>Heatmap Pace (6 periode terakhir)</CardTitle>
         <CardDescription>
-          Warna: <span className="text-emerald-500">hijau &lt; 80%</span> /
-          <span className="text-amber-500"> kuning 80–99%</span> /
-          <span className="text-red-500"> merah ≥ 100%</span>.
+          Warna: <span className="text-emerald-700 dark:text-emerald-400">hijau &lt; 80%</span> /
+          <span className="text-amber-800 dark:text-amber-400"> kuning 80–99%</span> /
+          <span className="text-red-700 dark:text-red-400"> merah ≥ 100%</span>.
         </CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">

@@ -11,13 +11,13 @@ import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 
 const ACTION_COLORS = {
-  create: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  update: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  delete: "bg-red-500/15 text-red-700 dark:text-red-400",
-  disable: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  reset_password: "bg-purple-500/15 text-purple-700 dark:text-purple-400",
-  login: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-400",
-  logout: "bg-zinc-300 text-zinc-700",
+  create: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+  update: "bg-blue-500/15 text-blue-800 dark:text-blue-400",
+  delete: "bg-red-500/15 text-red-800 dark:text-red-400",
+  disable: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  reset_password: "bg-purple-500/15 text-purple-800 dark:text-purple-400",
+  login: "bg-cyan-500/15 text-cyan-800 dark:text-cyan-400",
+  logout: "bg-muted text-foreground",
 };
 
 export default function AuditLog({ embedded = false } = {}) {
@@ -82,7 +82,7 @@ export default function AuditLog({ embedded = false } = {}) {
                 ? <span className="text-sm font-medium" title={e.user_id}>{e.user_name}</span>
                 : <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.user_id || ""}>{e.user_id ? `${e.user_id.slice(0, 8)}…` : "Sistem"}</span> },
             { key: "entity_type", label: "Entitas", sortable: true, render: (e) => <span className="text-xs">{e.entity_type}</span> },
-            { key: "action", label: "Aksi", sortable: true, render: (e) => <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", ACTION_COLORS[e.action] || "bg-foreground/10")}>{e.action}</span> },
+            { key: "action", label: "Aksi", sortable: true, render: (e) => <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", ACTION_COLORS[e.action] || "bg-foreground/10")}>{e.action}</span> },
             { key: "entity_id", label: "ID", render: (e) => <span className="text-xs font-medium tabular-nums text-muted-foreground" title={e.entity_id || ""}>{(e.entity_id || "—").slice(0, 8)}…</span> },
           ]}
           rows={items}

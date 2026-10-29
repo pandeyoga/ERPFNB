@@ -178,7 +178,7 @@ export default function PageBuilder() {
                  className="glass-card p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
                  data-testid={`page-row-${page.id}`}>
               <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <LayoutTemplate className="h-5 w-5 text-purple-600" />
+                <LayoutTemplate className="h-5 w-5 text-purple-700 dark:text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -204,7 +204,7 @@ export default function PageBuilder() {
                 <Button size="icon" variant="ghost" onClick={() => handleToggleStatus(page)}
                         title={page.status === "published" ? "Jadikan Draft" : "Publish"} aria-label={page.status === "published" ? "Jadikan Draft" : "Publish"}>
                   {page.status === "published"
-                    ? <Eye className="h-4 w-4 text-green-600" />
+                    ? <Eye className="h-4 w-4 text-green-700 dark:text-green-400" />
                     : <EyeOff className="h-4 w-4 text-muted-foreground" />}
                 </Button>
                 <Button size="icon" variant="ghost" onClick={() => openEdit(page)} aria-label="Edit halaman"

@@ -110,20 +110,20 @@ function PendingApprovalsWidget() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[11px] text-muted-foreground">{it.amount_label}</div>
+              <div className="text-xs text-muted-foreground">{it.amount_label}</div>
               <div className="text-sm font-semibold tabular-nums">
                 {it.amount != null ? fmtRp(it.amount) : it.days_count != null ? `${it.days_count} hari` : "—"}
               </div>
             </div>
             <Button size="sm" disabled={busy === `${it.entity_id}-approve`}
                     onClick={() => quickAction(it, "approve")}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    variant="success"
                     data-testid={`cockpit-approve-${it.entity_id}`}>
               <Check /> Setujui
             </Button>
             <Button size="icon-sm" variant="outline" disabled={busy === `${it.entity_id}-reject`}
                     onClick={() => quickAction(it, "reject")}
-                    className="text-rose-600 hover:text-rose-700"
+                    className="text-rose-700 dark:text-rose-400 hover:text-rose-700"
                     aria-label={`Tolak ${itemTitle(it)}`}
                     title="Tolak"
                     data-testid={`cockpit-reject-${it.entity_id}`}>
@@ -314,7 +314,7 @@ export default function OwnerCockpit() {
                         {o.outlet_name}
                       </span>
                       <span className="font-semibold tabular-nums whitespace-nowrap">{fmtRp(o.revenue)}
-                        {o.transactions > 0 && <span className="text-[11px] font-normal text-muted-foreground ml-2">{fmtNumber(o.transactions)} trx</span>}
+                        {o.transactions > 0 && <span className="text-xs font-normal text-muted-foreground ml-2">{fmtNumber(o.transactions)} trx</span>}
                       </span>
                     </li>
                   ))}
@@ -359,7 +359,7 @@ export default function OwnerCockpit() {
               {(digest.anomalies || []).slice(0, 3).map((a, i) => (
                 <li key={i} className="text-xs text-muted-foreground line-clamp-2">
                   <span className={cn("font-semibold mr-1",
-                    a.severity === "severe" ? "text-rose-600" : "text-amber-600")}>
+                    a.severity === "severe" ? "text-rose-700 dark:text-rose-400" : "text-amber-800 dark:text-amber-400")}>
                     {a.type}
                   </span>
                   {a.description}

@@ -245,7 +245,7 @@ export function ThresholdSettingsDialog({ onClose }) {
 
           {/* Override status indicator */}
           <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
-            hasOverride ? "bg-amber-500/10 text-amber-700 dark:text-amber-400" : "bg-muted/40 text-muted-foreground"
+            hasOverride ? "bg-amber-500/10 text-amber-800 dark:text-amber-400" : "bg-muted/40 text-muted-foreground"
           }`} data-testid="threshold-override-status">
             {hasOverride ? (
               <><span className="font-semibold">Override aktif</span>
@@ -271,7 +271,7 @@ export function ThresholdSettingsDialog({ onClose }) {
           {/* Actions */}
           <div className="flex justify-between pt-2 border-t border-border/40">
             <Button variant="outline" onClick={handleReset} disabled={!hasOverride || deleting}
-              className="gap-2 text-red-600 hover:text-red-700"
+              className="gap-2 text-red-700 dark:text-red-400 hover:text-red-700"
               data-testid="threshold-reset-btn">
               <RotateCcw className="h-4 w-4" />
               {deleting ? "Menghapus..." : "Reset ke Default"}
@@ -313,7 +313,7 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
           <div className="font-semibold text-sm flex items-center gap-2">
             {meta.label}
             {hasOverride && (
-              <span className="px-1.5 py-0.5 rounded text-[11px] bg-amber-500/20 text-amber-700 dark:text-amber-400">
+              <span className="px-1.5 py-0.5 rounded text-xs bg-amber-500/20 text-amber-800 dark:text-amber-400">
                 OVERRIDE
               </span>
             )}
@@ -334,7 +334,7 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
                 <div className="flex items-center gap-1">
                   <Label htmlFor={`threshold-field-${meta.key}-${field.key}`} className="text-xs md:text-sm font-medium">{field.label}</Label>
                   {isDirty && (
-                    <span className="text-[11px] text-amber-600 px-1 rounded bg-amber-500/10">diubah</span>
+                    <span className="text-xs text-amber-800 dark:text-amber-400 px-1 rounded bg-amber-500/10">diubah</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -348,12 +348,12 @@ function DetectorCard({ meta, values, defaults, hasOverride, onFieldChange, onTo
                     disabled={!enabled}
                   />
                   {isDirty && (
-                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       default: {defaults[field.key]}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground">{field.hint}</p>
+                <p className="text-xs text-muted-foreground">{field.hint}</p>
               </div>
             );
           })}

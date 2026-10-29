@@ -11,7 +11,7 @@ export default function ApprovalProgress({ state, compact = false }) {
   if (!state) return null;
   if (state.is_rejected) {
     return (
-      <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-700 dark:text-red-400 inline-flex items-center gap-2">
+      <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-800 dark:text-red-400 inline-flex items-center gap-2">
         <XCircle className="h-4 w-4" /> Rejected
       </div>
     );
@@ -44,14 +44,14 @@ export default function ApprovalProgress({ state, compact = false }) {
             )}>
               <div className="flex items-center gap-2">
                 {done
-                  ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                   : isCurrent
                     ? <Clock className="h-3.5 w-3.5 text-aurora animate-pulse" />
                     : <Circle className="h-3.5 w-3.5 text-muted-foreground" />}
                 <span className="text-xs font-semibold">{s.label || `Step ${i + 1}`}</span>
               </div>
               {!compact && (
-                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                <div className="text-xs text-muted-foreground mt-0.5 truncate">
                   {(s.any_of_perms || []).join(" / ") || "—"}
                 </div>
               )}

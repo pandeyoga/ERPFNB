@@ -65,7 +65,7 @@ export default function KpiCard({
           {hasDelta && (
             <span
               className={cn(
-                "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
+                "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums",
                 good
                   ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400"
                   : "bg-rose-500/12 text-rose-700 dark:text-rose-400",
@@ -84,7 +84,7 @@ export default function KpiCard({
             data={series}
             width={72}
             height={26}
-            strokeClassName={positive || !hasDelta ? "text-emerald-500" : "text-rose-500"}
+            strokeClassName={positive || !hasDelta ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}
           />
         )}
       </div>

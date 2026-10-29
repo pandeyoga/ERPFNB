@@ -182,7 +182,7 @@ export default function JournalDetail() {
             <DialogDescription>Counter-JE akan dibuat dengan tanggal yang sama. Tindakan ini tercatat di audit trail.</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <Label htmlFor="je-reverse-reason">Alasan reversal <span className="text-red-500">*</span></Label>
+            <Label htmlFor="je-reverse-reason">Alasan reversal <span className="text-red-700 dark:text-red-400">*</span></Label>
             <Textarea id="je-reverse-reason" value={reason} onChange={e => setReason(e.target.value)} className="glass-input min-h-[100px]" placeholder="Alasan reversal…" data-testid="je-reverse-reason" />
           </div>
           <DialogFooter>

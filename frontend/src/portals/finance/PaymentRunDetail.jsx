@@ -90,7 +90,7 @@ export default function PaymentRunDetail() {
             <div className="flex gap-2 flex-wrap" data-testid="prn-action-bar">
               {canCancel && (
                 <Button onClick={() => setShowCancel(true)} variant="outline"
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-700 dark:text-red-400 hover:text-red-700"
                   data-testid="prn-cancel-btn" disabled={acting}>
                   <X className="h-4 w-4" />Batalkan
                 </Button>
@@ -119,7 +119,7 @@ export default function PaymentRunDetail() {
         <div className="glass-card p-4 border-l-4 border-emerald-500 bg-emerald-500/5"
           data-testid="prn-posted-banner">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
             <div>
               <div className="font-semibold text-emerald-700 dark:text-emerald-400">Run berhasil dieksekusi</div>
               <div className="text-sm text-muted-foreground">
@@ -143,12 +143,12 @@ export default function PaymentRunDetail() {
 
       {/* Cancelled banner */}
       {run.status === "cancelled" && (
-        <div className="glass-card p-4 border-l-4 border-zinc-400 bg-zinc-500/5"
+        <div className="glass-card p-4 border-l-4 border-muted-foreground bg-zinc-500/5"
           data-testid="prn-cancelled-banner">
           <div className="flex items-center gap-3">
-            <X className="h-5 w-5 text-zinc-500 flex-shrink-0" />
+            <X className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             <div>
-              <div className="font-semibold text-zinc-600">Run dibatalkan</div>
+              <div className="font-semibold text-muted-foreground">Run dibatalkan</div>
               {run.cancel_reason && <div className="text-sm text-muted-foreground">Alasan: {run.cancel_reason}</div>}
               <div className="text-xs text-muted-foreground">
                 oleh {run.cancelled_by_name || run.cancelled_by} · {fmtDateTime(run.cancelled_at)}
@@ -178,7 +178,7 @@ export default function PaymentRunDetail() {
         <div className="glass-card p-3 border-l-4 border-amber-400 bg-amber-500/5 text-sm"
           data-testid="prn-wht-banner">
           <div className="flex items-center gap-2">
-            <span className="text-amber-600 font-semibold">PPh Withholding Tax</span>
+            <span className="text-amber-800 dark:text-amber-400 font-semibold">PPh Withholding Tax</span>
             <span className="text-muted-foreground">—</span>
             <span>Run ini mengandung {(run.payments || []).filter(p => p.wh_type && parseFloat(p.wh_amount || 0) > 0).length} payment dengan WHT.
             JE terpisah telah dibuat per payment dan dicatat ke eBupot.</span>
@@ -213,7 +213,7 @@ export default function PaymentRunDetail() {
                   return (
                     <span className="font-mono text-xs whitespace-nowrap">
                       {p.doc_no}
-                      {hasWht && <span className="ml-1 px-1 rounded text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400">WHT</span>}
+                      {hasWht && <span className="ml-1 px-1 rounded text-xs bg-amber-500/15 text-amber-800 dark:text-amber-400">WHT</span>}
                     </span>
                   );
                 } },
@@ -250,7 +250,7 @@ export default function PaymentRunDetail() {
         <ol className="space-y-3 text-sm">
           <TimelineItem
             when={run.created_at} who={run.created_by_name}
-            action="Dibuat (Draft)" color="bg-slate-400" />
+            action="Dibuat (Draft)" color="bg-muted-foreground" />
           {run.confirmed_at && (
             <TimelineItem
               when={run.confirmed_at} who={run.confirmed_by_name}
@@ -266,7 +266,7 @@ export default function PaymentRunDetail() {
             <TimelineItem
               when={run.cancelled_at} who={run.cancelled_by_name}
               action={`Dibatalkan${run.cancel_reason ? ` — ${run.cancel_reason}` : ""}`}
-              color="bg-zinc-400" />
+              color="bg-muted-foreground" />
           )}
         </ol>
       </div>
@@ -304,7 +304,7 @@ export default function PaymentRunDetail() {
           </DialogHeader>
           <div className="py-2 space-y-3">
             <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm">
-              <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
               <div>
                 Aksi ini akan <strong>memposting Journal Entry</strong> dan menandai semua {run.payments?.length || 0} payment sebagai <strong>Dibayar</strong>. Tindakan ini <strong>tidak dapat dibatalkan</strong>.
               </div>

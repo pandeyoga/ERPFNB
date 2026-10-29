@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Aksi positif (Setujui/Terima). emerald-700 → teks putih 5.5:1 (emerald-600 hanya 3.8:1).
+        success: "bg-emerald-700 text-white shadow-sm hover:bg-emerald-800",
       },
       // Ukuran tombol standar (design_guidelines → component_sizing_specs.buttons):
       // default = aksi halaman/toolbar, sm = aksi di dalam kartu/baris tabel,

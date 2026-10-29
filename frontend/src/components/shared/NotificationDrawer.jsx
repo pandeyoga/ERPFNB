@@ -13,10 +13,10 @@ const TYPE_ICONS = {
   done: CheckCircle,
 };
 const TYPE_COLORS = {
-  urgent: "text-red-600 bg-red-100 dark:bg-red-950/30",
-  warn:   "text-amber-600 bg-amber-100 dark:bg-amber-950/30",
-  info:   "text-blue-600 bg-blue-100 dark:bg-blue-950/30",
-  done:   "text-emerald-600 bg-emerald-100 dark:bg-emerald-950/30",
+  urgent: "text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/30",
+  warn:   "text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/30",
+  info:   "text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/30",
+  done:   "text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/30",
 };
 
 export default function NotificationDrawer({ open, onClose }) {
@@ -159,7 +159,7 @@ export default function NotificationDrawer({ open, onClose }) {
                         {!n.read_at && <span className="h-2 w-2 mt-1.5 rounded-full bg-aurora-1 shrink-0" style={{ background: "hsl(var(--aurora-1))" }} />}
                       </div>
                       {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
-                      <p className="text-[11px] text-muted-foreground mt-1">{fmtRelative(n.created_at)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{fmtRelative(n.created_at)}</p>
                     </div>
                   </button>
                 );

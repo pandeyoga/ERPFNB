@@ -120,13 +120,13 @@ export default function ReservationDeposits({ embedded = false }) {
                     render: (o) => <span className="font-medium">{o.outlet_name}</span> },
                   { key: "count", label: "Reservasi", numeric: true, sortable: true },
                   { key: "paid", label: "Terkumpul", numeric: true, sortable: true,
-                    render: (o) => <span className="text-emerald-600 dark:text-emerald-400 font-medium">{formatCurrency(o.paid || 0)}</span> },
+                    render: (o) => <span className="text-emerald-700 dark:text-emerald-400 font-medium">{formatCurrency(o.paid || 0)}</span> },
                   { key: "pending", label: "Menunggu", numeric: true,
-                    render: (o) => <span className="text-amber-600 dark:text-amber-400">{formatCurrency(o.pending || 0)}</span> },
+                    render: (o) => <span className="text-amber-800 dark:text-amber-400">{formatCurrency(o.pending || 0)}</span> },
                   { key: "refunded", label: "Dikembalikan", numeric: true,
-                    render: (o) => <span className="text-sky-600 dark:text-sky-400">{formatCurrency(o.refunded || 0)}</span> },
+                    render: (o) => <span className="text-sky-700 dark:text-sky-400">{formatCurrency(o.refunded || 0)}</span> },
                   { key: "forfeited", label: "Hangus", numeric: true,
-                    render: (o) => <span className="text-rose-600 dark:text-rose-400">{formatCurrency(o.forfeited || 0)}</span> },
+                    render: (o) => <span className="text-rose-700 dark:text-rose-400">{formatCurrency(o.forfeited || 0)}</span> },
                 ]}
               />
             </CardContent>

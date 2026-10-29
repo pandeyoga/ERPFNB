@@ -84,26 +84,26 @@ export default function UserMenu() {
         <div className="px-2 pb-2">
           {isFullAccess ? (
             <div className="rounded-lg bg-green-500/10 border border-green-500/20 px-2.5 py-1.5">
-              <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+              <div className="flex items-center gap-1.5 text-green-700 dark:text-green-400">
                 <Globe2 className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="text-[11px] font-semibold">Akses Penuh</span>
+                <span className="text-xs font-semibold">Akses Penuh</span>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Semua brand &amp; outlet dapat diakses
               </p>
             </div>
           ) : isRestricted ? (
             <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5">
-              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-400">
                 <Store className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="text-[11px] font-semibold">Outlet Staff</span>
+                <span className="text-xs font-semibold">Outlet Staff</span>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Data dibatasi untuk:
               </p>
               <div className="mt-1 flex flex-wrap gap-1">
                 {scopeOutlets.map((o) => (
-                  <span key={o.id} className="text-[11px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 font-medium">
+                  <span key={o.id} className="text-xs px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 font-medium">
                     {o.name}
                   </span>
                 ))}
@@ -111,7 +111,7 @@ export default function UserMenu() {
               {scopeBrands.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-1">
                   {scopeBrands.map((b) => (
-                    <span key={b.id} className="text-[11px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium flex items-center gap-0.5">
+                    <span key={b.id} className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-800 dark:text-blue-400 font-medium flex items-center gap-0.5">
                       <Building2 className="h-2.5 w-2.5" /> {b.name}
                     </span>
                   ))}

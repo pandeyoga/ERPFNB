@@ -65,8 +65,8 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
               Number(growth) >= 0
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                : "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
+                : "bg-rose-500/10 text-rose-800 dark:text-rose-400"
             )}
           >
             {Number(growth) >= 0 ? (
@@ -93,12 +93,12 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 12 }}
               tickFormatter={(v) => fmtDate(v, "DD/MM")}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 12 }}
               width={44}
               tickFormatter={(v) => {
                 if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;

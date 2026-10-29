@@ -86,9 +86,9 @@ export default function SchedulerView() {
                   <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
                     {j.name}
                     {j.enabled ? (
-                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">enabled</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-800 dark:text-emerald-400">enabled</span>
                     ) : (
-                      <span className="text-[11px] px-1.5 py-0.5 rounded bg-zinc-300 text-zinc-600">disabled</span>
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">disabled</span>
                     )}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1">{j.description}</p>
@@ -101,18 +101,18 @@ export default function SchedulerView() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded bg-muted/50 px-2.5 py-1.5">
                   <div className="text-muted-foreground">Trigger</div>
-                  <div className="font-mono text-[11px] truncate">{j.trigger}</div>
+                  <div className="font-mono text-xs truncate">{j.trigger}</div>
                 </div>
                 <div className="rounded bg-muted/50 px-2.5 py-1.5">
                   <div className="text-muted-foreground">Next Run</div>
-                  <div className="text-[11px] tabular-nums">{j.next_run ? fmtDateTime(j.next_run) : "-"}</div>
+                  <div className="text-xs tabular-nums">{j.next_run ? fmtDateTime(j.next_run) : "-"}</div>
                 </div>
               </div>
               {lastRun && (
                 <div className="flex items-center gap-2 text-xs border-t border-border/30 pt-2">
-                  {lastRun.status === "success" ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> :
-                    lastRun.status === "failed" ? <XCircle className="h-4 w-4 text-red-600" /> :
-                    <Clock className="h-4 w-4 text-blue-600" />}
+                  {lastRun.status === "success" ? <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" /> :
+                    lastRun.status === "failed" ? <XCircle className="h-4 w-4 text-red-700 dark:text-red-400" /> :
+                    <Clock className="h-4 w-4 text-blue-700 dark:text-blue-400" />}
                   <span className="text-muted-foreground">Last run:</span>
                   <span>{fmtRelative(lastRun.started_at)}</span>
                   <span className="text-muted-foreground">·</span>
@@ -139,7 +139,7 @@ export default function SchedulerView() {
               columns={[
                 { key: "started_at", label: "Started", primary: true, sortable: true, render: (r) => <span className="text-xs tabular-nums whitespace-nowrap">{fmtDateTime(r.started_at)}</span> },
                 { key: "job_id", label: "Job", sortable: true, render: (r) => <span className="text-xs font-medium tabular-nums">{r.job_id}</span> },
-                { key: "status", label: "Status", sortable: true, render: (r) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === "success" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : r.status === "failed" ? "bg-red-500/15 text-red-700 dark:text-red-400" : "bg-blue-500/15 text-blue-700 dark:text-blue-400"}`}>{r.status}</span> },
+                { key: "status", label: "Status", sortable: true, render: (r) => <span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === "success" ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400" : r.status === "failed" ? "bg-red-500/15 text-red-800 dark:text-red-400" : "bg-blue-500/15 text-blue-800 dark:text-blue-400"}`}>{r.status}</span> },
                 { key: "result", label: "Result / Error", render: (r) => <span className="font-mono text-xs text-muted-foreground break-all">{r.error || JSON.stringify(r.result || {}).slice(0, 200)}</span> },
               ]}
               rows={runs}

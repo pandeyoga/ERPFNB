@@ -163,7 +163,7 @@ export default function PeriodClosingWizard() {
         <div className={`glass-card p-4 border-l-4 ${taxPreview.will_create ? "border-l-amber-500" : "border-l-slate-400"}`}
           data-testid="tax-settlement-preview">
           <div className="flex items-start gap-3">
-            <Sparkles className={`h-5 w-5 mt-0.5 ${taxPreview.will_create ? "text-amber-500" : "text-muted-foreground"}`} />
+            <Sparkles className={`h-5 w-5 mt-0.5 ${taxPreview.will_create ? "text-amber-800 dark:text-amber-400" : "text-muted-foreground"}`} />
             <div className="flex-1">
               <h3 className="text-sm md:text-base font-semibold">Preview Tax Settlement</h3>
               {taxPreview.will_create ? (
@@ -214,7 +214,7 @@ export default function PeriodClosingWizard() {
       {(cur === "closed" || cur === "locked") && taxSettlement && (
         <div className="glass-card p-4 border-l-4 border-l-blue-500" data-testid="tax-settlement-info">
           <div className="flex items-start gap-3">
-            <Sparkles className="h-5 w-5 text-blue-500 mt-0.5" />
+            <Sparkles className="h-5 w-5 text-blue-700 dark:text-blue-400 mt-0.5" />
             <div className="flex-1">
               <h3 className="text-sm md:text-base font-semibold">Tax Settlement dibuat otomatis</h3>
               <p className="text-xs text-muted-foreground mt-1">
@@ -238,7 +238,7 @@ export default function PeriodClosingWizard() {
               </div>
               <Link
                 to={`/finance/journals/${taxSettlement.id}`}
-                className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="inline-flex items-center gap-1 mt-3 text-xs text-blue-700 dark:text-blue-400 hover:underline"
                 data-testid="tax-settlement-je-link"
               >
                 Lihat detail JE <ExternalLink className="h-3 w-3" />
@@ -269,7 +269,7 @@ export default function PeriodClosingWizard() {
                   <CheckIcon status={c.status} />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-semibold truncate">{i + 1}. {c.label}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{c.detail}</div>
+                    <div className="text-xs text-muted-foreground truncate">{c.detail}</div>
                   </div>
                   {activeIdx === i && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                 </button>
@@ -295,7 +295,7 @@ export default function PeriodClosingWizard() {
                       <h3 className="text-sm md:text-base font-semibold mt-0.5">{active.label}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{active.detail}</p>
                       {active.blocker && active.status === "fail" && (
-                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-400 text-xs font-semibold">
+                        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/15 text-red-800 dark:text-red-400 text-xs font-semibold">
                           <AlertTriangle className="h-3.5 w-3.5" /> Blocker — wajib diselesaikan sebelum close/lock
                         </div>
                       )}
@@ -351,8 +351,8 @@ export default function PeriodClosingWizard() {
 function CheckIcon({ status, large = false }) {
   const size = large ? "h-9 w-9" : "h-7 w-7";
   const inner = large ? "h-4 w-4" : "h-3.5 w-3.5";
-  if (status === "ok")    return <span className={`${size} rounded-full flex items-center justify-center bg-emerald-500/15 text-emerald-700 dark:text-emerald-400`}><CheckCircle2 className={inner} /></span>;
-  if (status === "warn")  return <span className={`${size} rounded-full flex items-center justify-center bg-amber-500/15 text-amber-700 dark:text-amber-400`}><AlertTriangle className={inner} /></span>;
-  if (status === "fail")  return <span className={`${size} rounded-full flex items-center justify-center bg-red-500/15 text-red-700 dark:text-red-400`}><XCircle className={inner} /></span>;
-  return <span className={`${size} rounded-full flex items-center justify-center bg-blue-500/15 text-blue-700 dark:text-blue-400`}><Info className={inner} /></span>;
+  if (status === "ok")    return <span className={`${size} rounded-full flex items-center justify-center bg-emerald-500/15 text-emerald-800 dark:text-emerald-400`}><CheckCircle2 className={inner} /></span>;
+  if (status === "warn")  return <span className={`${size} rounded-full flex items-center justify-center bg-amber-500/15 text-amber-800 dark:text-amber-400`}><AlertTriangle className={inner} /></span>;
+  if (status === "fail")  return <span className={`${size} rounded-full flex items-center justify-center bg-red-500/15 text-red-800 dark:text-red-400`}><XCircle className={inner} /></span>;
+  return <span className={`${size} rounded-full flex items-center justify-center bg-blue-500/15 text-blue-800 dark:text-blue-400`}><Info className={inner} /></span>;
 }

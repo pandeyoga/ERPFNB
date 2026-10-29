@@ -145,15 +145,15 @@ function PayrollDetailDialog({ pid, open, onOpenChange, outlets, canApprove, onP
                   { key: "name", label: "Karyawan", primary: true, render: (e) => (
                     <span className="font-medium inline-flex items-center gap-1.5">
                       {e.name}
-                      {e.employment_status === "leave" && <Badge variant="outline" className="text-[11px] border-amber-500 text-amber-600" data-testid={`payroll-emp-leave-${e._idx}`}>Cuti</Badge>}
+                      {e.employment_status === "leave" && <Badge variant="outline" className="text-xs border-amber-500 text-amber-800 dark:text-amber-400" data-testid={`payroll-emp-leave-${e._idx}`}>Cuti</Badge>}
                     </span>
                   ) },
                   { key: "basic", label: "Pokok", numeric: true, render: (e) => <span className="whitespace-nowrap">{fmtRp(e.basic)}</span> },
                   { key: "allowances_total", label: "Tunj.", numeric: true, render: (e) => <span className="text-muted-foreground">{fmtRp(e.allowances_total)}</span> },
                   { key: "sc_inc", label: "SC+Inc", numeric: true, render: (e) => <span className="text-muted-foreground">{fmtRp((e.service_share || 0) + (e.incentive_share || 0))}</span> },
                   { key: "gross", label: "Gross", numeric: true, render: (e) => <span className="font-medium">{fmtRp(e.gross)}</span> },
-                  { key: "bpjs_employee", label: "BPJS", numeric: true, render: (e) => <span className="text-amber-600">{fmtRp(e.bpjs_employee)}</span> },
-                  { key: "pph21", label: "PPh21", numeric: true, render: (e) => <span className="text-red-500">{fmtRp(e.pph21)}</span> },
+                  { key: "bpjs_employee", label: "BPJS", numeric: true, render: (e) => <span className="text-amber-800 dark:text-amber-400">{fmtRp(e.bpjs_employee)}</span> },
+                  { key: "pph21", label: "PPh21", numeric: true, render: (e) => <span className="text-red-700 dark:text-red-400">{fmtRp(e.pph21)}</span> },
                   { key: "advance_repayment", label: "Kasbon", numeric: true, render: (e) => <span className="text-muted-foreground">{fmtRp(e.advance_repayment)}</span> },
                   { key: "take_home", label: "Take Home", numeric: true, render: (e) => <span className="font-bold">{fmtRp(e.take_home)}</span> },
                 ]}

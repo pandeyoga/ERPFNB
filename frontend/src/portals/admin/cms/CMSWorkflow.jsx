@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 
 const STATUS_CONFIG = {
-  draft:          { label: "Draft",          color: "bg-gray-100 text-gray-700 border-gray-200",    icon: AlertCircle },
+  draft:          { label: "Draft",          color: "bg-muted/40 text-foreground border-border",    icon: AlertCircle },
   pending_review: { label: "Menunggu Review", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
   approved:       { label: "Disetujui",       color: "bg-blue-100 text-blue-700 border-blue-200",    icon: CheckCircle2 },
   rejected:       { label: "Ditolak",       color: "bg-red-100 text-red-700 border-red-200",       icon: XCircle },
@@ -94,25 +94,25 @@ export default function CMSWorkflow({
       {!compact && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" data-testid={`cms-workflow-menu-${itemId}`}>
+            <Button variant="ghost" size="icon-sm" data-testid={`cms-workflow-menu-${itemId}`}>
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {(status === "draft" || status === "rejected") && (
               <DropdownMenuItem onClick={doSubmit} disabled={loading} data-testid={`cms-workflow-submit-${itemId}`}>
-                <Send className="h-3.5 w-3.5 mr-2 text-amber-600" />
+                <Send className="h-3.5 w-3.5 mr-2 text-amber-800 dark:text-amber-400" />
                 Submit for Review
               </DropdownMenuItem>
             )}
             {status === "pending_review" && (
               <>
                 <DropdownMenuItem onClick={() => { setComment(""); setApproveOpen(true); }} data-testid={`cms-workflow-approve-open-${itemId}`}>
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-green-600" />
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-green-700 dark:text-green-400" />
                   Approve & Publish
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { setComment(""); setRejectOpen(true); }} className="text-red-600" data-testid={`cms-workflow-reject-open-${itemId}`}>
+                <DropdownMenuItem onClick={() => { setComment(""); setRejectOpen(true); }} className="text-red-700 dark:text-red-400" data-testid={`cms-workflow-reject-open-${itemId}`}>
                   <XCircle className="h-3.5 w-3.5 mr-2" />
                   Reject
                 </DropdownMenuItem>
@@ -124,11 +124,11 @@ export default function CMSWorkflow({
 
       {compact && status === "pending_review" && (
         <div className="flex gap-1">
-          <Button size="sm" variant="outline" className="h-6 text-xs text-green-600 border-green-300 hover:bg-green-50"
+          <Button size="sm" variant="outline" className="text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10"
                   onClick={() => { setComment(""); setApproveOpen(true); }} data-testid={`cms-workflow-approve-compact-${itemId}`}>
             <CheckCircle2 className="h-3 w-3" /> Approve
           </Button>
-          <Button size="sm" variant="outline" className="h-6 text-xs text-red-600 border-red-300 hover:bg-red-50"
+          <Button size="sm" variant="outline" className="text-red-700 dark:text-red-400 border-red-500/40 hover:bg-red-500/10"
                   onClick={() => { setComment(""); setRejectOpen(true); }} data-testid={`cms-workflow-reject-compact-${itemId}`}>
             <XCircle className="h-3 w-3" /> Reject
           </Button>
@@ -136,7 +136,7 @@ export default function CMSWorkflow({
       )}
 
       {compact && (status === "draft" || status === "rejected") && (
-        <Button size="sm" variant="outline" className="h-6 text-xs text-amber-600 border-amber-300 hover:bg-amber-50"
+        <Button size="sm" variant="outline" className="text-amber-800 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/10"
                 disabled={loading}
                 onClick={doSubmit}
                 data-testid={`cms-workflow-submit-compact-${itemId}`}>
@@ -162,7 +162,7 @@ export default function CMSWorkflow({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setApproveOpen(false)} data-testid="cms-workflow-approve-cancel">Batal</Button>
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={doApprove} disabled={loading} data-testid="cms-workflow-approve-confirm">
+            <Button variant="success" onClick={doApprove} disabled={loading} data-testid="cms-workflow-approve-confirm">
               <CheckCircle2 className="h-4 w-4" /> Setujui & Publish
             </Button>
           </DialogFooter>

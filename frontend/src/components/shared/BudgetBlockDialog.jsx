@@ -80,7 +80,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-500" />
+            <AlertCircle className="h-5 w-5 text-amber-800 dark:text-amber-400" />
             PR Diblokir oleh Budget
           </DialogTitle>
           <DialogDescription>
@@ -100,7 +100,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-1">
             <div>
               <span className="text-muted-foreground">Mode:</span>{" "}
-              <Badge variant="outline" className={mode === "combined" ? "border-sky-500/40 text-sky-600 dark:text-sky-400" : "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"}>
+              <Badge variant="outline" className={mode === "combined" ? "border-sky-500/40 text-sky-700 dark:text-sky-400" : "border-emerald-500/40 text-emerald-700 dark:text-emerald-400"}>
                 {mode === "combined" ? "Gabungan" : "Per-Bucket"}
               </Badge>
             </div>
@@ -110,7 +110,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
                 {(verdict?.bucket || "").toUpperCase()}
               </Badge>
               {mode === "combined" && (
-                <span className="text-[11px] text-muted-foreground ml-2">
+                <span className="text-xs text-muted-foreground ml-2">
                   → consume dari pool <strong>GABUNGAN</strong>
                 </span>
               )}
@@ -128,7 +128,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
             {verdict?.shortfall != null && (
               <div>
                 <span className="text-muted-foreground">Kekurangan:</span>{" "}
-                <strong className="text-amber-600">{fmtRp(verdict.shortfall)}</strong>
+                <strong className="text-amber-800 dark:text-amber-400">{fmtRp(verdict.shortfall)}</strong>
               </div>
             )}
           </div>
@@ -145,7 +145,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
                   className="mt-1"
                   data-testid="block-input-amount"
                 />
-                <div className="text-[11px] text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   Default = nilai kekurangan {fmtRp(shortfall)}
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function BudgetBlockDialog({ open, onClose, verdict, outletId, re
             <X className="h-4 w-4 mr-1" /> Tutup
           </Button>
           {budget_id && (
-            <Button onClick={submit} disabled={submitting} className="pill-active gap-2" data-testid="block-btn-submit">
+            <Button onClick={submit} disabled={submitting} className="gap-2" data-testid="block-btn-submit">
               <Send className="h-4 w-4" /> {submitting ? "Mengirim…" : "Kirim Request"}
             </Button>
           )}

@@ -156,7 +156,7 @@ function Sparkline({ data, fmt, highlightPeriod }) {
         const isHi = d.period === highlightPeriod;
         return (
           <div key={d.period} className="flex flex-col items-center gap-1 group min-w-[42px]">
-            <div className="text-[11px] tabular-nums text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="text-xs tabular-nums text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
               {fmt(d.value)}
             </div>
             <div
@@ -167,7 +167,7 @@ function Sparkline({ data, fmt, highlightPeriod }) {
               style={{ height: `${h}px` }}
               data-testid={`spark-${d.period}`}
             />
-            <div className={cn("text-[11px]", isHi ? "font-bold" : "text-muted-foreground")}>
+            <div className={cn("text-xs", isHi ? "font-bold" : "text-muted-foreground")}>
               {d.period.slice(2)}
             </div>
           </div>

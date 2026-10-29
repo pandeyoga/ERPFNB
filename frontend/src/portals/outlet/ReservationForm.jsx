@@ -306,7 +306,7 @@ export default function ReservationForm() {
                   onClick={() => setSpecial("type", form.special_requests.type === t.id ? "" : t.id)}
                   className={`h-9 px-3 rounded-md border text-sm transition-colors ${
                     form.special_requests.type === t.id
-                      ? "bg-amber-500/10 border-amber-500/60 text-amber-700 dark:text-amber-300"
+                      ? "bg-amber-500/10 border-amber-500/60 text-amber-800 dark:text-amber-300"
                       : "border-input hover:bg-accent"
                   }`}
                   data-testid={`reservation-form-special-${t.id}`}

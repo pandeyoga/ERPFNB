@@ -283,13 +283,13 @@ export default function BulkOptimizeDialog({
   const renderStatusIcon = (status) => {
     switch (status) {
       case STATUS.DONE:
-        return <Check className="w-4 h-4 text-emerald-500" />;
+        return <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />;
       case STATUS.FAILED:
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-red-700 dark:text-red-400" />;
       case STATUS.PROCESSING:
-        return <Loader2 className="w-4 h-4 text-violet-500 animate-spin" />;
+        return <Loader2 className="w-4 h-4 text-violet-700 dark:text-violet-400 animate-spin" />;
       case STATUS.CANCELLED:
-        return <X className="w-4 h-4 text-amber-500" />;
+        return <X className="w-4 h-4 text-amber-800 dark:text-amber-400" />;
       case STATUS.QUEUED:
         return <div className="w-2 h-2 rounded-full bg-amber-400 mx-1" />;
       default:
@@ -350,12 +350,12 @@ export default function BulkOptimizeDialog({
                     />
                     <div className="space-y-0.5">
                       <p className="text-xs font-semibold">{opt.label}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug">{opt.desc}</p>
+                      <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
                     </div>
                   </label>
                 ))}
               </RadioGroup>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 <span className="font-semibold">{filteredPages.length}</span> halaman terpilih dari {pages?.length || 0} total
               </p>
             </div>
@@ -394,10 +394,10 @@ export default function BulkOptimizeDialog({
                       />
                       <div className="space-y-0.5">
                         <p className="text-xs font-semibold flex items-center gap-1">
-                          <Icon className="w-3 h-3 text-violet-500" />
+                          <Icon className="w-3 h-3 text-violet-700 dark:text-violet-400" />
                           {opt.label}
                         </p>
-                        <p className="text-[11px] text-muted-foreground leading-snug">{opt.desc}</p>
+                        <p className="text-xs text-muted-foreground leading-snug">{opt.desc}</p>
                       </div>
                     </label>
                   );
@@ -419,7 +419,7 @@ export default function BulkOptimizeDialog({
                 className="text-sm"
                 data-testid="bulk-global-seed"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Akan ditambahkan ke keyword tiap halaman yang belum punya pengaturan.
               </p>
             </div>
@@ -434,17 +434,17 @@ export default function BulkOptimizeDialog({
                   </span>
                 </div>
                 <Progress value={stats.pct} className="h-1.5" />
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Check className="w-3 h-3 text-emerald-500" />
+                    <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                     {stats.done} sukses
                   </span>
                   <span className="flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3 text-red-500" />
+                    <AlertCircle className="w-3 h-3 text-red-700 dark:text-red-400" />
                     {stats.failed} gagal
                   </span>
                   {stats.aiCount > 0 && (
-                    <span className="flex items-center gap-1 text-violet-600 dark:text-violet-300">
+                    <span className="flex items-center gap-1 text-violet-700 dark:text-violet-300">
                       <Sparkles className="w-3 h-3" />
                       {stats.aiCount} AI
                     </span>
@@ -470,15 +470,15 @@ export default function BulkOptimizeDialog({
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="font-medium truncate">{p.page_name}</p>
-                            <p className="text-[11px] text-muted-foreground font-medium tabular-nums truncate">{p.path}</p>
+                            <p className="text-xs text-muted-foreground font-medium tabular-nums truncate">{p.path}</p>
                           </div>
                         </div>
                         {s.message && (
                           <span className={cn(
-                            "text-[11px] truncate max-w-[180px] flex items-center gap-1",
-                            s.status === STATUS.FAILED ? "text-red-500" :
+                            "text-xs truncate max-w-[180px] flex items-center gap-1",
+                            s.status === STATUS.FAILED ? "text-red-700 dark:text-red-400" :
                             s.status === STATUS.DONE
-                              ? (s.aiPowered ? "text-violet-600 dark:text-violet-300 font-medium" : "text-emerald-600")
+                              ? (s.aiPowered ? "text-violet-700 dark:text-violet-300 font-medium" : "text-emerald-700 dark:text-emerald-400")
                               : "text-muted-foreground"
                           )}>
                             {s.status === STATUS.DONE && s.aiPowered && (
@@ -503,9 +503,9 @@ export default function BulkOptimizeDialog({
                   : "border-amber-200 bg-amber-50/50 dark:bg-amber-950/20"
               )}>
                 {stats.failed === 0 ? (
-                  <BadgeCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <BadgeCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-amber-800 dark:text-amber-400 flex-shrink-0" />
                 )}
                 <div className="text-xs">
                   <p className="font-semibold">
@@ -575,7 +575,7 @@ export default function BulkOptimizeDialog({
                   Coba Lagi yang Gagal ({stats.failed})
                 </Button>
               )}
-              <Badge variant="secondary" className="px-2 py-1 text-[11px]">
+              <Badge variant="secondary" className="px-2 py-1 text-xs">
                 {stats.done}/{stats.total} sukses
               </Badge>
               <Button

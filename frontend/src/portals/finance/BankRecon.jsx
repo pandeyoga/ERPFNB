@@ -21,14 +21,14 @@ import { cn } from "@/lib/utils";
 
 // ── Audit history config ────────────────────────────────────────────────────
 const ACTION_HISTORY_CONFIG = {
-  create:         { label: "Upload Statement",        dot: "bg-blue-500",    text: "text-blue-600 dark:text-blue-400" },
-  auto_match:     { label: "Auto Match",              dot: "bg-cyan-500",    text: "text-cyan-600 dark:text-cyan-400" },
-  bulk_accept:    { label: "Bulk Auto Accept",        dot: "bg-teal-500",    text: "text-teal-600 dark:text-teal-400" },
-  match:          { label: "Manual Match",            dot: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
-  unmatch:        { label: "Unmatch",                 dot: "bg-amber-500",   text: "text-amber-600 dark:text-amber-400" },
-  exception:      { label: "Tandai Exception",        dot: "bg-orange-500",  text: "text-orange-600 dark:text-orange-400" },
+  create:         { label: "Upload Statement",        dot: "bg-blue-500",    text: "text-blue-700 dark:text-blue-400" },
+  auto_match:     { label: "Auto Match",              dot: "bg-cyan-500",    text: "text-cyan-700 dark:text-cyan-400" },
+  bulk_accept:    { label: "Bulk Auto Accept",        dot: "bg-teal-500",    text: "text-teal-700 dark:text-teal-400" },
+  match:          { label: "Manual Match",            dot: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400" },
+  unmatch:        { label: "Unmatch",                 dot: "bg-amber-500",   text: "text-amber-800 dark:text-amber-400" },
+  exception:      { label: "Tandai Exception",        dot: "bg-orange-500",  text: "text-orange-800 dark:text-orange-400" },
   commit:         { label: "Commit Rekonsiliasi",     dot: "bg-green-600",   text: "text-green-700 dark:text-green-400" },
-  reverse_commit: { label: "Batalkan Rekonsiliasi",   dot: "bg-red-500",     text: "text-red-600 dark:text-red-400" },
+  reverse_commit: { label: "Batalkan Rekonsiliasi",   dot: "bg-red-500",     text: "text-red-700 dark:text-red-400" },
 };
 
 function historyActionSummary(entry) {
@@ -161,15 +161,15 @@ function BankReconList({ onOpen, embedded = false }) {
         <DialogContent data-testid="br-upload-dialog">
           <DialogHeader><DialogTitle>Unggah Bank Statement (CSV)</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Bank Account <span className="text-red-500">*</span></Label>
+            <div><Label>Bank Account <span className="text-red-700 dark:text-red-400">*</span></Label>
               <SimpleSelect value={bankId} onValueChange={setBankId}
                 options={[{ value: "", label: "Pilih..." }, ...banks.map(b => ({ value: b.id, label: `${b.bank} ${b.account_number} — ${b.name}` }))]}
                 placeholder="Pilih..." ariaLabel="Bank Account"
                 className="glass-input mt-1 w-full" testId="br-bank-select" />
             </div>
-            <div><Label htmlFor="br-file">File CSV <span className="text-red-500">*</span></Label>
+            <div><Label htmlFor="br-file">File CSV <span className="text-red-700 dark:text-red-400">*</span></Label>
               <Input id="br-file" type="file" accept=".csv,.txt" ref={fileRef} className="mt-1" data-testid="br-file" />
-              <p className="text-[11px] text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Kolom yang dikenal: Date / Tanggal, Description / Keterangan, Amount / Debit+Credit, Reference (opsional).
                 Format tanggal: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY.
               </p>
@@ -356,7 +356,7 @@ function BankReconDetail({ sessionId, onBack }) {
     { key: "reference", label: "Ref", render: (r) => <span className="text-xs text-muted-foreground">{r.reference || "-"}</span> },
     { key: "match", label: "Match", render: (r) => (
       r.exception
-        ? <span className="inline-flex items-center gap-1 text-xs text-red-600"><AlertCircle className="h-3.5 w-3.5" />Exception{r.exception_note ? `: ${r.exception_note}` : ""}</span>
+        ? <span className="inline-flex items-center gap-1 text-xs text-red-700 dark:text-red-400"><AlertCircle className="h-3.5 w-3.5" />Exception{r.exception_note ? `: ${r.exception_note}` : ""}</span>
         : r.matched
           ? <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" />{r.match_target_doc_no || r.match_target_id?.slice(0, 8)} {r.match_type === "manual" ? "(manual)" : r.match_confidence ? `(${Math.round(r.match_confidence * 100)}%)` : ""}</span>
           : <span className="text-xs text-amber-700 dark:text-amber-400">Belum match</span>
@@ -368,7 +368,7 @@ function BankReconDetail({ sessionId, onBack }) {
         <Button size="sm" variant="outline" onClick={() => openMatch(r.id)} data-testid={`br-match-${r.id}`}>Match...</Button>
       )}
       {!isCommitted && !r.exception && !r.matched && (
-        <Button size="icon-sm" variant="ghost" className="text-red-600" onClick={() => { setExceptionRowId(r.id); setExceptionNote(""); }}
+        <Button size="icon-sm" variant="ghost" className="text-red-700 dark:text-red-400" onClick={() => { setExceptionRowId(r.id); setExceptionNote(""); }}
           aria-label="Tandai exception" title="Tandai exception" data-testid={`br-exception-${r.id}`}>
           <AlertCircle className="h-3.5 w-3.5" />
         </Button>
@@ -479,7 +479,7 @@ function BankReconDetail({ sessionId, onBack }) {
             <div className="flex items-center gap-2 text-sm font-semibold">
               <History className="h-4 w-4 text-muted-foreground" />
               Riwayat Session
-              <span className="text-xs font-normal text-muted-foreground/70">({history.length} event)</span>
+              <span className="text-xs font-normal text-muted-foreground">({history.length} event)</span>
             </div>
             <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", historyOpen && "rotate-180")} />
           </button>
@@ -488,7 +488,7 @@ function BankReconDetail({ sessionId, onBack }) {
             <div className="px-4 pb-4 border-t border-border/40">
               <ol className="relative mt-4 space-y-0" data-testid="history-timeline">
                 {history.map((entry, i) => {
-                  const cfg = ACTION_HISTORY_CONFIG[entry.action] || { label: entry.action, dot: "bg-slate-400", text: "text-muted-foreground" };
+                  const cfg = ACTION_HISTORY_CONFIG[entry.action] || { label: entry.action, dot: "bg-muted-foreground", text: "text-muted-foreground" };
                   const summary = historyActionSummary(entry);
                   return (
                     <li key={entry.id || i} className="flex gap-3 pb-5 last:pb-0 relative">
@@ -502,13 +502,13 @@ function BankReconDetail({ sessionId, onBack }) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className={cn("text-sm font-semibold", cfg.text)}>{cfg.label}</span>
-                          <span className="text-xs text-muted-foreground/70 whitespace-nowrap tabular-nums flex-shrink-0">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums flex-shrink-0">
                             {fmtDateTime(entry.timestamp)}
                           </span>
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
                           {entry.user_name}
-                          {summary && <span className="text-muted-foreground/60"> · {summary}</span>}
+                          {summary && <span className="text-muted-foreground"> · {summary}</span>}
                         </div>
                       </div>
                     </li>
@@ -535,7 +535,7 @@ function BankReconDetail({ sessionId, onBack }) {
               <span className="font-semibold text-foreground"> {matched} transaksi</span> yang
               sudah di-match ke status <span className="font-semibold text-foreground">belum reconciled</span>.
             </p>
-            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3 text-xs text-amber-700 dark:text-amber-400 space-y-1">
+            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-3 text-xs text-amber-800 dark:text-amber-400 space-y-1">
               <p className="font-semibold">Yang akan terjadi:</p>
               <ul className="list-disc ml-4 space-y-0.5">
                 <li>Status session kembali ke <strong>Menunggu</strong></li>
@@ -581,7 +581,7 @@ function BankReconDetail({ sessionId, onBack }) {
                 <TabsList data-testid="candidate-type-filter" aria-label="Filter tipe kandidat">
                   {types.map(t => (
                     <TabsTrigger key={t.key} value={t.key} data-testid={`filter-${t.key}`}>
-                      {t.label} <span className="opacity-60">({t.count})</span>
+                      {t.label} <span className="tabular-nums">({t.count})</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -653,27 +653,27 @@ function BankReconDetail({ sessionId, onBack }) {
                   )}
                   {visible.map(c => (
                       <button key={c.target_id} onClick={() => pickCandidate(c)}
-                      className="w-full text-left p-3 rounded-lg border border-border/30 hover:bg-foreground/5 transition flex items-center gap-3"
+                      className="w-full text-left p-3 rounded-md border border-border/30 hover:bg-foreground/5 transition flex items-center gap-3"
                       data-testid="br-candidate">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 text-sm">
                           <span className="font-mono">{c.doc_no}</span>
                           <span className={cn(
-                            "text-[11px] px-1.5 py-0.5 rounded font-semibold",
+                            "text-xs px-1.5 py-0.5 rounded font-semibold",
                             c.target_type === "journal_entry"
-                              ? "bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                              ? "bg-violet-500/10 text-violet-800 dark:text-violet-400"
+                              : "bg-blue-500/10 text-blue-800 dark:text-blue-400",
                           )}>
                             {c.target_type === "journal_entry" ? "JE" : "PAY"}
                           </span>
-                          {c.loose && <span className="text-[11px] px-1.5 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded">loose</span>}
+                          {c.loose && <span className="text-xs px-1.5 py-0.5 bg-amber-500/10 text-amber-800 dark:text-amber-400 rounded">loose</span>}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {c.payee_name || c.description || c.target_type} · {fmtDate(c.date)} · <span className="tabular-nums">{fmtRp(c.amount)}</span>
                         </div>
                       </div>
                       {c.score != null && (
-                        <div className={cn("px-2 py-1 rounded text-xs font-semibold tabular-nums flex-shrink-0", c.score >= 0.8 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-amber-500/15 text-amber-700 dark:text-amber-400")}>{Math.round(c.score * 100)}%</div>
+                        <div className={cn("px-2 py-1 rounded text-xs font-semibold tabular-nums flex-shrink-0", c.score >= 0.8 ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400" : "bg-amber-500/15 text-amber-800 dark:text-amber-400")}>{Math.round(c.score * 100)}%</div>
                       )}
                     </button>
                   ))}

@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 
 const TONE = {
   neutral: "bg-muted text-muted-foreground",
-  info: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-  success: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  warning: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  danger: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
-  accent: "bg-violet-500/15 text-violet-700 dark:text-violet-400",
+  info: "bg-blue-500/15 text-blue-800 dark:text-blue-400",
+  success: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400",
+  warning: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  danger: "bg-rose-500/15 text-rose-800 dark:text-rose-400",
+  accent: "bg-violet-500/15 text-violet-800 dark:text-violet-400",
 };
 
 // key → [label, tone]
@@ -114,7 +114,9 @@ export default function StatusPill({ status, className, label }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap",
+        // Tinggi tetap (h-5) + leading-none: tanpa ini tinggi pill mengikuti line-height induk
+        // (terukur 18/20/24px berbeda per halaman).
+        "inline-flex h-5 items-center px-2 text-xs leading-none rounded-full font-medium whitespace-nowrap",
         `status-${key}`,
         TONE[tone],
         className,

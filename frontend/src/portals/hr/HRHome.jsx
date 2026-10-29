@@ -59,7 +59,7 @@ export default function HRHome() {
 
       {(home?.pending_advance_approval > 0 || home?.service_charge_pending > 0 || home?.incentive_pending > 0) && (
         <div className="glass-card p-4 flex items-start gap-3 border-l-4 border-amber-500" data-testid="hr-pending-card">
-          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="h-5 w-5 text-amber-800 dark:text-amber-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <h3 className="font-semibold text-sm md:text-base mb-1.5">Tindakan Tertunda</h3>
             <ul className="space-y-1 text-sm text-muted-foreground">

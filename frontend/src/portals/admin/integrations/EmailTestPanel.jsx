@@ -45,7 +45,7 @@ export default function EmailTestPanel() {
         </span>
         <div>
           <h3 className="font-semibold text-sm">Tes Email (Resend)</h3>
-          <p className="text-[11px] text-muted-foreground">Kirim email uji ke alamat mana pun</p>
+          <p className="text-xs text-muted-foreground">Kirim email uji ke alamat mana pun</p>
         </div>
       </div>
 
@@ -83,12 +83,12 @@ export default function EmailTestPanel() {
         </details>
 
         {result && (
-          <pre className="p-2 rounded bg-muted text-[11px] overflow-x-auto max-h-40">
+          <pre className="p-2 rounded bg-muted text-xs overflow-x-auto max-h-40">
             {JSON.stringify(result, null, 2)}
           </pre>
         )}
 
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Pengirim sandbox Resend <code>onboarding@resend.dev</code> hanya bisa kirim ke email pemilik akun.
           Verify domain di <a href="https://resend.com/domains" target="_blank" rel="noreferrer" className="underline">resend.com/domains</a> untuk kirim ke siapapun.
         </p>

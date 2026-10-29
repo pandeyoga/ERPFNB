@@ -234,7 +234,7 @@ function JournalLinesDrilldown({ je }) {
             {lines.map((l, i) => (
               <tr key={i} className="border-t border-border/30">
                 <td className="py-1.5 pr-3">
-                  <span className="text-[11px] text-muted-foreground tabular-nums">{l.coa_code}</span>{" "}
+                  <span className="text-xs text-muted-foreground tabular-nums">{l.coa_code}</span>{" "}
                   <span className="font-medium">{l.coa_name || l.coa_id}</span>
                 </td>
                 <td className="py-1.5 pr-3 text-muted-foreground">{l.memo || "—"}</td>

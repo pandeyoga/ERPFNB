@@ -226,7 +226,7 @@ export default function RuleListPage({
                   <div>
                     <div className="font-medium text-sm">{r.name || r.rule_type}</div>
                     {r.description && (
-                      <div className="text-[11px] text-muted-foreground line-clamp-1">{r.description}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">{r.description}</div>
                     )}
                   </div>
                 ) },

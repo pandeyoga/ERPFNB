@@ -271,7 +271,7 @@ export default function ReservationList() {
                     <Clock className="h-3 w-3" />{r.reservation_time || "—"}
                   </p>
                   {r.status === "rescheduled" && r.reschedule_history?.length > 0 && (
-                    <p className="text-[11px] text-indigo-500 mt-0.5">Dijadwal ulang {r.reschedule_history.length}x</p>
+                    <p className="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5">Dijadwal ulang {r.reschedule_history.length}x</p>
                   )}
                 </div>
               ) },
@@ -295,10 +295,10 @@ export default function ReservationList() {
                 return r.deposit_amount > 0 ? (
                   <div>
                     <p className="text-xs font-medium">{fmtRp(r.deposit_amount)}</p>
-                    <p className={`text-[11px] ${DEPOSIT_CONFIG[r.deposit_status]?.color || "text-gray-500"}`}>
+                    <p className={`text-xs ${DEPOSIT_CONFIG[r.deposit_status]?.color || "text-muted-foreground"}`}>
                       {DEPOSIT_CONFIG[r.deposit_status]?.label}
                     </p>
-                    {dpPending && <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5" />}
+                    {dpPending && <AlertTriangle className="h-3 w-3 text-amber-800 dark:text-amber-400 mt-0.5" />}
                   </div>
                 ) : <span className="text-xs text-muted-foreground">—</span>;
               } },
@@ -322,37 +322,37 @@ export default function ReservationList() {
                 <DropdownMenuSeparator />
                 {r.status === "pending" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "confirmed")}>
-                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-600" /> Konfirmasi
+                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-700 dark:text-blue-400" /> Konfirmasi
                   </DropdownMenuItem>
                 )}
                 {r.status === "pending" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "waitlist")}>
-                    <ListOrdered className="h-4 w-4 mr-2 text-teal-600" /> Pindah ke Waitlist
+                    <ListOrdered className="h-4 w-4 mr-2 text-teal-700 dark:text-teal-400" /> Pindah ke Waitlist
                   </DropdownMenuItem>
                 )}
                 {r.status === "waitlist" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "confirmed")}>
-                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-600" /> Konfirmasi dari Waitlist
+                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-700 dark:text-blue-400" /> Konfirmasi dari Waitlist
                   </DropdownMenuItem>
                 )}
                 {r.status === "rescheduled" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "confirmed")}>
-                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-600" /> Konfirmasi Jadwal Baru
+                    <CheckCircle2 className="h-4 w-4 mr-2 text-blue-700 dark:text-blue-400" /> Konfirmasi Jadwal Baru
                   </DropdownMenuItem>
                 )}
                 {r.status === "confirmed" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "completed")}>
-                    <UserCheck className="h-4 w-4 mr-2 text-emerald-600" /> Tandai Selesai
+                    <UserCheck className="h-4 w-4 mr-2 text-emerald-700 dark:text-emerald-400" /> Tandai Selesai
                   </DropdownMenuItem>
                 )}
                 {r.status === "confirmed" && (
                   <DropdownMenuItem onClick={() => handleStatusChange(r.id, "no_show")}>
-                    <CalendarX className="h-4 w-4 mr-2 text-gray-500" /> Tidak Hadir
+                    <CalendarX className="h-4 w-4 mr-2 text-muted-foreground" /> Tidak Hadir
                   </DropdownMenuItem>
                 )}
                 {["pending", "waitlist", "confirmed", "rescheduled"].includes(r.status) && (
                   <DropdownMenuItem onClick={() => setRescheduleTarget(r)}>
-                    <CalendarClock className="h-4 w-4 mr-2 text-indigo-600" /> Jadwal Ulang
+                    <CalendarClock className="h-4 w-4 mr-2 text-indigo-700 dark:text-indigo-400" /> Jadwal Ulang
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
@@ -480,9 +480,9 @@ export default function ReservationList() {
                 </p>
                 <div className="space-y-1">
                   {selected.reschedule_history.map((h, i) => (
-                    <p key={i} className="text-xs text-indigo-600 dark:text-indigo-300">
-                      {fmtDate(h.changed_at)}: <span className="line-through text-indigo-400">{h.old_date} {h.old_time}</span> → {h.new_date} {h.new_time}
-                      {h.reason && <span className="text-indigo-500"> · {h.reason}</span>}
+                    <p key={i} className="text-xs text-indigo-700 dark:text-indigo-300">
+                      {fmtDate(h.changed_at)}: <span className="line-through text-indigo-700 dark:text-indigo-400">{h.old_date} {h.old_time}</span> → {h.new_date} {h.new_time}
+                      {h.reason && <span className="text-indigo-700 dark:text-indigo-400"> · {h.reason}</span>}
                     </p>
                   ))}
                 </div>

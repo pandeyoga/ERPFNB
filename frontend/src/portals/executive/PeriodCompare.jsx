@@ -169,13 +169,13 @@ export default function PeriodCompare({ embedded = false }) {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                     <XAxis
                       dataKey="metric"
-                      tick={{ fontSize: 11 }}
+                      tick={{ fontSize: 12 }}
                       angle={-25}
                       textAnchor="end"
                       height={60}
                     />
                     <YAxis
-                      tick={{ fontSize: 11 }}
+                      tick={{ fontSize: 12 }}
                       tickFormatter={(v) => {
                         if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                         if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
@@ -256,9 +256,9 @@ export default function PeriodCompare({ embedded = false }) {
                     const pctv = (v1 && v1 !== 0) ? ((v0 - v1) / Math.abs(v1) * 100).toFixed(1) : null;
                     if (delta == null) return "—";
                     return (
-                      <span className={cn("font-mono", delta >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                      <span className={cn("font-mono", delta >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
                         {delta >= 0 ? "+" : ""}{fmtRp(delta)}
-                        {pctv != null && <span className="text-[11px] ml-1">({pctv > 0 ? "+" : ""}{pctv}%)</span>}
+                        {pctv != null && <span className="text-xs ml-1">({pctv > 0 ? "+" : ""}{pctv}%)</span>}
                       </span>
                     );
                   },

@@ -181,7 +181,7 @@ function DeleteTab({ collections, onSuccess }) {
 
           {status && (
             <div className={`flex items-start gap-2 p-3 rounded-lg ${
-              status.type === "success" ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400"
+              status.type === "success" ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-400"
                 : "bg-destructive/10 border border-destructive/30 text-destructive"
             }`}>
               {status.type === "success" ? <CheckCircle className="w-4 h-4 mt-0.5" /> : <AlertTriangle className="w-4 h-4 mt-0.5" />}

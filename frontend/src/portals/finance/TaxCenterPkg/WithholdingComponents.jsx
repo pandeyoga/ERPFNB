@@ -41,7 +41,7 @@ function WithholdingCalcPreview({ taxType, serviceTypes, defaultService }) {
   return (
     <div className="glass-card p-4 space-y-3">
       <h3 className={cn("text-sm md:text-base font-semibold flex items-center gap-2")}>
-        <Calculator className={cn("h-4 w-4", taxType === "pph23" ? "text-amber-600 dark:text-amber-300" : "text-rose-600 dark:text-rose-300")} />
+        <Calculator className={cn("h-4 w-4", taxType === "pph23" ? "text-amber-800 dark:text-amber-300" : "text-rose-700 dark:text-rose-300")} />
         Kalkulator {label}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -143,16 +143,16 @@ function WithholdingSummaryTable({ year }) {
         { key: "wh_type", label: "Jenis PPh",
           render: (r) => (
             <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium",
-              r.wh_type === "pph21" ? "bg-violet-500/15 text-violet-700 dark:text-violet-300" :
-              r.wh_type === "pph23" ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" :
-              "bg-rose-500/15 text-rose-700 dark:text-rose-300")
+              r.wh_type === "pph21" ? "bg-violet-500/15 text-violet-800 dark:text-violet-300" :
+              r.wh_type === "pph23" ? "bg-amber-500/15 text-amber-800 dark:text-amber-300" :
+              "bg-rose-500/15 text-rose-800 dark:text-rose-300")
             }>{r.wh_type_label}</span>
           ) },
         { key: "count", label: "#Transaksi", numeric: true, sortable: true },
         { key: "gross_total", label: "Bruto", numeric: true, sortable: true,
           render: (r) => fmtRp(r.gross_total) },
         { key: "wh_total", label: "PPh Dipotong", numeric: true, sortable: true,
-          render: (r) => <span className="text-red-600 dark:text-red-400 font-medium">{fmtRp(r.wh_total)}</span> },
+          render: (r) => <span className="text-red-700 dark:text-red-400 font-medium">{fmtRp(r.wh_total)}</span> },
         { key: "net_total", label: "Net", numeric: true,
           render: (r) => <span className="text-emerald-700 dark:text-emerald-400 font-medium">{fmtRp(r.net_total)}</span> },
       ]}
@@ -163,8 +163,8 @@ function WithholdingSummaryTable({ year }) {
 // ───── ServiceTypeList ────────────────────────────────────────────────────────────
 function ServiceTypeList({ types, color }) {
   const badge = color === "amber"
-    ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-    : "bg-rose-500/15 text-rose-700 dark:text-rose-300";
+    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+    : "bg-rose-500/15 text-rose-800 dark:text-rose-300";
   return (
     <DataTable
       rows={types}

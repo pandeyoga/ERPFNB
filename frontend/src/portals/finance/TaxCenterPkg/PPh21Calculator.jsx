@@ -42,7 +42,7 @@ function PPh21Calculator() {
   return (
     <div className="glass-card p-4 space-y-3" data-testid="pph21-calculator">
       <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
-        <Calculator className="h-4 w-4 text-violet-600 dark:text-violet-300" /> Kalkulator PPh 21 (Preview)
+        <Calculator className="h-4 w-4 text-violet-700 dark:text-violet-300" /> Kalkulator PPh 21 (Preview)
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1">

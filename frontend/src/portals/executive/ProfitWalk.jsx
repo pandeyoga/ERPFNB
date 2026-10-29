@@ -37,10 +37,10 @@ const KIND_BADGE = {
 function Delta({ value, pct }) {
   const positive = (value ?? 0) >= 0;
   return (
-    <span className={cn("inline-flex items-center justify-end gap-1 font-mono tabular-nums", positive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+    <span className={cn("inline-flex items-center justify-end gap-1 font-mono tabular-nums", positive ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
       {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {value != null && <>{positive ? "+" : ""}{fmtRp(value)}</>}
-      {pct != null && <span className="text-[11px] opacity-80">({pct > 0 ? "+" : ""}{pct}%)</span>}
+      {pct != null && <span className="text-xs opacity-80">({pct > 0 ? "+" : ""}{pct}%)</span>}
     </span>
   );
 }
@@ -76,7 +76,7 @@ function StageBreakdown({ stage }) {
           </div>
           <span className="col-span-3 text-right font-mono tabular-nums font-medium">{fmtRp(it.period)}</span>
           <span className="col-span-2 text-right font-mono tabular-nums text-muted-foreground">{fmtRp(it.compare)}</span>
-          <span className={cn("col-span-2 text-right font-mono tabular-nums text-[11px]", (it.delta_pct ?? 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+          <span className={cn("col-span-2 text-right font-mono tabular-nums text-xs", (it.delta_pct ?? 0) >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
             {it.delta_pct != null ? `${it.delta_pct > 0 ? "+" : ""}${it.delta_pct}%` : "—"}
           </span>
         </div>
@@ -114,7 +114,7 @@ export default function ProfitWalk({ embedded = false }) {
       key: "label", label: "Stage", primary: true,
       render: (s) => (
         <span className="inline-flex items-center gap-2">
-          <Badge variant="outline" className={cn("text-[11px] capitalize border", KIND_BADGE[s.kind])}>{s.kind}</Badge>
+          <Badge variant="outline" className={cn("text-xs capitalize border", KIND_BADGE[s.kind])}>{s.kind}</Badge>
           <span className="font-medium">{s.label}</span>
         </span>
       ),
@@ -129,7 +129,7 @@ export default function ProfitWalk({ embedded = false }) {
     {
       key: "delta_pct", label: "Δ %", numeric: true, sortable: true,
       render: (s) => (
-        <span className={cn("font-mono tabular-nums text-xs", (s.delta_pct || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+        <span className={cn("font-mono tabular-nums text-xs", (s.delta_pct || 0) >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
           {s.delta_pct != null ? `${s.delta_pct > 0 ? "+" : ""}${s.delta_pct}%` : "—"}
         </span>
       ),

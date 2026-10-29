@@ -99,8 +99,9 @@ export default function CollapsibleSection({ id, title, icon: Icon, children, cl
     >
       {(title || Icon) && (
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-            {Icon && <Icon className="h-3.5 w-3.5" />}
+          {/* Skala tipografi: judul bagian = text-sm md:text-base semibold (bukan uppercase 14px). */}
+          <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
+            {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
             <span>{title}</span>
           </h3>
           <Button

@@ -36,7 +36,7 @@ export default function ApprovalsInboxButton() {
       {count > 0 && (
         <motion.span
           initial={{ scale: 0 }} animate={{ scale: 1 }}
-          className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center shadow-md text-white"
+          className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full text-[11px] font-bold flex items-center justify-center shadow-md text-white"
           style={{ background: "hsl(var(--aurora-1))" }}
         >
           {count > 9 ? "9+" : count}

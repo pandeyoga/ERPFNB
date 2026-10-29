@@ -47,12 +47,12 @@ const STATUS_CONFIG = {
   expired: {
     label: "Kedaluwarsa",
     icon: XCircle,
-    badge: "bg-red-100 text-red-600 border-red-200",
+    badge: "bg-red-100 text-red-700 dark:text-red-400 border-red-200",
   },
 };
 
 function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || { label: status, badge: "bg-gray-100 text-gray-600" };
+  const cfg = STATUS_CONFIG[status] || { label: status, badge: "bg-muted/40 text-muted-foreground" };
   const Icon = cfg.icon;
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.badge}`}>
@@ -252,7 +252,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-300 hover:bg-emerald-50"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "claimed" })}
                   data-testid={`claim-btn-${item.id}`}
                 >
@@ -261,7 +261,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  className="text-red-700 dark:text-red-400 border-red-300 hover:bg-red-50"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "expired" })}
                   data-testid={`expire-btn-${item.id}`}
                 >
@@ -323,7 +323,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
             <AlertDialogAction
               onClick={doStatusUpdate}
               disabled={statusUpdating}
-              className={confirmAction?.newStatus === "claimed" ? "bg-emerald-600 hover:bg-emerald-700" : buttonVariants({ variant: "destructive" })}
+              className={buttonVariants({ variant: confirmAction?.newStatus === "claimed" ? "success" : "destructive" })}
               data-testid="confirm-status-action"
             >
               {statusUpdating ? <><Loader2 className="h-4 w-4 animate-spin" />Memproses…</> : "Ya, Lanjutkan"}

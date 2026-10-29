@@ -239,7 +239,7 @@ export default function BulkImport({ embedded = false } = {}) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {entityTypes.map((entity) => {
                 const Icon = ENTITY_ICONS[entity.value] || FileSpreadsheet;
-                const colorCls = ENTITY_COLORS[entity.value] || "from-gray-500/15 to-gray-600/15 text-gray-600";
+                const colorCls = ENTITY_COLORS[entity.value] || "from-gray-500/15 to-gray-600/15 text-muted-foreground";
                 return (
                   <button
                     key={entity.value}
@@ -344,7 +344,7 @@ export default function BulkImport({ embedded = false } = {}) {
               />
               {file ? (
                 <>
-                  <FileText className="w-9 h-9 text-green-500 mx-auto mb-2" />
+                  <FileText className="w-9 h-9 text-green-700 dark:text-green-400 mx-auto mb-2" />
                   <p className="font-medium text-green-700 dark:text-green-400">{file.name}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {(file.size / 1024).toFixed(1)} KB — klik untuk ganti file
@@ -416,7 +416,7 @@ export default function BulkImport({ embedded = false } = {}) {
                   <Card className="border-red-200 dark:border-red-800" data-testid="invalid-rows-card">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-red-600">
+                        <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
                           <XCircle className="w-4 h-4" />
                           {previewResult.invalid_rows.length} baris error
                         </CardTitle>
@@ -516,7 +516,7 @@ export default function BulkImport({ embedded = false } = {}) {
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-muted-foreground text-xs">Akan di-import</div>
-                <div className="font-semibold mt-0.5 text-green-600">{previewResult.summary.valid} baris valid</div>
+                <div className="font-semibold mt-0.5 text-green-700 dark:text-green-400">{previewResult.summary.valid} baris valid</div>
               </div>
             </div>
           </CardContent>
@@ -553,7 +553,7 @@ export default function BulkImport({ embedded = false } = {}) {
       {currentStep === 4 && importResult && (
         <Card className="border-green-300 dark:border-green-700" data-testid="step-complete">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-600">
+            <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
               <CheckCircle2 className="w-4 h-4" />
               Import selesai
             </CardTitle>

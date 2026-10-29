@@ -156,11 +156,11 @@ export default function OutletBudgetTracker() {
                   <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                     <span>{view === "weekly" ? "Minggu Berjalan" : "Bulan Berjalan"}</span>
                     {current.budget_mode === "combined" ? (
-                      <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400 text-[11px] px-1.5 py-0">
+                      <Badge variant="outline" className="border-sky-500/40 text-sky-700 dark:text-sky-400 text-xs px-1.5 py-0">
                         Mode Gabungan
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-[11px] px-1.5 py-0">
+                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400 text-xs px-1.5 py-0">
                         Mode Per-Bucket
                       </Badge>
                     )}
@@ -344,7 +344,7 @@ function CombinedBudgetCard({ pace, actuals, onRequestIncrease }) {
     <Card className={`border ${paceBg(status)}`} data-testid="bucket-card-combined">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span className="text-sky-600 dark:text-sky-400">Budget Gabungan (KDO + FDO + BDO)</span>
+          <span className="text-sky-700 dark:text-sky-400">Budget Gabungan (KDO + FDO + BDO)</span>
           <Badge variant="outline" className={paceColor(status)}>{pct.toFixed(0)}%</Badge>
         </CardTitle>
         <CardDescription className="text-xs">
@@ -354,7 +354,7 @@ function CombinedBudgetCard({ pace, actuals, onRequestIncrease }) {
       <CardContent className="space-y-3">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <div className="text-2xl font-semibold tabular-nums text-sky-600 dark:text-sky-400">
+            <div className="text-2xl font-semibold tabular-nums text-sky-700 dark:text-sky-400">
               {fmtRp(pace?.remaining || 0)}
             </div>
             <div className="text-xs text-muted-foreground">sisa dari {fmtRp(pace?.budget || 0)}</div>
@@ -436,7 +436,7 @@ function NoBudgetCard({ view }) {
   return (
     <Card className="border-amber-500/30 bg-amber-500/5" data-testid="no-budget-card">
       <CardContent className="pt-4 text-center space-y-2">
-        <AlertCircle className="h-8 w-8 text-amber-500 mx-auto" />
+        <AlertCircle className="h-8 w-8 text-amber-800 dark:text-amber-400 mx-auto" />
         <div className="text-base font-semibold">
           Belum ada budget aktif untuk periode {view === "weekly" ? "minggu" : "bulan"} ini
         </div>

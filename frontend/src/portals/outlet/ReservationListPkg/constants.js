@@ -40,16 +40,16 @@ const STATUS_CONFIG = {
   rescheduled: { label: "Dijadwal Ulang", color: "bg-indigo-100 text-indigo-700 border-indigo-300", dot: "bg-indigo-500",  icon: CalendarClock },
   completed:   { label: "Selesai",        color: "bg-emerald-100 text-emerald-700 border-emerald-300", dot: "bg-emerald-500", icon: CheckCheck },
   cancelled:   { label: "Dibatalkan",     color: "bg-red-100 text-red-700 border-red-300",          dot: "bg-red-400",     icon: XCircle },
-  no_show:     { label: "Tidak Hadir",    color: "bg-gray-100 text-gray-600 border-gray-300",       dot: "bg-gray-400",    icon: CalendarX },
+  no_show:     { label: "Tidak Hadir",    color: "bg-muted/40 text-muted-foreground border-border",       dot: "bg-gray-400",    icon: CalendarX },
 };
 
 // ─── DEPOSIT STATUS CONFIG ───────────────────────────────────────
 const DEPOSIT_CONFIG = {
-  none:      { label: "Tidak Diperlukan",  color: "text-gray-500" },
-  pending:   { label: "Menunggu Pembayaran", color: "text-amber-600" },
-  paid:      { label: "Lunas",             color: "text-emerald-600" },
-  refunded:  { label: "Dikembalikan",      color: "text-blue-600" },
-  forfeited: { label: "Hangus",            color: "text-red-600" },
+  none:      { label: "Tidak Diperlukan",  color: "text-muted-foreground" },
+  pending:   { label: "Menunggu Pembayaran", color: "text-amber-800 dark:text-amber-400" },
+  paid:      { label: "Lunas",             color: "text-emerald-700 dark:text-emerald-400" },
+  refunded:  { label: "Dikembalikan",      color: "text-blue-700 dark:text-blue-400" },
+  forfeited: { label: "Hangus",            color: "text-red-700 dark:text-red-400" },
 };
 
 const PAYMENT_METHODS = [
