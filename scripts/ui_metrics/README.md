@@ -42,3 +42,23 @@ ONLY='^/finance/payments-hub$' node ../layout.js layout_0.json shots   # ulang s
 
 Temuan bersifat heuristik: konfirmasi lewat screenshot sebelum memperbaiki. Hasil terakhir:
 `docs/audit/UI_LAYOUT_AUDIT_2026-10-29.md`.
+
+## Audit anatomi halaman (anatomy.js)
+
+Membaca **kerangka** tiap halaman/tab:
+- urutan header, tab, judul, kartu & jenis isinya;
+- letak judul (di luar / di dalam kartu);
+- zona setiap tombol aksi;
+- posisi tombol simpan relatif terhadap form;
+- grup KPI;
+- semua teks UI (untuk audit bahasa).
+
+Dipakai untuk menilai konsistensi "anatomi halaman": judul, kartu, letak aksi, dan simpan.
+
+```bash
+cd scripts/ui_metrics
+for i in 0 1 2 3; do node anatomy.js out/an_$i.json out/shots $i 4 & done; wait   # out/shots: screenshot per state (atau "-")
+cd out && python3 ../anatomy_report.py
+```
+
+Hasil terakhir: `docs/audit/UI_PAGE_ANATOMY_AUDIT_2026-10-29.md`.
