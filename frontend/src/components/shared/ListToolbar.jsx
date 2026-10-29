@@ -4,12 +4,8 @@
  *
  *   [cari]  [status ≤ 5 tab · Status lain ▾]  [filter …]                 [aksi kartu]
  *
- *   <div className="glass-card overflow-hidden">
- *     <ListToolbar search={<ListSearch …/>} actions={…}>
- *       <StatusTabs value={status} onChange={setStatus} options={STATUS_TABS} />
- *     </ListToolbar>
- *     <DataTable … />
- *   </div>
+ * Pemakaian: di dalam kartu tabel (glass-card overflow-hidden), sebelum komponen tabelnya —
+ *   ListToolbar(search = ListSearch, actions = aksi tabel) berisi StatusTabs / filter lain.
  *
  * Aksi layar (Buat …, Ekspor semua) tetap di PageHeader; `actions` di sini hanya untuk aksi milik tabel ini.
  */
