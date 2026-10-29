@@ -116,7 +116,7 @@ export default function SchedulerView() {
                   <span className="text-muted-foreground">Last run:</span>
                   <span>{fmtRelative(lastRun.started_at)}</span>
                   <span className="text-muted-foreground">·</span>
-                  <span className={lastRun.status === "success" ? "text-emerald-700" : lastRun.status === "failed" ? "text-red-700" : ""}>
+                  <span className={lastRun.status === "success" ? "text-emerald-700 dark:text-emerald-400" : lastRun.status === "failed" ? "text-red-700 dark:text-red-400" : ""}>
                     {lastRun.status}
                   </span>
                 </div>

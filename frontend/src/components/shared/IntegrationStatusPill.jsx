@@ -3,11 +3,11 @@ import { CheckCircle2, XCircle, AlertCircle, Globe, Database } from "lucide-reac
 import { cn } from "@/lib/utils";
 
 const STATUS_CONFIG = {
-  configured:    { icon: CheckCircle2, label: "Connected",      tone: "bg-emerald-100 text-emerald-700 border-emerald-300" },
-  unset:         { icon: AlertCircle,  label: "Not Configured",  tone: "bg-amber-100 text-amber-700 border-amber-300" },
-  failed:        { icon: XCircle,      label: "Failed",          tone: "bg-rose-100 text-rose-700 border-rose-300" },
-  fallback:      { icon: Globe,        label: "Using fallback",  tone: "bg-blue-100 text-blue-700 border-blue-300" },
-  database:      { icon: Database,     label: "Database",        tone: "bg-indigo-100 text-indigo-700 border-indigo-300" },
+  configured:    { icon: CheckCircle2, label: "Connected",      tone: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30" },
+  unset:         { icon: AlertCircle,  label: "Not Configured",  tone: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30" },
+  failed:        { icon: XCircle,      label: "Failed",          tone: "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-500/30" },
+  fallback:      { icon: Globe,        label: "Using fallback",  tone: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30" },
+  database:      { icon: Database,     label: "Database",        tone: "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-300 dark:border-indigo-500/30" },
   environment:   { icon: Globe,        label: "Environment",     tone: "bg-muted/40 text-foreground border-border" },
 };
 

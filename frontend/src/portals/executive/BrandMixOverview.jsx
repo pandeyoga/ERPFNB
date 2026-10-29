@@ -260,7 +260,7 @@ export default function BrandMixOverview({ embedded = false }) {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-muted-foreground">Share</span>
-                      <span className="tabular-nums font-semibold" style={{ color }}>{pct.toFixed(1)}%</span>
+                      <span className="tabular-nums font-semibold">{pct.toFixed(1)}%</span>
                     </div>
                     <div className="h-2 bg-foreground/5 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: color }} />

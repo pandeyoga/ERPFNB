@@ -82,7 +82,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
             <line x1={M.left} x2={w - M.right} y1={yScale(t)} y2={yScale(t)}
               stroke="hsl(var(--border))" strokeDasharray="3 3" opacity={0.4} />
             <text x={M.left - 8} y={yScale(t)} dy="0.32em" textAnchor="end"
-              fontSize="11" fill="hsl(var(--muted-foreground))">{fmtCompact(t)}</text>
+              fontSize="12" fill="hsl(var(--muted-foreground))">{fmtCompact(t)}</text>
           </g>
         ))}
         {/* zero baseline */}
@@ -117,12 +117,12 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
                 style={{ transition: "opacity 150ms ease" }}
                 data-testid={`waterfall-bar-${i}`} />
               {/* value label */}
-              <text x={cx(i)} y={y - 7} textAnchor="middle" fontSize="11" fontWeight="600"
+              <text x={cx(i)} y={y - 7} textAnchor="middle" fontSize="12" fontWeight="600"
                 fill="hsl(var(--foreground))" opacity={dim ? 0.4 : 0.92}>
                 {fmtCompact(b.value)}
               </text>
               {/* x-axis label (rotated) */}
-              <text x={cx(i)} y={height - M.bottom + 16} textAnchor="end" fontSize="11"
+              <text x={cx(i)} y={height - M.bottom + 16} textAnchor="end" fontSize="12"
                 fill="hsl(var(--muted-foreground))"
                 transform={`rotate(-22 ${cx(i)} ${height - M.bottom + 16})`}>
                 {b.label}

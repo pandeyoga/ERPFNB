@@ -65,7 +65,7 @@ export default function TelegramTestPanel({ onReload }) {
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="h-8 w-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
+        <span className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center">
           <MessageSquare className="h-4 w-4" />
         </span>
         <div>

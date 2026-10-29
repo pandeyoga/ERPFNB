@@ -388,7 +388,9 @@ function CombinedBudgetCard({ pace, actuals, onRequestIncrease }) {
 function BreakdownPill({ label, value, color }) {
   return (
     <div className="flex items-center justify-between rounded-md px-2 py-1.5 bg-muted/30">
-      <span className="uppercase font-semibold tracking-wide text-[11px]" style={{ color }}>{label}</span>
+      <span className="inline-flex items-center gap-1.5 uppercase font-semibold tracking-wide text-[11px]">
+        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} aria-hidden />{label}
+      </span>
       <span className="tabular-nums font-medium">{fmtRp(value)}</span>
     </div>
   );
@@ -403,14 +405,16 @@ function BucketCard({ bucket, pace, onRequestIncrease }) {
     <Card className={`border ${paceBg(status)}`} data-testid={`bucket-card-${bucket}`}>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span style={{ color }} className="uppercase tracking-wide">{bucket}</span>
+          <span className="inline-flex items-center gap-2 uppercase tracking-wide">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} aria-hidden />{bucket}
+          </span>
           <Badge variant="outline" className={paceColor(status)}>{pct.toFixed(0)}%</Badge>
         </CardTitle>
         <CardDescription className="text-xs">{label}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
         <div>
-          <div className="text-xl font-semibold tabular-nums" style={{ color }}>
+          <div className="text-xl font-semibold tabular-nums">
             {fmtRp(pace?.remaining || 0)}
           </div>
           <div className="text-xs text-muted-foreground">sisa dari {fmtRp(pace?.budget || 0)}</div>

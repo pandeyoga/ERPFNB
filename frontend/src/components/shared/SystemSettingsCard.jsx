@@ -180,7 +180,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                             {item.source}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">
+                          <Badge variant="outline" className="text-xs text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30">
                             <FileWarning className="h-3 w-3 mr-1" /> belum diset
                           </Badge>
                         )}
@@ -199,7 +199,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                       )}
                       {isTelegram && tgRes && (
                         <div className={cn("text-xs mt-2 inline-flex items-center gap-1 px-2 py-1 rounded",
-                          tgRes.ok ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700")}>
+                          tgRes.ok ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400")}>
                           {tgRes.ok
                             ? <><CheckCircle2 className="h-3 w-3" /> Connected: @{tgRes.bot?.username || "bot"}</>
                             : <><XCircle className="h-3 w-3" /> {tgRes.reason || "failed"}</>}

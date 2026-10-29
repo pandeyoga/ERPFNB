@@ -40,9 +40,9 @@ const TYPE_META = {
 };
 
 const HEALTH_TONE = {
-  green: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300",
-  amber: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300",
-  red:   "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300",
+  green: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300",
+  amber: "bg-amber-100 text-amber-800 border-amber-200 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300",
+  red:   "bg-rose-100 text-rose-800 border-rose-200 dark:border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-300",
 };
 
 const HEALTH_ICON = { green: CheckCircle2, amber: AlertCircle, red: AlertTriangle };

@@ -45,7 +45,7 @@ export default function LlmTestPanel() {
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="h-8 w-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+        <span className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 flex items-center justify-center">
           <Brain className="h-4 w-4" />
         </span>
         <div>
@@ -96,7 +96,7 @@ export default function LlmTestPanel() {
           <div className="space-y-2">
             {result.ok ? (
               <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-xs">
-                <div className="text-emerald-700 font-semibold mb-1">Berhasil ({result.elapsed_ms} ms)</div>
+                <div className="text-emerald-700 dark:text-emerald-400 font-semibold mb-1">Berhasil ({result.elapsed_ms} ms)</div>
                 <div className="text-xs text-muted-foreground mb-1">
                   {result.provider} / {result.model}
                 </div>
@@ -104,7 +104,7 @@ export default function LlmTestPanel() {
               </div>
             ) : (
               <div className="p-2 rounded bg-rose-50 border border-rose-200 text-xs">
-                <div className="text-rose-700 font-semibold mb-1">Gagal</div>
+                <div className="text-rose-700 dark:text-rose-400 font-semibold mb-1">Gagal</div>
                 <div className="text-xs">{result.reason} {result.error}</div>
               </div>
             )}

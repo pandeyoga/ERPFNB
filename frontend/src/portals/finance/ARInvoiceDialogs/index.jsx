@@ -396,7 +396,7 @@ export function ReceiptDialog({ invoice, onClose, onRecorded }) {
             </div>
             <div className="flex justify-between mt-1">
               <span className="text-muted-foreground">Sudah Dibayar</span>
-              <span className="text-green-700" data-testid="receipt-paid">{formatCurrency(invoice.paid_amount || 0)}</span>
+              <span className="text-green-700 dark:text-green-400" data-testid="receipt-paid">{formatCurrency(invoice.paid_amount || 0)}</span>
             </div>
             <div className="flex justify-between mt-1 font-semibold">
               <span>Outstanding</span>
@@ -521,7 +521,7 @@ export function InvoiceDetailDialog({ invoice, onClose, onSend, onPayment }) {
                   <td className="px-4 py-2 text-right tabular-nums">{formatCurrency(invoice.total_amount)}</td>
                 </tr>
                 {invoice.paid_amount > 0 && (
-                  <tr className="text-green-700">
+                  <tr className="text-green-700 dark:text-green-400">
                     <td colSpan={5} className="px-4 py-2 text-right tabular-nums">Dibayar</td>
                     <td className="px-4 py-2 text-right tabular-nums">({formatCurrency(invoice.paid_amount)})</td>
                   </tr>

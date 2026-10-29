@@ -46,10 +46,10 @@ const EMPTY_FORM = {
 };
 
 const TYPE_COLORS = {
-  "Full-time":   "bg-blue-100 text-blue-700 border-blue-200",
-  "Part-time":   "bg-purple-100 text-purple-700 border-purple-200",
-  "Contract":    "bg-amber-100 text-amber-700 border-amber-200",
-  "Internship":  "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "Full-time":   "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
+  "Part-time":   "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
+  "Contract":    "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
+  "Internship":  "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
 };
 
 export default function CMSCareers() {
@@ -226,7 +226,7 @@ export default function CMSCareers() {
                         {job.job_type}
                       </Badge>
                       {!job.is_active && (
-                        <Badge variant="outline" className="text-xs border-red-300 text-red-700 dark:text-red-400">Nonaktif</Badge>
+                        <Badge variant="outline" className="text-xs border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400">Nonaktif</Badge>
                       )}
                       {job.brand && (
                         <Badge variant="outline" className="text-xs">{job.brand}</Badge>

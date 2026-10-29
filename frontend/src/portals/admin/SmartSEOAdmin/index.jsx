@@ -253,12 +253,12 @@ export default function SmartSEO() {
         actions={
           <>
             {aiPowered === true && (
-              <Badge className="bg-violet-100 text-violet-700 border-violet-200">
+              <Badge className="bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-500/30">
                 <Sparkles className="w-3 h-3 mr-1" /> AI Aktif
               </Badge>
             )}
             {aiPowered === false && (
-              <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+              <Badge className="bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30">
                 Mode Dasar
               </Badge>
             )}
@@ -317,7 +317,7 @@ export default function SmartSEO() {
               <p className="text-xs text-muted-foreground">{selected.path}</p>
             </div>
             <div className="flex items-center gap-2">
-              {hasSeoSaved && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs"><Check className="w-3 h-3 mr-1" />Tersimpan</Badge>}
+              {hasSeoSaved && <Badge className="bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 text-xs"><Check className="w-3 h-3 mr-1" />Tersimpan</Badge>}
               <Button size="sm" onClick={handleSave} disabled={saving} data-testid="seo-save-btn">
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Simpan
@@ -605,7 +605,7 @@ export default function SmartSEO() {
                   <Label className="text-xs">Focus Keywords (dari AI)</Label>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {form.focus_keywords.map((kw, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full text-xs flex items-center gap-1">
+                      <span key={i} className="px-2 py-0.5 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 rounded-full text-xs flex items-center gap-1">
                         {kw}
                         <button type="button" aria-label={`Hapus keyword ${kw}`} onClick={() => setForm(f => ({ ...f, focus_keywords: f.focus_keywords.filter((_, j) => j !== i) }))}>
                           <Trash2 className="w-3 h-3" />
@@ -658,7 +658,7 @@ export default function SmartSEO() {
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {["Organization", "WebSite", "Restaurant", "LocalBusiness", "BreadcrumbList"].map(s => (
-                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">
+                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full text-xs font-medium">
                   <Check className="w-3 h-3" /> {s}
                 </span>
               ))}

@@ -97,6 +97,10 @@ atau `bg-white` pada kartu.
 - Kontras teks **≥ 4.5:1** (WCAG AA), ikon/border penting ≥ 3:1. Token `--muted-foreground` (light 40%) lolos AA
   juga di atas kartu kaca.
 - Jangan meredupkan teks dengan `opacity-*` atau `text-*/60`; pakai `text-muted-foreground`.
+- **Badge/chip bertint**: `bg-{warna}-500/15 text-{warna}-800 dark:text-{warna}-400` (teks `-700` di atas tint
+  hanya ±4.3:1). Latar terang solid (`bg-*-100`) wajib punya `dark:bg-{warna}-500/15`.
+- Warna data (brand, bucket budget, seri chart) dipakai pada **titik/batang/ikon**, bukan sebagai warna teks.
+- Merah: `text-destructive` (mode gelap otomatis memakai varian terang), latar `bg-destructive` + teks putih.
 - Teks di atas warna isi (avatar brand, tombol) harus dipilih berdasarkan luminans warna latar.
 - Target klik ≥ 24px (WCAG 2.2). Kontrol standar sudah 32–36px.
 - Fokus terlihat: `focus-visible:ring-2 ring-ring` (sudah ada di primitive).
@@ -117,6 +121,9 @@ atau `bg-white` pada kartu.
 | `glass-card p-5/p-6` | `p-4` (hero halaman sistem dikecualikan) |
 | `<table>` mentah untuk daftar data | `DataTable` |
 | `opacity-60` pada teks | `text-muted-foreground` |
+| `style={{ color: brandColor }}` pada teks/angka | teks `text-foreground` + titik warna `style={{ backgroundColor }}` |
+| `bg-rose-100 text-rose-700` tanpa varian dark | `bg-rose-500/15 text-rose-800 dark:text-rose-400` |
+| gradien + teks putih pada sel kecil (heatmap) | isi solid bertint + teks `-900 dark:-100` |
 
 ## 9. Penjaga konsistensi (wajib dijalankan)
 

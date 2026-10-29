@@ -138,7 +138,7 @@ export default function CashCsvUploader({ onClose, onDone }) {
             )}
             {result.errors?.length > 0 && (
               <div className="max-h-32 overflow-y-auto mb-3 bg-rose-50 dark:bg-rose-950/30 p-2 rounded">
-                <div className="text-xs font-semibold text-rose-700 mb-1">Errors</div>
+                <div className="text-xs font-semibold text-rose-700 dark:text-rose-400 mb-1">Errors</div>
                 <ul className="text-xs space-y-0.5">
                   {result.errors.map((e, i) => (
                     <li key={i} className="text-rose-700 dark:text-rose-400">Row {e.row}: {e.reason}</li>

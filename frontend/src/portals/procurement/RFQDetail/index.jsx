@@ -466,7 +466,7 @@ export default function RFQDetail() {
                         render: (item) => {
                           const q = item.quotes[v.vendor_id];
                           return q?.unit_price != null ? (
-                            <div className={`rounded px-2 py-0.5 text-sm inline-block ${q.is_cheapest ? "bg-emerald-500/15 text-emerald-800 font-semibold" : ""}`}>
+                            <div className={`rounded px-2 py-0.5 text-sm inline-block ${q.is_cheapest ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 font-semibold" : ""}`}>
                               {formatCurrency(q.unit_price)}
                               {q.is_cheapest && <Trophy className="inline h-3 w-3 ml-1" />}
                             </div>

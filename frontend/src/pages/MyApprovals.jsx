@@ -311,7 +311,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
             variant="outline"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onReject(); }}
-            className="gap-1 border-rose-300 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950"
+            className="gap-1 border-rose-300 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950"
             data-testid={`quick-reject-${item.entity_id}`}
           >
             <X className="h-3 w-3" />

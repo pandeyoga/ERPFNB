@@ -129,8 +129,8 @@ export default function AnomalyOverviewWidget() {
                     data-testid={`anomaly-outlet-${o.outlet_code || o.outlet_id}`}>
                     <span className="font-medium">{o.outlet_name}</span>
                     <div className="flex items-center gap-1.5">
-                      {o.severe > 0 && <span className="text-xs px-1.5 rounded bg-red-500/15 text-red-800">{o.severe}s</span>}
-                      {o.mild > 0 && <span className="text-xs px-1.5 rounded bg-amber-500/15 text-amber-800">{o.mild}m</span>}
+                      {o.severe > 0 && <span className="text-xs px-1.5 rounded bg-red-500/15 text-red-800 dark:text-red-400">{o.severe}s</span>}
+                      {o.mild > 0 && <span className="text-xs px-1.5 rounded bg-amber-500/15 text-amber-800 dark:text-amber-400">{o.mild}m</span>}
                       <span className="font-bold tabular-nums">{o.total}</span>
                     </div>
                   </div>

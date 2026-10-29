@@ -15,10 +15,10 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 
 const TYPE_CONFIG = {
-  brand:  { label: "Brand",  icon: Globe,           color: "bg-purple-100 text-purple-700" },
-  news:   { label: "News",   icon: Newspaper,        color: "bg-blue-100 text-blue-700" },
-  outlet: { label: "Outlet", icon: Tag,              color: "bg-teal-100 text-teal-700" },
-  menu:   { label: "Menu",   icon: UtensilsCrossed,  color: "bg-orange-100 text-orange-700" },
+  brand:  { label: "Brand",  icon: Globe,           color: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400" },
+  news:   { label: "News",   icon: Newspaper,        color: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400" },
+  outlet: { label: "Outlet", icon: Tag,              color: "bg-teal-100 dark:bg-teal-500/15 text-teal-700 dark:text-teal-400" },
+  menu:   { label: "Menu",   icon: UtensilsCrossed,  color: "bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-400" },
 };
 
 export default function CMSPendingReviews() {
@@ -79,7 +79,7 @@ export default function CMSPendingReviews() {
         <p className="text-sm text-muted-foreground flex items-center gap-2">
           Konten yang menunggu persetujuan editor.
           {total > 0 && (
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200">{total} menunggu</Badge>
+            <Badge className="bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30">{total} menunggu</Badge>
           )}
         </p>
         <Button variant="outline" onClick={load} disabled={loading} data-testid="reviews-refresh">
@@ -151,13 +151,13 @@ export default function CMSPendingReviews() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Button size="sm" variant="outline"
-                          className="border-green-300 text-green-700 hover:bg-green-50"
+                          className="border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-500/10"
                           onClick={() => { setComment(""); setModalAction({ type: "approve", item }); }}
                           data-testid={`approve-btn-${item.id}`}>
                     <CheckCircle2 className="h-3.5 w-3.5" /> Setujui
                   </Button>
                   <Button size="sm" variant="outline"
-                          className="border-red-300 text-red-700 hover:bg-red-50"
+                          className="border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                           onClick={() => { setComment(""); setModalAction({ type: "reject", item }); }}
                           data-testid={`reject-btn-${item.id}`}>
                     <XCircle className="h-3.5 w-3.5" /> Tolak
@@ -173,7 +173,7 @@ export default function CMSPendingReviews() {
       <Dialog open={!!modalAction} onOpenChange={() => { setModalAction(null); setComment(""); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className={`flex items-center gap-2 ${modalAction?.type === "approve" ? "text-green-700" : "text-red-700"}`}>
+            <DialogTitle className={`flex items-center gap-2 ${modalAction?.type === "approve" ? "text-green-700 dark:text-green-400" : "text-red-700"}`}>
               {modalAction?.type === "approve"
                 ? <><CheckCircle2 className="h-5 w-5" /> Setujui & Publish</>
                 : <><XCircle className="h-5 w-5" /> Tolak Konten</>}

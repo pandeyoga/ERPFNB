@@ -85,7 +85,7 @@ export default function IntegrationSettingsList({ items, onChange }) {
             )}
 
             {!item.is_set && !isEditing && (
-              <div className="text-xs mb-3 inline-flex items-center gap-1 text-amber-700">
+              <div className="text-xs mb-3 inline-flex items-center gap-1 text-amber-700 dark:text-amber-400">
                 <FileWarning className="h-3 w-3" /> Belum dikonfigurasi
               </div>
             )}

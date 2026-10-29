@@ -197,7 +197,7 @@ export default function BrandInstagramPosts({ brand }) {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1">
                   {post.is_pinned && (
-                    <span className="bg-yellow-400 text-yellow-900 text-xs px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                    <span className="bg-yellow-400 text-yellow-900 dark:text-yellow-400 text-xs px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
                       <Pin className="w-2.5 h-2.5" /> PIN
                     </span>
                   )}
@@ -211,7 +211,7 @@ export default function BrandInstagramPosts({ brand }) {
                   <button
                     onClick={() => handlePin(post.id)}
                     className={`p-2 rounded-full transition-colors ${
-                      post.is_pinned ? "bg-yellow-400 text-yellow-900" : "bg-white/20 text-white hover:bg-white/40"
+                      post.is_pinned ? "bg-yellow-400 text-yellow-900 dark:text-yellow-400" : "bg-white/20 text-white hover:bg-white/40"
                     }`}
                     title={post.is_pinned ? "Unpin" : "Pin post"}
                     aria-label={post.is_pinned ? "Lepas pin post" : "Pin post"}

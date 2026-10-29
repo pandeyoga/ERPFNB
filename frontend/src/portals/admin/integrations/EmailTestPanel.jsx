@@ -40,7 +40,7 @@ export default function EmailTestPanel() {
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+        <span className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 flex items-center justify-center">
           <Mail className="h-4 w-4" />
         </span>
         <div>

@@ -78,7 +78,7 @@ export default function KpiSnapshotStrip() {
       <Tile label="Cash" value={fmtJt(data.cash)}
             sub={data.runway ? `${data.runway}d runway` : null}
             icon={Wallet}
-            tone={data.health === "red" ? "bg-rose-100 text-rose-700" : data.health === "amber" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"} />
+            tone={data.health === "red" ? "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400" : data.health === "amber" ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400" : "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"} />
       <Tile label="Rev MTD" value={fmtJt(data.revenue)} icon={TrendingUp} tone="bg-aurora-1/15 text-aurora-1" />
       <Tile label="AP 7d" value={fmtJt(data.ap_due)} icon={Receipt} tone="bg-aurora-4/15 text-aurora-4" />
       <Tile label="Approvals" value={data.pending} icon={ClipboardCheck} tone="bg-aurora-2/15 text-aurora-2" />

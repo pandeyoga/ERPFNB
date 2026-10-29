@@ -664,7 +664,7 @@ export default function POForm() {
             </Button>
             <Button
               variant="outline"
-              className="flex-1 border-orange-300 text-orange-700 hover:bg-orange-50"
+              className="flex-1 border-orange-300 dark:border-orange-500/30 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10"
               data-testid="po-alt-return-pr"
               onClick={() => {
                 toast.info("Item akan dikembalikan ke PR pool untuk diproses terpisah");

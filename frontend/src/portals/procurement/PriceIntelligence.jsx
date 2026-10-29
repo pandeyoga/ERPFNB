@@ -137,9 +137,9 @@ export default function PriceIntelligence() {
                     render: (d) => <DevBadge pct={d.deviation_pct} /> },
                   { key: "availability_status", label: "Status", align: "center",
                     render: (d) => d.availability_status === "unavailable" ? (
-                      <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 text-xs">Tidak tersedia</Badge>
+                      <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30 text-xs">Tidak tersedia</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-green-700 dark:text-green-400 border-green-300 text-xs">Tersedia</Badge>
+                      <Badge variant="outline" className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-500/30 text-xs">Tersedia</Badge>
                     ) },
                 ]}
               />

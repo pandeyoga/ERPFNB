@@ -18,10 +18,10 @@ import api from "@/lib/api";
 
 const STATUS_CONFIG = {
   draft:          { label: "Draft",          color: "bg-muted/40 text-foreground border-border",    icon: AlertCircle },
-  pending_review: { label: "Menunggu Review", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
-  approved:       { label: "Disetujui",       color: "bg-blue-100 text-blue-700 border-blue-200",    icon: CheckCircle2 },
-  rejected:       { label: "Ditolak",       color: "bg-red-100 text-red-700 border-red-200",       icon: XCircle },
-  published:      { label: "Published",      color: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle2 },
+  pending_review: { label: "Menunggu Review", color: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30", icon: Clock },
+  approved:       { label: "Disetujui",       color: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",    icon: CheckCircle2 },
+  rejected:       { label: "Ditolak",       color: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30",       icon: XCircle },
+  published:      { label: "Published",      color: "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/30", icon: CheckCircle2 },
 };
 
 export function WorkflowBadge({ status }) {
@@ -148,7 +148,7 @@ export default function CMSWorkflow({
       <Dialog open={approveOpen} onOpenChange={setApproveOpen}>
         <DialogContent className="max-w-sm" data-testid="cms-workflow-approve-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-green-700">
+            <DialogTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
               <CheckCircle2 className="h-5 w-5" /> Setujui & Publish
             </DialogTitle>
           </DialogHeader>
@@ -173,7 +173,7 @@ export default function CMSWorkflow({
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent className="max-w-sm" data-testid="cms-workflow-reject-dialog">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-700">
+            <DialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <XCircle className="h-5 w-5" /> Tolak Konten
             </DialogTitle>
           </DialogHeader>

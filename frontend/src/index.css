@@ -94,7 +94,7 @@ a[href*="emergent.sh"],
     --muted-foreground: 215 20% 72%;
     --accent: 240 70% 70%;
     --accent-foreground: 222 47% 9%;
-    --destructive: 0 72% 56%;
+    --destructive: 0 72% 50%; /* 56% → 50%: teks putih di tombol destructive ≥ 4.5:1 */
     --destructive-foreground: 210 40% 96%;
     --border: 220 24% 18%;
     --input: 220 24% 18%;
@@ -505,3 +505,7 @@ a[href*="emergent.sh"],
    penanda warna seri tetap pada ikon legenda. Di luar @layer agar tidak dibuang Tailwind
    (class ini dibuat Recharts, tidak muncul di source). */
 .recharts-legend-item-text { color: hsl(var(--foreground)) !important; }
+
+/* Teks merah di mode gelap: --destructive (latar tombol, teks putih) terlalu gelap untuk teks
+   di atas kartu gelap (4.1:1) → teks memakai varian lebih terang (5.6:1). */
+.dark .text-destructive { color: hsl(0 72% 66%); }

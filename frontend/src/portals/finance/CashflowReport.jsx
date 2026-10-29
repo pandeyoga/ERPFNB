@@ -178,7 +178,7 @@ function DailyChart({ daily, opening }) {
             <g key={d.date}>
               <line x1={prevX} y1={prevY} x2={x} y2={y} stroke="currentColor" strokeOpacity="0.5" strokeWidth="2" />
               <circle cx={x} cy={y} r={3} fill="currentColor" />
-              <text x={x} y={height + 16} fontSize="11" textAnchor="middle" fill="currentColor" opacity="0.6">{d.date.slice(-2)}</text>
+              <text x={x} y={height + 16} fontSize="12" textAnchor="middle" fill="currentColor" opacity="0.6">{d.date.slice(-2)}</text>
             </g>
           );
         })}

@@ -461,7 +461,7 @@ export default function ARInvoiceList({ embedded = false }) {
                           render: (c) => <span className="font-medium">{c.customer_name || "—"}</span> },
                         { key: "current", label: "Belum JT", numeric: true, sortable: true,
                           sortAccessor: (c) => c.buckets.current || 0,
-                          render: (c) => <span className="text-sm text-green-700">{formatCurrency(c.buckets.current || 0)}</span> },
+                          render: (c) => <span className="text-sm text-green-700 dark:text-green-400">{formatCurrency(c.buckets.current || 0)}</span> },
                         { key: "1_30", label: "1-30 Hari", numeric: true, sortable: true,
                           sortAccessor: (c) => c.buckets["1_30"] || 0,
                           render: (c) => <span className="text-sm text-amber-800 dark:text-amber-400">{formatCurrency(c.buckets["1_30"] || 0)}</span> },
@@ -513,7 +513,7 @@ export default function ARInvoiceList({ embedded = false }) {
                 <DataTable
                   rows={[
                     { id: "opening", label: "Saldo Awal", amount: recon.opening_balance, cls: "font-medium", amtCls: "font-semibold", paren: false },
-                    { id: "issued", label: "+ Invoice Diterbitkan", amount: recon.invoices_issued, cls: "text-green-700 font-medium", amtCls: "text-green-700 font-semibold", paren: false },
+                    { id: "issued", label: "+ Invoice Diterbitkan", amount: recon.invoices_issued, cls: "text-green-700 dark:text-green-400 font-medium", amtCls: "text-green-700 dark:text-green-400 font-semibold", paren: false },
                     { id: "received", label: "- Pembayaran Diterima", amount: recon.receipts_received, cls: "text-red-700 dark:text-red-400 font-medium", amtCls: "text-red-700 dark:text-red-400 font-semibold", paren: true },
                     { id: "closing", label: "Saldo Akhir", amount: recon.closing_balance, cls: "font-bold text-base", amtCls: "font-bold text-base text-orange-800 dark:text-orange-400", paren: false, isTotal: true },
                   ]}

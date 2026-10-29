@@ -491,7 +491,7 @@ export default function CRMAnalytics({ embedded = false }) {
                   render: (c) => <span className="text-violet-700 dark:text-violet-400 font-medium">{fmt(c.clv_annual)}</span> },
                 { key: "is_active", label: "Status", align: "center", render: (c) => (
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                    c.is_active ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400'
                   }`}>
                     {c.is_active ? "Aktif" : "Nonaktif"}
                   </span>

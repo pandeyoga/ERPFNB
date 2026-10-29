@@ -23,10 +23,10 @@ import { toast } from "sonner";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TIER_CONFIG = {
-  bronze:   { label: "Bronze",   className: "bg-amber-100 text-amber-800 border-amber-200" },
+  bronze:   { label: "Bronze",   className: "bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30" },
   silver:   { label: "Silver",   className: "bg-muted/40 text-foreground border-border" },
-  gold:     { label: "Gold",     className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  platinum: { label: "Platinum", className: "bg-purple-100 text-purple-800 border-purple-200" },
+  gold:     { label: "Gold",     className: "bg-yellow-100 dark:bg-yellow-500/15 text-yellow-800 dark:text-yellow-400 border-yellow-300 dark:border-yellow-500/30" },
+  platinum: { label: "Platinum", className: "bg-purple-100 dark:bg-purple-500/15 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-500/30" },
 };
 
 const STATUS_CONFIG = {

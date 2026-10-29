@@ -67,10 +67,10 @@ function CharCounter({ value = "", min, max }) {
 
 function IntentBadge({ intent }) {
   const map = {
-    informational: { label: "Informational", cls: "bg-blue-100 text-blue-700 border-blue-200" },
-    navigational:  { label: "Navigational",  cls: "bg-purple-100 text-purple-700 border-purple-200" },
-    commercial:    { label: "Commercial",    cls: "bg-amber-100 text-amber-700 border-amber-200" },
-    transactional: { label: "Transactional", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+    informational: { label: "Informational", cls: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30" },
+    navigational:  { label: "Navigational",  cls: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30" },
+    commercial:    { label: "Commercial",    cls: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30" },
+    transactional: { label: "Transactional", cls: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30" },
   };
   const { label, cls } = map[intent] || { label: intent, cls: "bg-gray-100 text-gray-700" };
   return <span className={cn("px-2 py-0.5 rounded-full text-xs font-semibold border", cls)}>{label}</span>;

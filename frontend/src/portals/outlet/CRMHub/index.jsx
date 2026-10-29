@@ -29,12 +29,12 @@ import { useAuth } from "@/lib/auth";
 
 // ===================== CONSTANTS =====================
 const STATUS_CONFIG = {
-  pending:     { label: "Menunggu",       color: "bg-amber-100 text-amber-700 border-amber-300",    dot: "bg-amber-500" },
-  waitlist:    { label: "Waitlist",       color: "bg-teal-100 text-teal-700 border-teal-300",       dot: "bg-teal-500" },
-  confirmed:   { label: "Dikonfirmasi",   color: "bg-blue-100 text-blue-700 border-blue-300",       dot: "bg-blue-500" },
-  rescheduled: { label: "Dijadwal Ulang", color: "bg-indigo-100 text-indigo-700 border-indigo-300", dot: "bg-indigo-500" },
-  completed:   { label: "Selesai",        color: "bg-emerald-100 text-emerald-700 border-emerald-300", dot: "bg-emerald-500" },
-  cancelled:   { label: "Dibatalkan",     color: "bg-red-100 text-red-700 border-red-300",          dot: "bg-red-400" },
+  pending:     { label: "Menunggu",       color: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30",    dot: "bg-amber-500" },
+  waitlist:    { label: "Waitlist",       color: "bg-teal-100 dark:bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-300 dark:border-teal-500/30",       dot: "bg-teal-500" },
+  confirmed:   { label: "Dikonfirmasi",   color: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30",       dot: "bg-blue-500" },
+  rescheduled: { label: "Dijadwal Ulang", color: "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-300 dark:border-indigo-500/30", dot: "bg-indigo-500" },
+  completed:   { label: "Selesai",        color: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30", dot: "bg-emerald-500" },
+  cancelled:   { label: "Dibatalkan",     color: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30",          dot: "bg-red-400" },
   no_show:     { label: "Tidak Hadir",    color: "bg-muted/40 text-muted-foreground border-border",       dot: "bg-muted-foreground" },
 };
 
@@ -126,7 +126,7 @@ function ReservationRow({ r, onAction, loading }) {
       <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
         {r.status === "pending" && (
           <Button size="sm" variant="outline"
-            className="text-blue-700 border-blue-300 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10"
+            className="text-blue-700 border-blue-300 dark:border-blue-500/30 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10"
             onClick={() => onAction(r.id, "confirmed")}
             disabled={loading}
             data-testid={`crm-confirm-btn-${r.id}`}
@@ -136,7 +136,7 @@ function ReservationRow({ r, onAction, loading }) {
         )}
         {r.status === "confirmed" && (
           <Button size="sm" variant="outline"
-            className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+            className="text-emerald-700 border-emerald-300 dark:border-emerald-500/30 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
             onClick={() => onAction(r.id, "completed")}
             disabled={loading}
             data-testid={`crm-complete-btn-${r.id}`}

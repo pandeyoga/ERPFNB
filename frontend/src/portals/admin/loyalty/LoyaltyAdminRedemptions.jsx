@@ -37,17 +37,17 @@ const STATUS_CONFIG = {
   pending: {
     label: "Menunggu",
     icon: Clock,
-    badge: "bg-amber-100 text-amber-700 border-amber-200",
+    badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
   },
   claimed: {
     label: "Diklaim",
     icon: CheckCircle,
-    badge: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    badge: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
   },
   expired: {
     label: "Kedaluwarsa",
     icon: XCircle,
-    badge: "bg-red-100 text-red-700 dark:text-red-400 border-red-200",
+    badge: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30",
   },
 };
 
@@ -252,7 +252,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-emerald-700 dark:text-emerald-400 border-emerald-300 hover:bg-emerald-50"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "claimed" })}
                   data-testid={`claim-btn-${item.id}`}
                 >
@@ -261,7 +261,7 @@ export default function LoyaltyAdminRedemptions({ embedded = false }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-red-700 dark:text-red-400 border-red-300 hover:bg-red-50"
+                  className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "expired" })}
                   data-testid={`expire-btn-${item.id}`}
                 >

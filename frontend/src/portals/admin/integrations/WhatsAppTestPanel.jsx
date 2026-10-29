@@ -48,7 +48,7 @@ export default function WhatsAppTestPanel() {
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+        <span className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
           <Phone className="h-4 w-4" />
         </span>
         <div className="flex-1">
