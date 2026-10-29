@@ -53,7 +53,9 @@ async def list_payments(
     db = get_db()
     q: dict = {"deleted_at": None}
     if status:
-        q["status"] = status
+        # "a,b" = salah satu dari beberapa status (tab "Menunggu Approval" = submitted + awaiting_approval)
+        statuses = [x.strip() for x in status.split(",") if x.strip()]
+        q["status"] = statuses[0] if len(statuses) == 1 else {"$in": statuses}
     if payee_type:
         q["payee_type"] = payee_type
     if date_from:

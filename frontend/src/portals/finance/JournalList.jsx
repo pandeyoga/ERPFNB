@@ -16,6 +16,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 const SOURCE_TYPES = [
   { v: "",                l: "Semua sumber" },
@@ -106,50 +107,50 @@ export default function JournalList() {
         }
       />
 
-      <div data-testid="je-filter-card" className="glass-card p-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div>
-            <Label className="text-xs md:text-sm font-medium" htmlFor="je-period">Period</Label>
-            <Input id="je-period" type="month" value={period} onChange={e => { setPeriod(e.target.value); setPage(1); }}
-              className="glass-input mt-1" data-testid="je-period" />
-          </div>
-          <div>
-            <Label className="text-xs md:text-sm font-medium flex items-center gap-1">
-              Source <InlineHelp id="journal-source" size="xs" placement="bottom-start" />
-            </Label>
-            <SimpleSelect
-              value={sourceType}
-              onValueChange={(v) => { setSourceType(v); setPage(1); }}
-              options={SOURCE_TYPES.map(t => ({ value: t.v, label: t.l }))}
-              className="glass-input w-full mt-1"
-              ariaLabel="Source"
-              testId="je-source"
-            />
-          </div>
-          <div>
-            <Label className="text-xs md:text-sm font-medium">Outlet (dim)</Label>
-            <SimpleSelect
-              value={outletId}
-              onValueChange={(v) => { setOutletId(v); setPage(1); }}
-              options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua"
-              className="glass-input w-full mt-1"
-              ariaLabel="Outlet (dim)"
-              testId="je-outlet"
-            />
-          </div>
-          <div>
-            <Label className="text-xs md:text-sm font-medium" htmlFor="je-search">Cari</Label>
-            <div className="relative mt-1">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input id="je-search" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Doc no / deskripsi…" className="glass-input pl-9" data-testid="je-search" />
+      <div data-testid="je-list-card" className="glass-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="je-filter-card">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+            <div>
+              <Label className="text-xs md:text-sm font-medium" htmlFor="je-period">Periode</Label>
+              <Input id="je-period" type="month" value={period} onChange={e => { setPeriod(e.target.value); setPage(1); }}
+                className="glass-input mt-1" data-testid="je-period" />
+            </div>
+            <div>
+              <Label className="text-xs md:text-sm font-medium flex items-center gap-1">
+                Sumber <InlineHelp id="journal-source" size="xs" placement="bottom-start" />
+              </Label>
+              <SimpleSelect
+                value={sourceType}
+                onValueChange={(v) => { setSourceType(v); setPage(1); }}
+                options={SOURCE_TYPES.map(t => ({ value: t.v, label: t.l }))}
+                className="glass-input w-full mt-1"
+                ariaLabel="Sumber"
+                testId="je-source"
+              />
+            </div>
+            <div>
+              <Label className="text-xs md:text-sm font-medium">Outlet (dim)</Label>
+              <SimpleSelect
+                value={outletId}
+                onValueChange={(v) => { setOutletId(v); setPage(1); }}
+                options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                placeholder="Semua"
+                className="glass-input w-full mt-1"
+                ariaLabel="Outlet (dim)"
+                testId="je-outlet"
+              />
+            </div>
+            <div>
+              <Label className="text-xs md:text-sm font-medium" htmlFor="je-search">Cari</Label>
+              <div className="relative mt-1">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Input id="je-search" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Doc no / deskripsi…" className="glass-input pl-9" data-testid="je-search" />
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div data-testid="je-list-card" className="glass-card">
+        </ListToolbar>
         <DataTable
           columns={[
             {
@@ -157,7 +158,7 @@ export default function JournalList() {
               render: je => <span className="font-mono text-xs whitespace-nowrap">{je.doc_no || je.je_number || je.id.slice(0, 8)}</span>,
             },
             { key: "entry_date", label: "Tanggal", sortable: true, render: je => fmtDate(je.entry_date) },
-            { key: "source_type", label: "Source", sortable: true, render: je => <span>{sourceLabel(je.source_type)}</span> },
+            { key: "source_type", label: "Sumber", sortable: true, render: je => <span>{sourceLabel(je.source_type)}</span> },
             {
               key: "description", label: "Deskripsi",
               render: je => <span className="line-clamp-2 max-w-[280px] block">{je.description}</span>,

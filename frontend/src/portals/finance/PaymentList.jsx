@@ -1,24 +1,24 @@
 /** Payment Request (PAY) list page. */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Banknote, Plus, Search, FileEdit, Clock, CheckCircle2 } from "lucide-react";
+import { Banknote, Plus, FileEdit, Clock, CheckCircle2 } from "lucide-react";
 import api, { unwrapWithMeta } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
 import DataTable from "@/components/shared/DataTable";
+import ListToolbar, { ListSearch, StatusTabs } from "@/components/shared/ListToolbar";
 import { fmtRp, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 
+// "Menunggu Approval" = submitted (tanpa workflow) + awaiting_approval (dengan workflow): tahap yang sama bagi user.
+// Maks. 5 tab; sisanya di menu "Status lain" (DESIGN_SYSTEM §10.3).
 const STATUS_TABS = [
   { key: "all", label: "Semua" },
   { key: "draft", label: "Draft" },
-  { key: "awaiting_approval", label: "Menunggu Approval" },
-  { key: "submitted", label: "Diajukan" },
+  { key: "submitted,awaiting_approval", label: "Menunggu Approval" },
   { key: "approved", label: "Disetujui" },
   { key: "paid", label: "Dibayar" },
   { key: "rejected", label: "Ditolak" },
@@ -81,36 +81,27 @@ export default function PaymentList({ embedded = false }) {
             value={<span data-testid="pay-kpi-draft-value">{kpi.draft}</span>} />
           <CompactStatCard label="Menunggu approval" icon={Clock} color="aurora-5" tone="warning" testId="pay-kpi-awaiting"
             value={<span data-testid="pay-kpi-awaiting-value">{kpi.awaiting_approval}</span>} />
-          <CompactStatCard label="Approved (siap bayar)" icon={CheckCircle2} color="aurora-2" tone="info" testId="pay-kpi-approved"
+          <CompactStatCard label="Disetujui (siap bayar)" icon={CheckCircle2} color="aurora-2" tone="info" testId="pay-kpi-approved"
             value={<span data-testid="pay-kpi-approved-value">{kpi.approved}</span>} />
-          <CompactStatCard label={`Paid ${kpi.period}`} icon={Banknote} color="aurora-4" tone="success" testId="pay-kpi-paid"
+          <CompactStatCard label={`Dibayar ${kpi.period}`} icon={Banknote} color="aurora-4" tone="success" testId="pay-kpi-paid"
             value={<span data-testid="pay-kpi-paid-value">{fmtRp(kpi.paid_this_month.amount)}</span>}
             sub={`${kpi.paid_this_month.count} payment`} />
         </div>
       )}
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-3" data-testid="pay-toolbar">
-        <Tabs value={status} onValueChange={setStatus}>
-          <TabsList data-testid="pay-status-tabs" aria-label="Filter status payment">
-            {STATUS_TABS.map(t => (
-              <TabsTrigger key={t.key} value={t.key} data-testid={`pay-tab-${t.key}`}>{t.label}</TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <div className="relative ml-auto max-w-xs w-full">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <Input placeholder="Cari doc no / payee / invoice..." value={search}
-                 onChange={e => setSearch(e.target.value)} aria-label="Cari payment"
-                 className="glass-input pl-9" data-testid="pay-search" />
-        </div>
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="pay-table-card">
+        <ListToolbar
+          testId="pay-toolbar"
+          search={<ListSearch value={search} onChange={setSearch} placeholder="Cari doc no / payee / invoice…" ariaLabel="Cari payment" testId="pay-search" />}
+        >
+          <StatusTabs value={status} onChange={setStatus} options={STATUS_TABS} ariaLabel="Filter status payment"
+            testId="pay-status-tabs" tabTestId={(k) => `pay-tab-${k.split(",").pop()}`} />
+        </ListToolbar>
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true,
               render: (p) => <span className="font-mono text-xs whitespace-nowrap" data-testid={`pay-doc-no-${p.doc_no}`}>{p.doc_no}</span> },
-            { key: "request_date", label: "Date", sortable: true, render: (p) => fmtDate(p.request_date) },
+            { key: "request_date", label: "Tanggal", sortable: true, render: (p) => fmtDate(p.request_date) },
             { key: "payee", label: "Payee",
               render: (p) => (
                 <div>
@@ -118,9 +109,9 @@ export default function PaymentList({ embedded = false }) {
                   <div className="text-[11px] text-muted-foreground uppercase">{p.payee_type}</div>
                 </div>
               ) },
-            { key: "description", label: "Description",
+            { key: "description", label: "Deskripsi",
               render: (p) => <span className="max-w-[280px] truncate block">{p.description}</span> },
-            { key: "amount", label: "Amount", numeric: true, sortable: true,
+            { key: "amount", label: "Nominal", numeric: true, sortable: true,
               render: (p) => <span data-testid={`pay-amount-${p.doc_no}`}>{fmtRp(p.amount)}</span> },
             { key: "status", label: "Status", render: (p) => <StatusPill status={p.status} /> },
           ]}

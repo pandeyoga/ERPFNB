@@ -1,8 +1,8 @@
 /** Status pill — maps backend status string to a labelled, colored pill.
  *
- * Satu kamus status untuk seluruh aplikasi (label + tone warna). Label status memakai
- * Bahasa Indonesia; beberapa istilah yang lazim di software bisnis tetap dipakai apa adanya
- * (Draft, Posted, Void, Published, Waitlist, Approval, Review). Status yang belum terdaftar
+ * Satu kamus status untuk seluruh aplikasi (label + tone warna). Aturan bahasa (DESIGN_SYSTEM §10.5): status
+ * persetujuan/umum Bahasa Indonesia; status akuntansi teknis Bahasa Inggris (Posted, Void, Overdue, Partial,
+ * Written Off, …); Jatuh Tempo dan Lunas tetap Indonesia. Status yang belum terdaftar
  * tidak tampil sebagai enum mentah — di-humanize (mis. "Partially shipped") dengan warna netral.
  * Tab & filter status di halaman daftar memakai `statusLabel()` agar labelnya sama dengan pill.
  */
@@ -42,14 +42,14 @@ const STATUS = {
   sent: ["Terkirim", "info"],
   sending: ["Mengirim", "info"],
   issued: ["Diterbitkan", "info"],
-  partial: ["Sebagian", "warning"],
-  partially_received: ["Diterima Sebagian", "warning"],
+  partial: ["Partial", "warning"],
+  partially_received: ["Partial", "warning"],
   receiving: ["Proses Terima", "info"],
   received: ["Diterima", "success"],
   in_transit: ["Dalam Perjalanan", "info"],
   converted: ["Dikonversi", "accent"],
   converted_to_po: ["Dikonversi ke PO", "accent"],
-  posting: ["Memposting", "info"],
+  posting: ["Posting", "info"],
   posted: ["Posted", "success"],
   paying: ["Proses Bayar", "info"],
   paid: ["Dibayar", "success"],
@@ -58,7 +58,7 @@ const STATUS = {
   calculated: ["Dihitung", "info"],
   completed: ["Selesai", "success"],
   closed: ["Ditutup", "neutral"],
-  overdue: ["Terlambat", "danger"],
+  overdue: ["Overdue", "danger"],
   due: ["Jatuh Tempo", "warning"],
   locked: ["Dikunci", "neutral"],
   reopened: ["Dibuka Ulang", "warning"],
@@ -74,10 +74,10 @@ const STATUS = {
   cancelled: ["Dibatalkan", "danger"],
   canceled: ["Dibatalkan", "danger"],
   void: ["Void", "danger"],
-  written_off: ["Dihapusbukukan", "danger"],
-  disposed: ["Dilepas", "neutral"],
-  fully_depreciated: ["Susut Penuh", "neutral"],
-  revalued: ["Direvaluasi", "info"],
+  written_off: ["Written Off", "danger"],
+  disposed: ["Disposed", "neutral"],
+  fully_depreciated: ["Fully Depreciated", "neutral"],
+  revalued: ["Revalued", "info"],
   failed: ["Gagal", "danger"],
   error: ["Error", "danger"],
   ok: ["OK", "success"],

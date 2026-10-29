@@ -6,13 +6,13 @@ import { Plus, FileCheck, Eye, Download, Scale } from "lucide-react";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import { unwrap, fetchAll } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import ListToolbar, { StatusTabs } from "@/components/shared/ListToolbar";
 import OutletScopePicker from "@/components/shared/OutletScopePicker";
 import useOutletScope from "@/hooks/useOutletScope";
 import useOutletScopeGuard from "@/hooks/useOutletScopeGuard";
@@ -20,12 +20,12 @@ import { fmtRp, fmtDate } from "@/lib/format";
 import useExcelExport from "@/hooks/useExcelExport";
 
 const STATUS_TABS = [
-  { key: "",                  label: "Semua" },
+  { key: "all",               label: "Semua" },
   { key: "draft",             label: "Draft" },
   { key: "awaiting_approval", label: "Menunggu Approval" },
   { key: "approved",          label: "Disetujui" },
   { key: "sent",              label: "Terkirim" },
-  { key: "partial",           label: "Sebagian" },
+  { key: "partial",           label: "Partial" },
   { key: "received",          label: "Diterima" },
   { key: "cancelled",         label: "Dibatalkan" },
 ];
@@ -94,17 +94,12 @@ export default function POList() {
         }
       />
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="po-filters-card">
-        <Tabs value={status || "all"} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
-          <TabsList aria-label="Filter status" data-testid="po-status-tabs">
-            {STATUS_TABS.map(t => (
-              <TabsTrigger key={t.key || "all"} value={t.key || "all"} data-testid={`po-tab-${t.key || "all"}`}>
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+      <div className="glass-card overflow-hidden" data-testid="po-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="po-filters-card">
+          <StatusTabs value={status || "all"} onChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}
+            options={STATUS_TABS} testId="po-status-tabs" tabTestId={(k) => `po-tab-${k}`} />
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
           <OutletScopePicker
             value={outletId}
             onChange={(id) => { setOutletId(id); setPage(1); }}
@@ -121,10 +116,8 @@ export default function POList() {
             className="glass-input w-[200px]"
             testId="po-filter-vendor"
           />
-        </div>
-      </div>
-
-      <div className="glass-card overflow-hidden" data-testid="po-table-card">
+          </div>
+        </ListToolbar>
         <DataTable
           columns={[
             {

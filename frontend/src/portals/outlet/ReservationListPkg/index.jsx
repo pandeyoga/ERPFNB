@@ -39,6 +39,7 @@ import StatusBadge from "./StatusBadge";
 import DepositPanel from "./DepositPanel";
 import RescheduleDialog from "./RescheduleDialog";
 import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 export default function ReservationList() {
   const navigate = useNavigate();
@@ -197,42 +198,41 @@ export default function ReservationList() {
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-3" data-testid="reservation-filters">
-        <div className="flex flex-wrap gap-2.5">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Cari nama / nomor HP..." value={filters.search}
-              aria-label="Cari nama atau nomor HP"
-              onChange={e => { setFilters(f => ({ ...f, search: e.target.value })); setPage(1); }}
-              className="pl-9" data-testid="filter-search-input" />
-          </div>
-          <Select value={filters.status || "all"} onValueChange={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }}>
-            <SelectTrigger className="w-44" aria-label="Filter status" data-testid="filter-status-select">
-              <SelectValue placeholder="Semua Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input type="date" value={filters.date_from}
-            onChange={e => { setFilters(f => ({ ...f, date_from: e.target.value })); setPage(1); }}
-            className="w-40" aria-label="Dari tanggal" title="Dari tanggal" data-testid="filter-date-from" />
-          <Input type="date" value={filters.date_to}
-            onChange={e => { setFilters(f => ({ ...f, date_to: e.target.value })); setPage(1); }}
-            className="w-40" aria-label="Sampai tanggal" title="Sampai tanggal" data-testid="filter-date-to" />
-          {(filters.status || filters.search || filters.date_from || filters.date_to) && (
-            <Button variant="ghost" onClick={() => { setFilters({ status: "", search: "", date_from: "", date_to: "" }); setPage(1); }} data-testid="filter-reset">
-              <X className="h-4 w-4" /> Reset
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Table */}
       <div className="glass-card overflow-hidden" data-testid="reservation-table-wrap">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="reservation-filters">
+          <div className="flex flex-wrap gap-2.5 w-full">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Cari nama / nomor HP..." value={filters.search}
+                aria-label="Cari nama atau nomor HP"
+                onChange={e => { setFilters(f => ({ ...f, search: e.target.value })); setPage(1); }}
+                className="pl-9" data-testid="filter-search-input" />
+            </div>
+            <Select value={filters.status || "all"} onValueChange={v => { setFilters(f => ({ ...f, status: v === "all" ? "" : v })); setPage(1); }}>
+              <SelectTrigger className="w-44" aria-label="Filter status" data-testid="filter-status-select">
+                <SelectValue placeholder="Semua Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input type="date" value={filters.date_from}
+              onChange={e => { setFilters(f => ({ ...f, date_from: e.target.value })); setPage(1); }}
+              className="w-40" aria-label="Dari tanggal" title="Dari tanggal" data-testid="filter-date-from" />
+            <Input type="date" value={filters.date_to}
+              onChange={e => { setFilters(f => ({ ...f, date_to: e.target.value })); setPage(1); }}
+              className="w-40" aria-label="Sampai tanggal" title="Sampai tanggal" data-testid="filter-date-to" />
+            {(filters.status || filters.search || filters.date_from || filters.date_to) && (
+              <Button variant="ghost" onClick={() => { setFilters({ status: "", search: "", date_from: "", date_to: "" }); setPage(1); }} data-testid="filter-reset">
+                <X className="h-4 w-4" /> Reset
+              </Button>
+            )}
+          </div>
+        </ListToolbar>
         <DataTable
           rows={reservations}
           keyField="id"

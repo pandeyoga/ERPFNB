@@ -5,7 +5,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Plus, FileText, Eye, Download } from "lucide-react";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader from "@/components/shared/PageHeader";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { InlineHelp } from "@/components/shared/InlineHelp";
@@ -15,9 +14,10 @@ import DataTable from "@/components/shared/DataTable";
 import { fmtDate, fmtRp } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 import useExcelExport from "@/hooks/useExcelExport";
+import ListToolbar, { StatusTabs } from "@/components/shared/ListToolbar";
 
 const STATUS_TABS = [
-  { key: "",          label: "Semua" },
+  { key: "all",       label: "Semua" },
   { key: "draft",     label: "Draft" },
   { key: "submitted", label: "Diajukan" },
   { key: "approved",  label: "Disetujui" },
@@ -81,47 +81,40 @@ export default function PRList() {
         }
       />
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2" data-testid="pr-filters-card">
-        <Tabs value={status || "all"} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
-          <TabsList aria-label="Filter status" data-testid="pr-status-tabs">
-            {STATUS_TABS.map(t => (
-              <TabsTrigger key={t.key || "all"} value={t.key || "all"} data-testid={`pr-tab-${t.key || "all"}`}>
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-          <SimpleSelect
-            value={outletId}
-            onValueChange={(v) => { setOutletId(v); setPage(1); }}
-            options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua outlet"
-            ariaLabel="Filter outlet"
-            className="glass-input w-[180px]"
-            testId="pr-filter-outlet"
-          />
-          <div className="flex items-center gap-1.5">
-            <SimpleSelect
-              value={source}
-              onValueChange={(v) => { setSource(v); setPage(1); }}
-              options={[
-                { value: "", label: "Semua source" },
-                { value: "manual", label: "Manual" },
-                { value: "KDO", label: "KDO" },
-                { value: "BDO", label: "BDO" },
-              ]}
-              placeholder="Semua source"
-              ariaLabel="Filter source"
-              className="glass-input w-[150px]"
-              testId="pr-filter-source"
-            />
-            <InlineHelp id="pr-source" size="xs" placement="top" />
-          </div>
-        </div>
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="pr-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="pr-filters-card">
+          <StatusTabs value={status || "all"} onChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}
+            options={STATUS_TABS} testId="pr-status-tabs" tabTestId={(k) => `pr-tab-${k}`} />
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            <SimpleSelect
+              value={outletId}
+              onValueChange={(v) => { setOutletId(v); setPage(1); }}
+              options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Semua outlet"
+              ariaLabel="Filter outlet"
+              className="glass-input w-[180px]"
+              testId="pr-filter-outlet"
+            />
+            <div className="flex items-center gap-1.5">
+              <SimpleSelect
+                value={source}
+                onValueChange={(v) => { setSource(v); setPage(1); }}
+                options={[
+                  { value: "", label: "Semua sumber" },
+                  { value: "manual", label: "Manual" },
+                  { value: "KDO", label: "KDO" },
+                  { value: "BDO", label: "BDO" },
+                ]}
+                placeholder="Semua sumber"
+                ariaLabel="Filter sumber"
+                className="glass-input w-[150px]"
+                testId="pr-filter-source"
+              />
+              <InlineHelp id="pr-source" size="xs" placement="top" />
+            </div>
+          </div>
+        </ListToolbar>
         <DataTable
           columns={[
             {
@@ -130,7 +123,7 @@ export default function PRList() {
             },
             { key: "request_date", label: "Tanggal", sortable: true, render: pr => fmtDate(pr.request_date) },
             { key: "outlet", label: "Outlet", render: pr => outletMap[pr.outlet_id]?.name || pr.outlet_name || <span className="text-muted-foreground">—</span> },
-            { key: "source", label: "Source", sortable: true, render: pr => SOURCE_LABEL[pr.source] || pr.source || "—" },
+            { key: "source", label: "Sumber", sortable: true, render: pr => SOURCE_LABEL[pr.source] || pr.source || "—" },
             { key: "lines", label: "Item", numeric: true, sortable: true, sortAccessor: pr => pr.lines?.length || 0, render: pr => pr.lines?.length || 0 },
             {
               key: "status",

@@ -27,6 +27,7 @@ import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import useOutletScope from "@/hooks/useOutletScope";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 function severityClasses(sev) {
   if (sev === "critical") return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
@@ -170,59 +171,59 @@ export default function LowStockAlert() {
         <CompactStatCard size="sm" label="Item dipilih" value={selected.size} icon={ListChecks} color="aurora-1" testId="low-tile-selected" />
       </div>
 
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="low-toolbar">
-        <div className="min-w-[200px]">
-          <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-          <SimpleSelect
-            ariaLabel="Filter outlet"
-            value={outletId}
-            onValueChange={setOutletId}
-            options={[{ value: "", label: "Semua outlet (dalam scope)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua outlet (dalam scope)"
-            className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
-            testId="low-outlet"
-          />
-        </div>
-        <div className="min-w-[200px]" role="group" aria-labelledby="low-sev-label">
-          <span id="low-sev-label" className="text-xs md:text-sm font-medium">Severity</span>
-          <div className="flex gap-1.5 mt-1">
-            {[
-              { v: "all", l: "Semua" },
-              { v: "critical", l: "Critical" },
-              { v: "low", l: "Low" },
-            ].map(s => (
-              <Button
-                key={s.v}
-                type="button"
-                size="sm"
-                variant={severity === s.v ? "default" : "outline"}
-                aria-pressed={severity === s.v}
-                onClick={() => setSeverity(s.v)}
-                data-testid={`low-sev-${s.v}`}
-              >
-                {s.l}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="low-search-input" className="text-xs md:text-sm font-medium">Cari</Label>
-          <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
-            <Input id="low-search-input" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cari item / outlet…" className="glass-input pl-9"
-              data-testid="low-search" />
-          </div>
-        </div>
-        <Button onClick={createPRFromSelected}
-          disabled={selectedItems.length === 0}
-          data-testid="low-create-pr">
-          <ShoppingCart />
-          Buat PR ({selectedItems.length})
-        </Button>
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="low-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="low-toolbar" className="items-end">
+          <div className="min-w-[200px]">
+            <Label className="text-xs md:text-sm font-medium">Outlet</Label>
+            <SimpleSelect
+              ariaLabel="Filter outlet"
+              value={outletId}
+              onValueChange={setOutletId}
+              options={[{ value: "", label: "Semua outlet (dalam scope)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder="Semua outlet (dalam scope)"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              testId="low-outlet"
+            />
+          </div>
+          <div className="min-w-[200px]" role="group" aria-labelledby="low-sev-label">
+            <span id="low-sev-label" className="text-xs md:text-sm font-medium">Severity</span>
+            <div className="flex gap-1.5 mt-1">
+              {[
+                { v: "all", l: "Semua" },
+                { v: "critical", l: "Critical" },
+                { v: "low", l: "Low" },
+              ].map(s => (
+                <Button
+                  key={s.v}
+                  type="button"
+                  size="sm"
+                  variant={severity === s.v ? "default" : "outline"}
+                  aria-pressed={severity === s.v}
+                  onClick={() => setSeverity(s.v)}
+                  data-testid={`low-sev-${s.v}`}
+                >
+                  {s.l}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Label htmlFor="low-search-input" className="text-xs md:text-sm font-medium">Cari</Label>
+            <div className="relative mt-1">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input id="low-search-input" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Cari item / outlet…" className="glass-input pl-9"
+                data-testid="low-search" />
+            </div>
+          </div>
+          <Button onClick={createPRFromSelected}
+            disabled={selectedItems.length === 0}
+            data-testid="low-create-pr">
+            <ShoppingCart />
+            Buat PR ({selectedItems.length})
+          </Button>
+        </ListToolbar>
         <DataTable
           rows={filtered}
           keyField="_rowkey"

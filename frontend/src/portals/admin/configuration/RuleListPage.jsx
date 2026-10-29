@@ -4,6 +4,7 @@
  * Editor is a child component passed via render prop.
  */
 import PageHeader from "@/components/shared/PageHeader";
+import ListToolbar from "@/components/shared/ListToolbar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, Sparkles, Pencil, Copy, Archive, Power, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -160,16 +161,18 @@ export default function RuleListPage({
           </>}
         />
 
-        <div className="glass-card p-3">
-          <div className="flex flex-wrap gap-2">
+        {/* Satu kartu: toolbar + isi daftar (DESIGN_SYSTEM §10.3). */}
+        <div className="glass-card overflow-hidden">
+          <ListToolbar search={(
             <Input
               placeholder="Cari aturan…"
               aria-label="Cari aturan"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
+              className="w-full sm:w-64"
               data-testid="config-list-search-input"
             />
+          )}>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px]" aria-label="Filter status aturan" data-testid="config-list-status-filter">
                 <SelectValue />
@@ -185,11 +188,10 @@ export default function RuleListPage({
             <Button variant="ghost" onClick={load} className="ml-auto" data-testid="config-list-reload-btn">
               <RefreshCw /> Muat ulang
             </Button>
-          </div>
-        </div>
+          </ListToolbar>
 
         {error && (
-          <div className="glass-card p-4 border border-destructive/40 flex items-start gap-3" data-testid="config-list-error">
+          <div className="p-4 border-b border-destructive/40 flex items-start gap-3" data-testid="config-list-error">
             <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-sm">Gagal memuat data</p>
@@ -200,9 +202,9 @@ export default function RuleListPage({
         )}
 
         {loading ? (
-          <LoadingState rows={6} />
+          <div className="p-3"><LoadingState rows={6} /></div>
         ) : filtered.length === 0 ? (
-          <div className="glass-card">
+          <div>
             <EmptyState
               title={emptyTitle}
               description={emptyDescription}
@@ -214,7 +216,7 @@ export default function RuleListPage({
             />
           </div>
         ) : (
-          <div className="glass-card overflow-hidden">
+          <div>
             <DataTable
               rows={filtered}
               keyField="id"
@@ -278,6 +280,7 @@ export default function RuleListPage({
             />
           </div>
         )}
+        </div>
       </div>
 
       <div className="hidden lg:block lg:col-span-4">

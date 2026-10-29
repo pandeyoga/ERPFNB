@@ -16,6 +16,7 @@ import StatusPill, { statusLabel } from "@/components/shared/StatusPill";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { formatDateID } from "@/lib/format";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 /** Status RFQ (label & warna dari kamus global StatusPill). */
 const RFQ_STATUSES = ["draft", "sent", "quotes_received", "accepted", "cancelled"];
@@ -81,37 +82,36 @@ export default function RFQList() {
       />
 
       {/* Filters */}
-      <div className="glass-card p-3 flex flex-col gap-2 sm:flex-row sm:items-center" data-testid="rfq-filters">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder="Cari nomor RFQ atau judul…"
-            aria-label="Cari RFQ"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="glass-input pl-9"
-            data-testid="rfq-search"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="glass-input sm:w-48" aria-label="Filter status" data-testid="rfq-status-filter">
-            <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua status</SelectItem>
-            {RFQ_STATUSES.map((k) => (
-              <SelectItem key={k} value={k}>{statusLabel(k)}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang daftar RFQ" data-testid="rfq-refresh">
-          <RefreshCw className={loading ? "animate-spin" : ""} />
-        </Button>
-      </div>
-
-      {/* Table */}
       <div className="glass-card overflow-hidden" data-testid="rfq-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="rfq-filters">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Cari nomor RFQ atau judul…"
+              aria-label="Cari RFQ"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="glass-input pl-9"
+              data-testid="rfq-search"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="glass-input sm:w-48" aria-label="Filter status" data-testid="rfq-status-filter">
+              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua status</SelectItem>
+              {RFQ_STATUSES.map((k) => (
+                <SelectItem key={k} value={k}>{statusLabel(k)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang daftar RFQ" data-testid="rfq-refresh">
+            <RefreshCw className={loading ? "animate-spin" : ""} />
+          </Button>
+        </ListToolbar>
         <DataTable
           columns={columns}
           rows={rfqs}

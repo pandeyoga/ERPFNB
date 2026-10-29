@@ -10,6 +10,7 @@ import ErrorState from "@/components/shared/ErrorState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtDateTime } from "@/lib/format";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 const LEVELS = ["", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
 const LEVEL_STYLES = {
@@ -87,42 +88,42 @@ export default function LogsView() {
         </Button>
       </div>
 
-      <div className="glass-card p-3 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-          <SimpleSelect
-            value={filters.level}
-            onValueChange={(v) => updateFilters({ ...filters, level: v })}
-            options={LEVELS.map((l) => ({ value: l, label: l || "Semua level" }))}
-            className="glass-input h-9 px-2 rounded-md"
-            ariaLabel="Filter level"
-            testId="logs-filter-level"
-          />
-        </div>
-        <Input className="glass-input max-w-[260px]" placeholder="Request ID" aria-label="Filter request ID"
-                value={filters.request_id} onChange={(e) => updateFilters({ ...filters, request_id: e.target.value })}
-                data-testid="logs-filter-rid" />
-        <div className="relative max-w-[260px] flex-1">
-          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input className="glass-input pl-8" placeholder="Filter route (regex)" aria-label="Filter route"
-                  value={filters.route_contains}
-                  onChange={(e) => updateFilters({ ...filters, route_contains: e.target.value })}
-                  data-testid="logs-filter-route" />
-        </div>
-        <Input className="glass-input max-w-[200px]" placeholder="User ID" aria-label="Filter user ID"
-                value={filters.user_id} onChange={(e) => updateFilters({ ...filters, user_id: e.target.value })}
-                data-testid="logs-filter-user" />
-        {Object.values(filters).some(Boolean) && (
-          <Button variant="ghost" size="sm" className="ml-auto" data-testid="logs-filter-reset"
-                  onClick={() => updateFilters({ level: "", request_id: "", route_contains: "", user_id: "" })}>
-            Reset filter
-          </Button>
-        )}
-      </div>
-
       {error && <ErrorState message={error} onRetry={load} />}
 
       <div className="glass-card overflow-hidden">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="logs-toolbar">
+          <div className="flex items-center gap-1">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+            <SimpleSelect
+              value={filters.level}
+              onValueChange={(v) => updateFilters({ ...filters, level: v })}
+              options={LEVELS.map((l) => ({ value: l, label: l || "Semua level" }))}
+              className="glass-input h-9 px-2 rounded-md"
+              ariaLabel="Filter level"
+              testId="logs-filter-level"
+            />
+          </div>
+          <Input className="glass-input max-w-[260px]" placeholder="Request ID" aria-label="Filter request ID"
+                  value={filters.request_id} onChange={(e) => updateFilters({ ...filters, request_id: e.target.value })}
+                  data-testid="logs-filter-rid" />
+          <div className="relative max-w-[260px] flex-1">
+            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input className="glass-input pl-8" placeholder="Filter route (regex)" aria-label="Filter route"
+                    value={filters.route_contains}
+                    onChange={(e) => updateFilters({ ...filters, route_contains: e.target.value })}
+                    data-testid="logs-filter-route" />
+          </div>
+          <Input className="glass-input max-w-[200px]" placeholder="User ID" aria-label="Filter user ID"
+                  value={filters.user_id} onChange={(e) => updateFilters({ ...filters, user_id: e.target.value })}
+                  data-testid="logs-filter-user" />
+          {Object.values(filters).some(Boolean) && (
+            <Button variant="ghost" size="sm" className="ml-auto" data-testid="logs-filter-reset"
+                    onClick={() => updateFilters({ level: "", request_id: "", route_contains: "", user_id: "" })}>
+              Reset filter
+            </Button>
+          )}
+        </ListToolbar>
         <div className="max-h-[640px] overflow-auto">
           <DataTable
             columns={[

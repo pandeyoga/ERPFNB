@@ -18,6 +18,7 @@ import StatusPill, { statusLabel } from "@/components/shared/StatusPill";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 /** Status aset — label & warna dari kamus global StatusPill. */
 const ASSET_STATUSES = ["active", "fully_depreciated", "disposed", "revalued"];
@@ -126,9 +127,9 @@ export default function FixedAssetList() {
       )}
 
       {/* Filters */}
-      <Card data-testid="asset-filters-card">
-        <CardContent className="p-3">
-          <div className="flex flex-wrap gap-3">
+      <Card data-testid="assets-table-card" className="overflow-hidden">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="asset-filters-card">
             <Select value={filter.category || "all"} onValueChange={(v) => setFilter(f => ({ ...f, category: v === "all" ? "" : v }))}>
               <SelectTrigger className="w-full sm:w-60" aria-label="Filter kategori" data-testid="category-filter">
                 <SelectValue placeholder="Semua Kategori" />
@@ -151,12 +152,7 @@ export default function FixedAssetList() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Table */}
-      <Card data-testid="assets-table-card" className="overflow-hidden">
+        </ListToolbar>
         <CardContent className="p-0">
           <DataTable
             columns={[

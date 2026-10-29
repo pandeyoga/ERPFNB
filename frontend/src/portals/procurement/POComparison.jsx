@@ -128,7 +128,7 @@ export default function POComparison({ embedded = false }) {
             { value: "draft", label: "Draft" },
             { value: "approved", label: "Disetujui" },
             { value: "sent", label: "Terkirim" },
-            { value: "partial", label: "Sebagian" },
+            { value: "partial", label: "Partial" },
             { value: "received", label: "Diterima" },
           ]}
           placeholder="Semua status"

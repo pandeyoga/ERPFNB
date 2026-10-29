@@ -505,6 +505,8 @@ a[href*="emergent.sh"],
    penanda warna seri tetap pada ikon legenda. Di luar @layer agar tidak dibuang Tailwind
    (class ini dibuat Recharts, tidak muncul di source). */
 .recharts-legend-item-text { color: hsl(var(--foreground)) !important; }
+/* Maks. 2 lapis bingkai (DESIGN_SYSTEM §10.3): TabsList di dalam kartu tampil sebagai segmented tanpa border. */
+.glass-card [role="tablist"], .glass-card-hover [role="tablist"] { border-color: transparent; background-color: hsl(var(--muted) / 0.7); }
 
 /* Teks merah di mode gelap: --destructive (latar tombol, teks putih) terlalu gelap untuk teks
    di atas kartu gelap (4.1:1) → teks memakai varian lebih terang (5.6:1). */
