@@ -1,4 +1,4 @@
-#!/usr/bin/env env bash
+#!/usr/bin/env bash
 # =============================================================================
 # seed_reset.sh — Reset & Seed Database FnB Group ERP
 # =============================================================================
@@ -9,8 +9,9 @@
 #   - Quick demo environment setup
 #
 # Usage:
-#   cd /app
+#   cd <root repo>          # /app di deployment, folder clone di komputer lokal
 #   bash scripts/seed_reset.sh
+#   (aktifkan virtualenv backend dulu, atau PYTHON=/path/absolut/ke/python bash scripts/seed_reset.sh)
 #
 #   # Dengan opsi --verify (jalankan health check setelah selesai):
 #   bash scripts/seed_reset.sh --verify
@@ -48,15 +49,16 @@ for arg in "$@"; do
     esac
 done
 
-# ── Pastikan dijalankan dari direktori /app ───────────────────────────────────
+# ── Pastikan dijalankan dari root repo ───────────────────────────────────────
 if [ ! -f "backend/server.py" ]; then
-    echo -e "${RED}ERROR:${RESET} Jalankan dari direktori /app (bukan /app/backend)"
-    echo "  cd /app && bash scripts/seed_reset.sh"
+    echo -e "${RED}ERROR:${RESET} Jalankan dari root repo (bukan dari folder backend)"
+    echo "  cd <root repo> && bash scripts/seed_reset.sh"
     exit 1
 fi
 
-BACKEND_DIR="$(pwd)/backend"
-PYTHON="python3"
+ROOT_DIR="$(pwd)"
+BACKEND_DIR="${ROOT_DIR}/backend"
+PYTHON="${PYTHON:-python3}"
 
 # ── Helper: jalankan satu seed module ─────────────────────────────────────────
 run_seed() {
@@ -184,7 +186,7 @@ fi
 
 # Step 7: AP -> GL opening backfill (D1) — Balance Sheet liabilities reconcile
 echo -e "  ${ARROW} Menjalankan: ${BOLD}backfill_ap_opening${RESET}"
-if cd "${BACKEND_DIR}" && ${PYTHON} /app/scripts/backfill_ap_opening.py; then
+if cd "${BACKEND_DIR}" && ${PYTHON} "${ROOT_DIR}/scripts/backfill_ap_opening.py"; then
     echo -e "    ${CHECKMARK} AP opening JE posted (or idempotent skip)"
 else
     FAILED_STEPS+=("backfill_ap_opening")
@@ -362,8 +364,8 @@ fi
 #    and cross-endpoint intent drift. Runs on the just-seeded CLEAN DB. ───────────
 echo ""
 echo -e "${BOLD}[GATE]${RESET} Menjalankan data-integrity gate..."
-if [ -f "/app/scripts/verify_data_integrity.py" ]; then
-    if ${PYTHON} /app/scripts/verify_data_integrity.py; then
+if [ -f "${ROOT_DIR}/scripts/verify_data_integrity.py" ]; then
+    if ${PYTHON} "${ROOT_DIR}/scripts/verify_data_integrity.py"; then
         echo -e "  ${GREEN}Integrity gate PASS.${RESET}"
     else
         echo -e "  ${RED}${BOLD}Integrity gate FAIL — periksa drift/gap di atas sebelum lanjut.${RESET}"

@@ -26,7 +26,10 @@ class Settings:
     refresh_token_days: int = int(os.environ.get("JWT_REFRESH_DAYS", "7"))
     bcrypt_cost: int = 12
     timezone: str = os.environ.get("TIMEZONE", "Asia/Jakarta")
-    upload_dir: str = os.environ.get("UPLOAD_DIR", "/app/backend/uploads")  # B6/SSOT-09: single root (== /uploads static mount)
+    # B6/SSOT-09: single root (== /uploads static mount). Default = <backend>/uploads, sehingga
+    # sama dengan /app/backend/uploads di deployment dan tetap jalan di komputer lokal.
+    upload_dir: str = os.environ.get(
+        "UPLOAD_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads"))
     max_upload_mb: int = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "10"))
     emergent_llm_key: str = os.environ.get("EMERGENT_LLM_KEY", "")
     feature_ai_enabled: bool = os.environ.get("FEATURE_AI_ENABLED", "true").lower() == "true"

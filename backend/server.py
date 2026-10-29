@@ -303,6 +303,7 @@ app.include_router(tour_analytics.router)  # Help & Tour: analytics event tracki
 
 # Mount static files for uploaded images
 from core.config import settings as _up_settings  # B6/SSOT-09
+os.makedirs(_up_settings.upload_dir, exist_ok=True)  # clone baru: folder uploads tidak ada di git
 app.mount("/uploads", StaticFiles(directory=_up_settings.upload_dir), name="uploads")
 
 
