@@ -12,7 +12,8 @@ dayjs.tz.setDefault("Asia/Jakarta");
 
 export const TZ = "Asia/Jakarta";
 
-/** Rp 1.234.567 with no decimals */
+/** Rp 1.234.567 with no decimals. Spasi setelah "Rp" = NBSP (\u00A0) agar "Rp" tidak terpisah
+ *  dari angka saat kolom sempit (sebelumnya nominal pecah jadi dua baris di tabel). */
 export function fmtRp(value, opts = {}) {
   if (value == null || isNaN(value)) return "-";
   const n = Number(value);
@@ -21,7 +22,7 @@ export function fmtRp(value, opts = {}) {
   const formatted = abs.toLocaleString("id-ID", {
     maximumFractionDigits: opts.decimals ?? 0,
   });
-  return `${sign}Rp ${formatted}`;
+  return `${sign}Rp\u00A0${formatted}`;
 }
 
 export function fmtNumber(value, decimals = 0) {
@@ -34,10 +35,10 @@ export function fmtPct(value, decimals = 1) {
   return `${(value > 0 ? "+" : "")}${Number(value).toFixed(decimals)}%`;
 }
 
-/** "23 Apr 2026" */
+/** "23 Apr 2026" — spasi = NBSP agar tanggal tidak terpecah dua baris di kolom sempit. */
 export function fmtDate(d, fmt = "DD MMM YYYY") {
   if (!d) return "-";
-  return dayjs(d).tz(TZ).format(fmt);
+  return dayjs(d).tz(TZ).format(fmt).replace(/ /g, "\u00A0");
 }
 
 /** "23 Apr 2026 17:42" */
