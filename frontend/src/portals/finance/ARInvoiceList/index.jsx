@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Users, Plus, FileText, Send, DollarSign, Loader2,
   Edit2, AlertTriangle, RefreshCw, Download, Bell,
-  TrendingDown, BarChart3, Eye, MoreHorizontal, Receipt, Wallet, Clock, CheckCircle2, AlertCircle,
+  TrendingDown, BarChart3, Eye, Receipt, Wallet, Clock, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import DataTable from "@/components/shared/DataTable";
+import RowActions from "@/components/shared/RowActions";
 import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
@@ -205,7 +203,7 @@ export default function ARInvoiceList({ embedded = false }) {
           <CompactStatCard label="Total invoice" icon={FileText} color="aurora-1" value={summary.count} testId="ar-kpi-count" />
           <CompactStatCard label="Total tagihan" icon={Receipt} color="aurora-2" value={formatCurrency(summary.total)} testId="ar-kpi-total" />
           <CompactStatCard label="Outstanding" icon={Wallet} color="aurora-5" tone="warning" value={formatCurrency(summary.outstanding)} testId="ar-kpi-outstanding" />
-          <CompactStatCard label="Jatuh tempo" icon={AlertTriangle} color="aurora-6" tone={summary.overdue > 0 ? "danger" : "default"} value={summary.overdue}
+          <CompactStatCard label="Overdue" icon={AlertTriangle} color="aurora-6" tone={summary.overdue > 0 ? "danger" : "default"} value={summary.overdue}
             sub="invoice lewat jatuh tempo" testId="ar-kpi-overdue" />
         </div>
       )}
@@ -280,57 +278,30 @@ export default function ARInvoiceList({ embedded = false }) {
                 rowAction={(inv) => {
                   const canRemind = inv.outstanding > 0 && inv.status !== "draft";
                   const canWriteOff = inv.status === "overdue" || (inv.outstanding > 0 && inv.status !== "draft");
+                  // Maks. 1 aksi terlihat + "⋯" (DESIGN_SYSTEM §10.1): aksi utama mengikuti status invoice.
+                  const main = inv.status === "draft"
+                    ? { label: "Kirim invoice", icon: Send, onClick: () => handleSendInvoice(inv), testId: `send-invoice-${inv.invoice_no}` }
+                    : inv.outstanding > 0
+                      ? { label: "Catat pembayaran", icon: DollarSign, onClick: () => setReceiptDialog(inv), testId: `record-payment-${inv.invoice_no}`, className: "text-emerald-700 dark:text-emerald-400" }
+                      : { label: "Lihat detail invoice", icon: Eye, onClick: () => setDetailDialog(inv), testId: `view-invoice-${inv.invoice_no}` };
+                  const MainIcon = main.icon;
                   return (
-                    <div className="flex items-center gap-1 justify-end">
-                      <Button size="icon-sm" variant="ghost" title="Detail" aria-label="Lihat detail invoice"
-                        onClick={() => setDetailDialog(inv)} data-testid={`view-invoice-${inv.invoice_no}`}>
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      {inv.status === "draft" && (
-                        <Button size="icon-sm" variant="ghost" title="Kirim invoice" aria-label="Kirim invoice"
-                          onClick={() => handleSendInvoice(inv)} data-testid={`send-invoice-${inv.invoice_no}`}>
-                          <Send className="h-3.5 w-3.5" />
+                    <RowActions testId={`invoice-actions-${inv.invoice_no}`} label="Aksi lain"
+                      primary={(
+                        <Button size="icon-sm" variant="ghost" className={main.className} title={main.label} aria-label={main.label}
+                          onClick={main.onClick} data-testid={main.testId}>
+                          <MainIcon className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {inv.outstanding > 0 && (
-                        <Button size="icon-sm" variant="ghost" className="text-emerald-700 dark:text-emerald-400" title="Catat pembayaran" aria-label="Catat pembayaran"
-                          onClick={() => setReceiptDialog(inv)} data-testid={`record-payment-${inv.invoice_no}`}>
-                          <DollarSign className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="icon-sm" variant="ghost" aria-label="Aksi lain" title="Aksi lain" data-testid={`invoice-more-${inv.invoice_no}`}>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {inv.status === "draft" && (
-                            <DropdownMenuItem onSelect={() => setInvoiceEdit(inv)} data-testid={`edit-invoice-${inv.invoice_no}`}>
-                              <Edit2 className="h-3.5 w-3.5 mr-2" /> Edit invoice
-                            </DropdownMenuItem>
-                          )}
-                          {canRemind && (
-                            <DropdownMenuItem onSelect={() => setReminderDialog(inv)} data-testid={`remind-invoice-${inv.invoice_no}`}>
-                              <Bell className="h-3.5 w-3.5 mr-2" /> Kirim pengingat
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onSelect={() => handleDownloadPDF(inv)} data-testid={`pdf-invoice-${inv.invoice_no}`}>
-                            <Download className="h-3.5 w-3.5 mr-2" /> Unduh PDF
-                          </DropdownMenuItem>
-                          {canWriteOff && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-700 dark:text-red-400 focus:text-red-700"
-                                onSelect={() => { setWriteOffDialog(inv); setWriteOffReason(""); }}
-                                data-testid={`write-off-${inv.invoice_no}`}>
-                                <TrendingDown className="h-3.5 w-3.5 mr-2" /> Write-off piutang
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                      items={[
+                        { label: "Lihat detail", icon: Eye, onSelect: () => setDetailDialog(inv), testId: `view-invoice-${inv.invoice_no}`, hidden: main.icon === Eye },
+                        { label: "Edit invoice", icon: Edit2, onSelect: () => setInvoiceEdit(inv), testId: `edit-invoice-${inv.invoice_no}`, hidden: inv.status !== "draft" },
+                        { label: "Kirim pengingat", icon: Bell, onSelect: () => setReminderDialog(inv), testId: `remind-invoice-${inv.invoice_no}`, hidden: !canRemind },
+                        { label: "Unduh PDF", icon: Download, onSelect: () => handleDownloadPDF(inv), testId: `pdf-invoice-${inv.invoice_no}` },
+                        { label: "Write-off piutang", icon: TrendingDown, destructive: true, hidden: !canWriteOff,
+                          onSelect: () => { setWriteOffDialog(inv); setWriteOffReason(""); }, testId: `write-off-${inv.invoice_no}` },
+                      ]}
+                    />
                   );
                 }}
               />

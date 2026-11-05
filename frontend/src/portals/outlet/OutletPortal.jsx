@@ -48,7 +48,8 @@ export default function OutletPortal() {
         <OutletScopeFallback />
         <Routes>
         <Route index element={<OutletHome />} />
-        <Route path="crm" element={<CRMHub />} />
+        {/* CRM hub memanggil reservasi & loyalty — tanpa izin itu halaman hanya berisi 403 */}
+        <Route path="crm" element={g(["crm.view", "reservations.read"], <CRMHub />)} />
         <Route path="daily-sales" element={g("outlet.daily_sales.read", <DailySalesList />)} />
         <Route path="daily-sales/new" element={g("outlet.daily_sales.read", <DailySalesForm />)} />
         <Route path="daily-sales/:id" element={g("outlet.daily_sales.read", <DailySalesDetail />)} />

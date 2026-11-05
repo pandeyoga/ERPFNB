@@ -145,7 +145,7 @@ export default function PRConsolidation() {
       </div>
 
       {/* Grid: PR list + Consolidated preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 lg:items-start">
         {/* PR List */}
         <div className="glass-card overflow-hidden" data-testid="cons-pr-list-card">
           <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">

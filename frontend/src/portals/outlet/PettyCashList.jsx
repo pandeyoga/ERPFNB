@@ -138,9 +138,9 @@ export default function PettyCashList({ embedded = false }) {
       {/* Saldo — total + per outlet (agregat) atau satu outlet. Outlet picker ada di header. */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-testid="pc-balance-strip">
         <CompactStatCard
-          label={aggregateMode ? `Saldo Total (${scopedOutlets.length} outlet)` : `Saldo · ${currentOutlet?.name || "—"}`}
+          label={aggregateMode ? "Saldo Total" : `Saldo · ${currentOutlet?.name || "—"}`}
           value={<span data-testid="pc-balance">{fmtRp(balance)}</span>}
-          sub={aggregateMode ? "Agregat semua outlet" : lowBalance ? "Saldo rendah" : balance >= 500000 ? "Saldo cukup" : undefined}
+          sub={aggregateMode ? `Agregat ${scopedOutlets.length} toko` : lowBalance ? "Saldo rendah" : balance >= 500000 ? "Saldo cukup" : undefined}
           tone={lowBalance ? "warning" : "default"}
           icon={lowBalance ? AlertTriangle : Wallet}
           color="aurora-3"

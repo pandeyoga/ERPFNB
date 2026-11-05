@@ -402,7 +402,7 @@ export default function ExecutiveHome() {
           {/* Forecast Guard + Anomaly Overview + Sales Heatmap (Phase 4B) */}
           {(sections.guard || sections.anomaly) && (
           <CollapsibleSection id="exec_monitor_row" title="Monitoring" icon={Activity}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4" data-testid="exec-monitor-row">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 lg:items-start" data-testid="exec-monitor-row">
               {sections.guard && <ForecastGuardWidget />}
               {sections.anomaly && <AnomalyOverviewWidget />}
             </div>

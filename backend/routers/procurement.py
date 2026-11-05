@@ -6,7 +6,7 @@ from fastapi.responses import Response
 
 from core.exceptions import ok_envelope
 from core.scope import narrow_to_brand
-from core.security import current_user, enforce_outlet_scope, require_perm, scoped_outlet_ids
+from core.security import current_user, enforce_outlet_scope, require_any_perm, require_perm, scoped_outlet_ids
 from services import (
     po_pdf_service,
     procurement_service,
@@ -109,7 +109,9 @@ async def list_pos(
     status: Optional[str] = None, vendor_id: Optional[str] = None,
     outlet_id: Optional[str] = None,
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
-    user: dict = Depends(require_perm("procurement.po.create")),
+    # Approver PO (procurement.po.approve, mis. Owner) harus bisa membaca PO yang ia setujui — cabang di bawah
+    # memang sudah menangani mereka (lintas toko), tetapi dependency lama hanya menerima po.create.
+    user: dict = Depends(require_any_perm("procurement.po.create", "procurement.po.approve")),
 ):
     # Enforce outlet scope for non-admin users
     from core.security import get_user_permissions
@@ -189,7 +191,7 @@ async def po_approval_state(id_: str,
 
 
 @router.get("/pos/{id_}")
-async def get_po(id_: str, user: dict = Depends(require_perm("procurement.po.create"))):
+async def get_po(id_: str, user: dict = Depends(require_any_perm("procurement.po.create", "procurement.po.approve"))):
     """Get single PO by id."""
     from core.exceptions import AuroraException
     doc = await procurement_service.get_po_by_id(id_)

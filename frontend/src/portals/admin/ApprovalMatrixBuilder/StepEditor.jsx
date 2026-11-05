@@ -185,7 +185,7 @@ function MultiSelectChips({ label, options, selected, onChange, placeholder, sea
             key={v} variant="outline"
             className="gap-1 bg-aurora/10 border-aurora/30"
           >
-            <span className="max-w-[200px] truncate">{optionsById[v]?.label || v}</span>
+            <span className="max-w-[200px] truncate" title={optionsById[v]?.label || v}>{optionsById[v]?.label || v}</span>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); remove(v); }}

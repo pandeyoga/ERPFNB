@@ -36,6 +36,9 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
   Filter toko lokal pakai `useOutletScope()` + `StoreFilter`/`OutletScopePicker`, field form pakai
   `useOutletScope("", { form: true })`, halaman tingkat Group pakai `GroupLevelBadge`. GET otomatis membawa konteks
   (`lib/api.js`); opt-out `{ scope: false }`.
+- **Menu/tautan = izin route**: item sidebar & tautan antar-halaman hanya tampil bila guard route tujuan lolos
+  (`canOpenPath`, `lib/routePerms.generated.js` dari `scripts/gen_route_perms.py` — jalankan ulang setelah mengubah
+  guard `g(...)`). Widget tidak memanggil API yang pasti 403 (`DESIGN_SYSTEM.md` §10.7).
 - `data-testid` kebab-case untuk elemen interaktif; **jangan ganti testid yang dipakai tour**
   (`frontend/src/contexts/tour`).
 - Pengecualian yang sah: tulis komentar `ds-ok: alasan` tepat sebelum elemen.

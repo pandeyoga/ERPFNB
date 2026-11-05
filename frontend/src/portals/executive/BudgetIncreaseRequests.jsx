@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
@@ -37,6 +39,7 @@ const STATUS_LABEL = { pending: "Menunggu", approved: "Disetujui", rejected: "Di
 
 export default function BudgetIncreaseRequests() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [status, setStatus] = useState("pending");
   const [items, setItems] = useState([]);
   const [outletsById, setOutletsById] = useState({});
@@ -52,7 +55,10 @@ export default function BudgetIncreaseRequests() {
       try {
         const [olRes, usRes] = await Promise.all([
           api.get("/master/outlets"),
-          api.get("/admin/users").catch(() => ({ data: { data: [] } })),
+          // daftar user hanya untuk pemegang admin.user.read; peran lain memakai nama yang ikut di dokumen
+          permitted(user, "admin.user.read")
+            ? api.get("/admin/users").catch(() => ({ data: { data: [] } }))
+            : Promise.resolve({ data: { data: [] } }),
         ]);
         const m = {};
         for (const o of olRes.data.data || []) m[o.id] = o;
@@ -279,7 +285,7 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
             </CardTitle>
             <CardDescription className="text-xs mt-1">
               {dayjs(req.requested_at).format("DD MMM YYYY HH:mm")}
-              {requester && <> • oleh {requester.name || requester.email}</>}
+              {(requester || req.requested_by_name) && <> • oleh {requester?.name || req.requested_by_name || requester?.email}</>}
             </CardDescription>
           </div>
           <div className="text-right">
@@ -306,7 +312,7 @@ function RequestCard({ req, outletsById, usersById, onApprove, onReject }) {
             <div>
               <strong>{req.status === "approved" ? "Disetujui" : "Ditolak"}:</strong>{" "}
               {req.decided_at && dayjs(req.decided_at).format("DD MMM YYYY HH:mm")}
-              {decider && <> oleh {decider.name || decider.email}</>}
+              {(decider || req.decided_by_name) && <> oleh {decider?.name || req.decided_by_name || decider?.email}</>}
             </div>
             {req.status === "approved" && req.approved_amount != null && (
               <div>Jumlah disetujui: <strong>{fmtRp(req.approved_amount)}</strong></div>

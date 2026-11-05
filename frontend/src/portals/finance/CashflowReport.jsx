@@ -103,7 +103,7 @@ export default function CashflowReport() {
                         {cat.rows.slice(0, 10).map(r => (
                           <div key={r.je_id} className="flex items-center gap-2">
                             <span className="text-muted-foreground w-20">{fmtDate(r.entry_date)}</span>
-                            <span className="flex-1 truncate">{r.description}</span>
+                            <span className="flex-1 truncate" title={r.description}>{r.description}</span>
                             <span className={cn("tabular-nums", r.net >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
                               {r.net >= 0 ? "+" : ""}{fmtRp(r.net)}
                             </span>
@@ -143,7 +143,7 @@ export default function CashflowReport() {
                     { key: "source_type", label: "Source",
                       render: (t) => <span className="text-muted-foreground">{t.source_type}</span> },
                     { key: "description", label: "Deskripsi", hideOnMobile: true,
-                      render: (t) => <span className="block max-w-[300px] truncate">{t.description}</span> },
+                      render: (t) => <span className="block max-w-[300px] truncate" title={t.description}>{t.description}</span> },
                     { key: "inflow", label: "Inflow", numeric: true, sortable: true,
                       render: (t) => <span className={t.inflow ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground"}>{t.inflow ? fmtRp(t.inflow) : "-"}</span> },
                     { key: "outflow", label: "Outflow", numeric: true, sortable: true,

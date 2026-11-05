@@ -55,7 +55,7 @@ function AccessBadge({ u, outlets = [], brands = [] }) {
     return (
       <div className="flex flex-wrap gap-1">
         {names.slice(0, 2).map((n) => (
-          <span key={n} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium">
+          <span key={n} className="inline-flex items-center gap-1 whitespace-nowrap text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium">
             <Store className="h-3 w-3" /> {n}
           </span>
         ))}

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api, { unwrap } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -46,7 +48,10 @@ const ENTITY_ICONS = {
   item_master:       Package,
 };
 
+const FORECAST_GUARD_PERMS = ["executive.dashboard.read", "finance.report.profit_loss"];
+
 export default function MyApprovals() {
+  const { user } = useAuth();
   const [view, setView] = useState("queue"); // queue | delegation
   const [tab, setTab] = useState("all");      // filter tipe dokumen
   const [items, setItems] = useState([]);
@@ -68,13 +73,17 @@ export default function MyApprovals() {
       const queue = unwrap(q) || [];
       setItems(queue);
       setCounts((unwrap(c) || {}).by_entity || {});
-      try {
-        const lr = await api.get("/forecasting/guard/logs", { params: { days: 30, limit: 500 } });
-        const logs = unwrap(lr) || [];
-        const map = {};
-        logs.forEach(l => { if (l.source_id) map[l.source_id] = l; });
-        setGuardLogs(map);
-      } catch { /* empty */ }
+      // Badge Forecast Guard hanya untuk peran yang boleh membaca log-nya (API: executive.dashboard.read |
+      // finance.report.profit_loss) — peran lain tidak memanggil endpoint yang pasti 403.
+      if (permitted(user, FORECAST_GUARD_PERMS)) {
+        try {
+          const lr = await api.get("/forecasting/guard/logs", { params: { days: 30, limit: 500 } });
+          const logs = unwrap(lr) || [];
+          const map = {};
+          logs.forEach(l => { if (l.source_id) map[l.source_id] = l; });
+          setGuardLogs(map);
+        } catch { /* empty */ }
+      }
     } catch {
       toast.error("Gagal memuat queue");
     } finally { setLoading(false); }

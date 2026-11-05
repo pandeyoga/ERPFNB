@@ -216,7 +216,7 @@ export default function ReportSchedules({ embedded = false }) {
               <EmptyState
                 icon={Bell}
                 title="Belum ada jadwal laporan"
-                description="Klik Tambah Jadwal untuk mulai mengirim laporan otomatis."
+                description="Laporan terjadwal dikirim otomatis ke penerima sesuai jadwal."
                 action={<Button onClick={openCreate} data-testid="schedules-empty-create-btn"><Plus className="h-4 w-4" />Tambah Jadwal</Button>}
               />
             </Card>

@@ -17,6 +17,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import RowActions from "@/components/shared/RowActions";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
@@ -125,9 +126,11 @@ export default function Users({ embedded = false } = {}) {
       <div className="glass-card overflow-hidden" data-testid="users-table-card">
         <DataTable
           columns={[
-            { key: "full_name", label: "Nama", primary: true, sortable: true, render: (u) => (
+            { key: "full_name", label: "Nama / Email", primary: true, sortable: true, render: (u) => (
               <div>
                 <div className="font-medium">{u.full_name}</div>
+                {/* email di bawah nama (bukan kolom sendiri) agar tabel 7 kolom muat tanpa scroll horizontal */}
+                <div className="text-xs text-muted-foreground break-all">{u.email}</div>
                 {u.default_outlet_id && (
                   <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Store className="h-3 w-3" />
@@ -137,16 +140,15 @@ export default function Users({ embedded = false } = {}) {
                 )}
               </div>
             ) },
-            { key: "email", label: "Email", sortable: true, render: (u) => <span className="text-muted-foreground">{u.email}</span> },
             { key: "roles", label: "Roles", render: (u) => {
               const userRoles = roles.filter((r) => (u.role_ids || []).includes(r.id));
               return (
                 <div className="flex flex-wrap gap-1">
-                  {userRoles.slice(0, 2).map((r) => (
-                    <span key={r.id} className="text-xs px-2 py-0.5 rounded-full glass-input">{r.name}</span>
+                  {userRoles.slice(0, 1).map((r) => (
+                    <span key={r.id} className="text-xs px-2 py-0.5 rounded-full glass-input whitespace-nowrap">{r.name}</span>
                   ))}
-                  {userRoles.length > 2 && (
-                    <span className="text-xs text-muted-foreground">+{userRoles.length - 2}</span>
+                  {userRoles.length > 1 && (
+                    <span className="text-xs text-muted-foreground" title={userRoles.slice(1).map((r) => r.name).join(", ")}>+{userRoles.length - 1}</span>
                   )}
                 </div>
               );
@@ -182,35 +184,20 @@ export default function Users({ embedded = false } = {}) {
             );
           }}
           rowAction={(u) => (
-            <div className="flex items-center gap-1 justify-end">
-              <Button
-                variant="ghost" size="icon-sm"
-                onClick={() => setEditing(u)}
-                title="Edit user" aria-label={`Edit user ${u.full_name}`}
-                data-testid={`user-edit-${u.id}`}
-              >
-                <Edit2 className="!h-3.5 !w-3.5" />
-              </Button>
-              <Button
-                variant="ghost" size="icon-sm"
-                onClick={() => setResetTarget(u)}
-                title="Reset password" aria-label={`Reset password ${u.full_name}`}
-                data-testid={`user-reset-${u.id}`}
-              >
-                <KeyRound className="!h-3.5 !w-3.5" />
-              </Button>
-              {u.id !== me?.id && (
-                <Button
-                  variant="ghost" size="icon-sm"
-                  onClick={() => disableUser(u, load)}
-                  className="hover:bg-destructive/10 hover:text-destructive"
-                  title="Nonaktifkan user" aria-label={`Nonaktifkan user ${u.full_name}`}
-                  data-testid={`user-disable-${u.id}`}
-                >
-                  <Trash2 className="!h-3.5 !w-3.5" />
+            // Maks. 1 aksi terlihat + "⋯" (DESIGN_SYSTEM §10.1)
+            <RowActions testId={`user-actions-${u.id}`}
+              primary={(
+                <Button variant="ghost" size="icon-sm" onClick={() => setEditing(u)}
+                  title="Edit user" aria-label={`Edit user ${u.full_name}`} data-testid={`user-edit-${u.id}`}>
+                  <Edit2 className="!h-3.5 !w-3.5" />
                 </Button>
               )}
-            </div>
+              items={[
+                { label: "Reset password", icon: KeyRound, onSelect: () => setResetTarget(u), testId: `user-reset-${u.id}` },
+                { label: "Nonaktifkan user", icon: Trash2, destructive: true, hidden: u.id === me?.id,
+                  onSelect: () => disableUser(u, load), testId: `user-disable-${u.id}` },
+              ]}
+            />
           )}
           rowTestIdPrefix="user-row"
         />

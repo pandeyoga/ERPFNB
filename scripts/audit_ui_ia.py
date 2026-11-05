@@ -90,6 +90,14 @@ for rp in sorted(route_paths):
         # Heuristik: route yang kemungkinan halaman mandiri (bukan tab) -> tinjau
         print(f"   route_review: {rp}")
 
+print("\n== RBAC MENU: izin item sidebar = guard route (lib/routePerms.generated.js) ==")
+import subprocess
+_chk = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gen_route_perms.py'), '--check'],
+                      capture_output=True, text=True)
+print("   " + (_chk.stdout or _chk.stderr).strip())
+if _chk.returncode != 0:
+    print("\nFAIL: routePerms.generated.js basi — jalankan python3 scripts/gen_route_perms.py"); sys.exit(1)
+
 if STRICT and violations:
     print(f"\nFAIL (strict): portal melebihi {MAX_ITEMS} item: {violations}"); sys.exit(1)
 print("\nOK")

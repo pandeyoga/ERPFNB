@@ -157,7 +157,7 @@ export default function DailyClose({ embedded = false }) {
         </div>
         <Button
           variant="outline"
-          onClick={() => { loadStatus(); }}
+          onClick={() => { loadStatus(); loadHistory(); }}
           disabled={!outletId}
           data-testid="dc-refresh"
         >
@@ -356,18 +356,11 @@ export default function DailyClose({ embedded = false }) {
 
       {/* History */}
       <div className="glass-card">
+        {/* "Muat ulang" di header memuat status + riwayat (satu tombol, bukan dua dengan label sama) */}
         <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
           <h3 className="text-sm md:text-base font-semibold">
             Riwayat Daily Close
           </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={loadHistory}
-            data-testid="dc-history-refresh"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
-          </Button>
         </div>
         <DataTable
           columns={[

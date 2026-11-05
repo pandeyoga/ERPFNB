@@ -554,14 +554,14 @@ async def _enrich_summary(doc: dict) -> dict:
     db = get_db()
     if doc.get("bank_account_id"):
         ba = await db.bank_accounts.find_one({"id": doc["bank_account_id"]})
-        if ba:
-            doc["bank_account_name"] = f"{ba.get('bank', '')} {ba.get('account_number', '')} — {ba.get('name', '')}".strip(" —")
+        doc["bank_account_name"] = (f"{ba.get('bank', '')} {ba.get('account_number', '')} — {ba.get('name', '')}".strip(" —")
+                                    if ba else "(rekening tidak ditemukan)")
     doc["pay_count"] = len(doc.get("pay_ids") or [])
     doc["has_wht"] = doc.get("total_wht", 0) > 0
     # Resolve created_by name
     if doc.get("created_by"):
         u = await db.users.find_one({"id": doc["created_by"]})
-        doc["created_by_name"] = (u or {}).get("full_name") or (u or {}).get("email") or doc["created_by"]
+        doc["created_by_name"] = (u or {}).get("full_name") or (u or {}).get("email") or "(user tidak ditemukan)"
     return doc
 
 

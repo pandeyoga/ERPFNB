@@ -114,7 +114,7 @@ export default function BrandMixDonut({ rows = [], onSliceClick, size = 180 }) {
               className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ background: s.color }}
             />
-            <span className="flex-1 truncate font-medium">{s.name}</span>
+            <span className="flex-1 min-w-0 break-words leading-tight font-medium">{s.name}</span>
             <span className="text-muted-foreground tabular-nums shrink-0">
               {(s.share_pct ?? 0).toFixed(1)}%
             </span>

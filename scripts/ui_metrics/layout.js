@@ -15,7 +15,9 @@ fs.mkdirSync(shotDir, { recursive: true });
 
 function analyze() {
   const main = document.querySelector('main') || document.body;
-  const vis = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el);
+  // isi <details> tertutup tetap punya kotak di Chromium (content-visibility) tetapi tidak terlihat
+  const vis = (el) => { if (el.closest && el.closest('details:not([open])') && !el.closest('summary')) return false;
+    const r = el.getBoundingClientRect(); const cs = getComputedStyle(el);
     return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity > 0.05; };
   const R = (el) => el.getBoundingClientRect();
   const txt = (el) => (el.textContent || '').trim().replace(/\s+/g, ' ');
@@ -50,6 +52,8 @@ function analyze() {
       // hanya baris kontrol (toolbar), bukan pembungkus halaman/header
       const ctrlKids = kids.filter((k) => isControl(k) || k.matches('[role=tablist]') || k.querySelector(':scope > input, :scope > button, :scope > [role=tablist], :scope > [role=combobox]'));
       if (ctrlKids.length < 2) return;
+      // daftar chip (pilihan ganda) memang mengalir ke baris berikutnya — bukan toolbar
+      if (kids.every((k) => k.matches('button[aria-pressed], [role=checkbox], [role=option]'))) return;
       const rows = [];
       // satu baris = rentang vertikal yang bertumpuk (kontrol berlabel & tombol rata bawah tetap satu baris visual)
       kids.forEach((k) => { const kr = R(k);
@@ -66,7 +70,9 @@ function analyze() {
   // 3. Mixed control heights in one visual row
   const rowsSeen = new Set();
   all('*').filter((el) => { const cs = getComputedStyle(el); return cs.display.includes('flex') && cs.flexDirection.startsWith('row'); }).forEach((c) => {
-    const ctrls = [...c.children].filter(vis).map((k) => (isControl(k) ? k : k.querySelector(':scope > button, :scope > input, :scope > [role=combobox], :scope > a[class*="h-"]'))).filter((k) => k && vis(k) && !k.closest('[role=tablist]') && !k.closest('table'));
+    // ikon bantuan InlineHelp (24px) & grup toggle bersegmen sengaja lebih kecil dari input — bukan ketidakkonsistenan
+    const ctrls = [...c.children].filter(vis).map((k) => (isControl(k) ? k : k.querySelector(':scope > button, :scope > input, :scope > [role=combobox], :scope > a[class*="h-"]'))).filter((k) => k && vis(k) && !k.closest('[role=tablist]') && !k.closest('table')
+      && !/^Bantuan/.test(k.getAttribute('aria-label') || '') && !k.closest('[role=group]'));
     if (ctrls.length < 2) return;
     const hs = ctrls.map((k) => Math.round(R(k).height)).filter((h) => h >= 24 && h <= 48);
     const tops = ctrls.map((k) => R(k).top + R(k).height / 2);
@@ -81,7 +87,9 @@ function analyze() {
   // 4. Grids: orphan last item, uneven heights
   all('*').filter((el) => getComputedStyle(el).display === 'grid').forEach((g) => {
     const kids = [...g.children].filter(vis); if (kids.length < 3) return;
-    const firstTop = R(kids[0]).top; const cols = kids.filter((k) => Math.abs(R(k).top - firstTop) < 4).length;
+    // jumlah kolom dari track grid (bukan posisi atas: item rata bawah/items-end tidak sejajar di atas)
+    const cols = getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length;
+    const span = kids.some((k) => /span/.test(getComputedStyle(k).gridColumnStart + getComputedStyle(k).gridColumnEnd)); if (span) return;
     if (cols >= 3 && kids.length % cols === 1 && kids.length > cols) add('grid-orphan', `${kids.length} item di grid ${cols} kolom → 1 item sendirian di baris terakhir`, g);
   });
 
@@ -97,7 +105,9 @@ function analyze() {
   // 6. Clipped (truncated) values
   all('*').filter((el) => el.children.length === 0 && txt(el).length > 1).forEach((el) => {
     const cs = getComputedStyle(el);
-    if ((cs.textOverflow === 'ellipsis' || cs.overflow === 'hidden') && el.scrollWidth > el.clientWidth + 1) {
+    // teks panjang bebas (alasan, deskripsi) yang dipotong DENGAN tooltip title = pola sah
+    const tEl = el.closest('[title]'); const titled = !!tEl && (tEl === el || tEl === el.parentElement || tEl === el.parentElement?.parentElement);
+    if (!titled && (cs.textOverflow === 'ellipsis' || cs.overflow === 'hidden') && el.scrollWidth > el.clientWidth + 1) {
       const t = txt(el); const numeric = /\d/.test(t) && /(Rp|\d[.,]\d|%)/.test(t);
       add(numeric ? 'clipped-number' : 'clipped-text', t.slice(0, 60), el);
     }
@@ -123,8 +133,9 @@ function analyze() {
   if (prim.length >= 3) add('many-primary', `${prim.length} tombol utama terlihat: ${prim.map(txt).slice(0, 6).join(' · ')}`, prim[2]);
 
   // 9. Terminology mix on one page (English vs Indonesian for the same concept)
+  // (kamus DESIGN_SYSTEM §10.5: "Overdue" = status, "Jatuh Tempo" = tanggal — dua konsep, bukan campur istilah)
   const PAIRS = [['approved', 'disetujui'], ['paid', 'dibayar'], ['rejected', 'ditolak'], ['cancelled', 'dibatalkan'], ['submitted', 'diajukan'],
-    ['pending', 'menunggu'], ['completed', 'selesai'], ['active', 'aktif'], ['received', 'diterima'], ['overdue', 'jatuh tempo'], ['outstanding', 'belum dibayar']];
+    ['pending', 'menunggu'], ['completed', 'selesai'], ['active', 'aktif'], ['received', 'diterima'], ['overdue', 'lewat jatuh tempo'], ['outstanding', 'belum dibayar']];
   const labels = all('[data-testid=kpi-card-label], [role=tab], [data-status], th, h2, h3, label').map((e) => txt(e).toLowerCase());
   PAIRS.forEach(([en, id]) => {
     const hasEn = labels.some((l) => new RegExp(`\\b${en}\\b`).test(l)); const hasId = labels.some((l) => l.includes(id));
@@ -160,17 +171,24 @@ function analyze() {
   }
 
   // 13. Duplicate controls (same label twice in view)
-  const btnTexts = all('button, a[role=button], a[class*="inline-flex"]').map((b) => txt(b)).filter((t) => t.length > 2 && t.length < 30 && !/^\d/.test(t));
-  const dup = Object.entries(btnTexts.reduce((m, t) => ((m[t] = (m[t] || 0) + 1), m), {})).filter(([t, n]) => n >= 2 && /muat ulang|refresh|ekspor|export|filter|tambah|baru|simpan|cari/i.test(t));
+  // CTA di EmptyState sengaja mengulang aksi header; aksi yang sama di kartu berbeda = aksi per kartu (sah)
+  const btns = all('button, a[role=button], a[class*="inline-flex"]').filter((b) => !b.closest('[data-testid*="empty"]'));
+  const byText = btns.reduce((m, b) => { const t = txt(b); if (t.length > 2 && t.length < 30 && !/^\d/.test(t)) (m[t] = m[t] || []).push(b); return m; }, {});
+  const dup = Object.entries(byText).map(([t, bs]) => [t, bs.length, new Set(bs.map((b) => b.closest('.glass-card, [data-slot=card]') || main)).size])
+    .filter(([t, n, cards]) => n >= 2 && cards < n && /muat ulang|refresh|ekspor|export|filter|tambah|baru|simpan|cari/i.test(t));
   dup.forEach(([t, n]) => add('duplicate-control', `"${t}" muncul ${n}x di layar yang sama`, null));
 
   // 14. Narrow wrapped table columns
   const tables = all('table');
   tables.forEach((t) => {
-    const wrapped = [...t.querySelectorAll('tbody tr:first-child td, tbody tr:nth-child(2) td')].filter(vis).filter((td) => {
-      const lh = parseFloat(getComputedStyle(td).lineHeight) || 20; const inner = td.firstElementChild || td;
-      return R(td).width < 150 && R(inner).height > lh * 1.9 && txt(td).length > 8;
-    });
+    // "terlipat" = SATU node teks yang pecah ke > 1 baris (bukan isi bertumpuk sengaja, mis. nama + sub-teks,
+    // dan bukan tinggi sel yang ikut tinggi baris)
+    const textWraps = (td) => { const w = document.createTreeWalker(td, NodeFilter.SHOW_TEXT); let n;
+      while ((n = w.nextNode())) { if (n.textContent.trim().length < 4) continue; const rg = document.createRange(); rg.selectNodeContents(n);
+        const tops = new Set([...rg.getClientRects()].filter((x) => x.width > 1).map((x) => Math.round(x.top))); if (tops.size > 1) return true; }
+      return false; };
+    const wrapped = [...t.querySelectorAll('tbody tr:first-child td, tbody tr:nth-child(2) td')].filter(vis).filter((td) =>
+      R(td).width < 150 && txt(td).length > 8 && textWraps(td));
     if (wrapped.length >= 2) add('narrow-columns', `${wrapped.length} sel terlipat di kolom sempit (<150px): ${wrapped.slice(0, 3).map((w) => txt(w).slice(0, 20)).join(' · ')}`, t);
   });
 
@@ -183,7 +201,8 @@ function analyze() {
 
   // 16. Vertical rhythm of the main column (gaps between top-level blocks)
   const col = main.querySelector('[data-testid$="-page"], [data-testid$="-hub"], [data-testid*="portal"] > div') || main.firstElementChild;
-  const blocks = col ? [...col.children].filter(vis) : [];
+  // bar sticky/fixed (FormActionBar) mengikuti viewport, jaraknya tidak termasuk ritme blok
+  const blocks = col ? [...col.children].filter(vis).filter((b) => !/sticky|fixed/.test(getComputedStyle(b).position) && !b.querySelector(':scope > [class*="sticky"]')) : [];
   const gaps = []; for (let i = 1; i < blocks.length; i++) gaps.push(Math.round(R(blocks[i]).top - R(blocks[i - 1]).bottom));
   const g = gaps.filter((x) => x >= 0 && x < 80);
   if (g.length >= 3 && Math.max(...g) - Math.min(...g) >= 12) add('rhythm', `jarak antar blok tidak konsisten: ${g.join(', ')}px`, col);
@@ -222,10 +241,21 @@ function analyze() {
         rec.states.push({ state, shot, ...a });
       };
       await snap('page');
+      // HubTabs: sub-tab garis (TabsList variant=line) dari kelompok aktif juga dikunjungi → cakupan sama dengan
+      // sebelum tab dikelompokkan.
+      const visitSubTabs = async (prefix) => {
+        const subs = await page.locator('main [role=tablist][data-variant=line]').first().locator('[role=tab]').all().catch(() => []);
+        for (const st of subs) {
+          if ((await st.getAttribute('data-state').catch(() => '')) === 'active') continue;
+          const sn = ((await st.textContent().catch(() => '')) || '').trim().slice(0, 30);
+          try { await st.click({ timeout: 3000 }); await page.waitForLoadState('networkidle', { timeout: 6000 }).catch(() => {}); await page.waitForTimeout(400); await snap(`${prefix}${sn}`); } catch (e) { /* skip */ }
+        }
+      };
+      await visitSubTabs('tab:');
       const tabs = await page.locator('main [role=tablist]').first().locator('[role=tab]').all().catch(() => []);
       for (const t of tabs.slice(1, 9)) {
         const name = ((await t.textContent().catch(() => '')) || '').trim().slice(0, 30);
-        try { await t.click({ timeout: 3000 }); await page.waitForLoadState('networkidle', { timeout: 6000 }).catch(() => {}); await page.waitForTimeout(400); await snap(`tab:${name}`); } catch (e) { /* skip */ }
+        try { await t.click({ timeout: 3000 }); await page.waitForLoadState('networkidle', { timeout: 6000 }).catch(() => {}); await page.waitForTimeout(400); await snap(`tab:${name}`); await visitSubTabs(`tab:${name}>`); } catch (e) { /* skip */ }
       }
       results.push(rec);
     } catch (e) { results.push({ route: rt.route, url, error: String(e).slice(0, 120) }); }

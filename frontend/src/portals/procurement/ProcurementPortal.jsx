@@ -37,7 +37,8 @@ export default function ProcurementPortal() {
       {/* Gate = gabungan izin tab (Per item / Per PO). */}
       <Route path="vendor-comparison" element={g(["procurement.view", "procurement.vendor.read", "procurement.po"], <VendorComparison />)} />
       <Route path="vendor-recommend" element={g(["procurement.view", "procurement.vendor.read"], <VendorRecommendPage />)} />
-      <Route path="price-intelligence" element={g(["procurement.view", "procurement.vendor.read"], <PriceIntelligence />)} />
+      {/* API /market-list/intelligence butuh inventory.view */}
+      <Route path="price-intelligence" element={g("inventory.view", <PriceIntelligence />)} />
       <Route path="vendor-catalog" element={g(["procurement.view", "procurement.vendor.read"], <VendorCatalog />)} />
       <Route path="rfq" element={g("procurement.rfq", <RFQList />)} />
       <Route path="rfq/new" element={g("procurement.rfq.create", <RFQForm />)} />

@@ -71,7 +71,7 @@ export default function ApprovalDelegations() {
       {/* Di Pusat Persetujuan (hub), PageHeader mengisi subtitle & aksi header (DESIGN_SYSTEM §10.1). */}
       <PageHeader
         title="Delegasi Aktif"
-        subtitle="Approval yang Anda delegasikan ke orang lain untuk sementara."
+        subtitle="Delegasikan approval ke rekan saat Anda cuti agar dokumen tetap bisa disetujui."
         actions={(
           <Button onClick={() => setOpen(true)} data-testid="create-delegation-btn">
             <Plus /> Tambah Delegasi
@@ -88,7 +88,6 @@ export default function ApprovalDelegations() {
           <EmptyState
             icon={Users}
             title="Belum ada delegasi aktif"
-            description="Buat delegasi saat Anda cuti agar dokumen tetap bisa disetujui."
           />
         }
         columns={[

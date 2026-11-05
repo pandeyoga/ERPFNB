@@ -86,7 +86,7 @@ export default function APAgingStackedBar({
                       "px-2 py-1.5 rounded-lg hover:bg-foreground/5",
                     )}
                   >
-                    <span className="font-medium truncate">{v.vendor_name}</span>
+                    <span className="font-medium truncate" title={v.vendor_name}>{v.vendor_name}</span>
                     <span className="font-semibold tabular-nums shrink-0 ml-2">{fmtRp(v.total)}</span>
                   </div>
                 ))}

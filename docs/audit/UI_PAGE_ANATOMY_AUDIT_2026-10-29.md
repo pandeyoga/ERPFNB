@@ -292,10 +292,43 @@ angka = jumlah halaman unik yang masih memuat temuan.
       header, tanpa kartu tipis label/nilai;
     - aksi Payment pindah ke header; aksi sekunder PO di "⋯";
     - baris Period list jadi Wizard + "⋯".
-- **Masih tersisa** (butuh keputusan IA atau per halaman):
-  - toolbar terlipat (60);
-  - teks nama panjang terpotong di legenda chart;
-  - kartu tipis / blok form tanpa judul di halaman detail.
+- Sisa temuan putaran ini ditangani di "Putaran 6" di bawah.
+
+### Putaran 6 (5 Nov 2026) — cakupan penuh, sisa temuan, cek per peran
+
+**Cakupan crawler dikembalikan.** `layout.js` kini juga mengunjungi sub-tab garis (`HubTabs`) setelah halaman dan
+setelah tiap tab tingkat pertama. Hasilnya **508 state** (awal 507, putaran riset 369), jadi angka di bawah
+sebanding dengan crawl awal.
+
+| Temuan | Cakupan penuh, sebelum | Sesudah | Perbaikan nyata | Heuristik diperbaiki |
+|---|---|---|---|---|
+| Tinggi kontrol berbeda sebaris | 35 | 0 | "Status lain" & tombol Validasi voucher 36px | ikon bantuan 24px & grup toggle tidak dihitung |
+| Teks terpotong | 131 | 31 | nama akun kas & legenda brand dilipat; label KPI dipendekkan (sub-teks); `title` di KPI, deskripsi Cashflow, chip izin, vendor AP | teks dengan tooltip `title` tidak dihitung |
+| Kolom sempit | 39 | 34 | header tanggal/uang tidak dilipat | yang dihitung hanya node teks yang benar-benar pecah baris (dulu sel tanggal ikut tinggi baris) |
+| Tabel gulir horizontal | 12 | 5 | AR invoices & Users: aksi baris jadi 1 ikon + "⋯" (`RowActions`); email di bawah nama | — |
+| Kartu kosong | 13 | 14 | Executive Monitoring, CRM Reservasi, PR Consolidation tidak diregang (`items-start`) | — |
+| Istilah campur | 9 | 0 | KPI AR "Jatuh tempo" → "Overdue" | pasangan Overdue/Jatuh Tempo dihapus (dua konsep, §10.5) |
+| Kontrol ganda | 10 | 0 | Daily Close: satu "Muat ulang" untuk status + riwayat; deskripsi empty state Report schedules | CTA di EmptyState & aksi per kartu tidak dihitung |
+| Toolbar terlipat | 6 | 5 | filter PO tetap satu baris | deretan chip pilihan tidak dihitung |
+| ≥ 3 tombol utama | 1 | 0 | Smart SEO: Optimasi Semua & Buat → `outline` | — |
+| Pengantar bertumpuk | 4 | 0 | Delegasi: satu kalimat (subtitle), empty state tanpa deskripsi ganda | — |
+| Grid yatim | 2 | 0 | Anomaly feed: Tipe & Severity ke `MoreFilters`, kolom berbagi lebar | kolom dihitung dari track grid (item `items-end` dulu salah hitung) |
+| Elemen bertumpuk / ritme | 1 / 1 | 0 / 0 | — | isi `<details>` tertutup & bar sticky diabaikan |
+
+Perbaikan lain yang tidak tampil sebagai angka:
+- **Ikon cari di input `glass-input` buram/tertutup** (Users & Roles dan lainnya): `backdrop-filter` membuat input
+  dilukis di atas ikon. Aturan global `.relative > svg.absolute { z-index: 1 }`.
+- **UUID mentah tampil sebagai nama**: Payment (vendor terhapus), Payment run (rekening & pembuat terhapus). Kini
+  "(vendor tidak ditemukan)" / "(rekening tidak ditemukan)" / "(user tidak ditemukan)".
+- CRM: ikon panah tanpa label di samping tab → tautan "Lihat semua →" seperti kartu lain.
+
+Sisa yang dibiarkan (dicek visual):
+- kolom sempit = nama 2 kata di kolom teks (nama toko, kategori, akun BS), wajar dilipat;
+- kartu kosong = kartu sejajar setinggi baris (Kas & Bank: Bank vs Petty Cash), sengaja sama tinggi;
+- tabel gulir = matriks budget bulanan (8 kolom) & Vendor scorecard, wajar digulir;
+- teks terpotong yang tersisa sudah punya tooltip atau berupa data uji.
+
+ROLE_RESULTS
 
 ---
 

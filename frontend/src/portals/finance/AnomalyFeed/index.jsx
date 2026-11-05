@@ -35,6 +35,7 @@ import AnomalyAnalyticsDashboard from "@/components/shared/AnomalyAnalyticsDashb
 import { ThresholdSettingsDialog } from "./ThresholdSettingsDialog";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
+import { MoreFilters } from "@/components/shared/ListToolbar";
 
 const SEVERITY_LABELS = {
   severe: "Severe",
@@ -358,8 +359,19 @@ export default function AnomalyFeed({ embedded = false }) {
               ]} />
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div>
+        {/* Maks. 4 filter terlihat; Tipe & Severity di "Filter lain" (DESIGN_SYSTEM §10.9) */}
+        {/* kolom berbagi lebar (flex-1) agar "Filter lain" tetap di baris yang sama, tidak yatim di baris kedua */}
+        <div className="flex flex-wrap items-end gap-3" data-testid="anomaly-filter-row">
+          <div className="w-full sm:w-auto sm:flex-[1.4] sm:min-w-[12rem]">
+            <Label htmlFor="anomaly-filter-query" className={LABEL}>Cari</Label>
+            <div className="relative mt-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input id="anomaly-filter-query" value={fQuery} onChange={(e) => setFQuery(e.target.value)}
+                placeholder="Cari judul / pesan"
+                className="pl-8 h-9 text-sm" data-testid="anomaly-filter-query" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-[10rem]">
             <Label htmlFor="anomaly-filter-period" className={LABEL}>Periode</Label>
             <div className="relative mt-1">
               <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -377,6 +389,24 @@ export default function AnomalyFeed({ embedded = false }) {
               />
             </div>
           </div>
+          <div className="flex-1 min-w-[10rem]">
+            <Label className={LABEL}>Status</Label>
+            <SimpleSelect value={fStatus} onValueChange={(v) => { setFStatus(v); setPage(1); }} ariaLabel="Status"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-status" placeholder="Semua Status"
+              options={[
+                { value: "", label: "Semua Status" },
+                ...TRIAGE_STATUSES.map((value) => ({ value, label: statusLabel(value) })),
+              ]} />
+          </div>
+          {scopedOutlets.length > 1 && (
+          <div className="flex-1 min-w-[10rem]">
+            <Label className={LABEL}>Toko</Label>
+            <SimpleSelect value={fOutlet} onValueChange={(v) => { setFOutlet(v); setPage(1); }} ariaLabel="Toko"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-outlet" placeholder={allLabel}
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]} />
+          </div>
+          )}
+          <MoreFilters testId="anomaly-more-filters" count={(fType ? 1 : 0) + (fSeverity ? 1 : 0)}>
           <div>
             <Label className={LABEL}>Tipe</Label>
             <SimpleSelect value={fType} onValueChange={(v) => { setFType(v); setPage(1); }} ariaLabel="Tipe"
@@ -393,32 +423,7 @@ export default function AnomalyFeed({ embedded = false }) {
                 { value: "mild", label: "Mild" },
               ]} />
           </div>
-          <div>
-            <Label className={LABEL}>Status</Label>
-            <SimpleSelect value={fStatus} onValueChange={(v) => { setFStatus(v); setPage(1); }} ariaLabel="Status"
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-status" placeholder="Semua Status"
-              options={[
-                { value: "", label: "Semua Status" },
-                ...TRIAGE_STATUSES.map((value) => ({ value, label: statusLabel(value) })),
-              ]} />
-          </div>
-          {scopedOutlets.length > 1 && (
-          <div>
-            <Label className={LABEL}>Toko</Label>
-            <SimpleSelect value={fOutlet} onValueChange={(v) => { setFOutlet(v); setPage(1); }} ariaLabel="Toko"
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-outlet" placeholder={allLabel}
-              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]} />
-          </div>
-          )}
-          <div className="col-span-2 sm:col-span-1 lg:col-span-2">
-            <Label htmlFor="anomaly-filter-query" className={LABEL}>Cari</Label>
-            <div className="relative mt-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input id="anomaly-filter-query" value={fQuery} onChange={(e) => setFQuery(e.target.value)}
-                placeholder="Cari judul / pesan"
-                className="pl-8 h-9 text-sm" data-testid="anomaly-filter-query" />
-            </div>
-          </div>
+          </MoreFilters>
         </div>
       </div>
 

@@ -86,9 +86,9 @@ export default function PriceIntelligence() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="price-intel-summary">
         <CompactStatCard label="Item terlacak" value={<span data-testid="price-intel-tracked-value">{data?.total_items_tracked || 0}</span>} loading={loading && !data}
           icon={Package} color="aurora-1" testId="price-intel-stat-tracked" />
-        <CompactStatCard label="Di atas referensi (>10%)" value={<span data-testid="price-intel-above-value">{data?.price_above_reference || 0}</span>} loading={loading && !data}
+        <CompactStatCard label="Di atas ref. >10%" value={<span data-testid="price-intel-above-value">{data?.price_above_reference || 0}</span>} loading={loading && !data}
           icon={TrendingUp} tone="danger" testId="price-intel-stat-above" />
-        <CompactStatCard label="Di bawah referensi (>10%)" value={<span data-testid="price-intel-below-value">{data?.price_below_reference || 0}</span>} loading={loading && !data}
+        <CompactStatCard label="Di bawah ref. >10%" value={<span data-testid="price-intel-below-value">{data?.price_below_reference || 0}</span>} loading={loading && !data}
           icon={TrendingDown} tone="success" testId="price-intel-stat-below" />
         <CompactStatCard label="Single-source risk" value={<span data-testid="price-intel-risk-value">{data?.single_source_risk?.length || 0}</span>} loading={loading && !data}
           icon={ShieldAlert} tone="warning" testId="price-intel-stat-risk" />

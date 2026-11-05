@@ -67,8 +67,8 @@ export function StatusTabs({ value, onChange, options, max = 5, ariaLabel = "Fil
       {rest.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
+            {/* tinggi 36px = sama dengan input cari & select di baris toolbar yang sama */}
             <Button
-              size="sm"
               variant={activeRest ? "default" : "outline"}
               aria-pressed={!!activeRest}
               data-testid={testId ? `${testId}-more` : undefined}

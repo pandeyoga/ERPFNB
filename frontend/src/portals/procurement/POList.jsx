@@ -113,7 +113,7 @@ export default function POList() {
             options={[{ value: "", label: "Semua vendor" }, ...vendors.map(v => ({ value: v.id, label: v.name }))]}
             placeholder="Semua vendor"
             ariaLabel="Filter vendor"
-            className="glass-input w-[200px]"
+            className="glass-input w-40"
             testId="po-filter-vendor"
           />
           </div>

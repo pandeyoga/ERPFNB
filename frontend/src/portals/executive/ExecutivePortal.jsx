@@ -52,8 +52,9 @@ export default function ExecutivePortal() {
       <Route path="budget-approvals" element={g("executive.budget.approve", <BudgetApprovals />)} />
 
       {/* Phase 14 — Outlet Operational Budget (KDO/FDO/BDO cost control) */}
-      <Route path="outlet-budgets" element={g(["executive.budget.approve", "executive.dashboard.read"], <OutletBudgetAllocation />)} />
-      <Route path="budget-monitor" element={g(["executive.budget.approve", "executive.dashboard.read"], <OutletBudgetMonitor />)} />
+      {/* guard = izin API halaman (outlet_budget.read / .monitor); dulu executive.dashboard.read meloloskan Owner ke halaman 403 */}
+      <Route path="outlet-budgets" element={g("outlet_budget.read", <OutletBudgetAllocation />)} />
+      <Route path="budget-monitor" element={g("outlet_budget.monitor", <OutletBudgetMonitor />)} />
       <Route path="budget-increase-requests" element={g("executive.budget.approve", <BudgetIncreaseRequests />)} />
 
       {/* Real pages: AI Q&A, Anomaly Detection, Brand Mix overview */}

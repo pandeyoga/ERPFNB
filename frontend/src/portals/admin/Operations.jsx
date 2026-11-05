@@ -9,6 +9,8 @@
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Activity } from "lucide-react";
 import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 
 import MetricsView from "./operations/MetricsView";
@@ -20,15 +22,16 @@ import ReportSchedules from "./ReportSchedules";
 import DataManagement from "./DataManagement";
 import TourAnalytics from "./TourAnalytics";
 
+// `perm` = izin API tab itu (routers/admin_ops.py dst.); "*" = khusus Super Admin. Tab tanpa izin tidak tampil.
 const SUB_PAGES = [
-  { path: "", exact: true, label: "Metrics", tid: "metrics", render: () => <MetricsView /> },
-  { path: "logs", label: "Logs", tid: "logs", render: () => <LogsView /> },
-  { path: "scheduler", label: "Scheduler", tid: "scheduler", render: () => <SchedulerView /> },
-  { path: "archival", label: "Archival", tid: "archival", render: () => <ArchivalView /> },
-  { path: "rate-limits", label: "Rate limits", tid: "rate-limits", render: () => <RateLimitsView /> },
-  { path: "report-schedules", label: "Report schedules", tid: "laporan-terjadwal", render: () => <ReportSchedules embedded /> },
-  { path: "data-management", label: "Data management", tid: "manajemen-data", render: () => <DataManagement embedded /> },
-  { path: "tour-analytics", label: "Tour analytics", tid: "tour-analytics", render: () => <TourAnalytics embedded /> },
+  { path: "", exact: true, label: "Metrics", tid: "metrics", perm: "system.metrics.read", render: () => <MetricsView /> },
+  { path: "logs", label: "Logs", tid: "logs", perm: "system.logs.read", render: () => <LogsView /> },
+  { path: "scheduler", label: "Scheduler", tid: "scheduler", perm: "system.scheduler.manage", render: () => <SchedulerView /> },
+  { path: "archival", label: "Archival", tid: "archival", perm: "system.archival.manage", render: () => <ArchivalView /> },
+  { path: "rate-limits", label: "Rate limits", tid: "rate-limits", perm: "system.metrics.read", render: () => <RateLimitsView /> },
+  { path: "report-schedules", label: "Report schedules", tid: "laporan-terjadwal", perm: "report_schedules.manage", render: () => <ReportSchedules embedded /> },
+  { path: "data-management", label: "Data management", tid: "manajemen-data", perm: "*", render: () => <DataManagement embedded /> },
+  { path: "tour-analytics", label: "Tour analytics", tid: "tour-analytics", perm: ["admin.audit_log.read", "admin.settings"], render: () => <TourAnalytics embedded /> },
 ];
 
 const GROUPS = [
@@ -39,6 +42,7 @@ const GROUPS = [
 ];
 
 export default function Operations() {
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -46,11 +50,14 @@ export default function Operations() {
   const match = location.pathname.match(/^\/admin\/operations\/?(.*)$/);
   const subPath = match ? match[1].replace(/\/$/, "") : "";
 
-  const activePage = SUB_PAGES.find(p => (p.exact ? subPath === "" : subPath === p.path));
+  const pages = SUB_PAGES.filter((p) => permitted(user, p.perm));
+  const activePage = pages.find(p => (p.exact ? subPath === "" : subPath === p.path));
 
-  // Redirect to default if no match
+  // Tidak ada tab yang diizinkan → /no-access; tab tidak cocok/tidak diizinkan → tab pertama yang diizinkan
+  if (!pages.length) return <Navigate to="/no-access" replace />;
   if (!activePage) {
-    return <Navigate to="/admin/operations" replace />;
+    const first = pages[0].path;
+    return <Navigate to={first ? `/admin/operations/${first}` : "/admin/operations"} replace />;
   }
 
   const tabValue = activePage.path || "index";
@@ -66,7 +73,7 @@ export default function Operations() {
 
         {/* 8 halaman → 4 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
         <HubTabs
-          groups={groupTabs(SUB_PAGES.map((pg) => ({ id: pg.path || "index", label: pg.label })), GROUPS)}
+          groups={groupTabs(pages.map((pg) => ({ id: pg.path || "index", label: pg.label })), GROUPS)}
           value={tabValue}
           onChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
           testId="operations-tabs"

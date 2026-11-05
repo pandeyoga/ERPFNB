@@ -194,7 +194,7 @@ export default function JobApplications() {
 
         {/* Department Filter */}
         <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setPage(1); }}>
-          <SelectTrigger className="w-40" aria-label="Filter departemen" data-testid="dept-filter">
+          <SelectTrigger className="w-48" aria-label="Filter departemen" data-testid="dept-filter">
             <SelectValue placeholder="Departemen" />
           </SelectTrigger>
           <SelectContent>

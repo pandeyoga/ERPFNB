@@ -27,6 +27,7 @@ import { logger } from "@/lib/logger";
 import { useAuth } from "@/lib/auth";
 import { visiblePortalsFor } from "@/lib/portals";
 import { getPortalSections } from "@/lib/navigationSchema";
+import { itemVisible } from "@/lib/unifiedNav";
 
 const SECTIONS = [
   { key: "items",     icon: Package,   label: "Items",     name: "name",        sub: "code" },
@@ -59,6 +60,8 @@ function buildNavIndex(user) {
     for (const section of sections) {
       if (section.reqPerm && !hasPerm(userPerms, section.reqPerm)) continue;
       for (const item of section.items) {
+        // sama dengan sidebar: item yang guard route-nya menolak user tidak ditawarkan (lib/unifiedNav.itemVisible)
+        if (!itemVisible(userPerms, item)) continue;
         result.push({
           id: `${portal.id}::${section.id}::${item.id}`,
           name: item.name,

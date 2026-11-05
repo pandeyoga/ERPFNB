@@ -252,6 +252,9 @@ a[href*="emergent.sh"],
     backdrop-filter: blur(8px);
     border: 1px solid hsl(var(--border));
   }
+  /* backdrop-filter membuat input dilukis DI ATAS ikon absolut yang ditulis sebelumnya (ikon cari jadi buram).
+     Ikon dekoratif di dalam pembungkus relative selalu di atas input dan tidak menghalangi klik. */
+  .relative > svg.absolute { z-index: 1; pointer-events: none; }
   .dark .glass-input {
     background: rgb(255 255 255 / 0.04);
   }

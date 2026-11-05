@@ -92,10 +92,11 @@ async def _enrich(d: dict) -> dict:
     # Resolve payee name
     if d.get("payee_type") == "vendor" and d.get("payee_id"):
         v = await db.vendors.find_one({"id": d["payee_id"]})
-        d["payee_name"] = (v or {}).get("name") or d.get("payee_text") or d["payee_id"]
+        # ID mentah tidak pernah tampil di UI: vendor yang sudah dihapus diberi label yang bisa dibaca
+        d["payee_name"] = (v or {}).get("name") or d.get("payee_text") or "(vendor tidak ditemukan)"
     elif d.get("payee_type") == "employee" and d.get("payee_id"):
         e = await db.employees.find_one({"id": d["payee_id"]})
-        d["payee_name"] = (e or {}).get("full_name") or d.get("payee_text") or d["payee_id"]
+        d["payee_name"] = (e or {}).get("full_name") or d.get("payee_text") or "(karyawan tidak ditemukan)"
     else:
         d["payee_name"] = d.get("payee_text") or "-"
     # Resolve bank account name

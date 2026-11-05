@@ -7,9 +7,9 @@ import api, { unwrap } from "@/lib/api";
 /**
  * Fetch Inventory home dashboard data with outlet scope
  */
-export function useInventoryHome(outletId) {
+export function useInventoryHome(outletId, { canMarketList = true } = {}) {
   return useQuery({
-    queryKey: ["inventory", "home", { outletId }],
+    queryKey: ["inventory", "home", { outletId, canMarketList }],
     queryFn: async () => {
       const params = outletId ? { outlet_id: outletId } : {};
       const [v, mov, opn, low, mkt] = await Promise.all([
@@ -17,7 +17,10 @@ export function useInventoryHome(outletId) {
         api.get("/inventory/movements", { params: { per_page: 8, ...params } }),
         api.get("/inventory/opname", { params: { status: "in_progress", per_page: 1, ...params } }),
         api.get("/inventory/low-stock", { params: { include_zero: true, include_negative: true, limit: 8, ...params } }),
-        api.get("/market-list/items", { params: { ml_status: "pending_review", per_page: 5 } }).catch(() => ({ data: { data: [], meta: { total: 0 } } })),
+        // Market list butuh inventory.view — peran tanpa izin itu tidak memanggilnya (widget tersembunyi bila 0)
+        canMarketList
+          ? api.get("/market-list/items", { params: { ml_status: "pending_review", per_page: 5 } }).catch(() => ({ data: { data: [], meta: { total: 0 } } }))
+          : Promise.resolve({ data: { data: [], meta: { total: 0 } } }),
       ]);
       
       return {

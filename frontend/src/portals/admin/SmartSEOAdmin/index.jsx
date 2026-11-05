@@ -267,10 +267,11 @@ export default function SmartSEO() {
                 Mode Dasar
               </Badge>
             )}
+            {/* Satu tombol utama per layar = Simpan; aksi massal & generate memakai outline (DESIGN_SYSTEM §10.1) */}
             <Button
+              variant="outline"
               onClick={() => setBulkOpen(true)}
               data-testid="bulk-optimize-open-btn"
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white"
             >
               <Sparkles className="w-4 h-4" />
               Optimasi Semua
@@ -355,10 +356,11 @@ export default function SmartSEO() {
                     <span className="ml-1.5 hidden sm:inline">Analisa</span>
                   </Button>
                   <Button
+                    variant="outline"
                     onClick={handleGenerate}
                     disabled={generating || analyzing}
                     data-testid="seo-generate-btn"
-                    className="flex-shrink-0 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                    className="flex-shrink-0"
                   >
                     {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                     <span className="ml-1.5 hidden sm:inline">Buat</span>

@@ -306,7 +306,8 @@ export default function CRMHub() {
       </section>
 
       {/* ── Main Content: 2 columns ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 lg:gap-4">
+      {/* items-start: panel reservasi tidak diregang setinggi kolom kanan (kosong besar saat daftar pendek) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 lg:gap-4 lg:items-start">
 
         {/* LEFT: Today's Reservation Timeline */}
         <div className="lg:col-span-3 glass-card overflow-hidden" data-testid="crm-reservation-panel">
@@ -332,11 +333,10 @@ export default function CRMHub() {
                   <TabsTrigger value="done" data-testid="crm-res-tab-done">{RES_TAB_LABEL.done}</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <Button size="icon-sm" variant="ghost" asChild>
-                <Link to="/outlet/reservations" aria-label="Lihat semua reservasi" title="Lihat semua reservasi">
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              {/* tautan "Semua →" sama dengan kartu lain di halaman ini (bukan ikon panah tanpa label) */}
+              <Link to="/outlet/reservations" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1" data-testid="crm-res-all-link">
+                Lihat semua <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
           </div>
 

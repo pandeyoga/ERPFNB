@@ -10,10 +10,16 @@ import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import StatusPill from "@/components/shared/StatusPill";
 import { fmtRp, fmtDate } from "@/lib/format";
+import { useAuth } from "@/lib/auth";
+import { canOpenPath } from "@/lib/unifiedNav";
 
 export default function ProcurementHome() {
   const navigate = useNavigate();
-  const { data, isLoading: loading } = useProcurementHome();
+  const { user } = useAuth();
+  // Kartu/tautan mengikuti izin route tujuannya (lib/routePerms.generated.js) — tidak ada jalan ke /no-access
+  const can = (path) => canOpenPath(user, path);
+  const canPO = can("/procurement/po"), canGR = can("/procurement/gr");
+  const { data, isLoading: loading } = useProcurementHome({ canPO, canGR });
   const stats = data?.stats || { pr_pending: 0, pr_total: 0, po_open: 0, po_total: 0, gr_total: 0 };
   const recentPR = data?.recentPR || [];
   const recentPO = data?.recentPO || [];
@@ -27,32 +33,42 @@ export default function ProcurementHome() {
         testId="procurement-welcome"
         actions={
           <>
-            <Button asChild variant="outline" data-testid="qa-kanban">
-              <Link to="/procurement/kanban"><Layers /> Buka Kanban</Link>
-            </Button>
-            <Button asChild variant="outline" data-testid="qa-vc">
-              <Link to="/procurement/vendor-comparison"><Scale /> Bandingkan vendor</Link>
-            </Button>
-            <Button asChild data-testid="qa-new-pr">
-              <Link to="/procurement/pr/new"><Plus /> Buat PR</Link>
-            </Button>
+            {can("/procurement/kanban") && (
+              <Button asChild variant="outline" data-testid="qa-kanban">
+                <Link to="/procurement/kanban"><Layers /> Buka Kanban</Link>
+              </Button>
+            )}
+            {can("/procurement/vendor-comparison") && (
+              <Button asChild variant="outline" data-testid="qa-vc">
+                <Link to="/procurement/vendor-comparison"><Scale /> Bandingkan vendor</Link>
+              </Button>
+            )}
+            {can("/procurement/pr/new") && (
+              <Button asChild data-testid="qa-new-pr">
+                <Link to="/procurement/pr/new"><Plus /> Buat PR</Link>
+              </Button>
+            )}
           </>
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="procurement-kpi-strip">
+      <div className={`grid grid-cols-1 gap-3 ${canPO && canGR ? "sm:grid-cols-3" : canPO || canGR ? "sm:grid-cols-2" : ""}`} data-testid="procurement-kpi-strip">
         <CompactStatCard label="PR menunggu approval" value={stats.pr_pending} loading={loading}
           sub={`dari ${stats.pr_total} PR`} icon={FileText} color="aurora-1"
           onClick={() => navigate("/procurement/pr?status=submitted")} testId="procurement-kpi-pr-pending" />
-        <CompactStatCard label="PO terkirim (open)" value={stats.po_open} loading={loading}
-          sub={`dari ${stats.po_total} PO`} icon={FileCheck} color="aurora-2"
-          onClick={() => navigate("/procurement/po?status=sent")} testId="procurement-kpi-po-open" />
-        <CompactStatCard label="GR diposting" value={stats.gr_total} loading={loading}
-          sub="Sepanjang waktu" icon={PackageOpen} color="aurora-4"
-          onClick={() => navigate("/procurement/gr")} testId="procurement-kpi-gr" />
+        {canPO && (
+          <CompactStatCard label="PO terkirim (open)" value={stats.po_open} loading={loading}
+            sub={`dari ${stats.po_total} PO`} icon={FileCheck} color="aurora-2"
+            onClick={() => navigate("/procurement/po?status=sent")} testId="procurement-kpi-po-open" />
+        )}
+        {canGR && (
+          <CompactStatCard label="GR diposting" value={stats.gr_total} loading={loading}
+            sub="Sepanjang waktu" icon={PackageOpen} color="aurora-4"
+            onClick={() => navigate("/procurement/gr")} testId="procurement-kpi-gr" />
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+      <div className={`grid grid-cols-1 gap-3 lg:gap-4 ${canPO ? "lg:grid-cols-2" : ""}`}>
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm md:text-base font-semibold">Purchase Requests terbaru</h3>
@@ -77,6 +93,7 @@ export default function ProcurementHome() {
           </div>
         </div>
 
+        {canPO && (
         <div className="glass-card p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm md:text-base font-semibold">Purchase Orders terbaru</h3>
@@ -100,6 +117,7 @@ export default function ProcurementHome() {
             ))}
           </div>
         </div>
+        )}
       </div>
     </div>
   );

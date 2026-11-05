@@ -292,6 +292,16 @@ bukan buku terpisah. Analisis lengkap: `docs/audit/OUTLET_SCOPE_ANALYSIS_2026-10
 - **Label:** "Toko" (bukan "Outlet (dim)"/"Consolidated"/"Konsolidasi (semua)"); opsi semua = "Semua toko ‹brand›";
   transaksi tanpa toko = "Pusat".
 
+- **Menu & tautan mengikuti izin route (5 Nov 2026).** Item sidebar, hasil pencarian ⌘K, kartu, dan tombol menuju
+  halaman lain hanya tampil bila guard route tujuannya meloloskan user. Tidak boleh ada menu yang berujung ke
+  `/no-access`.
+  - Sumber izin = guard `g(need, …)` di shell portal. `scripts/gen_route_perms.py` menyalinnya ke
+    `lib/routePerms.generated.js`; `audit_ui_ia.py` gagal bila file itu basi.
+  - Di halaman: `canOpenPath(user, "/procurement/po")` (`lib/unifiedNav.js`).
+  - Widget yang memanggil API butuh izin harus dicek dulu, dan tidak dipanggil bila tidak diizinkan. Jangan
+    `Promise.all` campuran: satu 403 mengosongkan semua KPI.
+  - Dicek per peran oleh `scripts/ui_metrics/roles.js`.
+
 ### 10.8 Navigasi tab hub (riset 5 Nov 2026)
 Sumber:
 - [Carbon v10 Tabs](https://v10.carbondesignsystem.com/components/tabs/usage/): ≤ 6 tab; lebih dari itu, pertimbangkan side-nav.

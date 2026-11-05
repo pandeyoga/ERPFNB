@@ -327,7 +327,7 @@ async def _enrich(doc: dict) -> dict:
             doc["bank_account_name"] = f"{ba.get('bank', '')} {ba.get('account_number', '')} — {ba.get('name', '')}".strip(" —")
     if doc.get("created_by"):
         u = await db.users.find_one({"id": doc["created_by"]})
-        doc["created_by_name"] = (u or {}).get("full_name") or (u or {}).get("email") or doc["created_by"]
+        doc["created_by_name"] = (u or {}).get("full_name") or (u or {}).get("email") or "(user tidak ditemukan)"
     if doc.get("last_applied_by"):
         u = await db.users.find_one({"id": doc["last_applied_by"]})
         doc["last_applied_by_name"] = (u or {}).get("full_name") or (u or {}).get("email") or doc["last_applied_by"]

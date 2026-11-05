@@ -509,7 +509,7 @@ export default function DailySalesForm() {
                   data-testid="daily-sales-voucher-code-input"
                   disabled={voucherValidating}
                 />
-                <Button size="sm" onClick={validateVoucher} disabled={voucherValidating || !voucherInput.trim()}
+                <Button onClick={validateVoucher} disabled={voucherValidating || !voucherInput.trim()}
                   variant="outline" data-testid="daily-sales-validate-voucher-button">
                   {voucherValidating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                   Validasi

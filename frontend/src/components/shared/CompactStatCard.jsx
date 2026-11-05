@@ -71,7 +71,8 @@ export default function CompactStatCard({
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground truncate" data-testid="kpi-card-label">
+        <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground truncate" data-testid="kpi-card-label"
+          title={typeof label === "string" ? label : undefined}>
           {label}
         </div>
         {loading ? (

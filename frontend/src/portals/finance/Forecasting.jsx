@@ -155,9 +155,9 @@ export default function Forecasting({ embedded = false }) {
               icon={growth > 0 ? TrendingUp : TrendingDown}
               color={growth > 0 ? "aurora-4" : growth < 0 ? "aurora-6" : "aurora-1"}
               tone={growth > 0 ? "success" : growth < 0 ? "danger" : "default"}
-              label="Pertumbuhan vs histori"
+              label="Pertumbuhan"
               value={growth == null ? "—" : `${growth >= 0 ? "+" : ""}${growth}%`}
-              sub={`±${fmtRp(data.confidence_band)} (CI 95%)`}
+              sub={`vs histori · ±${fmtRp(data.confidence_band)} (CI 95%)`}
               testId="forecast-growth-kpi"
             />
             <CompactStatCard

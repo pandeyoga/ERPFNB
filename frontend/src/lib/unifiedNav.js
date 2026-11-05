@@ -11,6 +11,7 @@
 import { Home, Inbox, Settings } from "lucide-react";
 import { PORTALS, visiblePortalsFor } from "@/lib/portals";
 import { getPortalSections } from "@/lib/navigationSchema";
+import { ROUTE_PERMS } from "@/lib/routePerms.generated";
 
 /** Zona sidebar — urutan tetap. */
 export const NAV_ZONES = [
@@ -53,6 +54,31 @@ export function defaultHomePath(user) {
 
 export const lastPortalKey = (user) => `aurora_last_portal_${user?.email || "anon"}`;
 
+/** Izin guard route untuk sebuah path menu (lib/routePerms.generated.js; "/x/*" = prefix). null = tanpa guard. */
+export function routeNeed(path) {
+  const clean = String(path || "").split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  if (ROUTE_PERMS[clean]) return ROUTE_PERMS[clean];
+  let best = null;
+  Object.keys(ROUTE_PERMS).forEach((k) => {
+    if (!k.endsWith("/*")) return;
+    const base = k.slice(0, -2);
+    if ((clean === base || clean.startsWith(base + "/")) && (!best || k.length > best.length)) best = k;
+  });
+  return best ? ROUTE_PERMS[best] : null;
+}
+
+/** True bila guard route `path` meloloskan user — untuk tautan/kartu di halaman (sama dengan aturan menu). */
+export function canOpenPath(user, path) {
+  const need = routeNeed(path);
+  return !need || need.some((n) => hasPerm((user && user.permissions) || [], n));
+}
+
+/** Item menu hanya tampil bila guard route-nya akan meloloskan user (tidak ada menu yang berujung /no-access). */
+export function itemVisible(perms, item) {
+  const need = routeNeed(item.path);
+  return !need || need.some((n) => hasPerm(perms, n));
+}
+
 /**
  * Bangun pohon navigasi terpadu.
  * Output: array entri bertipe `zone` | `link` | `group`.
@@ -70,25 +96,29 @@ export function buildUnifiedNav(user) {
   out.push({ type: "link", id: "approval-inbox", name: "Pusat Persetujuan", icon: Inbox, path: "/my-approvals" });
 
   // ── Zona: Modul ──────────────────────────────────────────────────────────
-  const modulePortals = portals.filter((p) => !TOOL_PORTALS.has(p.id));
-  if (modulePortals.length) {
+  const moduleGroups = portals.filter((p) => !TOOL_PORTALS.has(p.id)).map((p) => portalGroup(p, perms)).filter(Boolean);
+  if (moduleGroups.length) {
     out.push({ type: "zone", id: "zone-modul", label: "Modul" });
-    modulePortals.forEach((p) => out.push(portalGroup(p, perms)));
+    out.push(...moduleGroups);
   }
 
   // ── Zona: Alat ───────────────────────────────────────────────────────────
-  const toolPortals = portals.filter((p) => TOOL_PORTALS.has(p.id));
-  if (toolPortals.length) {
+  const toolGroups = portals.filter((p) => TOOL_PORTALS.has(p.id)).map((p) => portalGroup(p, perms, { icon: Settings })).filter(Boolean);
+  if (toolGroups.length) {
     out.push({ type: "zone", id: "zone-alat", label: "Alat" });
-    toolPortals.forEach((p) => out.push(portalGroup(p, perms, { icon: Settings })));
+    out.push(...toolGroups);
   }
 
   return out;
 }
 
 function portalGroup(portal, perms, overrides = {}) {
-  const sections = getPortalSections(portal.id).filter((s) => hasPerm(perms, s.reqPerm));
+  const sections = getPortalSections(portal.id)
+    .filter((s) => hasPerm(perms, s.reqPerm))
+    .map((s) => ({ ...s, items: s.items.filter((i) => itemVisible(perms, i)) }))
+    .filter((s) => s.items.length > 0);
   const items = sections.flatMap((s) => s.items);
+  if (!items.length) return null;
   // Modul dengan satu halaman (mis. Report Center) → link langsung, bukan grup yang
   // berisi satu item bernama sama.
   if (items.length === 1) {

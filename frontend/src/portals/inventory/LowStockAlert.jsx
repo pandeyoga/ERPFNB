@@ -166,8 +166,8 @@ export default function LowStockAlert() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <CompactStatCard size="sm" label="Total di bawah par" value={counts.total} tone="danger" icon={TrendingDown} color="aurora-6" loading={loading} testId="low-tile-total" />
-        <CompactStatCard size="sm" label="Critical (qty 0 / negatif)" value={counts.critical} tone="danger" icon={XOctagon} color="aurora-6" loading={loading} testId="low-tile-critical" />
-        <CompactStatCard size="sm" label="Low (di bawah par)" value={counts.low} tone="warning" icon={AlertTriangle} color="aurora-5" loading={loading} testId="low-tile-low" />
+        <CompactStatCard size="sm" label="Critical" sub="Qty 0 / negatif" value={counts.critical} tone="danger" icon={XOctagon} color="aurora-6" loading={loading} testId="low-tile-critical" />
+        <CompactStatCard size="sm" label="Low" sub="Di bawah par" value={counts.low} tone="warning" icon={AlertTriangle} color="aurora-5" loading={loading} testId="low-tile-low" />
         <CompactStatCard size="sm" label="Item dipilih" value={selected.size} icon={ListChecks} color="aurora-1" testId="low-tile-selected" />
       </div>
 

@@ -26,7 +26,7 @@ function LinkTile({ to, icon: Icon, iconClass, title, badge, desc, testId }) {
             <span className="text-sm font-semibold truncate">{title}</span>
             {badge}
           </div>
-          <div className="text-xs text-muted-foreground truncate">{desc}</div>
+          <div className="text-xs text-muted-foreground line-clamp-2">{desc}</div>
         </div>
       </div>
       <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
@@ -39,14 +39,15 @@ export default function AdminHome() {
 
   const perms = user?.permissions || [];
   const isFullAdmin = perms.includes("*");
-  const canViewUsers = isFullAdmin || perms.some(p =>
-    p.startsWith("admin.user.") || p.startsWith("admin.audit_log") || p.startsWith("admin.role.")
-  );
+  // Tiap KPI sesuai izin API-nya sendiri (users: admin.user.read, roles: admin.role.manage, audit: admin.audit_log.read)
+  // — dulu satu flag gabungan membuat pemegang audit log memanggil /admin/users & /admin/roles (403).
+  const has = (p) => isFullAdmin || perms.includes(p);
+  const access = { users: has("admin.user.read"), roles: has("admin.role.manage"), audit: has("admin.audit_log.read") };
   const canBulkImport = isFullAdmin || perms.includes("admin.master_data.write");
   const canSeeOps = isFullAdmin || perms.includes("system.metrics.read");
   const canSeeIntegrations = isFullAdmin || perms.includes("system.settings.read");
 
-  const { data: stats = {}, isLoading: loading } = useAdminHome(canViewUsers);
+  const { data: stats = {}, isLoading: loading } = useAdminHome(access);
   const firstName = user?.full_name?.split(" ")[0];
 
   return (
@@ -70,15 +71,15 @@ export default function AdminHome() {
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="admin-kpi-strip">
-        {canViewUsers && (
+        {access.users && (
           <CompactStatCard label="Users" value={fmtNumber(stats.users || 0)} loading={loading}
             sub="User aktif" icon={UsersIcon} color="aurora-1" testId="kpi-users" />
         )}
-        {canViewUsers && (
+        {access.roles && (
           <CompactStatCard label="Roles" value={fmtNumber(stats.roles || 0)} loading={loading}
             sub="System & custom" icon={Shield} color="aurora-2" testId="kpi-roles" />
         )}
-        {canViewUsers && (
+        {access.audit && (
           <CompactStatCard label="Audit Log" value={fmtNumber(stats.audit || 0)} loading={loading}
             sub="Event tercatat" icon={ScrollText} color="aurora-3" testId="kpi-audit-log" />
         )}

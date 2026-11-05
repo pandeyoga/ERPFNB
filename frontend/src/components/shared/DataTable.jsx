@@ -240,7 +240,7 @@ export default function DataTable({
                     className={cn(
                       "px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground border-b border-border/60 bg-card/80",
                       stickyHeader && "sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-card/70",
-                      alignClass(c), c.headerClassName,
+                      alignClass(c), nowrapClass(c), c.headerClassName,
                     )}
                   >
                     {c.sortable ? (

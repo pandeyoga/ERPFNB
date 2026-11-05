@@ -10,11 +10,14 @@ import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import OutletScopePicker from "@/components/shared/OutletScopePicker";
 import useOutletScope from "@/hooks/useOutletScope";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import { fmtRp, fmtNumber, fmtRelative } from "@/lib/format";
 
 export default function InventoryHome() {
   const { outletId, setOutletId, scopedOutlets, isFullAccess } = useOutletScope();
-  const { data, isLoading: loading } = useInventoryHome(outletId);
+  const { user } = useAuth();
+  const { data, isLoading: loading } = useInventoryHome(outletId, { canMarketList: permitted(user, "inventory.view") });
 
   const val = data?.valuation || null;
   const recent = data?.recent || [];

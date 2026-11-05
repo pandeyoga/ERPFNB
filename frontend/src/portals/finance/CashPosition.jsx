@@ -239,7 +239,7 @@ export default function CashPosition({ embedded = false }) {
                       className="flex items-center justify-between gap-2 text-sm py-1.5 px-2 rounded hover:bg-muted/50"
                       data-testid={`cash-account-${a.code}`}>
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium truncate">{a.name}</span>
+                      <span className="font-medium line-clamp-2 break-words" title={a.name}>{a.name}</span>
                       <span className="text-xs text-muted-foreground truncate">
                         {a.outlet_name || a.brand_name || `Pusat${a.bank_name ? ` · ${a.bank_name}` : ""}`}
                       </span>
