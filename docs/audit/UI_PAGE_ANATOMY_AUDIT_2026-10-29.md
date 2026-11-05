@@ -303,13 +303,14 @@ sebanding dengan crawl awal.
 | Temuan | Cakupan penuh, sebelum | Sesudah | Perbaikan nyata | Heuristik diperbaiki |
 |---|---|---|---|---|
 | Tinggi kontrol berbeda sebaris | 35 | 0 | "Status lain" & tombol Validasi voucher 36px | ikon bantuan 24px & grup toggle tidak dihitung |
-| Teks terpotong | 131 | 31 | nama akun kas & legenda brand dilipat; label KPI dipendekkan (sub-teks); `title` di KPI, deskripsi Cashflow, chip izin, vendor AP | teks dengan tooltip `title` tidak dihitung |
-| Kolom sempit | 39 | 34 | header tanggal/uang tidak dilipat | yang dihitung hanya node teks yang benar-benar pecah baris (dulu sel tanggal ikut tinggi baris) |
-| Tabel gulir horizontal | 12 | 5 | AR invoices & Users: aksi baris jadi 1 ikon + "⋯" (`RowActions`); email di bawah nama | — |
-| Kartu kosong | 13 | 14 | Executive Monitoring, CRM Reservasi, PR Consolidation tidak diregang (`items-start`) | — |
+| Teks terpotong | 131 | 0 | nama akun kas & legenda brand dilipat; label KPI dipendekkan (sub-teks); `title` di KPI, deskripsi Cashflow, chip izin, vendor AP | teks dengan tooltip `title` tidak dihitung |
+| Kolom sempit | 39 | 26 | header tanggal/uang tidak dilipat | yang dihitung hanya node teks yang benar-benar pecah baris (dulu sel tanggal ikut tinggi baris) |
+| Tabel gulir horizontal | 12 | 2 halaman | AR invoices & Users: aksi baris jadi 1 ikon + "⋯" (`RowActions`); email di bawah nama; deskripsi Payments lebih sempit + tooltip | — |
+| Kartu kosong | 13 | 11 (3 halaman) | Executive Monitoring, CRM Reservasi, PR Consolidation tidak diregang (`items-start`) | — |
 | Istilah campur | 9 | 0 | KPI AR "Jatuh tempo" → "Overdue" | pasangan Overdue/Jatuh Tempo dihapus (dua konsep, §10.5) |
 | Kontrol ganda | 10 | 0 | Daily Close: satu "Muat ulang" untuk status + riwayat; deskripsi empty state Report schedules | CTA di EmptyState & aksi per kartu tidak dihitung |
-| Toolbar terlipat | 6 | 5 | filter PO tetap satu baris | deretan chip pilihan tidak dihitung |
+| Toolbar terlipat | 6 | 0 | filter PO tetap satu baris | deretan chip pilihan tidak dihitung |
+| Angka terpotong | 6 | 1 | label KPI Price Intelligence dipendekkan; deskripsi Cashflow bertooltip | sisa 1 = alasan teks di Outlet Budget, bukan angka |
 | ≥ 3 tombol utama | 1 | 0 | Smart SEO: Optimasi Semua & Buat → `outline` | — |
 | Pengantar bertumpuk | 4 | 0 | Delegasi: satu kalimat (subtitle), empty state tanpa deskripsi ganda | — |
 | Grid yatim | 2 | 0 | Anomaly feed: Tipe & Severity ke `MoreFilters`, kolom berbagi lebar | kolom dihitung dari track grid (item `items-end` dulu salah hitung) |
@@ -322,11 +323,12 @@ Perbaikan lain yang tidak tampil sebagai angka:
   "(vendor tidak ditemukan)" / "(rekening tidak ditemukan)" / "(user tidak ditemukan)".
 - CRM: ikon panah tanpa label di samping tab → tautan "Lihat semua →" seperti kartu lain.
 
+Angka "Sesudah" = crawl final 5 Nov 2026 (508 state, 0 error) setelah semua perbaikan di atas.
+
 Sisa yang dibiarkan (dicek visual):
 - kolom sempit = nama 2 kata di kolom teks (nama toko, kategori, akun BS), wajar dilipat;
-- kartu kosong = kartu sejajar setinggi baris (Kas & Bank: Bank vs Petty Cash), sengaja sama tinggi;
-- tabel gulir = matriks budget bulanan (8 kolom) & Vendor scorecard, wajar digulir;
-- teks terpotong yang tersisa sudah punya tooltip atau berupa data uji.
+- kartu kosong = Kas & Bank (kartu Bank sejajar dengan Petty Cash, sengaja sama tinggi) & AI insights;
+- tabel gulir = matriks budget bulanan (8 kolom) & Vendor scorecard, wajar digulir.
 
 #### Cek per peran (ditunda sampai logika final — dikerjakan 5 Nov 2026)
 
@@ -390,6 +392,13 @@ pemiliknya, dan peran lain dipastikan ditolak (tanpa 5xx):
   Outlet Manager seharusnya membuat transfer, tambahkan izin itu ke role.
 - Executive tidak lagi melihat Price Intelligence & CRM, karena API-nya memang menolak Executive. Bila Executive
   perlu melihatnya, izin API-nya yang perlu dibuka.
+
+**Verifikasi akhir (5 Nov 2026):**
+- `ux_audit.py --strict` 0 ERROR;
+- `audit_tours.py` 0 missing;
+- `audit_ui_ia.py` OK (termasuk peta izin route);
+- backend 396 lulus / 13 dilewati / 12 gagal. Ke-12 kegagalan = daftar baseline yang sudah diketahui
+  (cookie FE06, dropdown CTL15, ekspor market list, field sensitif karyawan, upload ×2), bukan dari perubahan ini.
 
 ---
 

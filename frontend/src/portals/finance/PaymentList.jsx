@@ -110,7 +110,7 @@ export default function PaymentList({ embedded = false }) {
                 </div>
               ) },
             { key: "description", label: "Deskripsi",
-              render: (p) => <span className="max-w-[280px] truncate block">{p.description}</span> },
+              render: (p) => <span className="max-w-[220px] truncate block" title={p.description}>{p.description}</span> },
             { key: "amount", label: "Nominal", numeric: true, sortable: true,
               render: (p) => <span data-testid={`pay-amount-${p.doc_no}`}>{fmtRp(p.amount)}</span> },
             { key: "status", label: "Status", render: (p) => <StatusPill status={p.status} /> },
