@@ -43,6 +43,19 @@ ONLY='^/finance/payments-hub$' node ../layout.js layout_0.json shots   # ulang s
 Temuan bersifat heuristik: konfirmasi lewat screenshot sebelum memperbaiki. Hasil terakhir:
 `docs/audit/UI_LAYOUT_AUDIT_2026-10-29.md`.
 
+## Cek per peran (roles.js)
+
+Login sebagai tiap peran demo, buka **semua menu sidebar yang terlihat** (+ tab tingkat pertama), catat API
+403/404/5xx, error JS, redirect `/no-access` / `/login`, dan halaman kosong. Target: 0 untuk semua peran — menu yang
+tampil untuk sebuah peran harus bisa dipakai peran itu.
+
+```bash
+node roles.js out/roles.json                      # semua peran (±12 menit)
+node roles.js out/roles.json cfs_manager,owner    # sebagian
+```
+
+Setelah mengubah guard `g(...)` di shell portal: `python3 scripts/gen_route_perms.py` (izin menu = guard route).
+
 ## Audit anatomi halaman (anatomy.js)
 
 Membaca **kerangka** tiap halaman/tab:

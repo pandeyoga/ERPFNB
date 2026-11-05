@@ -328,7 +328,68 @@ Sisa yang dibiarkan (dicek visual):
 - tabel gulir = matriks budget bulanan (8 kolom) & Vendor scorecard, wajar digulir;
 - teks terpotong yang tersisa sudah punya tooltip atau berupa data uji.
 
-ROLE_RESULTS
+#### Cek per peran (ditunda sampai logika final — dikerjakan 5 Nov 2026)
+
+**Browser, 11 peran demo** (`scripts/ui_metrics/roles.js`). Crawler login sebagai tiap peran, membuka semua menu
+sidebar yang terlihat dan tab tingkat pertamanya, lalu mencatat:
+- API 403/404/5xx;
+- error JS/console;
+- redirect ke `/no-access` atau `/login`;
+- halaman tanpa `<h1>` atau kosong.
+
+| Peran | Menu awal | Bermasalah awal | Menu akhir | Bermasalah akhir |
+|---|---|---|---|---|
+| Super Admin | 74 | 0 | 74 | 0 |
+| Executive | 61 | 23 | 43 | 0 |
+| Owner | 41 | 18 | 28 | 0 |
+| Finance Manager | 17 | 3 | 16 | 0 |
+| Procurement Manager | 13 | 1 | 13 | 0 |
+| HR Manager / HR Officer | 7 / 7 | 1 / 1 | 7 / 7 | 0 / 0 |
+| Area Manager CFS | 31 | 8 | 25 | 0 |
+| Outlet Manager (CFS, RST, BKY) | 31 | 8 | 25 | 0 |
+
+Penyebab & perbaikan:
+- **Menu jebakan (menu terlihat → `/no-access`)**. Sidebar hanya menyaring per portal/seksi, padahal tiap route
+  punya guard sendiri. Sekarang izin item menu = guard route:
+  - `scripts/gen_route_perms.py` membuat `lib/routePerms.generated.js` (90 route);
+  - sidebar & ⌘K memakai `itemVisible`, tautan di halaman memakai `canOpenPath`;
+  - `audit_ui_ia.py` gagal bila peta basi (DESIGN_SYSTEM §10.7).
+- **Widget memanggil API tanpa izin**:
+  - Procurement Overview: `Promise.all` dengan PO/GR → satu 403 mengosongkan **semua** KPI, termasuk PR yang boleh
+    dilihat Outlet Manager;
+  - badge Forecast Guard di Pusat Persetujuan;
+  - KPI Users/Roles di Admin Overview;
+  - widget Market List di Inventory;
+  - tab Metrics/Scheduler/Archival/Data management di Admin Monitoring (kini tab = izin API-nya);
+  - daftar user di Budget Increase (nama pengaju kini ikut di respons API).
+- **Guard route lebih longgar dari API**: CRM hub (tanpa guard), Price Intelligence (API butuh `inventory.view`),
+  Outlet Budgets & Budget Monitor (API butuh `outlet_budget.read` / `.monitor`). Guard kini = izin API.
+- **Bug backend**: daftar & detail PO mensyaratkan `procurement.po.create`, sehingga approver PO (Owner) tidak bisa
+  membuka PO yang harus ia setujui — padahal handler-nya sudah punya cabang untuk `procurement.po.approve`. Kini
+  create **atau** approve.
+
+**Alur bisnis per peran** (`backend/tests/test_role_flows.py`, 4 tes, lulus). Tiap langkah dijalankan peran
+pemiliknya, dan peran lain dipastikan ditolak (tanpa 5xx):
+- P2P:
+  - Outlet Manager membuat & mengajukan PR;
+  - PR tidak terbaca manager toko lain;
+  - Procurement approve;
+  - Procurement membuat PO dari PR (Outlet Manager ditolak);
+  - pembuat PO tidak boleh approve (SoD) → approver lain;
+  - GR oleh Procurement (JE seimbang);
+  - Payment oleh Finance (debit Hutang Usaha; Outlet Manager & Procurement ditolak);
+  - Finance tidak boleh approve Payment-nya sendiri → approver lain;
+  - mark paid → JE seimbang, GR lunas.
+- Daily Sales: Outlet Manager input & ajukan; Outlet Manager & Procurement tidak bisa validasi; Finance validasi →
+  JE = grand total.
+- Penutupan periode: cek closing / close / lock hanya Finance.
+- Owner (approver PO) bisa membaca daftar & detail PO; Outlet Manager tidak.
+
+**Keputusan RBAC untuk pemilik produk** (tidak diubah sepihak):
+- Outlet Manager tidak punya izin `inventory.transfer`, sehingga menu Stock Transfers kini tersembunyi. Bila
+  Outlet Manager seharusnya membuat transfer, tambahkan izin itu ke role.
+- Executive tidak lagi melihat Price Intelligence & CRM, karena API-nya memang menolak Executive. Bila Executive
+  perlu melihatnya, izin API-nya yang perlu dibuka.
 
 ---
 
