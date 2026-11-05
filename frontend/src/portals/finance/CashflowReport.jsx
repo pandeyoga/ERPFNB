@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
 import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 import { cn } from "@/lib/utils";
+import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
 
 export default function CashflowReport() {
   const now = new Date();
@@ -23,6 +24,7 @@ export default function CashflowReport() {
   const [loading, setLoading] = useState(true);
   const [expandedCat, setExpandedCat] = useState(null);
   const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
+  const fileTag = useScopeTag(outletId); // nama file ekspor membawa konteks
 
   async function load() {
     setLoading(true);
@@ -44,7 +46,7 @@ export default function CashflowReport() {
     const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `Cashflow-${period}.csv`;
+    a.href = url; a.download = withScopeTag(`Cashflow-${period}.csv`, fileTag);
     a.click(); URL.revokeObjectURL(url);
   }
 

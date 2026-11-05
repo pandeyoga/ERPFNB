@@ -25,6 +25,7 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { formatDateID } from "@/lib/format";
 import { confirmDialog } from "@/components/shared/confirmDialog";
+import RowActions from "@/components/shared/RowActions";
 
 const LEAVE_STATUS_MAP = {
   draft:             { label: "Draft",          color: "secondary" },
@@ -273,18 +274,12 @@ export default function LeaveRequests() {
                 { key: "status", label: "Status", render: (lr) => <LeaveStatusBadge status={lr.status} /> },
               ]}
               rowAction={(lr) => (
-                <div className="flex gap-1 justify-end">
-                  <Button size="sm" variant="default"
-                    onClick={() => setApproveDialog({ id: lr.id, employee_name: lr.employee_name })}
-                    data-testid={`approve-leave-${lr.id}`}>
-                    <CheckCircle /> Setujui
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-destructive hover:text-destructive"
-                    onClick={() => { setRejectReason(""); setRejectDialog({ id: lr.id, employee_name: lr.employee_name }); }}
-                    data-testid={`reject-leave-${lr.id}`}>
-                    <XCircle /> Tolak
-                  </Button>
-                </div>
+                <RowActions
+                  testId={`leave-actions-${lr.id}`}
+                  primary={{ label: "Setujui", icon: CheckCircle, onClick: () => setApproveDialog({ id: lr.id, employee_name: lr.employee_name }), testId: `approve-leave-${lr.id}` }}
+                  items={[{ label: "Tolak", icon: XCircle, destructive: true, testId: `reject-leave-${lr.id}`,
+                    onSelect: () => { setRejectReason(""); setRejectDialog({ id: lr.id, employee_name: lr.employee_name }); } }]}
+                />
               )}
             />
             </div>

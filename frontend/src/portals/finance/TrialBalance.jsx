@@ -13,12 +13,14 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
+import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
 export default function TrialBalance() {
   const [period, setPeriod] = useState(() => todayJakartaISO().slice(0, 7));
   const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
+  const fileTag = useScopeTag(outletId); // nama file ekspor membawa konteks
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -55,7 +57,7 @@ export default function TrialBalance() {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `TB-${period}${outletId ? `-${outletId.slice(0, 6)}` : ""}.csv`;
+    a.href = url; a.download = withScopeTag(`TB-${period}.csv`, fileTag);
     a.click();
     URL.revokeObjectURL(url);
   }

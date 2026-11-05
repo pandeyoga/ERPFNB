@@ -27,6 +27,7 @@ import ImageUpload from "@/components/shared/ImageUpload";
 import CMSScheduleFields from "@/components/shared/CMSScheduleFields";
 import EmptyState from "@/components/shared/EmptyState";
 import SegmentedFilter from "@/components/shared/SegmentedFilter";
+import RowActions from "@/components/shared/RowActions";
 
 const ALL_FEATURES = [
   "Dine In", "Takeaway", "Delivery", "Bar", "Coworking",
@@ -234,25 +235,17 @@ export default function CMSOutlets() {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button
-                  size="icon" variant="ghost"
-                  title="Clone sebagai Draft"
-                  aria-label="Clone outlet sebagai draft"
-                  onClick={() => handleClone(item)}
-                  disabled={cloningId === item.id}
-                  data-testid={`clone-outlet-${item.id}`}
-                >
-                  {cloningId === item.id
-                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <Copy className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Edit outlet" onClick={() => openEdit(item)}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Hapus outlet" className="text-destructive" onClick={() => setDeleteId(item.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              {/* Aksi baris: Edit + "⋯" (DESIGN_SYSTEM §10.1) */}
+              <div className="flex-shrink-0">
+                <RowActions
+                  testId={`outlet-actions-${item.id}`}
+                  primary={{ label: "Edit", icon: Edit2, onClick: () => openEdit(item) }}
+                  items={[
+                    { label: cloningId === item.id ? "Meng-clone…" : "Clone sebagai draft", icon: Copy, disabled: cloningId === item.id,
+                      onSelect: () => handleClone(item), testId: `clone-outlet-${item.id}` },
+                    { label: "Hapus", icon: Trash2, destructive: true, onSelect: () => setDeleteId(item.id) },
+                  ]}
+                />
               </div>
             </div>
           ))}

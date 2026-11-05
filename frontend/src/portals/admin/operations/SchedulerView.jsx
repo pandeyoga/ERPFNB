@@ -97,7 +97,7 @@ export default function SchedulerView() {
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1">{j.description}</p>
                 </div>
-                <Button size="sm" disabled={running === j.id} onClick={() => trigger(j)}
+                <Button size="sm" variant="outline" disabled={running === j.id} onClick={() => trigger(j)}
                         data-testid={`job-run-${j.id}`}>
                   <Play className="h-3.5 w-3.5" /> {running === j.id ? "Menjalankan…" : "Jalankan"}
                 </Button>

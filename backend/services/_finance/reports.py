@@ -7,6 +7,25 @@ from core.db import get_db
 from services._finance.balances import _aggregate_balance, _prev_period, is_debit_normal
 
 
+_PL_CATEGORIES = {
+    "revenue": ["pendapatan", "revenue", "income", "sales"],
+    "cogs": ["hpp", "cogs", "harga pokok", "cost of goods"],
+    "expense": ["beban", "expense", "biaya", "operating"],
+}
+
+
+def pl_section(coa: dict) -> Optional[str]:
+    """Bagian P&L sebuah akun: revenue | cogs | expense | None (bukan akun laba rugi)."""
+    cat = (coa.get("category") or coa.get("type") or "").lower()
+    if any(k in cat for k in _PL_CATEGORIES["revenue"]):
+        return "revenue"
+    if any(k in cat for k in _PL_CATEGORIES["cogs"]):
+        return "cogs"
+    if any(k in cat for k in _PL_CATEGORIES["expense"]):
+        return "expense"
+    return None
+
+
 async def trial_balance(
     *,
     period: str,
@@ -88,11 +107,6 @@ async def profit_loss(
     if dim_outlet and not outlet_id:
         outlet_id = dim_outlet
     db = get_db()
-    categories = {
-        "revenue": ["pendapatan", "revenue", "income", "sales"],
-        "cogs": ["hpp", "cogs", "harga pokok", "cost of goods"],
-        "expense": ["beban", "expense", "biaya", "operating"],
-    }
     all_coa = await db.chart_of_accounts.find({"deleted_at": None}).to_list(None)
     coa_ids = [c["id"] for c in all_coa]
 
@@ -113,12 +127,10 @@ async def profit_loss(
     total_expense = total_expense_prev = 0.0
 
     for coa in sorted(all_coa, key=lambda x: x.get("code", "")):
-        cat = (coa.get("category") or coa.get("type") or "").lower()
-        is_revenue = any(k in cat for k in categories["revenue"])
-        is_cogs = any(k in cat for k in categories["cogs"])
-        is_expense = (not is_cogs) and any(k in cat for k in categories["expense"])
-        if not (is_revenue or is_cogs or is_expense):
+        section = pl_section(coa)
+        if section is None:
             continue
+        is_revenue, is_cogs = section == "revenue", section == "cogs"
         b = current_balances.get(coa["id"], {})
         bp = prev_balances.get(coa["id"], {}) if compare_prev else {}
         # FIN-06: sign follows the P&L SECTION, not the account's normal balance — a contra-revenue
@@ -164,3 +176,89 @@ async def profit_loss(
         "net_income": net_income,
         "net_income_prev": net_prev,
     }
+
+
+PUSAT = "__pusat__"
+_SECTION_LABELS = {"revenue": "Pendapatan", "cogs": "HPP", "expense": "Beban"}
+
+
+async def profit_loss_breakdown(*, period: str, by: str = "brand", scope=None) -> dict:
+    """P&L satu periode dengan kolom per brand atau per toko, dalam cakupan `scope` (DESIGN_SYSTEM §10.7).
+
+    Kolom "Pusat" memuat baris tanpa toko (dan, untuk `by=outlet`, baris tingkat brand) bila cakupan memuatnya.
+    Jumlah semua kolom = P&L cakupan itu.
+    """
+    from services._finance.scope import coerce_scope
+
+    scope = coerce_scope(scope)
+    db = get_db()
+    outlets = await db.outlets.find({"deleted_at": None}, {"_id": 0, "id": 1, "name": 1, "brand_id": 1}).to_list(None)
+    brands = await db.brands.find({"deleted_at": None}, {"_id": 0, "id": 1, "name": 1}).to_list(None)
+    outlet_brand = {o["id"]: o.get("brand_id") for o in outlets}
+    coas = {c["id"]: c for c in await db.chart_of_accounts.find({"deleted_at": None}).to_list(None)}
+
+    pipeline: list[dict] = [
+        {"$match": {"deleted_at": None, "status": "posted", "period": period}},
+        {"$unwind": "$lines"},
+    ]
+    if scope.line_match():
+        pipeline.append({"$match": scope.line_match()})
+    pipeline.append({"$group": {
+        "_id": {"coa": "$lines.coa_id", "o": "$lines.dim_outlet", "ho": "$outlet_id", "b": "$lines.dim_brand"},
+        "dr": {"$sum": "$lines.dr"}, "cr": {"$sum": "$lines.cr"},
+    }})
+
+    cells: dict[tuple[str, str], float] = {}
+    for g in await db.journal_entries.aggregate(pipeline).to_list(None):
+        coa = coas.get(g["_id"].get("coa"))
+        section = pl_section(coa) if coa else None
+        if section is None:
+            continue
+        outlet = g["_id"].get("o") or g["_id"].get("ho") or None
+        if by == "outlet":
+            key = outlet or PUSAT
+        else:
+            key = (outlet_brand.get(outlet) if outlet else g["_id"].get("b")) or PUSAT
+        net = float(g["cr"]) - float(g["dr"]) if section == "revenue" else float(g["dr"]) - float(g["cr"])
+        cells[(coa["id"], key)] = cells.get((coa["id"], key), 0.0) + net
+
+    # Kolom: semua brand/toko dalam cakupan (juga yang nol), lalu Pusat bila ada isinya.
+    in_scope = [o for o in outlets if scope.outlet_ids is None or o["id"] in scope.outlet_ids]
+    brand_name = {b["id"]: b["name"] for b in brands}
+    if by == "outlet":
+        columns = [{"key": o["id"], "label": o["name"], "brand": brand_name.get(o.get("brand_id"), "")}
+                   for o in sorted(in_scope, key=lambda o: (brand_name.get(o.get("brand_id"), ""), o["name"]))]
+    else:
+        ids = sorted({o.get("brand_id") for o in in_scope if o.get("brand_id")}, key=lambda b: brand_name.get(b, ""))
+        columns = [{"key": b, "label": brand_name.get(b, b)} for b in ids]
+    keys = [c["key"] for c in columns]
+    if any(k == PUSAT for _, k in cells):
+        columns.append({"key": PUSAT, "label": "Pusat"})
+        keys.append(PUSAT)
+
+    sections = []
+    totals = {k: {"revenue": 0.0, "cogs": 0.0, "expense": 0.0} for k in keys + ["total"]}
+    for sec in ("revenue", "cogs", "expense"):
+        rows = []
+        for coa in sorted((c for c in coas.values() if pl_section(c) == sec), key=lambda c: c.get("code", "")):
+            values = {k: round(cells.get((coa["id"], k), 0.0), 2) for k in keys}
+            total = round(sum(values.values()), 2)
+            if not any(values.values()):
+                continue
+            rows.append({"coa_id": coa["id"], "code": coa.get("code"), "name": coa.get("name"),
+                         "values": values, "total": total})
+            for k, v in values.items():
+                totals[k][sec] += v
+            totals["total"][sec] += total
+        sections.append({"key": sec, "label": _SECTION_LABELS[sec], "rows": rows,
+                         "totals": {k: round(totals[k][sec], 2) for k in keys + ["total"]}})
+
+    def _summary(field):
+        out = {}
+        for k in keys + ["total"]:
+            t = totals[k]
+            out[k] = round(t["revenue"] - t["cogs"] - (t["expense"] if field == "net_income" else 0), 2)
+        return out
+
+    return {"period": period, "by": by, "columns": columns, "sections": sections,
+            "gross_profit": _summary("gross_profit"), "net_income": _summary("net_income")}

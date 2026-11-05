@@ -27,6 +27,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import RowActions from "@/components/shared/RowActions";
 /** @param {{ embedded?: boolean }} props — embedded=true saat dirender sebagai tab di CompensationHub (tanpa PageHeader). */
 export default function AdvancesList({ embedded = false }) {
   const { user } = useAuth();
@@ -121,31 +122,23 @@ export default function AdvancesList({ embedded = false }) {
 
   // Backend hanya menerima approve dari status submitted/awaiting_approval
   // (draft wajib diajukan dulu), jadi tombol Setujui tidak ditampilkan untuk draft.
-  const rowActions = (it) => (
-    <div className="inline-flex items-center gap-1.5">
-      {it.status === "draft" && canCreate && (
-        <Button size="sm" variant="outline"
-                onClick={() => handleSubmitForApproval(it.id)}
-                data-testid={`hr-adv-submit-${it.id}`}>
-          <Send /> Ajukan
-        </Button>
-      )}
-      {["submitted", "awaiting_approval"].includes(it.status) && canApprove && (
-        <Button size="sm" variant="default"
-                onClick={() => handleApprove(it.id)}
-                data-testid={`hr-adv-approve-${it.id}`}>
-          <CheckCircle2 /> Setujui
-        </Button>
-      )}
-      {["submitted", "awaiting_approval"].includes(it.status) && canApprove && (
-        <Button size="sm" variant="outline" className="text-destructive hover:text-destructive"
-                onClick={() => { setRejectReason(""); setRejectFor(it); }}
-                data-testid={`hr-adv-reject-${it.id}`}>
-          <XCircle /> Tolak
-        </Button>
-      )}
-    </div>
-  );
+  // Aksi baris: maks. 1 tombol + "⋯" (DESIGN_SYSTEM §10.1) — sebelumnya Setujui + Tolak terpotong di tepi tabel.
+  const rowActions = (it) => {
+    const pending = ["submitted", "awaiting_approval"].includes(it.status) && canApprove;
+    return (
+      <RowActions
+        testId={`hr-adv-actions-${it.id}`}
+        primary={it.status === "draft" && canCreate
+          ? { label: "Ajukan", icon: Send, onClick: () => handleSubmitForApproval(it.id), testId: `hr-adv-submit-${it.id}` }
+          : pending ? { label: "Setujui", icon: CheckCircle2, onClick: () => handleApprove(it.id), testId: `hr-adv-approve-${it.id}` }
+          : null}
+        items={[{
+          label: "Tolak", icon: XCircle, destructive: true, hidden: !pending,
+          onSelect: () => { setRejectReason(""); setRejectFor(it); }, testId: `hr-adv-reject-${it.id}`,
+        }]}
+      />
+    );
+  };
 
   const createBtn = canCreate ? (
     <Button onClick={() => setShowForm(true)} data-testid="hr-adv-create">

@@ -9,8 +9,10 @@
  *
  *  Column = {
  *    key, label, render?(row), numeric?, align?, sortable?, sortAccessor?(row),
- *    primary?(mobile title), hideOnMobile?, className?, headerClassName?
+ *    primary?(mobile title), hideOnMobile?, className?, headerClassName?, nowrap?
  *  }
+ *  Uang, tanggal, periode & nomor dokumen tidak pernah dilipat (`nowrap` otomatis dari `numeric`/nama key;
+ *  set `nowrap: false` untuk menonaktifkan).
  */
 import { memo, useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,6 +23,12 @@ function alignClass(c) {
   if (c.align === "right" || c.numeric) return "text-right";
   if (c.align === "center") return "text-center";
   return "text-left";
+}
+
+// Kolom yang isinya tidak boleh dilipat ("24 Okt / 2026", "PO-2611- / 0003", "Rp 1.250. / 000").
+const NOWRAP_KEY = /(date|tanggal|period|_at$|doc_no|_no$|number|^code$|^kode$)/i;
+function nowrapClass(c) {
+  return (c.nowrap ?? (c.numeric || NOWRAP_KEY.test(c.key || ""))) ? "whitespace-nowrap" : "";
 }
 
 function sortRows(rows, columns, sort) {
@@ -66,7 +74,7 @@ const Row = memo(function Row({
         data-testid={`${rowTestIdPrefix}-${id}`}
       >
         {columns.map((c, ci) => (
-          <td key={c.key} className={cn("px-3 py-2", alignClass(c), c.numeric && "tabular-nums font-medium", c.className)}>
+          <td key={c.key} className={cn("px-3 py-2", alignClass(c), c.numeric && "tabular-nums font-medium", nowrapClass(c), c.className)}>
             {ci === 0 && expandable ? (
               <span className="flex items-center gap-2">
                 <ChevronRight
@@ -81,7 +89,7 @@ const Row = memo(function Row({
           </td>
         ))}
         {rowAction && (
-          <td className="px-3 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
+          <td className="px-3 py-1.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
         )}
       </tr>
       {expandable && (

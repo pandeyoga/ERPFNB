@@ -8,9 +8,11 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { scopeTag, storeFromParams, useScope, withScopeTag } from "@/contexts/ScopeContext";
 
 export default function useExcelExport() {
   const [downloading, setDownloading] = useState(false);
+  const ctx = useScope(); // nama file membawa konteks (Group / brand / toko)
 
   async function exportXlsx(endpoint, filename, params = {}) {
     setDownloading(true);
@@ -29,7 +31,7 @@ export default function useExcelExport() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = withScopeTag(filename, scopeTag(ctx, storeFromParams(params)));
       document.body.appendChild(a);
       a.click();
       a.remove();

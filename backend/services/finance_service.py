@@ -13,6 +13,7 @@ from services._finance import (  # noqa: F401
     _prev_period,
     trial_balance,
     profit_loss,
+    profit_loss_breakdown,
     ap_aging,
     sales_validation_queue,
     finance_home,

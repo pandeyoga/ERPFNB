@@ -12,6 +12,7 @@ import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
 import { StoreFilter } from "@/components/shared/ScopeControls";
+import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
 
 export default function BalanceSheet() {
   const [asOf, setAsOf] = useState(todayJakartaISO());
@@ -19,6 +20,7 @@ export default function BalanceSheet() {
   const [loading, setLoading] = useState(true);
   // Neraca milik Group; di bawah Group hanya parsial (DESIGN_SYSTEM §10.7).
   const { outletId, params: scopeParams, storeFilter } = useOutletScope();
+  const fileTag = useScopeTag(outletId); // nama file ekspor membawa konteks
 
   async function load() {
     setLoading(true);
@@ -45,7 +47,7 @@ export default function BalanceSheet() {
     const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `Balance-Sheet-${data.as_of}.csv`;
+    a.href = url; a.download = withScopeTag(`Balance-Sheet-${data.as_of}.csv`, fileTag);
     a.click(); URL.revokeObjectURL(url);
   }
 

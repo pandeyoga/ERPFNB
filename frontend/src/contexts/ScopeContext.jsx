@@ -198,3 +198,33 @@ export function useStoreFilter() {
     allLabel: scope.level === "brand" && ctx.brand ? `Semua toko ${ctx.brand.name}` : `Semua toko (${contextOutlets.length})`,
   };
 }
+
+const slug = (s) => (s || "").normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
+
+/**
+ * Penanda konteks untuk nama file ekspor: "Group", "Toko-saya", nama brand, atau nama toko (bila satu toko dipilih
+ * di halaman). Pakai `withScopeTag(filename, tag)`.
+ */
+export function scopeTag(ctx, storeId = "") {
+  if (storeId) return slug(ctx.allOutlets.find((o) => o.id === storeId)?.name || "");
+  if (ctx.scope.level === "group") return ctx.isFullAccess ? "Group" : "Toko-saya";
+  return slug(ctx.label);
+}
+
+export function useScopeTag(storeId = "") {
+  return scopeTag(useScope(), storeId);
+}
+
+/** Toko tunggal yang dipilih lewat parameter request (outlet_id / dim_outlet / outlet_ids berisi satu id). */
+export function storeFromParams(params) {
+  const p = params instanceof URLSearchParams ? Object.fromEntries(params) : params || {};
+  const one = p.outlet_id || p.dim_outlet || (p.outlet_ids && !String(p.outlet_ids).includes(",") ? p.outlet_ids : "");
+  return one || "";
+}
+
+/** "PL-2026-11.csv" + "The-Coffeeshop" → "PL-2026-11_The-Coffeeshop.csv". */
+export function withScopeTag(filename, tag) {
+  if (!tag) return filename;
+  const i = filename.lastIndexOf(".");
+  return i > 0 ? `${filename.slice(0, i)}_${tag}${filename.slice(i)}` : `${filename}_${tag}`;
+}

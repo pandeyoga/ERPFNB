@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 import ListHeader from "./ListHeader";
+import RowActions from "@/components/shared/RowActions";
 
 const REASONS = [
   { v: "waste", l: "Waste / Buang" },
@@ -149,26 +150,25 @@ export default function AdjustmentList({ embedded = false }) {
           defaultSort={{ key: "adjustment_date", dir: "desc" }}
           renderExpanded={(a) => <AdjustmentLines a={a} />}
           empty={<EmptyState icon={Sliders} title="Belum ada adjustment" description="Buat adjustment untuk mencatat waste, barang rusak, atau koreksi stok." />}
-          rowAction={(a) => (
-            <div className="inline-flex items-center gap-1.5">
-              <Button variant="ghost" size="icon-sm" onClick={(e) => { e.stopPropagation(); openState(a); }}
-                title="Lihat status approval" aria-label={`Lihat status approval ${a.doc_no || ""}`.trim()}
-                data-testid={`adj-state-${a.id}`}>
-                <Eye />
-              </Button>
-              {(a.status === "submitted" || a.status === "awaiting_approval") && can("inventory.adjustment.approve") && (
-                <>
-                  <AsyncButton onClick={async (e) => { e.stopPropagation(); await approve(a); }} size="sm" busyText="Menyetujui…" data-testid={`adj-approve-${a.id}`}>
+          rowAction={(a) => {
+            const pending = (a.status === "submitted" || a.status === "awaiting_approval") && can("inventory.adjustment.approve");
+            // Aksi baris: maks. 1 tombol + "⋯" (DESIGN_SYSTEM §10.1)
+            return (
+              <RowActions
+                testId={`adj-actions-${a.id}`}
+                promote={false}
+                primary={pending ? (
+                  <AsyncButton onClick={async (e) => { e.stopPropagation(); await approve(a); }} size="sm" variant="outline" busyText="Menyetujui…" data-testid={`adj-approve-${a.id}`}>
                     <CheckCircle2 /> Setujui
                   </AsyncButton>
-                  <Button onClick={(e) => { e.stopPropagation(); reject(a); }} size="sm" variant="outline"
-                    className="text-destructive" data-testid={`adj-reject-${a.id}`}>
-                    <XCircle /> Tolak
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
+                ) : null}
+                items={[
+                  { label: "Lihat status approval", icon: Eye, onSelect: () => openState(a), testId: `adj-state-${a.id}` },
+                  { label: "Tolak", icon: XCircle, destructive: true, hidden: !pending, onSelect: () => reject(a), testId: `adj-reject-${a.id}` },
+                ]}
+              />
+            );
+          }}
         />
         {totalPages > 1 && (
           <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="adj-pagination">

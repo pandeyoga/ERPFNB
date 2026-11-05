@@ -35,6 +35,7 @@ import CMSWorkflow, { WorkflowBadge } from "./CMSWorkflow";
 import BrandInstagramPosts from "./BrandInstagramPosts";
 import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import EmptyState from "@/components/shared/EmptyState";
+import RowActions from "@/components/shared/RowActions";
 
 const EMPTY_FORM = {
   code: "", name: "", tagline: "", short_desc: "", story: "",
@@ -325,40 +326,21 @@ export default function CMSBrands() {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button size="icon" variant="ghost" title="Version History" aria-label="Lihat riwayat versi"
-                        onClick={() => { setVersionTarget(item); setVersionOpen(true); }}
-                        data-testid={`history-brand-${item.id}`}>
-                  <History className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button size="icon" variant="ghost" title="Clone" aria-label="Clone brand" onClick={() => handleClone(item)}
-                        disabled={cloningId === item.id} data-testid={`clone-brand-${item.id}`}>
-                  {cloningId === item.id
-                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <Copy className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => toggleStatus(item)}
-                        aria-label={item.status === "published" ? "Jadikan draft" : "Publish brand"}
-                        title={item.status === "published" ? "Jadikan Draft" : "Publish"}>
-                  {item.status === "published"
-                    ? <Eye className="h-4 w-4 text-green-700 dark:text-green-400" />
-                    : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Edit brand" onClick={() => openEdit(item)}
-                        data-testid={`edit-brand-${item.id}`}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" className="text-pink-700 dark:text-pink-400 hover:text-pink-700 hover:bg-pink-50 dark:hover:bg-pink-500/10"
-                        onClick={() => setIgBrand(item)}
-                        title="Kelola Instagram Posts"
-                        aria-label="Kelola Instagram Posts"
-                        data-testid={`ig-brand-${item.id}`}>
-                  <Instagram className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Hapus brand" className="text-destructive"
-                        onClick={() => setDeleteId(item.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              {/* Aksi baris: Edit + "⋯" (DESIGN_SYSTEM §10.1) */}
+              <div className="flex-shrink-0">
+                <RowActions
+                  testId={`brand-actions-${item.id}`}
+                  primary={{ label: "Edit", icon: Edit2, onClick: () => openEdit(item), testId: `edit-brand-${item.id}` }}
+                  items={[
+                    { label: item.status === "published" ? "Jadikan draft" : "Publish", icon: item.status === "published" ? EyeOff : Eye,
+                      onSelect: () => toggleStatus(item) },
+                    { label: "Instagram posts", icon: Instagram, onSelect: () => setIgBrand(item), testId: `ig-brand-${item.id}` },
+                    { label: "Riwayat versi", icon: History, onSelect: () => { setVersionTarget(item); setVersionOpen(true); }, testId: `history-brand-${item.id}` },
+                    { label: cloningId === item.id ? "Meng-clone…" : "Clone", icon: Copy, disabled: cloningId === item.id,
+                      onSelect: () => handleClone(item), testId: `clone-brand-${item.id}` },
+                    { label: "Hapus", icon: Trash2, destructive: true, onSelect: () => setDeleteId(item.id) },
+                  ]}
+                />
               </div>
             </div>
           ))}

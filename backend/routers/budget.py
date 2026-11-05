@@ -227,6 +227,10 @@ async def budget_vs_actual_multi_outlet(
       - outlets: [{outlet_id, outlet_name, brand_id, total_budget, total_actual, total_variance, achievement_pct, has_budget, category_rollup}]
     """
     result = await budget_service.vs_actual_multi_outlet(period, brand_id=brand_id)
+    from services._finance.scope import ledger_scope
+    scope = await ledger_scope(user)
+    if scope.outlet_ids is not None:  # user terbatas: hanya toko dalam aksesnya
+        result = {**result, "outlets": [o for o in result.get("outlets", []) if o.get("outlet_id") in scope.outlet_ids]}
     return ok_envelope(result)
 
 

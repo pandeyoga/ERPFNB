@@ -107,6 +107,20 @@ async def profit_loss(
     return ok_envelope({**data, "scope": scope.label})
 
 
+@router.get("/profit-loss/breakdown")
+async def profit_loss_breakdown(
+    period: str,
+    by: str = Query("brand", pattern="^(brand|outlet)$", description="Kolom per brand atau per toko"),
+    outlet_id: Optional[str] = None,
+    brand_id: Optional[str] = None,
+    user: dict = Depends(require_perm("finance.report.profit_loss")),
+):
+    """P&L dengan kolom per brand / per toko dalam konteks (kolom Pusat = transaksi tanpa toko)."""
+    scope = await ledger_scope(user, outlet_id=outlet_id, brand_id=brand_id)
+    data = await finance_service.profit_loss_breakdown(period=period, by=by, scope=scope)
+    return ok_envelope({**data, "scope": scope.label})
+
+
 @router.get("/ap-aging")
 async def ap_aging(
     as_of: Optional[str] = None,

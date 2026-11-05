@@ -19,6 +19,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getReport } from "./reportCatalog";
+import { scopeTag, storeFromParams, useScope, withScopeTag } from "@/contexts/ScopeContext";
 
 const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -56,6 +57,7 @@ async function errorMessage(e) {
  *  `exportExcel({ path, params: URLSearchParams, filename })` mengunduh file .xlsx. */
 export function useExcelExport() {
   const [exporting, setExporting] = useState(false);
+  const ctx = useScope(); // nama file membawa konteks (Group / brand / toko)
   const run = useCallback(async ({ path, params, filename }) => {
     setExporting(true);
     try {
@@ -65,7 +67,7 @@ export function useExcelExport() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = withScopeTag(filename, scopeTag(ctx, storeFromParams(params)));
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -76,7 +78,7 @@ export function useExcelExport() {
     } finally {
       setExporting(false);
     }
-  }, []);
+  }, [ctx]);
   return [exporting, run];
 }
 

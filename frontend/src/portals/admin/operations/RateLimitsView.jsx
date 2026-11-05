@@ -76,7 +76,7 @@ export default function RateLimitsView() {
         </>}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
         {Object.entries(buckets).map(([name, [limit, win]]) => (
           <div key={name} className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">

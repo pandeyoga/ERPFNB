@@ -120,12 +120,12 @@ export default function TransferList({ embedded = false }) {
           rowAction={(t) => (
             <div className="inline-flex items-center gap-1.5">
               {t.status === "draft" && can("inventory.transfer.send") && (
-                <AsyncButton onClick={async (e) => { e.stopPropagation(); await send(t); }} size="sm" busyText="Mengirim…" data-testid={`trf-send-${t.id}`}>
+                <AsyncButton onClick={async (e) => { e.stopPropagation(); await send(t); }} size="sm" variant="outline" busyText="Mengirim…" data-testid={`trf-send-${t.id}`}>
                   <Send /> Kirim
                 </AsyncButton>
               )}
               {t.status === "sent" && can("inventory.transfer.receive") && (
-                <AsyncButton onClick={async (e) => { e.stopPropagation(); await receive(t); }} size="sm" busyText="Menerima…" data-testid={`trf-receive-${t.id}`}>
+                <AsyncButton onClick={async (e) => { e.stopPropagation(); await receive(t); }} size="sm" variant="outline" busyText="Menerima…" data-testid={`trf-receive-${t.id}`}>
                   <Inbox /> Terima
                 </AsyncButton>
               )}

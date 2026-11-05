@@ -7,7 +7,7 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
 
 - Pakai primitive yang ada: `components/ui/*` (Button, Input, Select, Tabs, Card, Dialog) dan
   `components/shared/*` (PageHeader, DataTable, StatusPill, CompactStatCard, EmptyState, SegmentedFilter,
-  SimpleSelect, InlineHelp, ConfirmDialog). Jangan membuat ulang tombol/pill/kartu/tabel sendiri.
+  SimpleSelect, InlineHelp, ConfirmDialog, RowActions). Jangan membuat ulang tombol/pill/kartu/tabel sendiri.
 - `Button`: pilih `size` (`default` 36px, `sm` 32px, `icon`, `icon-sm`) dan `variant`
   (`default`/`outline`/`ghost`/`secondary`/`destructive`/`success`/`link`). **Jangan** override `h-*`,
   `rounded-full`, atau `pill-active` lewat `className`. Chip = `<Button size="sm" variant="outline" aria-pressed>`.
@@ -19,7 +19,7 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
   (bungkus konten embedded dengan `.nested-cards`). Status → `StatusPill`. KPI → `CompactStatCard`. Daftar data → `DataTable`.
 - **Anatomi halaman** (`DESIGN_SYSTEM.md` §10):
   - Posisi tombol = cakupan aksi. Aksi layar di kanan judul (`PageHeader`); aksi kartu di kanan atas kartu;
-    aksi baris di kolom terakhir (maks. 1 + "⋯").
+    aksi baris di kolom terakhir (maks. 1 + "⋯" → `RowActions`).
   - Halaman di dalam hub tetap memakai `PageHeader` biasa — otomatis mengisi subtitle & aksi header hub.
   - Judul blok di dalam kartu (`CardTitle`); judul di luar kartu hanya untuk grup ≥ 2 kartu di dashboard; tanpa judul ganda.
   - Filter tabel di dalam kartu tabel (`ListToolbar`); filter halaman tanpa kartu; daftar sejenis = baris dalam

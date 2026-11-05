@@ -32,11 +32,14 @@ function analyze() {
     const tabs = [...tl.querySelectorAll('[role=tab]')].filter(vis);
     const r = R(tl);
     const hidden = tabs.filter((t) => R(t).right > r.right + 2 || R(t).left < r.left - 2);
-    if (tl.scrollWidth > tl.clientWidth + 2 || hidden.length) add('tabs-overflow', `${tabs.length} tab, ${hidden.length} tersembunyi/terpotong: ${hidden.map(txt).join(', ')}`, tl);
+    // TabsList dengan tombol gulir ‹ › (components/ui/tabs.jsx) bukan "terpotong": tab tersembunyi bisa dicapai.
+    const scrollable = !!tl.parentElement?.querySelector('[data-testid="tabs-scroll-left"], [data-testid="tabs-scroll-right"]');
+    if ((tl.scrollWidth > tl.clientWidth + 2 || hidden.length) && !scrollable) add('tabs-overflow', `${tabs.length} tab, ${hidden.length} tersembunyi/terpotong: ${hidden.map(txt).join(', ')}`, tl);
     else if (tabs.length > 6) add('tabs-too-many', `${tabs.length} tab: ${tabs.map(txt).join(' | ')}`, tl);
     // frame in frame: bordered tablist directly inside a card
     const cs = getComputedStyle(tl);
-    if (parseFloat(cs.borderTopWidth) > 0 && tl.closest('.glass-card') && !tl.closest('.nested-cards')) add('frame-in-frame', 'TabsList berbingkai di dalam kartu', tl);
+    const borderVisible = parseFloat(cs.borderTopWidth) > 0 && !/rgba\([^)]*,\s*0\)|transparent/.test(cs.borderTopColor);
+    if (borderVisible && tl.closest('.glass-card') && !tl.closest('.nested-cards')) add('frame-in-frame', 'TabsList berbingkai di dalam kartu', tl);
   });
 
   // 2. Wrapped flex toolbars leaving sparse rows
@@ -138,7 +141,16 @@ function analyze() {
     const a = inter[i], b = inter[j]; if (a.contains(b) || b.contains(a)) continue;
     // tombol overlay sengaja (absolute inset-0, mis. header fase yang bisa diklik) bukan tumpang tindih
     if ([a, b].some((x) => /\babsolute\b.*\binset-0\b|\binset-0\b.*\babsolute\b/.test(x.className || ''))) continue;
-    const ra = R(a), rb = R(b); const ix = Math.max(0, Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left)); const iy = Math.max(0, Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top));
+    // bar aksi sticky/fixed (FormActionBar, bar aksi builder) memang melayang di atas konten yang digulir
+    const floating = (el) => { for (let p = el; p && p !== document.body; p = p.parentElement) { const pos = getComputedStyle(p).position; if (pos === 'sticky' || pos === 'fixed') return true; } return false; };
+    if (floating(a) !== floating(b)) continue;
+    // potong kotak elemen dengan wadah gulir terdekat (tab yang tergulir keluar bukan "bertumpuk", ia tidak terlihat)
+    const clip = (el) => { let r = R(el); let p = el.parentElement;
+      while (p && p !== document.body) { const cs = getComputedStyle(p);
+        if (/(auto|scroll|hidden)/.test(cs.overflowX)) { const pr = R(p); r = { left: Math.max(r.left, pr.left), right: Math.min(r.right, pr.right), top: r.top, bottom: r.bottom }; r.width = Math.max(0, r.right - r.left); r.height = r.bottom - r.top; break; }
+        p = p.parentElement; }
+      return r; };
+    const ra = clip(a), rb = clip(b); const ix = Math.max(0, Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left)); const iy = Math.max(0, Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top));
     const area = ix * iy; const small = Math.min(ra.width * ra.height, rb.width * rb.height);
     if (small > 0 && area / small > 0.3) { add('overlap', `${(txt(a) || a.getAttribute('aria-label') || a.tagName).slice(0, 20)} ⟂ ${(txt(b) || b.getAttribute('aria-label') || b.tagName).slice(0, 20)}`, a); break; }
   }

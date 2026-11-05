@@ -287,6 +287,7 @@ export default function OutletBudgetMonitor() {
                     ...BUCKETS.map((bk) => ({
                       key: `bucket_${bk}`,
                       label: <span style={{ color: BUCKET_COLORS[bk] }}>{bk.toUpperCase()} Budget / Actual / %</span>,
+                      numeric: true, // nominal rata kanan (DESIGN_SYSTEM: angka uang selalu rata kanan)
                       render: (it) => {
                         const cell = it.pace?.[bk] || {};
                         return (

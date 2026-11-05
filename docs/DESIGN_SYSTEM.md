@@ -169,7 +169,7 @@ berbeda, cakupannya memang harus berbeda.
 | **Layar**: halaman, atau tab aktif pada hub | `h1` di `PageHeader`. Pada hub, subtitle mengikuti tab aktif | **Selalu di kanan judul halaman.** Maks. 1 tombol utama (hitam). Pada hub, aksi berganti mengikuti tab aktif | Buat PO, Buat Payment, Ekspor, Muat ulang |
 | **Bagian**: kumpulan ≥ 2 kartu (hanya halaman dashboard) | judul bagian di luar kartu, 18px | kanan judul bagian (Lihat semua, Ciutkan) | Owner Overview: "KPI Utama" |
 | **Kartu** | `CardTitle` di dalam kartu, kiri atas, 16px | kanan atas kartu (Ekspor tabel ini, Lihat detail, filter kartu) | "Detail per COA" + Ekspor |
-| **Baris tabel** | — | kolom terakhir: maks. 1 aksi terlihat (outline/ghost, `sm`) + menu "⋯" | Kirim / Terima |
+| **Baris tabel** | — | kolom terakhir: maks. 1 aksi terlihat (outline/ghost, `sm`) + menu "⋯" — pakai `RowActions` | Kirim / Terima |
 | **Form** (mengubah data) | judul halaman/dialog | **bar aksi sticky di bawah**: Batal · Simpan draft · Ajukan | Approval Matrix, PR Baru, Settings |
 
 Akibat aturan ini:
@@ -282,5 +282,12 @@ bukan buku terpisah. Analisis lengkap: `docs/audit/OUTLET_SCOPE_ANALYSIS_2026-10
   | D. Form input | Manual Journal, PR/PO/GR, AR Invoice | Konteks hanya nilai awal. |
 
 - **Balance Sheet di bawah Group** ditandai "Neraca parsial".
+- **Kolom pembanding:**
+  - P&L punya "Tampilkan: Total | Per brand | Per toko" (`/finance/profit-loss/breakdown`). Per brand muncul bila
+    konteks memuat > 1 brand, Per toko bila > 1 toko.
+  - Kolom "Pusat" = transaksi tanpa toko, hanya di konteks Semua brand. Jumlah kolom = P&L konteks.
+  - Budget vs Actual punya "Per toko".
+- **File ekspor** membawa konteks di nama file (`_Group`, `_The-Coffeeshop`, `_Coffeeshop-Kemang`) lewat
+  `useExcelExport` / `withScopeTag`. Judul di dalam Excel menyebut brand/toko.
 - **Label:** "Toko" (bukan "Outlet (dim)"/"Consolidated"/"Konsolidasi (semua)"); opsi semua = "Semua toko ‹brand›";
   transaksi tanpa toko = "Pusat".

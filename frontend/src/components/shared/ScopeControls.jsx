@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
-export function StoreFilter({ filter, bare = false, testId = "store-filter", className }) {
+export function StoreFilter({ filter, bare = false, testId = "store-filter", className, labelClassName = LABEL }) {
   if (!filter?.options?.length) return null;
   const select = (
     <SimpleSelect
@@ -30,7 +30,7 @@ export function StoreFilter({ filter, bare = false, testId = "store-filter", cla
   if (bare) return <div className={cn("w-52", className)}>{select}</div>;
   return (
     <div className={cn("min-w-[200px]", className)}>
-      <Label className={LABEL}>Toko</Label>
+      <Label className={labelClassName}>Toko</Label>
       {select}
     </div>
   );

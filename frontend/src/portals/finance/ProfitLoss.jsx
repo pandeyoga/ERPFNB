@@ -23,6 +23,9 @@ import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
 import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
+import { useScope, useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
+import PlBreakdown from "./PlBreakdown";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -100,6 +103,16 @@ function normalizeData(raw) {
 export default function ProfitLoss() {
   const [period, setPeriod] = useState(() => todayJakartaISO().slice(0, 7));
   const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
+  const fileTag = useScopeTag(outletId); // nama file ekspor membawa konteks
+  // Kolom pembanding (DESIGN_SYSTEM §10.7): Per brand bila konteks memuat > 1 brand, Per toko bila > 1 toko.
+  const { contextOutlets } = useScope();
+  const [view, setView] = useState("total");
+  const viewOptions = [
+    { value: "total", label: "Total", testId: "pl-view-total" },
+    ...(new Set(contextOutlets.map(o => o.brand_id)).size > 1 ? [{ value: "brand", label: "Per brand", testId: "pl-view-brand" }] : []),
+    ...(contextOutlets.length > 1 ? [{ value: "outlet", label: "Per toko", testId: "pl-view-outlet" }] : []),
+  ];
+  const effectiveView = outletId || !viewOptions.some(o => o.value === view) ? "total" : view;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -129,7 +142,7 @@ export default function ProfitLoss() {
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `PL-${period}${outletId ? `-${outletId.slice(0, 6)}` : ""}.csv`;
+    a.href = url; a.download = withScopeTag(`PL-${period}.csv`, fileTag);
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -149,6 +162,14 @@ export default function ProfitLoss() {
             className="glass-input mt-1 h-9" data-testid="pl-period" />
         </div>
         <StoreFilter filter={storeFilter} testId="pl-outlet" />
+        {!outletId && viewOptions.length > 1 && (
+          <div>
+            <div className={LABEL} id="pl-view-label">Tampilkan</div>
+            <div className="mt-1">
+              <SegmentedFilter value={effectiveView} onChange={setView} options={viewOptions} ariaLabel="Tampilkan" testId="pl-view" />
+            </div>
+          </div>
+        )}
         <Button onClick={exportCsv} variant="outline" className="ml-auto" data-testid="pl-export" disabled={!data}>
           <Download /> Ekspor CSV
         </Button>
@@ -169,7 +190,9 @@ export default function ProfitLoss() {
               hint={`Margin ${data.totals.net_margin_pct}%`} testId="pl-kpi-net-income" />
           </div>
 
-          {!hasAnyData ? (
+          {effectiveView !== "total" ? (
+            <PlBreakdown period={period} by={effectiveView} params={scopeParams} />
+          ) : !hasAnyData ? (
             <EmptyState
               title="Belum ada data P&L untuk periode ini"
               description="Validasi sales atau jurnal pada periode ini belum diposting. Coba periode lain atau cek Daily Sales."
@@ -213,7 +236,7 @@ export default function ProfitLoss() {
             })
           )}
 
-          <div data-testid="pl-totals-card" className="glass-card p-4 grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 text-sm">
+          {effectiveView === "total" && <div data-testid="pl-totals-card" className="glass-card p-4 grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 text-sm">
             <div className="flex justify-between font-semibold">
               <span>Gross Profit</span>
               <span className="tabular-nums">{fmtRp(data.totals.gross_profit)}</span>
@@ -222,7 +245,7 @@ export default function ProfitLoss() {
               <span>Net Income</span>
               <span className="tabular-nums">{fmtRp(data.totals.net_income)}</span>
             </div>
-          </div>
+          </div>}
         </>
       )}
     </div>

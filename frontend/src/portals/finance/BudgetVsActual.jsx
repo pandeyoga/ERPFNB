@@ -18,6 +18,7 @@ import { formatCurrency } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
 import { useScope } from "@/contexts/ScopeContext";
 import { StoreFilter } from "@/components/shared/ScopeControls";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
 export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   const navigate = useNavigate();
@@ -26,8 +27,12 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   // Level budget (Group / Brand / Toko) diturunkan dari konteks TopNav + filter Toko lokal (DESIGN_SYSTEM §10.7).
-  const { outletId, storeFilter } = useOutletScope();
-  const { scope: ctx, isFullAccess } = useScope();
+  const { outletId, setOutletId, storeFilter } = useOutletScope();
+  const { scope: ctx, isFullAccess, contextOutlets } = useScope();
+  // Tampilkan "Per toko": budget masing-masing toko vs realisasinya (DESIGN_SYSTEM §10.7).
+  const [view, setView] = useState("total");
+  const canPerStore = !outletId && contextOutlets.length > 1;
+  const perStore = canPerStore && view === "outlet";
   const scope = outletId || ctx.level === "outlet" ? "outlet" : ctx.level === "brand" ? "brand" : "group";
   const needsPick = scope === "group" && !isFullAccess; // "Semua toko saya" lintas brand: tidak ada budget Group
 
@@ -80,7 +85,7 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
             data-testid="period-input" />
         </div>
 
-        <StoreFilter filter={storeFilter} testId="outlet-select" />
+        <StoreFilter filter={storeFilter} testId="outlet-select" labelClassName="" className="space-y-1 [&>button]:mt-0" />
 
         <div className="space-y-1 min-w-[180px]">
           <Label htmlFor="bva-level">Level</Label>
@@ -96,6 +101,14 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
           </Select>
         </div>
 
+        {canPerStore && (
+          <div className="space-y-1">
+            <Label id="bva-view-label">Tampilkan</Label>
+            <SegmentedFilter value={perStore ? "outlet" : "total"} onChange={setView} ariaLabel="Tampilkan" testId="bva-view"
+              options={[{ value: "total", label: "Total" }, { value: "outlet", label: "Per toko", testId: "bva-view-outlet" }]} />
+          </div>
+        )}
+
         <div className="flex items-end ml-auto">
           <Button variant="outline" onClick={loadData} disabled={loading || needsPick} data-testid="load-data-btn">
             <RefreshCw className={loading ? "animate-spin" : undefined} />
@@ -104,7 +117,12 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         </div>
       </div>
 
-      {needsPick && (
+      {perStore && (
+        <BvaPerStore period={period} brandId={ctx.level === "brand" ? ctx.brandId : null}
+          storeIds={contextOutlets.map(o => o.id)} onPick={(id) => { setOutletId(id); setView("total"); }} />
+      )}
+
+      {!perStore && needsPick && (
         <EmptyState
           icon={Target}
           title="Pilih brand atau toko"
@@ -113,7 +131,7 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         />
       )}
 
-      {!needsPick && data && !hasBudgets && (
+      {!perStore && !needsPick && data && !hasBudgets && (
         <Card className="border-dashed">
           <CardContent className="p-0">
             <EmptyState
@@ -126,7 +144,7 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         </Card>
       )}
 
-      {!needsPick && data && hasBudgets && (
+      {!perStore && !needsPick && data && hasBudgets && (
         <>
           {/* Ringkasan halaman: satu strip KPI di atas, tanpa judul (§10.2). */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="bva-totals">
@@ -221,5 +239,55 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         </>
       )}
     </div>
+  );
+}
+
+
+/** Budget vs Actual per toko dalam konteks; klik baris = lihat toko itu (filter Toko lokal). */
+function BvaPerStore({ period, brandId, storeIds, onPick }) {
+  const [rows, setRows] = useState(null);
+  useEffect(() => {
+    let off = false;
+    setRows(null);
+    api.get("/budget/vs-actual-multi-outlet", { params: { period, ...(brandId ? { brand_id: brandId } : {}) } })
+      .then((r) => { if (!off) setRows((r.data?.data?.outlets || []).filter((o) => storeIds.includes(o.outlet_id))); })
+      .catch(() => { if (!off) { setRows([]); toast.error("Gagal memuat budget per toko"); } });
+    return () => { off = true; };
+  }, [period, brandId, storeIds.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (rows === null) return <div className="skeleton h-40 w-full rounded-lg" aria-hidden />;
+  const sum = (k) => rows.reduce((t, r) => t + (r[k] || 0), 0);
+  return (
+    <Card data-testid="bva-per-store">
+      <CardHeader className="p-4 pb-2">
+        <CardTitle>Budget vs actual per toko</CardTitle>
+        <CardDescription>Budget masing-masing toko pada periode {period}. Klik baris untuk melihat rincian toko itu.</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <DataTable
+          rows={rows}
+          keyField="outlet_id"
+          rowTestIdPrefix="bva-store-row"
+          onRowClick={(r) => onPick(r.outlet_id)}
+          columns={[
+            { key: "outlet_name", label: "Toko", primary: true, sortable: true, render: (r) => <span className="font-medium">{r.outlet_name}</span> },
+            { key: "total_budget", label: "Budget", numeric: true, sortable: true,
+              render: (r) => (r.has_budget ? formatCurrency(r.total_budget) : <span className="text-muted-foreground">Belum ada budget</span>) },
+            { key: "total_actual", label: "Actual", numeric: true, sortable: true, render: (r) => formatCurrency(r.total_actual) },
+            { key: "total_variance", label: "Variance", numeric: true, sortable: true, render: (r) => formatCurrency(r.total_variance) },
+            { key: "achievement_pct", label: "Pencapaian", numeric: true, sortable: true,
+              render: (r) => (r.achievement_pct == null ? "—" : `${r.achievement_pct.toLocaleString("id-ID", { maximumFractionDigits: 1 })}%`) },
+          ]}
+          footer={(
+            <tr className="bg-muted/40 font-semibold border-t-2 border-border">
+              <td className="px-4 py-2.5">Total</td>
+              <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(sum("total_budget"))}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(sum("total_actual"))}</td>
+              <td className="px-4 py-2.5 text-right tabular-nums">{formatCurrency(sum("total_variance"))}</td>
+              <td className="px-4 py-2.5" />
+            </tr>
+          )}
+        />
+      </CardContent>
+    </Card>
   );
 }

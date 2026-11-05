@@ -249,8 +249,27 @@ angka = jumlah halaman unik yang masih memuat temuan.
 - *Filter halaman dikotakkan* (14): sebagian besar kartu form (header PR/GR/RFQ, form reservasi, kalkulator pajak) yang terbaca
   sebagai filter; sisanya Pivot & Period compare di Reports.
 - *Istilah campur* (AR invoices): "Overdue" + "Jatuh Tempo" sesuai keputusan (konsep berbeda: lewat jatuh tempo vs jatuh tempo).
-- Belum masuk putaran ini (dari audit komposisi): tab hub terpotong (Payments/Reports), toolbar CMS terlipat, kolom sempit,
-  tabel melebar (Budget Allocation, Compensation), kartu tipis & blok form tanpa judul di halaman detail.
+- **Putaran 5 Nov 2026** (crawler komposisi, 150 halaman / 507 state, 0 error):
+
+  | Temuan | Sebelum | Sesudah | Perbaikan |
+  |---|---|---|---|
+  | Tab hub terpotong | 20 di 10 halaman | 0 | `TabsList`: tombol ‹ › di samping daftar saat meluap, tab aktif digulir ke area terlihat |
+  | ≥ 3 tombol utama bersaing | 28 di 17 halaman | 1 (Smart SEO, aksi layar) | aksi baris → `outline` + primitive `RowActions` (1 tombol + "⋯"): Advances, Cuti, Adjustment, Transfer, Service charge, Scheduler, CMS |
+  | Tabel butuh gulir horizontal | 20 | 12 | kolom aksi Advances tidak lagi melebar/terpotong |
+  | Kolom sempit (isi terlipat) | 44 | 42 | `DataTable`: uang, tanggal, periode & nomor dokumen tidak pernah dilipat |
+  | Nominal rata kiri | 1 | 0 | Budget Monitor detail |
+  | Grid yatim | 6 | 2 | Rate limits 4 kartu = 4 kolom |
+
+- **Heuristik crawler diperbaiki**, sehingga angka berikut turun bukan karena perubahan UI:
+  - TabsList ber-border transparan di dalam kartu tidak lagi dihitung "bingkai ganda" (34 → 0);
+  - tab yang bisa digulir dengan ‹ › tidak dihitung "terpotong";
+  - tumpukan diukur setelah dipotong wadah gulir;
+  - bar aksi sticky diabaikan.
+- **Masih tersisa** (butuh keputusan IA atau per halaman):
+  - hub dengan > 6 tab (Compensation 7, CMS 9, CRM analytics 7). Kini bisa digulir, tetapi jumlah tab tetap banyak;
+  - toolbar terlipat (60);
+  - teks nama panjang terpotong di legenda chart;
+  - kartu tipis / blok form tanpa judul di halaman detail.
 
 ---
 

@@ -337,7 +337,7 @@ export function WorkflowButton({ base, item, testPrefix, onDone }) {
     } catch (err) { toast.error(unwrapError(err)); }
   };
   return (
-    <Button size="sm" variant={action === "post" ? "default" : "outline"}
+    <Button size="sm" variant="outline" /* aksi baris = outline; tombol penuh hanya aksi layar (§10.1) */
             onClick={run} data-testid={`${testPrefix}-${action}-${item.id}`}>
       {action === "post"
         ? <><ArrowUpCircle /> Posting</>

@@ -70,6 +70,13 @@ def _scope_outlets_user(user: dict, requested: Optional[list[str]]) -> Optional[
     return user_outlet_ids
 
 
+async def _brand_name(brand_id: Optional[str]) -> str:
+    if not brand_id:
+        return ""
+    from core.db import get_db
+    return ((await get_db().brands.find_one({"id": brand_id}, {"name": 1})) or {}).get("name", "")
+
+
 def _brand_narrow(outlets: Optional[list[str]]) -> Optional[list[str]]:
     """Konteks brand global (`?brand_id=`, core/scope.py): hanya toko brand itu."""
     from core.scope import request_brand_outlets
@@ -573,6 +580,7 @@ async def trial_balance_excel(
         period=period,
         dim_outlet=dim_outlet,
         scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
+        brand_name=await _brand_name(brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)
@@ -680,6 +688,7 @@ async def pl_group_excel(
         period_to=period_to,
         dim_outlet=dim_outlet,
         scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
+        brand_name=await _brand_name(brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)

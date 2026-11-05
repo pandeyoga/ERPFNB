@@ -35,6 +35,7 @@ import CMSNewsPreview from "./CMSNewsPreview";
 import CMSWorkflow, { WorkflowBadge } from "./CMSWorkflow";
 import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import EmptyState from "@/components/shared/EmptyState";
+import RowActions from "@/components/shared/RowActions";
 
 const CATEGORIES = ["Opening", "Events", "Award", "Story", "Announcement", "Promo"];
 const EMPTY_FORM = {
@@ -273,22 +274,18 @@ export default function CMSNews() {
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.excerpt}</p>
                 <p className="text-xs text-muted-foreground mt-1">{item.date}</p>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button size="icon" variant="ghost" title="Version History" aria-label="Lihat riwayat versi"
-                        onClick={() => { setVersionTarget(item); setVersionOpen(true); }}
-                        data-testid={`history-news-${item.id}`}>
-                  <History className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button size="icon" variant="ghost" title="Clone" aria-label="Clone berita" onClick={() => handleClone(item)}
-                        disabled={cloningId === item.id} data-testid={`clone-news-${item.id}`}>
-                  {cloningId === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Edit berita" onClick={() => openEdit(item)} data-testid={`edit-news-${item.id}`}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" aria-label="Hapus berita" className="text-destructive" onClick={() => setDeleteId(item.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              {/* Aksi baris: Edit + "⋯" (DESIGN_SYSTEM §10.1) */}
+              <div className="flex-shrink-0">
+                <RowActions
+                  testId={`news-actions-${item.id}`}
+                  primary={{ label: "Edit", icon: Edit2, onClick: () => openEdit(item), testId: `edit-news-${item.id}` }}
+                  items={[
+                    { label: "Riwayat versi", icon: History, onSelect: () => { setVersionTarget(item); setVersionOpen(true); }, testId: `history-news-${item.id}` },
+                    { label: cloningId === item.id ? "Meng-clone…" : "Clone", icon: Copy, disabled: cloningId === item.id,
+                      onSelect: () => handleClone(item), testId: `clone-news-${item.id}` },
+                    { label: "Hapus", icon: Trash2, destructive: true, onSelect: () => setDeleteId(item.id) },
+                  ]}
+                />
               </div>
             </div>
           ))}

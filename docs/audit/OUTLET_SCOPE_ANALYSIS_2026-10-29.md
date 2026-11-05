@@ -237,8 +237,29 @@ Tahapan bila disetujui:
 - **Pilihan toko di Outlet Portal diingat selama sesi** untuk konteks yang sama, bukan per halaman. Alasannya, alur
   operasional (Daily Sales → Petty Cash → Closing) tidak perlu memilih ulang di setiap halaman. Konteks global tidak berubah.
 
-### 7.5 Belum dikerjakan (tahap 4)
+### 7.5 Tahap 4 (selesai 5 Nov 2026, kecuali alokasi)
 
-- Kolom perbandingan "Per brand / Per toko" di P&L dan BvA.
-- Konteks di judul file ekspor.
-- Alokasi biaya pusat ke brand/toko (logika bisnis, sengaja ditunda).
+- **P&L "Tampilkan: Total | Per brand | Per toko"**
+  - Matriks akun × brand/toko (nominal dalam juta), dengan kolom **Pusat** di konteks Semua brand.
+  - Total kolom = P&L konteks (ada tesnya).
+- **Budget vs Actual "Per toko"**
+  - Budget tiap toko vs realisasi; klik baris untuk membuka toko itu.
+  - Data dibatasi akses user.
+- **File ekspor**
+  - Nama file membawa konteks (`PL-2026-11_The-Coffeeshop.csv`, `…_Group.xlsx`).
+  - Judul Excel TB/P&L menyebut "Brand: … (semua toko)".
+- **Belum:** alokasi biaya pusat ke brand/toko. Ini logika bisnis, sengaja ditunda.
+
+### 7.6 Verifikasi lanjutan (5 Nov 2026)
+
+- **Cek browser 20 halaman Inventory/Procurement/HR/Reports** dalam 3 konteks (brand, satu toko, area manager):
+  - tanpa error JS atau 5xx;
+  - di konteks satu toko tidak ada pemilih toko;
+  - semua GET membawa konteks.
+- **Endpoint yang ternyata mengabaikan konteks brand, kini dibatasi lewat `core/scope.py`:**
+  - helper `narrow_to_brand` / `outlet_condition`;
+  - endpoint: low-stock, PR/PO/GR, workboard, KDO/BDO/FDO, FOC, advances, service charge, salary master,
+    leave, anomali, budget increase, heatmap, outlet home, forecast expense.
+- **Kanban procurement:** kolom PO selama ini tidak memakai filter toko sama sekali. User terbatas bisa melihat
+  PO semua toko. Sekarang ikut cakupan yang sama dengan PR.
+- **Tes:** 15 endpoint daftar + workboard tetap di dalam brand (`tests/test_scope_brand_outlet.py`, 23 tes).

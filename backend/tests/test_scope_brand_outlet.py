@@ -149,3 +149,18 @@ def test_transfers_in_brand_touch_its_stores(http_client, admin_token, hierarchy
     stores = set(hierarchy["by_brand"][brand])
     rows = api_get(http_client, f"/inventory/transfers?brand_id={brand}&per_page=100", admin_token).json()["data"]
     assert all(t.get("from_outlet_id") in stores or t.get("to_outlet_id") in stores for t in rows)
+
+
+# ---------- P&L per brand / per toko ----------
+@pytest.mark.parametrize("by", ["brand", "outlet"])
+def test_breakdown_columns_add_up_to_pl(http_client, admin_token, hierarchy, by):
+    for params in ("", f"&brand_id={hierarchy['multi']}"):
+        r = api_get(http_client, f"/finance/profit-loss/breakdown?period={PERIOD}&by={by}{params}", admin_token)
+        assert r.status_code == 200, r.text
+        d = r.json()["data"]
+        keys = [c["key"] for c in d["columns"]]
+        assert d["net_income"]["total"] == pytest.approx(sum(d["net_income"][k] for k in keys), abs=0.05)
+        pl = _pl(http_client, admin_token, **({"brand_id": hierarchy["multi"]} if params else {}))
+        assert d["net_income"]["total"] == pytest.approx(pl["net_income"], abs=0.05)
+        if params:  # konteks brand: hanya toko brand itu, tanpa kolom Pusat
+            assert "__pusat__" not in keys

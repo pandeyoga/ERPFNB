@@ -20,6 +20,7 @@ async def generate_pl_group_excel(
     period_to: str,    # YYYY-MM
     dim_outlet: Optional[str] = None,
     scope=None,
+    brand_name: str = "",
 ):
     """Generate Profit & Loss in FnB Group custom format.
     
@@ -118,6 +119,8 @@ async def generate_pl_group_excel(
     subtitle_parts = [f"Period: {period_from} — {period_to}"]
     if outlet_name:
         subtitle_parts.append(f"Outlet: {outlet_name}")
+    elif brand_name:
+        subtitle_parts.append(f"Brand: {brand_name} (semua toko)")
     else:
         subtitle_parts.append("Outlet: Konsolidasi")
     
