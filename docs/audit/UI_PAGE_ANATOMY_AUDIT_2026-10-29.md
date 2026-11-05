@@ -265,8 +265,34 @@ angka = jumlah halaman unik yang masih memuat temuan.
   - tab yang bisa digulir dengan ‹ › tidak dihitung "terpotong";
   - tumpukan diukur setelah dipotong wadah gulir;
   - bar aksi sticky diabaikan.
+- **Putaran riset 5 Nov 2026** (standar baru `DESIGN_SYSTEM.md` §10.8–10.10, sumber di sana):
+
+  | Temuan | Awal | Putaran 1 | Akhir |
+  |---|---|---|---|
+  | Bar dengan > 6 tab | 24 | 36 | 0 |
+  | Elemen bertumpuk | 9 | 37 | 1 |
+  | Toolbar terlipat | 60 | 60 | 5 |
+  | Kolom sempit | 44 | 42 | 28 |
+  | Tinggi kontrol berbeda | 39 | 39 | 30 |
+  | Grid yatim | 6 | 6 | 1 |
+
+  Catatan pembacaan:
+  - "Bar dengan > 6 tab" naik di putaran 1 karena tab yang dulu dihitung "terpotong" dipindah ke kategori ini.
+    Lalu turun ke 0 karena **6 hub dikelompokkan** (`HubTabs`).
+  - "Elemen bertumpuk" turun karena tombol ‹ › dipindah ke samping tab; heuristik juga diperbaiki.
+  - "Toolbar terlipat" turun terutama karena **heuristik diperbaiki** (baris dihitung dari rentang vertikal yang
+    bertumpuk). Pengecekan visual menunjukkan toolbar itu memang satu baris. Sisa 5 = deretan chip pilihan di
+    kartu filter laporan, yang wajar membungkus.
+  - **Jumlah state crawl turun 507 → 369**, karena crawler hanya mengklik tab yang terlihat; sub-tab kelompok
+    yang tidak aktif tidak dikunjungi. Penurunan kolom sempit dan teks terpotong sebagian karena cakupan ini.
+  - **Perubahan nyata di luar angka:**
+    - Ekspor TB/P&L/BS/Cashflow pindah ke header;
+    - pengaturan model Forecasting di balik `MoreFilters`;
+    - 7 halaman detail (Journal, Payment, Payment run, PR, PO, Transfer, Daily Sales) memakai `KeyFacts` di
+      header, tanpa kartu tipis label/nilai;
+    - aksi Payment pindah ke header; aksi sekunder PO di "⋯";
+    - baris Period list jadi Wizard + "⋯".
 - **Masih tersisa** (butuh keputusan IA atau per halaman):
-  - hub dengan > 6 tab (Compensation 7, CMS 9, CRM analytics 7). Kini bisa digulir, tetapi jumlah tab tetap banyak;
   - toolbar terlipat (60);
   - teks nama panjang terpotong di legenda chart;
   - kartu tipis / blok form tanpa judul di halaman detail.
