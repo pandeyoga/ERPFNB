@@ -1,6 +1,7 @@
 # Analisis konteks Brand/Outlet global — 29 Okt 2026
 
-Status: **analisis + usulan, belum diimplementasi** (menunggu keputusan di Bagian 6).
+Status: **diimplementasikan 5 Nov 2026** (tahap 1–3). Keputusan di Bagian 6 disetujui semua; hasil di Bagian 7.
+Aturan baku untuk halaman baru: `docs/DESIGN_SYSTEM.md` §10.7.
 
 Pertanyaan: pemilihan outlet masih per halaman? Seharusnya dipilih sekali di level paling atas, lalu semua menu
 otomatis memakai outlet/brand itu. Jika satu brand punya banyak toko, pilihan toko baru muncul di level menu.
@@ -156,3 +157,88 @@ Tahapan bila disetujui:
 2. Opsi "Semua brand": hanya untuk user yang punya akses ke semua, sedangkan user multi-toko yang terbatas melihat "Semua toko saya". Setuju?
 3. Balance Sheet per brand/toko: tampilkan dengan label "parsial" (usulan), atau hanya di level Group?
 4. Konteks disimpan per akun di server (usulan) atau cukup per browser?
+
+**Jawaban (5 Nov 2026): 1 ya (lokal) · 2 setuju · 3 setuju (label parsial) · 4 setuju (per akun) · kerjakan tahap 1–3.**
+
+## 7. Hasil implementasi (5 Nov 2026)
+
+![Pemilih konteks di TopNav](img/scope_switcher.png)
+
+![P&L dengan konteks brand The Coffeeshop: filter Toko lokal + catatan transaksi pusat](img/scope_pl_brand.png)
+
+![Balance Sheet di bawah Group ditandai parsial](img/scope_bs_partial.png)
+
+### 7.1 Fondasi
+
+**Frontend**
+- `contexts/ScopeContext.jsx` + `components/layout/ScopeSwitcher.jsx`: pemilih di TopNav, sebelum breadcrumb.
+  - Pilihan: Semua brand / Semua toko saya / Brand / Toko.
+  - Disimpan per akun (`work_scope`), dengan cache localStorage.
+  - Nilai awal: toko default user → satu-satunya toko → brand tunggal → Semua.
+  - Akar breadcrumb kini konteks itu ("Beranda" tetap lewat logo & sidebar).
+- `lib/api.js`: setiap GET otomatis membawa konteks, kecuali:
+  - request sudah memilih toko;
+  - `{ scope: false }`;
+  - endpoint tingkat Group/konfigurasi (`/admin`, `/master`, `/tax`, `/finance/periods`, …).
+
+  Ganti konteks berarti halaman dimuat ulang (remount + cache react-query dibersihkan). Bila ada perubahan belum disimpan, muncul konfirmasi.
+- `hooks/useOutletScope.js`:
+  - daftar = toko dalam konteks;
+  - `params`, `storeFilter`, `belowGroup`, `allLabel`;
+  - mode `form` = semua toko dalam akses, nilai awal dari konteks.
+- `components/shared/ScopeControls.jsx`: `StoreFilter`, `GroupLevelBadge`, `ScopeNote`.
+- `OutletScopePicker` diseragamkan.
+
+**Backend**
+- `core/scope.py`: dependency tingkat app; `brand_id` → daftar toko.
+  - `resolve_outlet_filter` dan endpoint Reports/Executive memakainya.
+  - Hasilnya: semua endpoint yang sudah memotong per outlet otomatis bisa dipotong per brand.
+- `services/_finance/scope.py` (`LedgerScope`): cakupan Group / Brand / Toko / Pusat atas dimensi baris jurnal.
+  - Dipakai TB, P&L, Balance Sheet, Cashflow, Journals (+ detail), Finance home, dan ekspor TB/P&L/ledger.
+- **Penegakan akses di server:**
+  - user terbatas tidak melihat toko lain maupun jurnal pusat, juga lewat detail jurnal;
+  - user yang memegang semua toko setara tingkat Group.
+- Budget vs Actual: cakupan diturunkan dari konteks, dengan cek akses.
+- Cash position/accounts: konteks + rekening pusat (berlabel "Pusat").
+- Fixed assets: konteks + akses.
+- Budget list: konteks brand ikut memuat budget per toko milik brand itu.
+- Data demo:
+  - The Coffeeshop punya 3 toko (+ Coffeeshop Kemang, Coffeeshop BSD);
+  - user `cfs.area@fnbgroup.id` (area manager 3 toko).
+- Tes: `backend/tests/test_scope_brand_outlet.py`.
+
+### 7.2 Keuangan
+
+- **Jenis A** — TB, P&L, Cashflow, Balance Sheet, Journals, Budget vs Actual, Forecasting, Period Compare, Anomaly,
+  Custom report, Procurement reports, Cash position, Budget allocation:
+  - pemilih "Outlet/Consolidated/Konsolidasi/Scope/Brand" diganti filter **Toko** lokal;
+  - Journals punya opsi "Pusat (tanpa toko)" di konteks Semua brand;
+  - laporan GL di bawah Group memberi catatan bahwa transaksi pusat tidak ikut.
+- **Jenis C** — tab Payments, Payment runs, Run templates, Bank reconciliation, AR invoices, AP aging; Tax & Compliance;
+  Period Closing; Chart of Accounts: badge **Tingkat Group**.
+- **Jenis D** — Manual Journal dan AR Invoice: nilai awal dimensi Outlet/Brand dari konteks.
+
+### 7.3 Portal lain
+
+- **Inventory, Procurement, HR, Reports, Executive** (±40 halaman):
+  - pemilih outlet hanya berisi toko dalam konteks, berlabel "Toko" / "Semua toko ‹brand›";
+  - pemilih disembunyikan bila konteks hanya 1 toko;
+  - field Outlet di form (PR/PO/GR, Service Charge, Incentive, Voucher) memakai semua toko dalam akses, dengan nilai awal dari konteks.
+- **Executive Overview:** filter Brand hanya muncul di konteks Semua brand; filter Toko dibatasi ke toko dalam konteks.
+- **Outlet Portal:**
+  - konteks 1 toko → terkunci, tanpa pemilih di halaman;
+  - konteks brand → pilih toko di kanan judul atau "Semua toko".
+- **Admin** tetap tingkat Group (konfigurasi), tidak dipotong konteks.
+
+### 7.4 Penyimpangan kecil dari usulan
+
+- **Filter Toko juga tampil di konteks Semua brand** bila ada ≥ 2 toko, supaya bisa melihat satu toko tanpa mengganti
+  konteks. Kolom pembanding "Per brand / Per toko" (tahap 4) belum dikerjakan.
+- **Pilihan toko di Outlet Portal diingat selama sesi** untuk konteks yang sama, bukan per halaman. Alasannya, alur
+  operasional (Daily Sales → Petty Cash → Closing) tidak perlu memilih ulang di setiap halaman. Konteks global tidak berubah.
+
+### 7.5 Belum dikerjakan (tahap 4)
+
+- Kolom perbandingan "Per brand / Per toko" di P&L dan BvA.
+- Konteks di judul file ekspor.
+- Alokasi biaya pusat ke brand/toko (logika bisnis, sengaja ditunda).

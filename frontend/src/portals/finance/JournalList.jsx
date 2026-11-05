@@ -15,6 +15,7 @@ import DataTable from "@/components/shared/DataTable";
 import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
+import { useScope } from "@/contexts/ScopeContext";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import ListToolbar from "@/components/shared/ListToolbar";
 
@@ -48,7 +49,16 @@ function sourceLabel(v) {
 export default function JournalList() {
   const [period, setPeriod] = useState(() => todayJakartaISO().slice(0, 7));
   const [sourceType, setSourceType] = useState("");
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, params: scopeParams, isFullAccess, allLabel } = useOutletScope();
+  const { scope } = useScope();
+  // "Pusat" = jurnal tanpa toko & brand (AR, payroll, payment run); hanya bermakna di konteks Semua brand.
+  const canPusat = isFullAccess && scope.level === "group";
+  const [pusat, setPusat] = useState(false);
+  const storeOptions = [
+    { value: "", label: allLabel },
+    ...(scopedOutlets.length > 1 ? scopedOutlets.map(o => ({ value: o.id, label: o.name })) : []),
+    ...(canPusat ? [{ value: "__pusat__", label: "Pusat (tanpa toko)" }] : []),
+  ];
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
@@ -56,10 +66,10 @@ export default function JournalList() {
     const f = {};
     if (period) f.period = period;
     if (sourceType) f.source_type = sourceType;
-    if (outletId) f.dim_outlet = outletId;
+    Object.assign(f, pusat ? { unallocated: true } : scopeParams);
     if (search) f.search = search;
     return f;
-  }, [period, sourceType, outletId, search]);
+  }, [period, sourceType, outletId, pusat, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data, isLoading: loading } = usePaginatedList("/finance/journals", filters, page, 20);
   const items = data?.data || [];
@@ -129,18 +139,20 @@ export default function JournalList() {
                 testId="je-source"
               />
             </div>
+            {storeOptions.length > 1 && (
             <div>
-              <Label className="text-xs md:text-sm font-medium">Outlet (dim)</Label>
+              <Label className="text-xs md:text-sm font-medium">Toko</Label>
               <SimpleSelect
-                value={outletId}
-                onValueChange={(v) => { setOutletId(v); setPage(1); }}
-                options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-                placeholder="Semua"
+                value={pusat ? "__pusat__" : outletId}
+                onValueChange={(v) => { setPusat(v === "__pusat__"); setOutletId(v === "__pusat__" ? "" : v); setPage(1); }}
+                options={storeOptions}
+                placeholder={allLabel}
                 className="glass-input w-full mt-1"
-                ariaLabel="Outlet (dim)"
+                ariaLabel="Toko"
                 testId="je-outlet"
               />
             </div>
+            )}
             <div>
               <Label className="text-xs md:text-sm font-medium" htmlFor="je-search">Cari</Label>
               <div className="relative mt-1">

@@ -25,7 +25,7 @@ const FORMAT_ROWS = [
 ];
 
 export default function PLGroupReport() {
-  const { allOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets, allLabel } = useOutletScope(); // toko dalam konteks TopNav
   const [periodFrom, setPeriodFrom] = useState(startOfYearMonth());
   const [periodTo, setPeriodTo] = useState(currentMonth());
   const [dimOutlet, setDimOutlet] = useState("all");
@@ -82,7 +82,7 @@ export default function PLGroupReport() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua outlet (konsolidasi)</SelectItem>
+              <SelectItem value="all">{allLabel}</SelectItem>
               {outlets.map(o => (
                 <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
               ))}

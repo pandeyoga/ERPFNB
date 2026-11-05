@@ -22,7 +22,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from core.exceptions import ok_envelope, AuroraException
-from core.security import current_user, require_perm
+from core.security import current_user, require_perm, resolve_outlet_filter
 from services import fixed_asset_service
 from models.fixed_asset import ASSET_CATEGORIES, DEP_METHODS
 
@@ -47,7 +47,7 @@ async def get_asset_register(
     user: dict = Depends(require_perm("finance.asset.read")),
 ):
     """Asset register report grouped by outlet/location."""
-    result = await fixed_asset_service.get_asset_register(outlet_id=outlet_id)
+    result = await fixed_asset_service.get_asset_register(outlet_ids=resolve_outlet_filter(user, outlet_id))
     return ok_envelope(result)
 
 
@@ -82,7 +82,7 @@ async def list_assets(
     """List fixed assets with filters."""
     items, meta = await fixed_asset_service.list_assets(
         category=category,
-        outlet_id=outlet_id,
+        outlet_ids=resolve_outlet_filter(user, outlet_id),  # akses user + konteks brand (core/scope.py)
         status=status,
         page=page,
         per_page=per_page,

@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { useVisibleTabs } from "@/lib/portalGate";
+import { GroupLevelBadge } from "@/components/shared/ScopeControls";
 
 import APAging from "./APAging";
 import PaymentList from "./PaymentList";
@@ -28,16 +29,17 @@ import CashPosition from "./CashPosition";
 
 // perm = izin route lama tab tersebut (route lama kini redirect ke ?tab=…)
 const TABS = [
-  { id: "ap-aging",         label: "AP aging",             icon: Receipt,         component: APAging,                perm: "finance.ap.read" },
-  { id: "payments",         label: "Payments",             icon: Banknote,        component: PaymentList,            perm: "finance.payment" },
-  { id: "payment-runs",     label: "Payment runs",         icon: Layers,          component: PaymentRunList,         perm: "finance.payment" },
-  { id: "run-templates",    label: "Run templates",        icon: ClipboardList,   component: PaymentRunTemplateList, perm: "finance.payment" },
-  { id: "bank-recon",       label: "Bank reconciliation",  icon: Landmark,        component: BankRecon,              perm: "finance.bank_reconciliation" },
+  { id: "ap-aging",         label: "AP aging",             icon: Receipt,         component: APAging,                perm: "finance.ap.read", group: true },
+  { id: "payments",         label: "Payments",             icon: Banknote,        component: PaymentList,            perm: "finance.payment", group: true },
+  { id: "payment-runs",     label: "Payment runs",         icon: Layers,          component: PaymentRunList,         perm: "finance.payment", group: true },
+  { id: "run-templates",    label: "Run templates",        icon: ClipboardList,   component: PaymentRunTemplateList, perm: "finance.payment", group: true },
+  { id: "bank-recon",       label: "Bank reconciliation",  icon: Landmark,        component: BankRecon,              perm: "finance.bank_reconciliation", group: true },
   { id: "cash-position",    label: "Cash position",        icon: Wallet,          component: CashPosition,           perm: "finance.cash.read" },
-  { id: "ar-invoices",      label: "AR invoices",          icon: FileSpreadsheet, component: ARInvoiceList,          perm: "finance.ar" },
+  { id: "ar-invoices",      label: "AR invoices",          icon: FileSpreadsheet, component: ARInvoiceList,          perm: "finance.ar", group: true },
   { id: "deposits",         label: "Reservation deposits", icon: CalendarCheck,   component: ReservationDeposits,    perm: "finance.ar" },
 ];
 
+// group: true = tab tingkat Group (vendor/rekening/customer milik pusat) — tidak mengikuti konteks brand/toko.
 export default function FinancePaymentsHub() {
   const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,6 +65,7 @@ export default function FinancePaymentsHub() {
           icon={CreditCard}
           title="Payments"
           subtitle="Hutang (AP), pembayaran, payment run, rekonsiliasi bank, posisi kas, dan piutang (AR) dalam satu tempat."
+          actions={current.group ? <GroupLevelBadge /> : null}
         />
 
         <Tabs value={current.id} onValueChange={handleTabChange}>

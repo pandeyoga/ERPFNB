@@ -29,7 +29,7 @@ const SOURCE_LABEL = { manual: "Manual", KDO: "KDO", BDO: "BDO" };
 
 export default function PRList() {
   const [searchParams] = useSearchParams();
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, allLabel } = useOutletScope();
   const [status, setStatus] = useState(() => {
     const s = searchParams.get("status") || "";
     return STATUS_TABS.some(t => t.key === s) ? s : "";
@@ -87,15 +87,17 @@ export default function PRList() {
           <StatusTabs value={status || "all"} onChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}
             options={STATUS_TABS} testId="pr-status-tabs" tabTestId={(k) => `pr-tab-${k}`} />
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-            <SimpleSelect
+            {scopedOutlets.length > 1 && (
+              <SimpleSelect
               value={outletId}
               onValueChange={(v) => { setOutletId(v); setPage(1); }}
-              options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua outlet"
-              ariaLabel="Filter outlet"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
+              ariaLabel="Toko"
               className="glass-input w-[180px]"
               testId="pr-filter-outlet"
             />
+            )}
             <div className="flex items-center gap-1.5">
               <SimpleSelect
                 value={source}

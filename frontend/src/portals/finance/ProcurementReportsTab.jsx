@@ -74,7 +74,7 @@ function ReportCard({ icon: Icon, title, description, accentClass, children, onE
 
 export default function ProcurementReportsTab() {
   const { downloading, exportXlsx } = useExcelExport();
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets, allLabel } = useOutletScope();
 
   // PR filters
   const [prStatus, setPrStatus] = useState("");
@@ -138,13 +138,13 @@ export default function ProcurementReportsTab() {
           {/* Outlet */}
           <div>
             <Label className={LABEL}>
-              Outlet
+              Toko
             </Label>
             <SimpleSelect
               value={prOutlet}
               onValueChange={setPrOutlet}
-              options={[{ value: "", label: "Semua Outlet" }, ...allOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua Outlet"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="pr-report-outlet"
               ariaLabel="Outlet PR"
@@ -205,13 +205,13 @@ export default function ProcurementReportsTab() {
           {/* Outlet */}
           <div>
             <Label className={LABEL}>
-              Outlet
+              Toko
             </Label>
             <SimpleSelect
               value={poOutlet}
               onValueChange={setPoOutlet}
-              options={[{ value: "", label: "Semua Outlet" }, ...allOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua Outlet"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="po-report-outlet"
               ariaLabel="Outlet PO"

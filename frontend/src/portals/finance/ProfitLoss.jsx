@@ -14,7 +14,6 @@ import { Download } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Button } from "@/components/ui/button";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
@@ -23,6 +22,7 @@ import KpiCard from "@/components/shared/KpiCard";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
+import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -99,15 +99,14 @@ function normalizeData(raw) {
 
 export default function ProfitLoss() {
   const [period, setPeriod] = useState(() => todayJakartaISO().slice(0, 7));
-  const { outletId, setOutletId, scopedOutlets } = useOutletScope();
+  const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   async function load() {
     setLoading(true);
     try {
-      const params = { period, compare_prev: true };
-      if (outletId) params.dim_outlet = outletId;
+      const params = { period, compare_prev: true, ...scopeParams };
       const res = await api.get("/finance/profit-loss", { params });
       setData(normalizeData(unwrap(res)));
     } catch (e) {
@@ -149,17 +148,13 @@ export default function ProfitLoss() {
           <Input id="pl-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="pl-period" />
         </div>
-        <div className="min-w-[180px]">
-          <Label className={LABEL}>Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
-            options={[{ value: "", label: "Consolidated" }, ...(scopedOutlets || []).map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Consolidated"
-            className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="pl-outlet" />
-        </div>
+        <StoreFilter filter={storeFilter} testId="pl-outlet" />
         <Button onClick={exportCsv} variant="outline" className="ml-auto" data-testid="pl-export" disabled={!data}>
           <Download /> Ekspor CSV
         </Button>
       </div>
+
+      <ScopeNote show={belowGroup} />
 
       {loading && <LoadingState rows={6} />}
 

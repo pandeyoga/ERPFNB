@@ -39,7 +39,8 @@ export default function ReportBuilder() {
   const [brands, setBrands] = useState([]);
   const [vendors, setVendors] = useState([]);
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets: outlets } = useOutletScope();
+  // Tanpa pilihan toko → toko dalam konteks TopNav (POST tidak membawa konteks otomatis).
+  const { scopedOutlets: outlets, belowGroup, outletIds: contextOutletIds } = useOutletScope();
 
   const [dimensions, setDimensions] = useState(["outlet"]);
   const [metrics, setMetrics] = useState(["sales", "gross_profit"]);
@@ -89,7 +90,7 @@ export default function ReportBuilder() {
       const payload = {
         dimensions, metrics,
         period_from: periodFrom, period_to: periodTo,
-        outlet_ids: outletIds.length ? outletIds : null,
+        outlet_ids: outletIds.length ? outletIds : (belowGroup ? contextOutletIds : null),
         brand_ids: brandIds.length ? brandIds : null,
         vendor_ids: vendorIds.length ? vendorIds : null,
         limit: 200,
@@ -171,7 +172,7 @@ export default function ReportBuilder() {
       const payload = {
         dimensions, metrics,
         period_from: periodFrom, period_to: periodTo,
-        outlet_ids: outletIds.length ? outletIds : null,
+        outlet_ids: outletIds.length ? outletIds : (belowGroup ? contextOutletIds : null),
         brand_ids: brandIds.length ? brandIds : null,
         vendor_ids: vendorIds.length ? vendorIds : null,
         title: "Custom Report",
@@ -255,7 +256,7 @@ export default function ReportBuilder() {
                   className="glass-input mt-1 h-9" data-testid="builder-to" />
               </div>
             </div>
-            <FilterRow label="Outlet" items={outlets} selected={outletIds} setSelected={setOutletIds} testid="builder-outlet" />
+            <FilterRow label="Toko" items={outlets} selected={outletIds} setSelected={setOutletIds} testid="builder-outlet" />
             <FilterRow label="Brand" items={brands} selected={brandIds} setSelected={setBrandIds} testid="builder-brand" />
             <FilterRow label="Vendor" items={vendors} selected={vendorIds} setSelected={setVendorIds} testid="builder-vendor" />
           </div>

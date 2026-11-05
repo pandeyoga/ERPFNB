@@ -137,6 +137,7 @@ async def set_preferences_bulk(user_id: str, updates: dict) -> dict:
     Lightweight client-side validation:
       - `collapsed_widgets` must be a list of strings, max 100 entries.
       - `dashboard_preset_{portal}` must be a non-empty string.
+      - `work_scope` = {level: group|brand|outlet, brand_id, outlet_id}.
     Unknown keys are accepted (forward compatibility) but coerced to JSON-safe types.
     """
     db = get_db()
@@ -155,6 +156,12 @@ async def set_preferences_bulk(user_id: str, updates: dict) -> dict:
             if not isinstance(v, str) or not v:
                 raise ValueError(f"{k} must be a non-empty string")
             sanitized[k] = v
+        elif k == "work_scope":
+            # Konteks kerja global (TopNav): Group / Brand / Toko. Akses tetap ditegakkan server per request.
+            if not isinstance(v, dict) or v.get("level") not in ("group", "brand", "outlet"):
+                raise ValueError("work_scope must be {level: group|brand|outlet, brand_id?, outlet_id?}")
+            sanitized[k] = {"level": v["level"], "brand_id": str(v.get("brand_id") or "") or None,
+                            "outlet_id": str(v.get("outlet_id") or "") or None}
         else:
             sanitized[k] = v
 

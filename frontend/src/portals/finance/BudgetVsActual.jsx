@@ -15,51 +15,35 @@ import EmptyState from "@/components/shared/EmptyState";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
-import { logger } from "@/lib/logger";
+import useOutletScope from "@/hooks/useOutletScope";
+import { useScope } from "@/contexts/ScopeContext";
+import { StoreFilter } from "@/components/shared/ScopeControls";
 
 export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
   const navigate = useNavigate();
   const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
-  const [scope, setScope] = useState("outlet");
-  const [outletId, setOutletId] = useState("");
-  const [brandId, setBrandId] = useState("");
   const [level, setLevel] = useState("both");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const [outlets, setOutlets] = useState([]);
-  const [brands, setBrands] = useState([]);
-
-  // Load outlets and brands
-  useEffect(() => {
-    async function loadMasterData() {
-      try {
-        const [outletRes, brandRes] = await Promise.all([
-          api.get("/public/outlets"),
-          api.get("/master/brands").catch(() => ({ data: { data: [] } }))
-        ]);
-        if (outletRes.data) setOutlets(outletRes.data.data || []);
-        if (brandRes.data) setBrands(brandRes.data.data || []);
-      } catch (err) {
-        logger.error("Failed to load budget vs actual master data", { error: err.message });
-      }
-    }
-    loadMasterData();
-  }, []);
+  // Level budget (Group / Brand / Toko) diturunkan dari konteks TopNav + filter Toko lokal (DESIGN_SYSTEM §10.7).
+  const { outletId, storeFilter } = useOutletScope();
+  const { scope: ctx, isFullAccess } = useScope();
+  const scope = outletId || ctx.level === "outlet" ? "outlet" : ctx.level === "brand" ? "brand" : "group";
+  const needsPick = scope === "group" && !isFullAccess; // "Semua toko saya" lintas brand: tidak ada budget Group
 
   const loadData = async () => {
     setLoading(true);
     try {
       const params = { period, scope, level };
-      if (scope === "outlet" && outletId) params.outlet_id = outletId;
-      if (scope === "brand" && brandId) params.brand_id = brandId;
+      if (scope === "outlet") params.outlet_id = outletId || ctx.outletId;
+      if (scope === "brand") params.brand_id = ctx.brandId;
       const res = await api.get("/budget/vs-actual", { params });
       if (res.data.success) setData(res.data.data);
     } catch { toast.error("Gagal memuat data budget"); }
     finally { setLoading(false); }
   };
 
-  useEffect(() => { loadData(); }, [period, scope, outletId, brandId, level]);
+  useEffect(() => { if (!needsPick) loadData(); }, [period, scope, outletId, level]); // eslint-disable-line
 
   const getVarianceColor = (pct, category) => {
     if (pct === null || pct === undefined) return "text-muted-foreground";
@@ -89,64 +73,16 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
       />
 
       {/* Filter tingkat halaman = baris polos tanpa kartu (DESIGN_SYSTEM §10.3). */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end" data-testid="bva-filters">
-        <div className="space-y-1">
+      <div className="flex flex-wrap gap-3 items-end" data-testid="bva-filters">
+        <div className="space-y-1 min-w-[160px]" data-testid="scope-select">
           <Label htmlFor="bva-period">Periode</Label>
           <Input id="bva-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             data-testid="period-input" />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="bva-scope">Scope</Label>
-          <Select value={scope} onValueChange={v => {
-            setScope(v);
-            setOutletId("");
-            setBrandId("");
-          }}>
-            <SelectTrigger id="bva-scope" data-testid="scope-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="outlet">Outlet</SelectItem>
-              <SelectItem value="brand">Brand</SelectItem>
-              <SelectItem value="group">Group</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <StoreFilter filter={storeFilter} testId="outlet-select" />
 
-        {scope === "outlet" && (
-          <div className="space-y-1">
-            <Label htmlFor="bva-outlet">Outlet</Label>
-            <Select value={outletId} onValueChange={setOutletId}>
-              <SelectTrigger id="bva-outlet" data-testid="outlet-select">
-                <SelectValue placeholder="Semua outlet" />
-              </SelectTrigger>
-              <SelectContent>
-                {outlets.map(o => (
-                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {scope === "brand" && (
-          <div className="space-y-1">
-            <Label htmlFor="bva-brand">Brand</Label>
-            <Select value={brandId} onValueChange={setBrandId}>
-              <SelectTrigger id="bva-brand" data-testid="brand-select">
-                <SelectValue placeholder="Semua brand" />
-              </SelectTrigger>
-              <SelectContent>
-                {brands.map(b => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-[180px]">
           <Label htmlFor="bva-level">Level</Label>
           <Select value={level} onValueChange={setLevel}>
             <SelectTrigger id="bva-level" data-testid="level-select">
@@ -160,15 +96,24 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
           </Select>
         </div>
 
-        <div className="flex items-end">
-          <Button variant="outline" onClick={loadData} disabled={loading} data-testid="load-data-btn" className="w-full">
+        <div className="flex items-end ml-auto">
+          <Button variant="outline" onClick={loadData} disabled={loading || needsPick} data-testid="load-data-btn">
             <RefreshCw className={loading ? "animate-spin" : undefined} />
             {loading ? "Memuat…" : "Muat ulang"}
           </Button>
         </div>
       </div>
 
-      {data && !hasBudgets && (
+      {needsPick && (
+        <EmptyState
+          icon={Target}
+          title="Pilih brand atau toko"
+          description="Budget vs Actual dihitung per Group, brand, atau toko. Pilih brand atau toko di bagian atas layar."
+          testId="bva-needs-scope"
+        />
+      )}
+
+      {!needsPick && data && !hasBudgets && (
         <Card className="border-dashed">
           <CardContent className="p-0">
             <EmptyState
@@ -181,7 +126,7 @@ export default function BudgetVsActual({ embedded = false, onSwitchTab }) {
         </Card>
       )}
 
-      {data && hasBudgets && (
+      {!needsPick && data && hasBudgets && (
         <>
           {/* Ringkasan halaman: satu strip KPI di atas, tanpa judul (§10.2). */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" data-testid="bva-totals">

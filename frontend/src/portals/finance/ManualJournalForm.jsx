@@ -24,8 +24,16 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 import { fetchAll } from "@/lib/api";
+import { useScope } from "@/contexts/ScopeContext";
 export default function ManualJournalForm() {
   const navigate = useNavigate();
+  // Konteks TopNav hanya mengisi nilai awal dimensi baris (DESIGN_SYSTEM §10.7, form tipe D).
+  const { scope } = useScope();
+  const blankLine = () => ({
+    coa_id: "", dr: 0, cr: 0, memo: "",
+    dim_outlet: scope.level === "outlet" ? scope.outletId : "",
+    dim_brand: scope.level !== "group" ? scope.brandId || "" : "",
+  });
   const [coas, setCoas] = useState([]);
   const [outlets, setOutlets] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -36,10 +44,7 @@ export default function ManualJournalForm() {
   const [form, setForm] = useState({
     entry_date: todayJakartaISO(),
     description: "",
-    lines: [
-      { coa_id: "", dr: 0, cr: 0, memo: "", dim_outlet: "", dim_brand: "" },
-      { coa_id: "", dr: 0, cr: 0, memo: "", dim_outlet: "", dim_brand: "" },
-    ],
+    lines: [blankLine(), blankLine()],
   });
 
   useEffect(() => {
@@ -65,7 +70,7 @@ export default function ManualJournalForm() {
   function addLine() {
     setForm(f => ({
       ...f,
-      lines: [...f.lines, { coa_id: "", dr: 0, cr: 0, memo: "", dim_outlet: "", dim_brand: "" }],
+      lines: [...f.lines, blankLine()],
     }));
   }
   function removeLine(i) {

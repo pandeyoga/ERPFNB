@@ -23,8 +23,7 @@ const lineCost = (ln) => Number(ln.est_cost ?? ln.unit_cost ?? 0);
 
 export default function PRConsolidation() {
   const navigate = useNavigate();
-  const { scopedOutlets, allOutlets } = useOutletScope();
-  const outlets = scopedOutlets.length > 0 ? scopedOutlets : allOutlets;
+  const { scopedOutlets: outlets, allLabel } = useOutletScope(); // toko dalam konteks TopNav
   const [prs, setPrs] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -131,15 +130,17 @@ export default function PRConsolidation() {
           className="glass-input w-[160px]"
           testId="cons-filter-status"
         />
-        <SimpleSelect
-          value={filters.outlet_id}
-          onValueChange={(v) => setFilters((f) => ({ ...f, outlet_id: v }))}
-          options={[{ value: "", label: "Semua outlet" }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
-          placeholder="Semua outlet"
-          ariaLabel="Filter outlet"
-          className="glass-input w-[180px]"
-          testId="cons-filter-outlet"
-        />
+        {outlets.length > 1 && (
+          <SimpleSelect
+            value={filters.outlet_id}
+            onValueChange={(v) => setFilters((f) => ({ ...f, outlet_id: v }))}
+            options={[{ value: "", label: allLabel }, ...outlets.map(o => ({ value: o.id, label: o.name }))]}
+            placeholder={allLabel}
+            ariaLabel="Toko"
+            className="glass-input w-[180px]"
+            testId="cons-filter-outlet"
+          />
+        )}
         <span className="text-xs text-muted-foreground ml-auto" data-testid="cons-pr-count">{prs.length} PR</span>
       </div>
 

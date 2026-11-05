@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import PageHeader from "@/components/shared/PageHeader";
+import { GroupLevelBadge } from "@/components/shared/ScopeControls";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
@@ -62,12 +63,17 @@ export default function COABrowser() {
         icon={BookOpen}
         title="Chart of Accounts"
         subtitle={`Daftar akun (read-only) — ${filtered.length} dari ${coas.length} akun`}
-        actions={can("admin.master_data.manage") && (
-          <Button variant="outline" asChild>
-            <Link to="/admin/master-data?tab=chart-of-accounts" data-testid="coa-edit-link">
-              Kelola di Admin <ExternalLink />
-            </Link>
-          </Button>
+        actions={(
+          <>
+            <GroupLevelBadge />
+            {can("admin.master_data.manage") && (
+              <Button variant="outline" asChild>
+                <Link to="/admin/master-data?tab=chart-of-accounts" data-testid="coa-edit-link">
+                  Kelola di Admin <ExternalLink />
+                </Link>
+              </Button>
+            )}
+          </>
         )}
       />
       <div className="space-y-3 lg:space-y-4">

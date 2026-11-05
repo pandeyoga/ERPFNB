@@ -40,7 +40,7 @@ export default function POForm() {
   const qVendorId = search.get("vendor_id") || "";
   const { can } = useAuth();
 
-  const { outletId, setOutletId, scopedOutlets, isFullAccess, isRestricted, loaded: outletsLoaded } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, isFullAccess, isRestricted, loaded: outletsLoaded } = useOutletScope("", { form: true }); // form: semua toko dalam akses, nilai awal dari konteks
   const [vendors, setVendors] = useState([]);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({

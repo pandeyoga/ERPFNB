@@ -28,6 +28,10 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
   - Bahasa: istilah teknis EN (Payment, COA, Posted, Overdue, Partial); aksi, kalimat & status persetujuan ID
     (Simpan, Disetujui, Ditolak); label = kata umum ID + istilah EN ("Tanggal Invoice", "Nominal").
     Buat ‹dokumen› / Tambah ‹data›; uang = Nominal, hitungan = Jumlah.
+- **Konteks Brand/Toko** dipilih sekali di TopNav (`DESIGN_SYSTEM.md` §10.7). Jangan buat pemilih outlet/brand sendiri.
+  Filter toko lokal pakai `useOutletScope()` + `StoreFilter`/`OutletScopePicker`, field form pakai
+  `useOutletScope("", { form: true })`, halaman tingkat Group pakai `GroupLevelBadge`. GET otomatis membawa konteks
+  (`lib/api.js`); opt-out `{ scope: false }`.
 - `data-testid` kebab-case untuk elemen interaktif; **jangan ganti testid yang dipakai tour**
   (`frontend/src/contexts/tour`).
 - Pengecualian yang sah: tulis komentar `ds-ok: alasan` tepat sebelum elemen.

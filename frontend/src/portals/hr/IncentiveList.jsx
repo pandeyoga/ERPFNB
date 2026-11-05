@@ -49,7 +49,7 @@ export default function IncentiveList({ embedded = false }) {
   const [showCalc, setShowCalc] = useState(false);
   const [detailRunId, setDetailRunId] = useState(null);
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets } = useOutletScope("", { form: true }); // dropdown form: semua toko dalam akses
 
   const canApprove = (user?.permissions || []).includes("hr.incentive.approve")
     || (user?.permissions || []).includes("*");

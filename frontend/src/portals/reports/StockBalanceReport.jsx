@@ -8,7 +8,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { ReportPage, FilterGrid, ReportField, ChipMultiSelect, useExcelExport, toOptions } from "./reportKit";
 
 export default function StockBalanceReport() {
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
   const [asOfDate, setAsOfDate] = useState(todayJakartaISO());
   const [categories, setCategories] = useState([]);
   const [selectedOutlets, setSelectedOutlets] = useState([]);
@@ -49,8 +49,8 @@ export default function StockBalanceReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="sb-outlets" label="Outlet" icon={Store}
-        options={toOptions(allOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        id="sb-outlets" label="Toko" icon={Store}
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />
       <ChipMultiSelect

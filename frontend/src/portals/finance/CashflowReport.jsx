@@ -11,6 +11,8 @@ import DataTable from "@/components/shared/DataTable";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
+import useOutletScope from "@/hooks/useOutletScope";
+import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 import { cn } from "@/lib/utils";
 
 export default function CashflowReport() {
@@ -20,17 +22,18 @@ export default function CashflowReport() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedCat, setExpandedCat] = useState(null);
+  const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
 
   async function load() {
     setLoading(true);
     try {
-      const res = await api.get("/finance/cashflow", { params: { period } });
+      const res = await api.get("/finance/cashflow", { params: { period, ...scopeParams } });
       setData(unwrap(res));
     } catch (e) {
       toast.error("Gagal memuat Cashflow");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, [period]);
+  useEffect(() => { load(); }, [period, outletId]); // eslint-disable-line
 
   function exportCsv() {
     if (!data) return;
@@ -53,10 +56,12 @@ export default function CashflowReport() {
           <Input id="cf-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="cf-period" />
         </div>
+        <StoreFilter filter={storeFilter} testId="cf-outlet" />
         <Button onClick={exportCsv} variant="outline" className="ml-auto" disabled={!data} data-testid="cf-export">
           <Download /> Ekspor CSV
         </Button>
       </div>
+      <ScopeNote show={belowGroup} />
 
       {loading && <LoadingState rows={6} />}
       {!loading && data && (

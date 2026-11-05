@@ -12,7 +12,7 @@ function currentPeriod() {
 }
 
 export default function TrialBalanceReport() {
-  const { allOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets, allLabel } = useOutletScope(); // toko dalam konteks TopNav
   const [period, setPeriod] = useState(currentPeriod());
   const [dimOutlet, setDimOutlet] = useState("all");
   const [exporting, exportExcel] = useExcelExport();
@@ -52,7 +52,7 @@ export default function TrialBalanceReport() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" data-testid="tb-outlet-all">Semua outlet (konsolidasi)</SelectItem>
+              <SelectItem value="all" data-testid="tb-outlet-all">{allLabel}</SelectItem>
               {outlets.map(o => (
                 <SelectItem key={o.id} value={o.id} data-testid={`tb-outlet-${o.code || o.id}`}>{o.name}</SelectItem>
               ))}

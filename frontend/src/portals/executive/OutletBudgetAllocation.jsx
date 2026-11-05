@@ -27,6 +27,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import { cn } from "@/lib/utils";
+import { useScope } from "@/contexts/ScopeContext";
 import {
   BUCKETS,
   isoWeekKey, monthKey, isoDate,
@@ -39,6 +40,7 @@ export default function OutletBudgetAllocation() {
   const [periodType, setPeriodType] = useState("monthly");
   const [periodKey, setPeriodKey] = useState(monthKey(new Date()));
   const [outlets, setOutlets] = useState([]);
+  const { contextOutlets } = useScope();
   // budgets[outletId] = { id?, outlet_id, brand_id, budget_mode, kdo_budget, fdo_budget, bdo_budget, combined_budget }
   const [budgets, setBudgets] = useState({});
   const [loading, setLoading] = useState(true);
@@ -53,14 +55,8 @@ export default function OutletBudgetAllocation() {
 
   // Load outlets master once
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get("/master/outlets");
-        setOutlets(res.data.data || []);
-      } catch (e) {
-        toast.error("Gagal memuat data outlet");
-      }
-    })();
+    // Baris matriks = toko dalam konteks TopNav (DESIGN_SYSTEM §10.7)
+    setOutlets(contextOutlets);
     (async () => {
       try {
         const res = await api.get("/outlet-budget/increase-requests", { params: { status: "pending" } });

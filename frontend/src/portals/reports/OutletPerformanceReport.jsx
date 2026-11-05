@@ -9,7 +9,7 @@ import {
 } from "./reportKit";
 
 export default function OutletPerformanceReport() {
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
   const [dateFrom, setDateFrom] = useState(() => daysAgoISO(30));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [selectedOutlets, setSelectedOutlets] = useState([]);
@@ -47,8 +47,8 @@ export default function OutletPerformanceReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="op-outlets" label="Outlet" icon={Store}
-        options={toOptions(allOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        id="op-outlets" label="Toko" icon={Store}
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />
     </ReportPage>

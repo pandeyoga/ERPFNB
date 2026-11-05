@@ -85,7 +85,7 @@ export default function AnomalyFeed({ embedded = false }) {
   const [showAnalytics, setShowAnalytics] = useState(false); // Phase 5C.6
   const { downloading, exportXlsx } = useExcelExport();
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets } = useOutletScope();
+  const { scopedOutlets, allLabel } = useOutletScope();
 
   // Filters
   const [fType, setFType] = useState("");
@@ -402,12 +402,14 @@ export default function AnomalyFeed({ embedded = false }) {
                 ...TRIAGE_STATUSES.map((value) => ({ value, label: statusLabel(value) })),
               ]} />
           </div>
+          {scopedOutlets.length > 1 && (
           <div>
-            <Label className={LABEL}>Outlet</Label>
-            <SimpleSelect value={fOutlet} onValueChange={(v) => { setFOutlet(v); setPage(1); }} ariaLabel="Outlet"
-              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-outlet" placeholder="Semua Outlet"
-              options={[{ value: "", label: "Semua Outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]} />
+            <Label className={LABEL}>Toko</Label>
+            <SimpleSelect value={fOutlet} onValueChange={(v) => { setFOutlet(v); setPage(1); }} ariaLabel="Toko"
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1" testId="anomaly-filter-outlet" placeholder={allLabel}
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]} />
           </div>
+          )}
           <div className="col-span-2 sm:col-span-1 lg:col-span-2">
             <Label htmlFor="anomaly-filter-query" className={LABEL}>Cari</Label>
             <div className="relative mt-1">

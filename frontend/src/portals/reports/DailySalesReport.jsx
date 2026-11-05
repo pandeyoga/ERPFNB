@@ -15,7 +15,7 @@ import {
 } from "./reportKit";
 
 export default function DailySalesReport() {
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
   const [dateFrom, setDateFrom] = useState(() => daysAgoISO(30));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [brands, setBrands] = useState([]);
@@ -85,8 +85,8 @@ export default function DailySalesReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="ds-outlets" label="Outlet" icon={Store}
-        options={toOptions(allOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        id="ds-outlets" label="Toko" icon={Store}
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />
       <ChipMultiSelect

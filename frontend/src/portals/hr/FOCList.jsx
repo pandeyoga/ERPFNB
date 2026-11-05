@@ -35,7 +35,7 @@ export default function FOCList({ embedded = false }) {
   const [typeFilter, setTypeFilter] = useState("");
   const [outletFilter, setOutletFilter] = useState("");
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets, allLabel } = useOutletScope();
 
   const outletMap = useMemo(
     () => Object.fromEntries((outlets || []).map(o => [o.id, o])),
@@ -80,13 +80,15 @@ export default function FOCList({ embedded = false }) {
               {Object.entries(FOC_LABELS).map(([k, l]) => (<SelectItem key={k} value={k}>{l}</SelectItem>))}
             </SelectContent>
           </Select>
+          {outlets.length > 1 && (
           <Select value={outletFilter || "all"} onValueChange={(v) => setOutletFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="w-48" aria-label="Filter outlet" data-testid="hr-foc-filter-outlet"><SelectValue placeholder="Semua outlet" /></SelectTrigger>
+            <SelectTrigger className="w-48" aria-label="Toko" data-testid="hr-foc-filter-outlet"><SelectValue placeholder={allLabel} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua outlet</SelectItem>
+              <SelectItem value="all">{allLabel}</SelectItem>
               {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
             </SelectContent>
           </Select>
+          )}
         </div>
       </div>
 

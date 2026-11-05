@@ -39,7 +39,7 @@ export default function VoucherList({ embedded = false }) {
     return () => clearTimeout(t);
   }, [searchInput]);
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets } = useOutletScope("", { form: true }); // dropdown form: semua toko dalam akses
 
   const canIssue = (user?.permissions || []).includes("hr.voucher.issue")
     || (user?.permissions || []).includes("*");

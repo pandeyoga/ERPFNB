@@ -870,7 +870,7 @@ const financeBudgetVsActualTour = {
   description: "Bandingkan anggaran vs realisasi per akun/periode.",
   steps: [
     { target: "[data-testid='budget-vs-actual']", title: "Budget vs Actual", content: "Bandingkan **anggaran vs realisasi** — deteksi varians signifikan lebih awal.", placement: "center", disableBeacon: true, variant: "hero" },
-    { target: "[data-testid='scope-select']", title: "Scope & Filter", content: "Pilih scope (group/brand/outlet), periode, dan level untuk fokus analisis.", placement: "bottom" },
+    { target: "[data-testid='scope-select']", title: "Periode & Filter", content: "Cakupan (Group/brand/toko) mengikuti pilihan **di bagian atas layar**. Di sini pilih periode, level, dan toko bila brand punya beberapa toko.", placement: "bottom" },
     { target: "[data-testid='category-summary']", title: "Ringkasan per Kategori", content: "Lihat varians per kategori; klik untuk drill ke detail COA.", placement: "top", variant: "tip" },
   ],
 };

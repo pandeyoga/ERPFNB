@@ -27,7 +27,7 @@ export default function GRForm() {
   const [search] = useSearchParams();
   const fromPO = search.get("po");
 
-  const { outletId, setOutletId, scopedOutlets, isFullAccess, isRestricted, loaded: outletsLoaded } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, isFullAccess, isRestricted, loaded: outletsLoaded } = useOutletScope("", { form: true }); // form: semua toko dalam akses, nilai awal dari konteks
   const [saving, setSaving] = useState(false);
   const [loadingPO, setLoadingPO] = useState(Boolean(fromPO));
   const [periodLocked, setPeriodLocked] = useState(false);

@@ -252,3 +252,35 @@ Kamus (satu konsep = satu kata):
 ### 10.6 Grid
 Kartu sejenis dalam satu baris memiliki lebar yang sama. Dua grid berurutan memakai jumlah kolom yang sama, atau
 dipisah judul bagian. Tidak boleh ada item yatim di baris terakhir.
+
+### 10.7 Konteks Brand / Toko (disepakati 5 Nov 2026)
+Hierarki: **Group** (badan usaha, satu buku besar) → **Brand** → **Toko**. Brand dan toko adalah dimensi baris jurnal,
+bukan buku terpisah. Analisis lengkap: `docs/audit/OUTLET_SCOPE_ANALYSIS_2026-10-29.md`.
+
+- **Satu pemilih di TopNav** (`components/layout/ScopeSwitcher`, `contexts/ScopeContext`):
+  - pilihannya "Semua brand" (hanya untuk user yang memegang semua toko) / "Semua toko saya" (user terbatas), Brand, atau Toko;
+  - disimpan per akun (`/preferences/me` → `work_scope`);
+  - user dengan 1 toko melihat label statis.
+- **Semua menu otomatis memakai konteks itu.**
+  - Setiap GET membawa `brand_id`/`outlet_id` (plus `brand_ids`/`outlet_ids`) lewat `lib/api.js`, kecuali:
+    - request sudah memilih toko sendiri;
+    - request memakai `{ scope: false }`;
+    - endpoint tingkat Group/konfigurasi.
+  - Ganti konteks = halaman dimuat ulang.
+  - Server menegakkan akses (`core/scope.py`, `services/_finance/scope.py`).
+- **Jangan membuat pemilih outlet/brand sendiri di halaman.** Pakai salah satu:
+  - `useOutletScope()` + `<StoreFilter>` / `OutletScopePicker` untuk filter **Toko** lokal. Filter ini hanya muncul bila
+    konteks berisi ≥ 2 toko, tidak mengubah konteks global, dan kembali ke "Semua toko ‹brand›" saat pindah menu.
+  - `useOutletScope("", { form: true })` untuk field Outlet di form: daftar = semua toko dalam akses, nilai awal = toko konteks.
+- **Jenis halaman:**
+
+  | Jenis | Contoh | Perilaku |
+  |---|---|---|
+  | A. Agregat | laporan, daftar, dashboard | Ikut konteks. Di bawah Group, laporan GL memberi `<ScopeNote>`: transaksi pusat tidak ikut. |
+  | B. Operasional 1 toko | Outlet Portal | Pilih toko di kanan judul bila konteks berisi > 1 toko. Pilihan berlaku selama sesi untuk konteks itu. |
+  | C. Tingkat Group | COA, Tax, Period Closing, Payments, Payment run, Bank recon, AR, AP aging | `<GroupLevelBadge>` di header; tidak dipotong konteks. |
+  | D. Form input | Manual Journal, PR/PO/GR, AR Invoice | Konteks hanya nilai awal. |
+
+- **Balance Sheet di bawah Group** ditandai "Neraca parsial".
+- **Label:** "Toko" (bukan "Outlet (dim)"/"Consolidated"/"Konsolidasi (semua)"); opsi semua = "Semua toko ‹brand›";
+  transaksi tanpa toko = "Pusat".

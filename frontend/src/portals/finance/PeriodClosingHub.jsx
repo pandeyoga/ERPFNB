@@ -32,6 +32,7 @@ import PeriodList from "./PeriodList";
 import AnomalyFeed from "./AnomalyFeed";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import PageHeader from "@/components/shared/PageHeader";
+import { GroupLevelBadge } from "@/components/shared/ScopeControls";
 import EmptyState from "@/components/shared/EmptyState";
 
 const PHASES = [
@@ -147,6 +148,7 @@ export default function PeriodClosingHub() {
         subtitle="4 fase berurutan — Review Periods → Anomaly Check → Closing Wizard → Lock"
         actions={(
           <>
+            <GroupLevelBadge />
             {allDone && (
               <Badge variant="secondary" className="gap-1.5 text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border-emerald-500/30">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Period closing selesai

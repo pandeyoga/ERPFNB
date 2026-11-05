@@ -25,7 +25,7 @@ import PageHeader from "@/components/shared/PageHeader";
 export default function OpnameList() {
   const navigate = useNavigate();
   const { can } = useAuth();
-  const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet, allLabel } = useOutletScope();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showStart, setShowStart] = useState(false);
@@ -60,7 +60,7 @@ export default function OpnameList() {
         <PageHeader
           icon={ClipboardCheck}
           title="Stock Opname"
-          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua outlet"} — hitung stok fisik dan bandingkan dengan stok sistem.`}
+          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : allLabel} — hitung stok fisik dan bandingkan dengan stok sistem.`}
           className="mb-0 md:mb-0"
           actions={
             <>
@@ -69,11 +69,11 @@ export default function OpnameList() {
                 <SimpleSelect
                   value={outletId}
                   onValueChange={setOutletId}
-                  options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-                  placeholder="Semua outlet"
+                  options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                  placeholder={allLabel}
                   className="glass-input rounded-lg px-3 h-9 text-sm min-w-[160px]"
                   testId="opn-outlet-filter"
-                  ariaLabel="Filter outlet"
+                  ariaLabel="Toko"
                 />
               )}
               <Button onClick={() => setShowStart(true)} data-testid="opn-new" disabled={!can("outlet.opname.execute")}>

@@ -59,7 +59,7 @@ const rowKeyFor = (it) => `${it.item_id}::${it.outlet_id}`;
 export default function LowStockAlert() {
   const navigate = useNavigate();
   const { can } = useAuth();
-  const { outletId, setOutletId, scopedOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allLabel } = useOutletScope();
   const [data, setData] = useState({ outlets: [], items: [], total_below: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -174,18 +174,20 @@ export default function LowStockAlert() {
       <div className="glass-card overflow-hidden" data-testid="low-table-card">
         {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
         <ListToolbar testId="low-toolbar" className="items-end">
-          <div className="min-w-[200px]">
-            <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-            <SimpleSelect
-              ariaLabel="Filter outlet"
+          {scopedOutlets.length > 1 && (
+            <div className="min-w-[200px]">
+              <Label className="text-xs md:text-sm font-medium">Toko</Label>
+              <SimpleSelect
+              ariaLabel="Toko"
               value={outletId}
               onValueChange={setOutletId}
-              options={[{ value: "", label: "Semua outlet (dalam scope)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua outlet (dalam scope)"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="low-outlet"
             />
-          </div>
+            </div>
+          )}
           <div className="min-w-[200px]" role="group" aria-labelledby="low-sev-label">
             <span id="low-sev-label" className="text-xs md:text-sm font-medium">Severity</span>
             <div className="flex gap-1.5 mt-1">

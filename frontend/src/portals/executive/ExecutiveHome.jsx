@@ -46,6 +46,7 @@ import { Button } from "@/components/ui/button";
 import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
+import { useScope } from "@/contexts/ScopeContext";
 
 const RANGES = [
   { v: 7, l: "7d" },
@@ -131,11 +132,15 @@ export default function ExecutiveHome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveMode]);
 
-  // Filtered outlet options based on selected brands
+  // Filter lokal di DALAM konteks TopNav (DESIGN_SYSTEM §10.7): Brand hanya saat konteks Semua brand,
+  // Outlet hanya toko dalam konteks.
+  const { scope: ctxScope, contextOutlets } = useScope();
+  const showBrandFilter = ctxScope.level === "group" && brandList.length > 1;
   const outletOptions = useMemo(() => {
-    if (brandIds.length === 0) return outletList;
-    return outletList.filter(o => brandIds.includes(o.brand_id));
-  }, [outletList, brandIds]);
+    const inCtx = outletList.filter(o => contextOutlets.some(c => c.id === o.id));
+    if (brandIds.length === 0) return inCtx;
+    return inCtx.filter(o => brandIds.includes(o.brand_id));
+  }, [outletList, brandIds, contextOutlets]);
 
   async function exportPdf() {
     if (!exportRef.current) return;
@@ -211,6 +216,7 @@ export default function ExecutiveHome() {
           value={periodMeta.preset}
           onChange={setPeriodMeta}
         />
+        {showBrandFilter && (
         <MultiSelectFilter
           label="Brand"
           options={brandList}
@@ -227,14 +233,17 @@ export default function ExecutiveHome() {
           }}
           testId="exec-brand-filter"
         />
+        )}
+        {outletOptions.length > 1 && (
         <MultiSelectFilter
-          label="Outlet"
+          label="Toko"
           options={outletOptions}
           value={outletIds}
           onChange={setOutletIds}
           testId="exec-outlet-filter"
           width={240}
         />
+        )}
         {(brandIds.length > 0 || outletIds.length > 0) && (
           <Button
             variant="ghost"

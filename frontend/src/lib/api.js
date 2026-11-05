@@ -13,10 +13,43 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// ── Konteks kerja global (contexts/ScopeContext, DESIGN_SYSTEM §10.7) ─────────────────────────────
+// Setiap GET otomatis membawa konteks TopNav ({ brand_id } | { outlet_id }) kecuali:
+//  - request sudah memilih toko/brand sendiri (filter Toko lokal, lookup toko lain di form transfer, …);
+//  - `config.scope === false` (opt-out eksplisit, mis. matriks yang memang butuh semua toko);
+//  - endpoint tingkat Group / identitas / konfigurasi (daftar di bawah).
+// Server tetap menegakkan akses user; parameter yang tidak dikenal endpoint diabaikan FastAPI.
+let requestScope = {};
+export function setRequestScope(params) {
+  requestScope = params || {};
+}
+const SCOPE_KEYS = ["outlet_id", "outlet_ids", "dim_outlet", "brand_id", "brand_ids"];
+const GROUP_LEVEL_PREFIXES = [
+  "/auth", "/preferences", "/admin", "/master", "/notifications", "/search", "/files", "/uploads",
+  "/public", "/system-settings", "/approval-matrix", "/tour", "/seo",
+  "/finance/periods", "/finance/chart-of-accounts", "/tax", "/efaktur", "/ebupot",
+];
+function withScope(config) {
+  if (!requestScope || !Object.keys(requestScope).length || config.scope === false) return config;
+  if ((config.method || "get").toLowerCase() !== "get") return config;
+  const url = config.url || "";
+  if (/^https?:/.test(url) || GROUP_LEVEL_PREFIXES.some((p) => url === p || url.startsWith(`${p}/`) || url.startsWith(`${p}?`))) return config;
+  const params = config.params instanceof URLSearchParams ? Object.fromEntries(config.params) : { ...(config.params || {}) };
+  const has = (k) => (params[k] !== undefined && params[k] !== null && params[k] !== "") || new RegExp(`[?&]${k}=`).test(url);
+  if (SCOPE_KEYS.some(has)) return config;
+  for (const k of SCOPE_KEYS) if (k in params) delete params[k]; // "" = semua → ganti dengan konteks
+  // Endpoint lama memakai bentuk jamak (outlet_ids / brand_ids, mis. Executive & Reports): kirim keduanya.
+  const extra = { ...requestScope };
+  if (extra.outlet_id) extra.outlet_ids = extra.outlet_id;
+  if (extra.brand_id) extra.brand_ids = extra.brand_id;
+  config.params = { ...params, ...extra };
+  return config;
+}
+
 api.interceptors.request.use((config) => {
   // Track request start time for performance monitoring
   config.metadata = { startTime: Date.now() };
-  return config;
+  return withScope(config);
 });
 
 // Auto-refresh on 401 + 403 no-access redirect + 429 rate limit handling

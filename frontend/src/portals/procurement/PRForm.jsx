@@ -35,7 +35,8 @@ export default function PRForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, can } = useAuth();
-  const { scopedOutlets, allOutlets, loaded } = useOutletScope();
+  // form: daftar = semua toko dalam akses; nilai awal = toko konteks TopNav bila konteksnya satu toko
+  const { scopedOutlets, allOutlets, loaded, outletId: contextOutletId } = useOutletScope("", { form: true });
   const outlets = allOutlets; // FIX: Get outlets from hook
   const [brands, setBrands] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -86,8 +87,9 @@ export default function PRForm() {
   useEffect(() => {
     if (form.outlet_id) return;
     const userOutlets = user?.outlet_ids || [];
-    if (userOutlets.length === 1) setForm(f => ({ ...f, outlet_id: userOutlets[0] }));
-  }, [user]); // eslint-disable-line
+    const initial = contextOutletId || (userOutlets.length === 1 ? userOutlets[0] : "");
+    if (initial) setForm(f => ({ ...f, outlet_id: initial }));
+  }, [user, contextOutletId]); // eslint-disable-line
 
   const userOutlets = useMemo(() => {
     if ((user?.permissions || []).includes("*")) return outlets;

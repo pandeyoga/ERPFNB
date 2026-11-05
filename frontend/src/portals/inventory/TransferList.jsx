@@ -28,7 +28,7 @@ import ListHeader from "./ListHeader";
 /** `embedded` = dirender sebagai tab di Stock Movements hub (tanpa <h1> sendiri). */
 export default function TransferList({ embedded = false }) {
   const { can } = useAuth();
-  const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, isFullAccess, currentOutlet, allLabel } = useOutletScope();
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -74,7 +74,7 @@ export default function TransferList({ embedded = false }) {
           embedded={embedded}
           icon={Truck}
           title="Stock Transfers"
-          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : "Semua outlet"} — pindahkan stok antar outlet.`}
+          subtitle={`${outletId && currentOutlet ? `Outlet: ${currentOutlet.name}` : allLabel} — pindahkan stok antar outlet.`}
           actions={
             <>
               {/* Outlet scope switcher */}
@@ -82,11 +82,11 @@ export default function TransferList({ embedded = false }) {
                 <SimpleSelect
                   value={outletId}
                   onValueChange={setOutletId}
-                  options={[...(isFullAccess ? [{ value: "", label: "Semua outlet" }] : []), ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-                  placeholder="Semua outlet"
+                  options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+                  placeholder={allLabel}
                   className="glass-input w-44"
                   testId="trf-outlet-filter"
-                  ariaLabel="Filter outlet"
+                  ariaLabel="Toko"
                 />
               )}
               <Button onClick={() => setShowForm(true)} data-testid="trf-new" disabled={!can("inventory.transfer.create")}>

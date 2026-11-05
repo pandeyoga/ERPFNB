@@ -10,7 +10,7 @@ import {
 } from "./reportKit";
 
 export default function FdoHistoryReport() {
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
   const [dateFrom, setDateFrom] = useState(() => daysAgoISO(60));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [selectedOutlets, setSelectedOutlets] = useState([]);
@@ -64,8 +64,8 @@ export default function FdoHistoryReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="fdo-outlets" label="Outlet" icon={Store}
-        options={toOptions(allOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        id="fdo-outlets" label="Toko" icon={Store}
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />
     </ReportPage>

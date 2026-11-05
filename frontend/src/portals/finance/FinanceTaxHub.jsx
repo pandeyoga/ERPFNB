@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Receipt, Users, Briefcase, Building, FileText, ScrollText, FileCheck } from "lucide-react";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
+import { GroupLevelBadge } from "@/components/shared/ScopeControls";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import TaxCenter from "./TaxCenter";
@@ -51,6 +52,7 @@ export default function FinanceTaxHub() {
           icon={FileCheck}
           title="Tax & Compliance"
           subtitle="Konfigurasi PPN & PPh, kalkulator pemotongan, dan ekspor e-Faktur / e-Bupot ke DJP"
+          actions={<GroupLevelBadge />}
         />
 
         <Tabs value={active.id} onValueChange={handleTabChange}>

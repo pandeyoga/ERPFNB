@@ -1,65 +1,51 @@
 /**
- * OutletScopePicker — consistent outlet selector across all pages.
+ * OutletScopePicker — pemilih toko seragam (DESIGN_SYSTEM §10.7). Konteks Brand/Toko utama dipilih di TopNav.
  *
- * - Full-access users: shows "All Outlets" + scoped outlet list
- * - Outlet staff: shows ONLY their assigned outlets (cannot see others)
- * - Auto-selects default_outlet_id if set on the user
+ * - Filter daftar (`allowAll`, default): pilihan = toko dalam konteks + "Semua toko ‹brand›". Tidak dirender bila
+ *   konteks hanya berisi satu toko (TopNav sudah menyebut tokonya).
+ * - Field form (`allowAll={false}`): selalu tampil; daftar = toko dalam akses user (dari useOutletScope form mode).
  *
  * Props:
- *   value         string     selected outlet_id (controlled)
- *   onChange      fn(id)     called when selection changes
- *   outlets       array      list of { id, name, brand_name } — from useOutletScope
- *   isFullAccess  bool       whether user has full access (show "All" option)
- *   allowAll      bool       whether to show "All Outlets" option (default true for full-access)
- *   className     string
+ *   value / onChange(id)   toko terpilih ("" = semua)
+ *   outlets                daftar { id, name, brand_name } — dari useOutletScope
+ *   allowAll               tampilkan opsi "Semua toko"
+ *   placeholder, className, triggerClassName, id, ariaLabel, data-testid
  */
 import { Store, Globe2 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useScope } from "@/contexts/ScopeContext";
 
 export default function OutletScopePicker({
   value = "",
   onChange,
   outlets = [],
-  isFullAccess = true,
   allowAll = true,
   className,
-  placeholder = "Semua Outlet",
+  placeholder,
   "data-testid": testId = "outlet-scope-picker",
   id,
-  ariaLabel = "Pilih outlet",
+  ariaLabel = "Pilih toko",
   triggerClassName,
 }) {
-  const showAllOption = isFullAccess && allowAll;
+  const { scope, brand } = useScope();
+  const allLabel = scope.level === "brand" && brand ? `Semua toko ${brand.name}` : `Semua toko (${outlets.length})`;
+  if (allowAll && outlets.length <= 1) return null;
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {/* Scope indicator badge for restricted users */}
-      {!isFullAccess && outlets.length > 0 && (
-        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
-          <Store className="h-3 w-3" />
-          Outlet Anda
-        </span>
-      )}
-      {isFullAccess && value === "" && (
-        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-800 dark:text-green-400 font-medium border border-green-500/20 flex-shrink-0">
-          <Globe2 className="h-3 w-3" />
-          Semua
-        </span>
-      )}
-
       <Select value={value || "__all__"} onValueChange={(v) => onChange?.(v === "__all__" ? "" : v)}>
         <SelectTrigger id={id} aria-label={ariaLabel} className={cn("glass-input min-w-[180px]", triggerClassName)} data-testid={testId}>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder || (allowAll ? allLabel : "Pilih toko")} />
         </SelectTrigger>
         <SelectContent>
-          {showAllOption && (
+          {allowAll && (
             <SelectItem value="__all__">
               <span className="flex items-center gap-2">
                 <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
-                Semua Outlet
+                {allLabel}
               </span>
             </SelectItem>
           )}
@@ -70,7 +56,7 @@ export default function OutletScopePicker({
                   <Store className="h-3.5 w-3.5 text-muted-foreground" />
                   {o.name}
                 </span>
-                {o.brand_name && (
+                {o.brand_name && o.brand_name !== o.name && (
                   <span className="text-xs text-muted-foreground pl-5">{o.brand_name}</span>
                 )}
               </span>

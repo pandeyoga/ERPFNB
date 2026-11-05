@@ -38,6 +38,23 @@ def _doc(extra: dict | None = None) -> dict:
 
 # ====================== CASH ACCOUNT CRUD ======================
 
+async def _scope_or(outlet_ids: Optional[list[str]], brand_ids: Optional[list[str]]) -> Optional[list[dict]]:
+    """Rekening dalam konteks brand/toko + rekening pusat (tanpa toko & brand), yang tetap tampil sebagai "Pusat"."""
+    if not outlet_ids and not brand_ids:
+        return None
+    from core.scope import brand_outlet_ids
+
+    oids = set(outlet_ids or [])
+    for b in brand_ids or []:
+        oids |= set(await brand_outlet_ids(b))
+    ors: list[dict] = [{"outlet_id": None, "brand_id": None}]
+    if oids:
+        ors.append({"outlet_id": {"$in": sorted(oids)}})
+    if brand_ids:
+        ors.append({"brand_id": {"$in": brand_ids}, "outlet_id": None})
+    return ors
+
+
 async def list_accounts(
     *, account_type: Optional[str] = None, outlet_id: Optional[str] = None,
     brand_id: Optional[str] = None, active: Optional[bool] = True,
@@ -46,10 +63,9 @@ async def list_accounts(
     q: dict = {"deleted_at": None}
     if account_type:
         q["type"] = account_type
-    if outlet_id:
-        q["outlet_id"] = outlet_id
-    if brand_id:
-        q["brand_id"] = brand_id
+    ors = await _scope_or([outlet_id] if outlet_id else None, [brand_id] if brand_id else None)
+    if ors:
+        q["$or"] = ors
     if active is not None:
         q["is_active"] = active
     # B13 fix: asyncio.gather untuk load accounts + outlets + brands secara paralel
@@ -253,10 +269,9 @@ async def compute_position(
     """Net liquid cash + breakdown by type, with optional scope filters."""
     db = get_db()
     q: dict = {"deleted_at": None, "is_active": True}
-    if outlet_ids:
-        q["$or"] = [{"outlet_id": {"$in": outlet_ids}}, {"outlet_id": None}]
-    if brand_ids:
-        q.setdefault("$or", []).append({"brand_id": {"$in": brand_ids}})
+    ors = await _scope_or(outlet_ids, brand_ids)
+    if ors:
+        q["$or"] = ors
     accounts = await db.cash_accounts.find(q).to_list(None)
 
     # B2 fix: pre-load all unique outlet IDs to avoid N+1 in loop below

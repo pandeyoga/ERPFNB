@@ -15,15 +15,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { formatCurrency, formatDateID } from "@/lib/format";
+import { useScope } from "@/contexts/ScopeContext";
 
 
 export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
   const [customers, setCustomers] = useState([]);
   const [outlets, setOutlets] = useState([]);
+  const { scope } = useScope(); // konteks satu toko = nilai awal field Outlet
   const [form, setForm] = useState({
     customer_id: "", customer_name: "", customer_npwp: "", customer_address: "",
     channel: "b2b", invoice_date: new Date().toISOString().slice(0, 10),
-    credit_terms_days: 30, notes: "", outlet_id: "", auto_post: true,
+    credit_terms_days: 30, notes: "", outlet_id: scope.level === "outlet" ? scope.outletId : "", auto_post: true,
     lines: [{ description: "", qty: 1, unit_price: 0, discount: 0, include_ppn: true, ppn_rate: 0.12 }],
   });
   const [submitting, setSubmitting] = useState(false);
@@ -158,7 +160,7 @@ export function InvoiceCreateDialog({ open, onOpenChange, onCreated }) {
               <Select value={form.outlet_id || "no_outlet"} onValueChange={v => setForm(f => ({ ...f, outlet_id: v === "no_outlet" ? "" : v }))}>
                 <SelectTrigger id="ar-invoice-outlet" data-testid="invoice-outlet"><SelectValue placeholder="Pilih outlet..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="no_outlet">— Semua Outlet —</SelectItem>
+                  <SelectItem value="no_outlet">— Pusat (tanpa toko) —</SelectItem>
                   {outlets.map(o => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>

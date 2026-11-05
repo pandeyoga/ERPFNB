@@ -22,7 +22,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, UploadFile, File
 
-from core.exceptions import ok_envelope, AuroraException
+from core.exceptions import ForbiddenError, ok_envelope, AuroraException
 from core.security import current_user, require_perm
 from services import budget_service
 from models.budget import BUDGET_CATEGORIES
@@ -199,6 +199,12 @@ async def budget_vs_actual(
       - category_rollup: [{category, name, budget, actual, variance, variance_pct, achievement, flag, derived?}]
       - total_budget, total_actual, total_variance
     """
+    # Akses: Group hanya untuk user tingkat Group; brand/toko harus dalam akses user (DESIGN_SYSTEM §10.7).
+    from services._finance.scope import ledger_scope
+    req = await ledger_scope(user, outlet_id=outlet_id if scope == "outlet" else None,
+                             brand_id=brand_id if scope == "brand" else None)
+    if (scope == "group" and not (await ledger_scope(user)).is_all) or (scope != "group" and req.outlet_ids == []):
+        raise ForbiddenError("Cakupan budget di luar akses Anda", code="OUTLET_OUT_OF_SCOPE")
     result = await budget_service.vs_actual(
         period,
         outlet_id=outlet_id,

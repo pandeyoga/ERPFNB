@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 
-import { fetchAll } from "@/lib/api";
+import { StoreFilter } from "@/components/shared/ScopeControls";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -24,13 +24,12 @@ function shortMetricLabel(m) {
 
 export default function Comparatives() {
   const [catalog, setCatalog] = useState(null);
-  const [brands, setBrands] = useState([]);
 
   const [metric, setMetric] = useState("sales");
   const [period, setPeriod] = useState(() => new Date().toISOString().slice(0, 7));
   const [compareTo, setCompareTo] = useState("mom");
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
-  const [brandId, setBrandId] = useState("");
+  // Brand mengikuti konteks TopNav (dikirim otomatis); di sini hanya filter Toko lokal.
+  const { outletId, storeFilter } = useOutletScope();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +37,6 @@ export default function Comparatives() {
   useEffect(() => {
     Promise.all([
       api.get("/reports/catalog").then(r => setCatalog(unwrap(r))),
-      fetchAll("/master/brands").then(r => setBrands(unwrap(r) || [])),
     ]).catch(() => {});
   }, []);
 
@@ -47,14 +45,13 @@ export default function Comparatives() {
     try {
       const params = { metric, period, compare_to: compareTo };
       if (outletId) params.outlet_ids = outletId;
-      if (brandId) params.brand_ids = brandId;
       const r = await api.get("/reports/comparatives", { params });
       setData(unwrap(r));
     } catch (e) {
       toast.error("Gagal memuat perbandingan periode: " + (e.response?.data?.errors?.[0]?.message || e.message));
     } finally { setLoading(false); }
   }
-  useEffect(() => { if (catalog) load(); }, [metric, period, compareTo, outletId, brandId, catalog]); // eslint-disable-line
+  useEffect(() => { if (catalog) load(); }, [metric, period, compareTo, outletId, catalog]); // eslint-disable-line
 
   if (!catalog) return (
     <div className="space-y-4" data-testid="comparatives-page">
@@ -68,19 +65,20 @@ export default function Comparatives() {
 
   return (
     <div className="space-y-3 lg:space-y-4" data-testid="comparatives-page">
-      <div className="glass-card p-3 grid grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-        <div>
+      {/* Filter halaman = baris polos (DESIGN_SYSTEM §10.3); brand mengikuti konteks di TopNav. */}
+      <div className="flex flex-wrap gap-3 items-end" data-testid="comp-filters">
+        <div className="w-full sm:w-56">
           <Label className={LABEL}>Metrik</Label>
           <SimpleSelect value={metric} onValueChange={setMetric} ariaLabel="Metrik"
             options={catalog.metrics.map(m => ({ value: m.key, label: shortMetricLabel(m) }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-metric" />
         </div>
-        <div>
+        <div className="min-w-[160px]">
           <Label htmlFor="comp-period" className={LABEL}>Periode</Label>
           <Input id="comp-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="comp-period" />
         </div>
-        <div>
+        <div className="w-40">
           <Label className={LABEL}>Pembanding</Label>
           <div role="group" aria-label="Pembanding"
             className="mt-1 flex w-full items-center gap-1 rounded-[calc(var(--radius)-2px)] border border-border/60 bg-white/35 dark:bg-white/5 p-px">
@@ -96,20 +94,7 @@ export default function Comparatives() {
             ))}
           </div>
         </div>
-        <div>
-          <Label className={LABEL}>Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
-            options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua outlet"
-            className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-outlet" />
-        </div>
-        <div>
-          <Label className={LABEL}>Brand</Label>
-          <SimpleSelect value={brandId} onValueChange={setBrandId} ariaLabel="Brand"
-            options={[{ value: "", label: "Semua brand" }, ...brands.map(b => ({ value: b.id, label: b.name }))]}
-            placeholder="Semua brand"
-            className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="comp-brand" />
-        </div>
+        <StoreFilter filter={storeFilter} testId="comp-outlet" />
       </div>
 
       {loading && <LoadingState rows={4} />}

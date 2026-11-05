@@ -64,7 +64,7 @@ const COL_PILL_TONE = {
 
 export default function KanbanWorkboard() {
   const { can } = useAuth();
-  const { outletId, setOutletId, scopedOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allLabel } = useOutletScope();
   const [data, setData] = useState(null);
   const [transitions, setTransitions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -194,15 +194,17 @@ export default function KanbanWorkboard() {
       />
 
       <div className="flex flex-wrap items-center gap-2" data-testid="wb-filters">
-        <SimpleSelect
+        {scopedOutlets.length > 1 && (
+          <SimpleSelect
           value={outletId}
           onValueChange={setOutletId}
-          options={[{ value: "", label: "Semua outlet" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-          placeholder="Semua outlet"
-          ariaLabel="Filter outlet"
+          options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+          placeholder={allLabel}
+          ariaLabel="Toko"
           className="glass-input w-[180px]"
           testId="wb-filter-outlet"
         />
+        )}
         <SimpleSelect
           value={vendorId}
           onValueChange={setVendorId}

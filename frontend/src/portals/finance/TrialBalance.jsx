@@ -4,7 +4,6 @@ import { CheckCircle2, AlertTriangle, Download, Search } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Button } from "@/components/ui/button";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import EmptyState from "@/components/shared/EmptyState";
@@ -13,12 +12,13 @@ import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
+import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
 export default function TrialBalance() {
   const [period, setPeriod] = useState(() => todayJakartaISO().slice(0, 7));
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, params: scopeParams, storeFilter, belowGroup } = useOutletScope();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -26,8 +26,7 @@ export default function TrialBalance() {
   async function load() {
     setLoading(true);
     try {
-      const params = { period };
-      if (outletId) params.dim_outlet = outletId;
+      const params = { period, ...scopeParams };
       const res = await api.get("/finance/trial-balance", { params });
       setData(unwrap(res));
     } catch (e) {
@@ -69,18 +68,7 @@ export default function TrialBalance() {
           <Input id="tb-period" type="month" value={period} onChange={e => setPeriod(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="tb-period" />
         </div>
-        <div className="min-w-[180px]">
-          <Label className={LABEL}>Outlet (opsional)</Label>
-          <SimpleSelect
-            ariaLabel="Outlet"
-            value={outletId}
-            onValueChange={setOutletId}
-            options={[{ value: "", label: "Consolidated" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Consolidated"
-            className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
-            testId="tb-outlet"
-          />
-        </div>
+        <StoreFilter filter={storeFilter} testId="tb-outlet" />
         <div className="flex-1 min-w-[200px]">
           <Label htmlFor="tb-search" className={LABEL}>Cari COA</Label>
           <div className="relative mt-1">
@@ -93,6 +81,8 @@ export default function TrialBalance() {
           <Download /> Ekspor CSV
         </Button>
       </div>
+
+      <ScopeNote show={belowGroup} />
 
       {data && (
         <div data-testid="tb-balance-status" className={cn(

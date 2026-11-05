@@ -78,6 +78,7 @@ async def list_assets(
     *,
     category: Optional[str] = None,
     outlet_id: Optional[str] = None,
+    outlet_ids: Optional[list[str]] = None,
     status: Optional[str] = None,
     page: int = 1,
     per_page: int = 50,
@@ -86,7 +87,9 @@ async def list_assets(
     q: dict = {"deleted_at": None}
     if category:
         q["category"] = category
-    if outlet_id:
+    if outlet_ids is not None:
+        q["outlet_id"] = {"$in": outlet_ids}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
@@ -447,11 +450,13 @@ async def revalue_asset(asset_id: str, payload: dict, *, user_id: str) -> dict:
     return {**serialize(asset), "adjustment": adjustment, "je_id": je["id"] if je else None}
 
 
-async def get_asset_register(outlet_id: Optional[str] = None) -> dict:
+async def get_asset_register(outlet_id: Optional[str] = None, outlet_ids: Optional[list[str]] = None) -> dict:
     """Asset register report grouped by category (alias for asset_register_summary with outlet filter)."""
     db = get_db()
     match = {"deleted_at": None}
-    if outlet_id:
+    if outlet_ids is not None:
+        match["outlet_id"] = {"$in": outlet_ids}
+    elif outlet_id:
         match["outlet_id"] = outlet_id
     pipeline = [
         {"$match": match},

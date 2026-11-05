@@ -93,7 +93,7 @@ export default function JournalLedgerReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="jl-outlets" label="Outlet" icon={Store}
+        id="jl-outlets" label="Toko" icon={Store}
         options={toOptions(outlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `jl-outlet-filter-${o.code || o.value}`}
       />

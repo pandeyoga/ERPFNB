@@ -24,7 +24,7 @@ const TYPE_OPTIONS = [
 ];
 
 export default function Movements() {
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, allLabel } = useOutletScope();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState("");
@@ -60,18 +60,20 @@ export default function Movements() {
       <div className="glass-card overflow-hidden" data-testid="movements-table-card">
         {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
         <ListToolbar testId="movements-filters" className="items-end">
-          <div className="min-w-[180px]">
-            <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-            <SimpleSelect
-              ariaLabel="Filter outlet"
+          {scopedOutlets.length > 1 && (
+            <div className="min-w-[180px]">
+              <Label className="text-xs md:text-sm font-medium">Toko</Label>
+              <SimpleSelect
+              ariaLabel="Toko"
               value={outletId}
               onValueChange={v => { setOutletId(v); setPage(1); }}
-              options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="movements-filter-outlet"
             />
-          </div>
+            </div>
+          )}
           <div className="min-w-[160px]">
             <Label className="text-xs md:text-sm font-medium inline-flex items-center gap-1.5">
               Tipe <InlineHelp id="movement-types" size="xs" placement="top" />

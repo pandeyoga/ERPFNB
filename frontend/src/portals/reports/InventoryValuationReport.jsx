@@ -7,7 +7,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { ReportPage, FilterGrid, ReportField, ChipMultiSelect, useExcelExport, toOptions } from "./reportKit";
 
 export default function InventoryValuationReport() {
-  const { allOutlets } = useOutletScope();
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
   const [asOf, setAsOf] = useState(todayJakartaISO());
   const [selectedOutlets, setSelectedOutlets] = useState([]);
   const [exporting, exportExcel] = useExcelExport();
@@ -39,8 +39,8 @@ export default function InventoryValuationReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="inv-val-outlets" label="Outlet" icon={Store} testId="inv-val-outlets-filter"
-        options={toOptions(allOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        id="inv-val-outlets" label="Toko" icon={Store} testId="inv-val-outlets-filter"
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `inv-val-outlet-${o.code || o.value}`}
       />
     </ReportPage>

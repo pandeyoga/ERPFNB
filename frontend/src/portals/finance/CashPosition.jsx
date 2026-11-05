@@ -241,7 +241,7 @@ export default function CashPosition({ embedded = false }) {
                     <div className="flex flex-col min-w-0">
                       <span className="font-medium truncate">{a.name}</span>
                       <span className="text-xs text-muted-foreground truncate">
-                        {a.outlet_name || a.bank_name || a.code}
+                        {a.outlet_name || a.brand_name || `Pusat${a.bank_name ? ` · ${a.bank_name}` : ""}`}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

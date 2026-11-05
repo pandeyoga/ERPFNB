@@ -4,20 +4,19 @@
  * sidebar tidak lagi menduplikasinya. Area brand selebar sidebar (248px / 76px saat
  * collapsed) sehingga breadcrumb sejajar dengan tepi kiri konten.
  *
+ * Pemilih konteks kerja (ScopeSwitcher: Semua brand › Brand › Toko) berada tepat sebelum breadcrumb.
  * Header hanya menampilkan breadcrumb (bukan <h1>): judul halaman adalah milik
  * PageHeader di tiap halaman, jadi tidak ada judul ganda. Test-id yang dipakai tour
  * (`logo-home-button`, `open-global-search`, `help-tour-button`) dipertahankan.
  */
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, Search, Menu, Store, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Sparkles, Search, Menu, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
 import { useNavigation } from "@/contexts/NavigationContext";
 import { resolveNavContext } from "@/lib/unifiedNav";
-import { fetchAll, unwrap } from "@/lib/api";
 import UserMenu from "@/components/shared/UserMenu";
+import ScopeSwitcher from "./ScopeSwitcher";
 import NotificationBell from "@/components/shared/NotificationBell";
 import ApprovalsInboxButton from "@/components/shared/ApprovalsInboxButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
@@ -48,26 +47,10 @@ export function buildCrumbs(pathname) {
 }
 
 export default function TopNav({ onSearchOpen }) {
-  const { user } = useAuth();
   const { openMobileDrawer, sidebarCollapsed } = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [outlets, setOutlets] = useState([]);
-
-  useEffect(() => {
-    // Load outlet list to resolve names (lightweight, cached)
-    fetchAll("/master/outlets")
-      .then((r) => setOutlets(unwrap(r) || []))
-      .catch(() => {});
-  }, []);
-
-  const { crumbs, title } = buildCrumbs(location.pathname);
-
-  // Determine scope context for the logged-in user
-  const isFullAccess = (user?.permissions || []).includes("*");
-  const userOutletIds = user?.outlet_ids || [];
-  const isRestricted = !isFullAccess && userOutletIds.length > 0 && userOutletIds.length < outlets.length;
-  const scopeOutlets = outlets.filter((o) => userOutletIds.includes(o.id));
+  const { crumbs } = buildCrumbs(location.pathname);
 
   return (
     <header
@@ -111,19 +94,20 @@ export default function TopNav({ onSearchOpen }) {
         </button>
       </div>
 
-      {/* Breadcrumb (desktop) — lokasi saat ini; judul halaman ada di PageHeader */}
+      {/* Konteks kerja (Brand › Toko) + breadcrumb (desktop): *bisnis mana* › *menu apa*; judul halaman ada di PageHeader */}
       <div className="hidden lg:flex flex-1 min-w-0 items-center gap-3 pl-3" data-testid="topnav-title-block">
+        <ScopeSwitcher />
+        <span className="h-5 w-px bg-border shrink-0" aria-hidden />
         <nav className="flex items-center gap-1 text-[13px] text-muted-foreground min-w-0" aria-label="Breadcrumb" data-testid="breadcrumb">
-          {crumbs.length === 0 ? (
+          {/* Akar breadcrumb = konteks kerja di kiri; Beranda tetap lewat logo & sidebar. */}
+          {crumbs.length === 0 && (
             <span className="font-medium text-foreground" aria-current="page" data-testid="page-title">Beranda</span>
-          ) : (
-            <Link to="/erp" className="hover:text-foreground transition-colors shrink-0">Beranda</Link>
           )}
           {crumbs.map((c, i) => {
             const last = i === crumbs.length - 1;
             return (
               <span key={i} className="flex items-center gap-1 min-w-0">
-                <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />
+                {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />}
                 {last ? (
                   <span className="font-medium text-foreground truncate" aria-current="page" data-testid="page-title">{c.label}</span>
                 ) : c.path ? (
@@ -136,29 +120,11 @@ export default function TopNav({ onSearchOpen }) {
           })}
         </nav>
 
-        {/* Outlet context indicator — hanya untuk user yang dibatasi ke outlet tertentu */}
-        {isRestricted && scopeOutlets.length > 0 && (
-          <div className="flex items-center gap-1 shrink-0" data-testid="topnav-outlet-scope">
-            {scopeOutlets.slice(0, 2).map((o) => (
-              <span
-                key={o.id}
-                className="inline-flex items-center gap-1 text-xs h-6 px-2 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-semibold border border-amber-500/20"
-                title="Anda hanya dapat melihat data outlet ini"
-              >
-                <Store className="h-3 w-3" />
-                {o.name}
-              </span>
-            ))}
-            {scopeOutlets.length > 2 && (
-              <span className="text-xs text-muted-foreground">+{scopeOutlets.length - 2}</span>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Current page label (mobile) */}
-      <div className="lg:hidden flex-1 min-w-0 text-left sm:text-center">
-        <span className="text-sm font-semibold truncate block">{title}</span>
+      {/* Konteks kerja (mobile) — judul halaman sudah ada di PageHeader */}
+      <div className="lg:hidden flex-1 min-w-0 flex">
+        <ScopeSwitcher />
       </div>
 
       {/* Right cluster */}

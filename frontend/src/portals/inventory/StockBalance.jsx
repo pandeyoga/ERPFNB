@@ -68,7 +68,7 @@ export default function StockBalance() {
 }
 
 function StockBalanceList() {
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, allLabel } = useOutletScope();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -105,18 +105,20 @@ function StockBalanceList() {
       <div className="glass-card overflow-hidden" data-testid="bal-table-card">
         {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
         <ListToolbar testId="bal-filters" className="items-end">
-          <div className="min-w-[200px]">
-            <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-            <SimpleSelect
-              ariaLabel="Filter outlet"
+          {scopedOutlets.length > 1 && (
+            <div className="min-w-[200px]">
+              <Label className="text-xs md:text-sm font-medium">Toko</Label>
+              <SimpleSelect
+              ariaLabel="Toko"
               value={outletId}
               onValueChange={v => { setOutletId(v); setPage(1); }}
-              options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-              placeholder="Semua"
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
               className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
               testId="inv-bal-outlet"
             />
-          </div>
+            </div>
+          )}
           <div className="flex-1 min-w-[200px]">
             <Label htmlFor="inv-bal-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
             <div className="relative mt-1">

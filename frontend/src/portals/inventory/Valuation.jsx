@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 export default function Valuation() {
   const { user } = useAuth();
-  const { outletId, setOutletId, scopedOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allLabel } = useOutletScope();
   const [val, setVal] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,18 +54,20 @@ export default function Valuation() {
       />
 
       <div className="flex flex-wrap gap-3 items-end" data-testid="val-toolbar">
-        <div className="min-w-[220px]">
-          <Label className="text-xs md:text-sm font-medium">Outlet</Label>
-          <SimpleSelect
+        {scopedOutlets.length > 1 && (
+          <div className="min-w-[220px]">
+            <Label className="text-xs md:text-sm font-medium">Toko</Label>
+            <SimpleSelect
             value={outletId}
             onValueChange={setOutletId}
-            options={[{ value: "", label: "Semua (konsolidasi)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua (konsolidasi)"
+            options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+            placeholder={allLabel}
             className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
             testId="val-outlet"
-            ariaLabel="Filter outlet"
+            ariaLabel="Toko"
           />
-        </div>
+          </div>
+        )}
         <div className="text-xs text-muted-foreground pb-2.5" data-testid="val-asof">Per: {val?.as_of ? fmtDateTime(val.as_of) : "—"}</div>
       </div>
 

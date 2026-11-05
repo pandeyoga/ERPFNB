@@ -57,7 +57,7 @@ def _scope_brands(user: dict, requested: Optional[list[str]]) -> Optional[list[s
     return user_brand_ids
 
 
-def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
+def _scope_outlets_user(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
     """Intersect requested outlet_ids with user's allowed outlet_ids."""
     if "*" in (user.get("permissions") or []):
         return requested
@@ -68,6 +68,22 @@ def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[
         allowed = [o for o in requested if o in user_outlet_ids]
         return allowed if allowed else user_outlet_ids
     return user_outlet_ids
+
+
+def _brand_narrow(outlets: Optional[list[str]]) -> Optional[list[str]]:
+    """Konteks brand global (`?brand_id=`, core/scope.py): hanya toko brand itu."""
+    from core.scope import request_brand_outlets
+
+    brand = request_brand_outlets()
+    if brand is None:
+        return outlets
+    narrowed = brand if outlets is None else [o for o in outlets if o in brand]
+    return narrowed or ["__none__"]
+
+
+def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
+    """Akses user ∩ permintaan ∩ konteks brand."""
+    return _brand_narrow(_scope_outlets_user(user, requested))
 
 
 @router.get("/catalog")
@@ -272,7 +288,7 @@ async def outlet_performance_excel(
     wb = await reports_service.generate_outlet_performance_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
     )
     
     file_bytes = workbook_to_bytes(wb)
@@ -299,7 +315,7 @@ async def fdo_history_excel(
     wb = await reports_service.generate_fdo_history_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         status=status,
     )
     
@@ -330,7 +346,7 @@ async def stock_balance_excel(
     c_ids = [s.strip() for s in category_ids.split(",") if s.strip()] if category_ids else None
     
     wb = await reports_service.generate_stock_balance_excel(
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         category_ids=c_ids,
         as_of_date=as_of_date,
     )
@@ -359,7 +375,7 @@ async def stock_movement_excel(
     wb = await reports_service.generate_stock_movement_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         movement_type=movement_type,
     )
     
@@ -401,7 +417,7 @@ async def inventory_valuation_excel(
     c_ids = [s.strip() for s in category_ids.split(",") if s.strip()] if category_ids else None
     
     wb = await reports_service.generate_inventory_valuation_excel(
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         category_ids=c_ids,
         as_of_date=as_of_date,
     )
@@ -529,7 +545,7 @@ async def journal_ledger_excel(
         period_from=pf,
         period_to=pt,
         coa_id=coa_id,
-        outlet_ids=o_ids,
+        outlet_ids=_brand_narrow(o_ids),  # akses user sudah lewat ledger_scope (Group tetap memuat jurnal pusat)
         source_type=source_type,
     )
     

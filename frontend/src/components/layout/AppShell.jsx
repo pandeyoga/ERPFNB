@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation, useSearchParams } from "react-router-
 
 import { useAuth } from "@/lib/auth";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { ScopeProvider, useScope } from "@/contexts/ScopeContext";
 import TopNav from "./TopNav";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
@@ -71,6 +72,7 @@ export default function AppShell() {
   }
 
   return (
+    <ScopeProvider>
     <NavigationProvider>
       <div className="h-screen flex flex-col overflow-hidden">
         {/* Skip to content — a11y */}
@@ -109,7 +111,7 @@ export default function AppShell() {
                    :entity, ConfigurationLayout nested Outlet). Result: 30 sub-pages
                    showed blank content despite DOM being fully populated.
                    See /app/memory_docs/blank_page_investigation/ for full analysis. */}
-                <Outlet />
+                <ScopeReady><Outlet /></ScopeReady>
               </div>
             </main>
           </div>
@@ -118,5 +120,21 @@ export default function AppShell() {
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
     </NavigationProvider>
+    </ScopeProvider>
   );
+}
+
+/** Halaman baru dirender setelah konteks brand/toko siap, agar fetch pertama sudah memakai konteks yang benar. */
+function ScopeReady({ children }) {
+  const { loaded, scopeKey } = useScope();
+  if (!loaded) {
+    return (
+      <div className="space-y-3" role="status" aria-label="Memuat konteks">
+        <div className="skeleton h-8 w-64 rounded-md" />
+        <div className="skeleton h-40 w-full rounded-lg" />
+      </div>
+    );
+  }
+  // Ganti konteks = halaman dimuat ulang dengan konteks baru (filter lokal kembali ke "Semua toko").
+  return <div key={scopeKey} className="contents">{children}</div>;
 }

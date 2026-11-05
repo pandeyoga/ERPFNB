@@ -18,40 +18,34 @@ import {
 } from "@/components/ui/select";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
-/** Pemilih outlet ringkas untuk area aksi PageHeader (DESIGN_SYSTEM §10.3: konteks layar bukan kartu di atas judul). */
+/**
+ * Pemilih toko ringkas untuk area aksi PageHeader (DESIGN_SYSTEM §10.3/§10.7). Hanya muncul bila konteks TopNav berisi
+ * lebih dari satu toko; konteks satu toko sudah terlihat di TopNav, jadi tidak diulang di halaman.
+ */
 export function OutletScopeCompact() {
-  const { outletId, setOutletId, scopedOutlets, isFullAccess, allowAllOption, loaded } = useOutletScopeCtx();
-  if (!loaded) return <div className="skeleton h-9 w-48 rounded-md" aria-hidden />;
+  const { outletId, setOutletId, scopedOutlets, allowAllOption, loaded, locked } = useOutletScopeCtx();
+  if (!loaded || locked) return null;
   if (scopedOutlets.length === 0) {
     return (
       <span className="text-xs font-medium text-amber-800 dark:text-amber-400" data-testid="outlet-scope-header">
-        Tidak ada outlet dalam scope Anda
-      </span>
-    );
-  }
-  if (!isFullAccess && scopedOutlets.length === 1) {
-    const o = scopedOutlets[0];
-    return (
-      <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-sm font-medium"
-        title="Outlet Anda" data-testid="outlet-scope-header">
-        <Store className="h-4 w-4 text-muted-foreground" aria-hidden /> {o.name}
+        Tidak ada toko dalam akses Anda
       </span>
     );
   }
   return (
     <div data-testid="outlet-scope-header">
       <Select value={outletId || "__all__"} onValueChange={(v) => setOutletId(v === "__all__" ? "" : v)}>
-        <SelectTrigger className="glass-input w-52 justify-start gap-2 [&>svg:last-child]:ml-auto" aria-label="Pilih outlet aktif" data-testid="outlet-scope-picker">
+        <SelectTrigger className="glass-input w-52 justify-start gap-2 [&>svg:last-child]:ml-auto" aria-label="Pilih toko" data-testid="outlet-scope-picker">
           {outletId ? <Store className="h-4 w-4 shrink-0 text-muted-foreground" /> : <Globe2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
-          <SelectValue placeholder="Pilih outlet" />
+          <SelectValue placeholder="Pilih toko" />
         </SelectTrigger>
         <SelectContent>
           {allowAllOption && (
-            <SelectItem value="__all__" data-testid="outlet-option-all">Semua Outlet ({scopedOutlets.length})</SelectItem>
+            <SelectItem value="__all__" data-testid="outlet-option-all">Semua toko ({scopedOutlets.length})</SelectItem>
           )}
           {scopedOutlets.map((o) => (
             <SelectItem key={o.id} value={o.id} data-testid={`outlet-option-${o.id}`}>
-              {o.name}{o.brand_name ? ` · ${o.brand_name}` : ""}
+              {o.name}{o.brand_name && o.brand_name !== o.name ? ` · ${o.brand_name}` : ""}
             </SelectItem>
           ))}
         </SelectContent>
@@ -69,8 +63,10 @@ export default function OutletScopeHeader() {
     allowAllOption,
     currentOutlet,
     loaded,
+    locked,
   } = useOutletScopeCtx();
 
+  if (locked) return null; // konteks satu toko sudah tampil di TopNav
   if (!loaded) {
     return (
       <div className="glass-card flex items-center gap-3 p-3 mb-3">
@@ -151,7 +147,7 @@ export default function OutletScopeHeader() {
           <div className="text-sm font-semibold truncate">
             {currentOutlet
               ? currentOutlet.name
-              : `Semua Outlet (${scopedOutlets.length})`}
+              : `Semua toko (${scopedOutlets.length})`}
             {currentOutlet?.brand_name && (
               <span className="text-muted-foreground font-normal ml-1.5">
                 · {currentOutlet.brand_name}
@@ -179,7 +175,7 @@ export default function OutletScopeHeader() {
             <SelectItem value="__all__" data-testid="outlet-option-all">
               <span className="flex items-center gap-2">
                 <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
-                Semua Outlet ({scopedOutlets.length})
+                Semua toko ({scopedOutlets.length})
               </span>
             </SelectItem>
           )}

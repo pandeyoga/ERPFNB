@@ -42,7 +42,7 @@ export default function ServiceChargeList({ embedded = false }) {
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked → `outlets`
   // was an undefined identifier causing ReferenceError that crashed the entire
   // HR portal (ErrorBoundary). Destructure `scopedOutlets` aliased as `outlets`.
-  const { scopedOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets } = useOutletScope("", { form: true }); // dropdown form: semua toko dalam akses
 
   const outletMap = useMemo(
     () => Object.fromEntries((outlets || []).map(o => [o.id, o])),

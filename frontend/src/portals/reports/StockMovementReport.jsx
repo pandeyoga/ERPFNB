@@ -66,7 +66,7 @@ export default function StockMovementReport() {
         </ReportField>
       </FilterGrid>
       <ChipMultiSelect
-        id="sm-outlets" label="Outlet" icon={Store}
+        id="sm-outlets" label="Toko" icon={Store}
         options={toOptions(outlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />

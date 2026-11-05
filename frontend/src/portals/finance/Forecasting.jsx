@@ -14,6 +14,7 @@ import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
+import { StoreFilter } from "@/components/shared/ScopeControls";
 
 const METHOD_COLORS = {
   linear: "#10b981",   // emerald
@@ -33,7 +34,7 @@ function mapeColor(mape) {
 export default function Forecasting({ embedded = false }) {
   const [methodsCatalog, setMethodsCatalog] = useState(null);
   const [target, setTarget] = useState("sales");
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, params: scopeParams, storeFilter, belowGroup, outletIds } = useOutletScope();
   const [months, setMonths] = useState(3);
   const [method, setMethod] = useState("hybrid");
   const [historyDays, setHistoryDays] = useState(90);
@@ -53,7 +54,7 @@ export default function Forecasting({ embedded = false }) {
     try {
       const [main, dash] = await Promise.all([
         api.get(`/forecasting/${target}`, {
-          params: { outlet_id: outletId || undefined, months, method, history_days: historyDays },
+          params: { ...scopeParams, months, method, history_days: historyDays },
         }),
         target === "sales"
           ? api.get("/forecasting/dashboard", { params: { months, method } })
@@ -99,13 +100,7 @@ export default function Forecasting({ embedded = false }) {
             options={methodsCatalog.targets.map(t => ({ value: t.key, label: String(t.label || t.key).split(" (")[0] }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="forecast-target" />
         </div>
-        <div className="w-full sm:w-52">
-          <Label className={LABEL}>Outlet</Label>
-          <SimpleSelect value={outletId} onValueChange={setOutletId} ariaLabel="Outlet"
-            options={[{ value: "", label: "Konsolidasi (semua)" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Konsolidasi (semua)"
-            className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="forecast-outlet" />
-        </div>
+        <StoreFilter filter={storeFilter} testId="forecast-outlet" className="w-full sm:w-52 min-w-0" />
         <div>
           <div className={LABEL} id="forecast-method-label">Metode</div>
           <Segmented labelledBy="forecast-method-label" value={method} onChange={setMethod}
@@ -237,11 +232,13 @@ export default function Forecasting({ embedded = false }) {
           </div>
 
           {/* Per-outlet dashboard (only for sales + consolidated) */}
-          {target === "sales" && dashboard && !outletId && (
+          {target === "sales" && dashboard && !outletId && outletIds.length > 1 && (
             <div className="glass-card p-0 overflow-hidden">
               <h3 className="px-4 py-3 border-b border-border/30 text-sm md:text-base font-semibold">Ringkasan forecast per outlet</h3>
               <DataTable
-                rows={dashboard.outlets.map(o => ({ ...o, _rid: o.outlet_code || o.outlet_id }))}
+                rows={dashboard.outlets
+                  .filter(o => !belowGroup || outletIds.includes(o.outlet_id))
+                  .map(o => ({ ...o, _rid: o.outlet_code || o.outlet_id }))}
                 keyField="_rid"
                 rowTestIdPrefix="outlet-row"
                 columns={[
@@ -262,7 +259,7 @@ export default function Forecasting({ embedded = false }) {
                       </span>
                     ) },
                 ]}
-                footer={
+                footer={belowGroup ? null :
                   <tr className="bg-muted/40 font-semibold border-t-2 border-border">
                     <td className="px-4 py-2.5">Konsolidasi grup</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmtRp(dashboard.consolidated.history_total)}</td>

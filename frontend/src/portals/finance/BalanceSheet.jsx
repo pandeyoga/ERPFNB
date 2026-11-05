@@ -10,22 +10,26 @@ import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
+import useOutletScope from "@/hooks/useOutletScope";
+import { StoreFilter } from "@/components/shared/ScopeControls";
 
 export default function BalanceSheet() {
   const [asOf, setAsOf] = useState(todayJakartaISO());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Neraca milik Group; di bawah Group hanya parsial (DESIGN_SYSTEM §10.7).
+  const { outletId, params: scopeParams, storeFilter } = useOutletScope();
 
   async function load() {
     setLoading(true);
     try {
-      const res = await api.get("/finance/balance-sheet", { params: { as_of: asOf } });
+      const res = await api.get("/finance/balance-sheet", { params: { as_of: asOf, ...scopeParams } });
       setData(unwrap(res));
     } catch (e) {
       toast.error("Gagal memuat Balance Sheet");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, [asOf]);
+  useEffect(() => { load(); }, [asOf, outletId]); // eslint-disable-line
 
   function exportCsv() {
     if (!data) return;
@@ -53,6 +57,7 @@ export default function BalanceSheet() {
           <Input id="bs-asof" type="date" value={asOf} onChange={e => setAsOf(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="bs-asof" />
         </div>
+        <StoreFilter filter={storeFilter} testId="bs-outlet" />
         <Button onClick={exportCsv} variant="outline" className="ml-auto" disabled={!data} data-testid="bs-export">
           <Download /> Ekspor CSV
         </Button>
@@ -61,6 +66,18 @@ export default function BalanceSheet() {
       {loading && <LoadingState rows={8} />}
       {!loading && data && (
         <>
+          {data.partial ? (
+            <div data-testid="bs-partial" className="glass-card p-3 flex items-start gap-3 bg-amber-500/5 border-amber-500/30">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-800 dark:text-amber-400" />
+              <div className="text-sm">
+                <div className="font-semibold">Neraca parsial</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Hanya baris jurnal brand/toko yang dipilih. Rekening bank, utang dan ekuitas sebagian besar milik pusat,
+                  jadi Aset tidak harus sama dengan Liabilitas + Ekuitas. Pilih "Semua brand" di bagian atas untuk neraca Group.
+                </div>
+              </div>
+            </div>
+          ) : (
           <div data-testid="bs-balance-status" className={`glass-card p-3 flex flex-wrap items-center gap-3 ${data.totals.is_balanced ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/30"}`}>
             {data.totals.is_balanced
               ? <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
@@ -78,6 +95,7 @@ export default function BalanceSheet() {
               <div>Liabilitas + Ekuitas: <span className="font-semibold">{fmtRp(data.totals.liabilities_plus_equity)}</span></div>
             </div>
           </div>
+          )}
 
           <div data-testid="bs-sections" className="grid lg:grid-cols-3 gap-3 lg:gap-4">
             <Section title="ASET" rows={data.sections.asset} total={data.totals.assets} accent="emerald" sectionId="asset" />
