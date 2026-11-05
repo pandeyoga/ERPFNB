@@ -58,6 +58,10 @@ export const lastPortalKey = (user) => `aurora_last_portal_${user?.email || "ano
 export function routeNeed(path) {
   const clean = String(path || "").split(/[?#]/)[0].replace(/\/$/, "") || "/";
   if (ROUTE_PERMS[clean]) return ROUTE_PERMS[clean];
+  // pola ":param" (mis. /admin/master/:entity) dulu, lalu prefix "/x/*" terpanjang
+  const param = Object.keys(ROUTE_PERMS).find((k) => k.includes(":") && !k.endsWith("/*")
+    && new RegExp(`^${k.replace(/:[^/]+/g, "[^/]+")}$`).test(clean));
+  if (param) return ROUTE_PERMS[param];
   let best = null;
   Object.keys(ROUTE_PERMS).forEach((k) => {
     if (!k.endsWith("/*")) return;
