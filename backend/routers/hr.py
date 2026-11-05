@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query, UploadFile, File
 
 from core.exceptions import ok_envelope
+from core.scope import narrow_to_brand
 from core.security import current_user, require_any_perm, require_perm
 from services import hr_service
 
@@ -266,7 +267,7 @@ async def list_foc(
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("hr.foc.create")),
 ):
-    outlet_ids = [outlet_id] if outlet_id else None
+    outlet_ids = narrow_to_brand([outlet_id] if outlet_id else None)  # konteks brand (core/scope.py)
     items, meta = await hr_service.list_foc(
         outlet_ids=outlet_ids, foc_type=foc_type,
         date_from=date_from, date_to=date_to,

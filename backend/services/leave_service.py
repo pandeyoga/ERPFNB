@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from core.audit import log as audit_log
+from core.scope import outlet_condition
 from core.db import get_db, serialize
 from core.exceptions import ForbiddenError, NotFoundError, ValidationError
 from models.leave_request import LEAVE_TYPES, make_leave_request
@@ -171,8 +172,8 @@ async def list_leave_requests(
     q: dict = {"deleted_at": None}
     if employee_id:
         q["employee_id"] = employee_id
-    if outlet_id:
-        q["outlet_id"] = outlet_id
+    if outlet_condition(outlet_id) is not None:  # konteks brand/toko (core/scope.py)
+        q["outlet_id"] = outlet_condition(outlet_id)
     if status:
         q["status"] = status
     elif pending_approval:

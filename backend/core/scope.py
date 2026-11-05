@@ -29,3 +29,20 @@ async def brand_scope(request: Request) -> None:
 def request_brand_outlets() -> list[str] | None:
     """Toko milik `brand_id` pada request ini; None = request tidak memakai konteks brand."""
     return _brand_outlets.get()
+
+
+def narrow_to_brand(outlet_ids: list[str] | None) -> list[str] | None:
+    """Daftar toko (None = semua) dipersempit ke konteks brand request ini; kosong → sentinel yang tak cocok apa pun."""
+    brand = request_brand_outlets()
+    if brand is None:
+        return outlet_ids
+    narrowed = brand if outlet_ids is None else [o for o in outlet_ids if o in brand]
+    return narrowed or ["__none__"]
+
+
+def outlet_condition(outlet_id: str | None):
+    """Kondisi Mongo untuk field `outlet_id` dokumen, dalam konteks brand request ini. None = tanpa filter."""
+    brand = request_brand_outlets()
+    if outlet_id:
+        return outlet_id if brand is None or outlet_id in brand else "__none__"
+    return {"$in": brand} if brand is not None else None

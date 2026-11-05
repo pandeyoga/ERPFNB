@@ -5,6 +5,7 @@ from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from core.exceptions import ok_envelope
+from core.scope import narrow_to_brand
 from core.security import current_user, enforce_outlet_scope, require_perm, scoped_outlet_ids
 from services import (
     po_pdf_service,
@@ -35,6 +36,7 @@ async def list_prs(
         outlet_ids = [outlet_id] if outlet_id else scope
     elif outlet_id:
         outlet_ids = [outlet_id]
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_prs(
         outlet_ids=outlet_ids, status=status, source=source,
         page=page, per_page=per_page,
@@ -116,6 +118,7 @@ async def list_pos(
     if "*" not in user_perms and "procurement.po.approve" not in user_perms:
         enforce_outlet_scope(user, outlet_id)  # SEC-06: restricted users never widen to all outlets
         outlet_ids = scoped_outlet_ids(user)
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_pos(
         status=status, vendor_id=vendor_id, outlet_id=outlet_id, outlet_ids=outlet_ids,
         page=page, per_page=per_page,
@@ -228,6 +231,7 @@ async def list_grs(
     if "*" not in user_perms and "procurement.gr.post" not in user_perms:
         enforce_outlet_scope(user, outlet_id)
         outlet_ids = scoped_outlet_ids(user)
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_grs(
         status=status, outlet_id=outlet_id, outlet_ids=outlet_ids, vendor_id=vendor_id,
         date_from=date_from, date_to=date_to, search=search, page=page, per_page=per_page,
@@ -290,6 +294,7 @@ async def workboard(
         outlet_ids = [outlet_id] if outlet_id else scope
     elif outlet_id:
         outlet_ids = [outlet_id]
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     return ok_envelope(await procurement_workboard_service.get_workboard(
         outlet_ids=outlet_ids, vendor_id=vendor_id, days=days,
         limit_per_column=limit_per_column,

@@ -81,6 +81,8 @@ async def get_workboard(
     }
     if vendor_id:
         po_q["vendor_id"] = vendor_id
+    if outlet_ids is not None:  # PO ikut cakupan toko yang sama dengan PR (sebelumnya selalu semua toko)
+        po_q["outlet_id"] = {"$in": outlet_ids}
     pos = await db.purchase_orders.find(po_q).sort([("created_at", -1)]).limit(500).to_list(500)
 
     # Resolve names

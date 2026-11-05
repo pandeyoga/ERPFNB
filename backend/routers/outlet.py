@@ -94,6 +94,12 @@ async def outlet_home_summary(
         else:
             scope_filter = {"outlet_id": {"$in": user_scope}}
             scope_outlet_ids = user_scope
+        # Konteks brand global (core/scope.py): ringkasan hanya toko brand itu
+        from core.scope import narrow_to_brand
+        brand_scope = narrow_to_brand(None if user_scope is None else user_scope)
+        if brand_scope is not None:
+            scope_filter = {"outlet_id": {"$in": brand_scope}}
+            scope_outlet_ids = brand_scope
 
     # ── Sales today ─────────────────────────────────────────
     # Fetch the most-recent daily_sales doc for today within scope (one per outlet

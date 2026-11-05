@@ -106,3 +106,46 @@ def test_restricted_user_never_sees_more_than_own_store(http_client, admin_token
     assert api_get(http_client, "/finance/journals?unallocated=true", tok).json()["meta"]["total"] == 0
     pusat_je = api_get(http_client, "/finance/journals?unallocated=true&per_page=1", admin_token).json()["data"][0]
     assert api_get(http_client, f"/finance/journals/{pusat_je['id']}", tok).status_code == 404
+
+
+# ---------- konteks brand di endpoint daftar (GET dari frontend membawa brand_id + brand_ids) ----------
+LIST_ENDPOINTS = [
+    "/inventory/low-stock", "/inventory/balance", "/procurement/prs", "/procurement/pos", "/procurement/grs",
+    "/hr/service-charges", "/hr/advances", "/anomalies", "/outlet/daily-sales", "/outlet/petty-cash",
+    "/finance/validation-queue", "/outlet-budget/increase-requests", "/reservations",
+]
+
+
+def test_workboard_cards_stay_inside_brand(http_client, admin_token, hierarchy):
+    brand = hierarchy["multi"]
+    d = api_get(http_client, f"/procurement/workboard?brand_id={brand}&brand_ids={brand}", admin_token).json()["data"]
+    cards = [c for col in d["cards"].values() for c in col]  # {kolom: [kartu]}
+    outlets = {c.get("outlet_id") for c in cards if c.get("outlet_id")}
+    assert cards and outlets <= set(hierarchy["by_brand"][brand]), outlets
+
+
+def _rows(payload):
+    d = payload.get("data")
+    if isinstance(d, list):
+        return d
+    if isinstance(d, dict):
+        for k in ("items", "rows", "data", "events", "requests"):
+            if isinstance(d.get(k), list):
+                return d[k]
+    return []
+
+
+@pytest.mark.parametrize("path", LIST_ENDPOINTS)
+def test_list_endpoints_stay_inside_brand(http_client, admin_token, hierarchy, path):
+    brand = hierarchy["multi"]
+    r = api_get(http_client, f"{path}?brand_id={brand}&brand_ids={brand}&per_page=100", admin_token)
+    assert r.status_code == 200, r.text
+    outlets = {row.get("outlet_id") for row in _rows(r.json()) if isinstance(row, dict) and row.get("outlet_id")}
+    assert outlets <= set(hierarchy["by_brand"][brand]), f"{path}: toko di luar brand {outlets - set(hierarchy['by_brand'][brand])}"
+
+
+def test_transfers_in_brand_touch_its_stores(http_client, admin_token, hierarchy):
+    brand = hierarchy["multi"]
+    stores = set(hierarchy["by_brand"][brand])
+    rows = api_get(http_client, f"/inventory/transfers?brand_id={brand}&per_page=100", admin_token).json()["data"]
+    assert all(t.get("from_outlet_id") in stores or t.get("to_outlet_id") in stores for t in rows)

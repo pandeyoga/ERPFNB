@@ -10,12 +10,14 @@ import { useDebounce } from "@/hooks/useDebounce";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
+import { useScope } from "@/contexts/ScopeContext";
 import {
   ReportPage, FilterGrid, ReportField, ChipMultiSelect, useExcelExport, daysAgoISO, validRange, toOptions,
 } from "./reportKit";
 
 export default function DailySalesReport() {
   const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
+  const { scope } = useScope();
   const [dateFrom, setDateFrom] = useState(() => daysAgoISO(30));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [brands, setBrands] = useState([]);
@@ -89,11 +91,14 @@ export default function DailySalesReport() {
         options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
         testIdFor={o => `outlet-filter-${o.code || o.value}`}
       />
-      <ChipMultiSelect
-        id="ds-brands" label="Brand" icon={Tag}
-        options={toOptions(brands)} value={selectedBrands} onChange={setSelectedBrands}
-        testIdFor={o => `brand-filter-${o.code || o.value}`}
-      />
+      {/* Brand dipilih di TopNav; pembanding antar-brand hanya bermakna di konteks Semua brand. */}
+      {scope.level === "group" && brands.length > 1 && (
+        <ChipMultiSelect
+          id="ds-brands" label="Brand" icon={Tag}
+          options={toOptions(brands)} value={selectedBrands} onChange={setSelectedBrands}
+          testIdFor={o => `brand-filter-${o.code || o.value}`}
+        />
+      )}
     </ReportPage>
   );
 }

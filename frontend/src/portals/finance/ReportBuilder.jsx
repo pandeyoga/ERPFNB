@@ -16,6 +16,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import { useScope } from "@/contexts/ScopeContext";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -41,6 +42,7 @@ export default function ReportBuilder() {
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
   // Tanpa pilihan toko → toko dalam konteks TopNav (POST tidak membawa konteks otomatis).
   const { scopedOutlets: outlets, belowGroup, outletIds: contextOutletIds } = useOutletScope();
+  const { scope } = useScope(); // filter Brand hanya di konteks Semua brand
 
   const [dimensions, setDimensions] = useState(["outlet"]);
   const [metrics, setMetrics] = useState(["sales", "gross_profit"]);
@@ -257,7 +259,9 @@ export default function ReportBuilder() {
               </div>
             </div>
             <FilterRow label="Toko" items={outlets} selected={outletIds} setSelected={setOutletIds} testid="builder-outlet" />
-            <FilterRow label="Brand" items={brands} selected={brandIds} setSelected={setBrandIds} testid="builder-brand" />
+            {scope.level === "group" && (
+              <FilterRow label="Brand" items={brands} selected={brandIds} setSelected={setBrandIds} testid="builder-brand" />
+            )}
             <FilterRow label="Vendor" items={vendors} selected={vendorIds} setSelected={setVendorIds} testid="builder-vendor" />
           </div>
 

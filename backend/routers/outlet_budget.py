@@ -24,6 +24,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from core.exceptions import ok_envelope
+from core.scope import narrow_to_brand
 from core.security import current_user, enforce_outlet_scope, require_perm, resolve_outlet_filter
 from models.outlet_budget import (
     OutletBudgetCreate, OutletBudgetBulkSet,
@@ -172,10 +173,10 @@ async def list_increase_requests(
         outlet_ids = user.get("outlet_ids") or []
         if not outlet_ids:
             return ok_envelope({"items": []})
-        items = await svc.list_increase_requests(status=status, outlet_ids=outlet_ids)
+        items = await svc.list_increase_requests(status=status, outlet_ids=narrow_to_brand(outlet_ids))
     else:
         outlet_ids = [outlet_id] if outlet_id else None
-        items = await svc.list_increase_requests(status=status, outlet_ids=outlet_ids)
+        items = await svc.list_increase_requests(status=status, outlet_ids=narrow_to_brand(outlet_ids))
     return ok_envelope({"items": items, "total": len(items)})
 
 
@@ -229,5 +230,5 @@ async def monitor_heatmap(
 ):
     keys = [k.strip() for k in period_keys.split(",") if k.strip()]
     oids = [o.strip() for o in outlet_ids.split(",")] if outlet_ids else None
-    res = await svc.heatmap(period_type=period_type, period_keys=keys, outlet_ids=oids)
+    res = await svc.heatmap(period_type=period_type, period_keys=keys, outlet_ids=narrow_to_brand(oids))
     return ok_envelope(res)

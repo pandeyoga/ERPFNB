@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 from core.db import get_db, serialize
+from core.scope import outlet_condition
 from services.cache_service import cache_or_compute, cache_invalidate
 
 from services._anomaly.helpers import _now_iso, ANOMALY_TYPE_LABELS, VALID_STATUSES
@@ -32,8 +33,8 @@ async def list_events(
         q["severity"] = severity
     if status:
         q["status"] = status
-    if outlet_id:
-        q["outlet_id"] = outlet_id
+    if outlet_condition(outlet_id) is not None:  # konteks brand/toko (core/scope.py)
+        q["outlet_id"] = outlet_condition(outlet_id)
     if vendor_id:
         q["vendor_id"] = vendor_id
     if date_from:
@@ -218,8 +219,8 @@ async def export_to_csv(
         q["severity"] = severity
     if status:
         q["status"] = status
-    if outlet_id:
-        q["outlet_id"] = outlet_id
+    if outlet_condition(outlet_id) is not None:  # konteks brand/toko (core/scope.py)
+        q["outlet_id"] = outlet_condition(outlet_id)
     if vendor_id:
         q["vendor_id"] = vendor_id
     if date_from:

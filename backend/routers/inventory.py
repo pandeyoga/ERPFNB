@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ForbiddenError, ok_envelope
+from core.scope import narrow_to_brand
 from core.security import current_user, require_perm, get_user_permissions, resolve_outlet_filter
 from services import inventory_service, inventory_matrix_service
 
@@ -244,6 +245,7 @@ async def low_stock(
         scope = user.get("outlet_ids", []) or []
         if scope:
             o_ids = [o for o in (o_ids or scope) if o in scope] or scope
+    o_ids = narrow_to_brand(o_ids)  # konteks brand (core/scope.py)
 
     return ok_envelope(await inventory_matrix_service.low_stock(
         outlet_ids=o_ids, include_zero=include_zero,

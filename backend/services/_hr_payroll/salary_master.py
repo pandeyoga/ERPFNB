@@ -5,6 +5,7 @@ import csv
 import uuid
 
 from core.audit import log as audit_log
+from core.scope import outlet_condition
 from core.db import get_db, serialize
 from core.exceptions import NotFoundError, ValidationError
 from services.hr_constants import _calc_bpjs, _calc_pph21, _now, PTKP_BY_STATUS
@@ -104,8 +105,8 @@ async def set_salary_master(employee_id: str, payload: dict, *, user: dict) -> d
 async def list_salary_masters(outlet_id: str | None = None, per_page: int = 100) -> list:
     db = get_db()
     emp_filter: dict = {"deleted_at": None, "status": {"$in": PAYROLL_EMPLOYEE_STATUSES}}
-    if outlet_id:
-        emp_filter["outlet_id"] = outlet_id
+    if outlet_condition(outlet_id) is not None:  # konteks brand/toko (core/scope.py)
+        emp_filter["outlet_id"] = outlet_condition(outlet_id)
     emps = await db.employees.find(emp_filter).sort("full_name", 1).to_list(per_page)
     sms = await db.salary_masters.find({"employee_id": {"$in": [e["id"] for e in emps]}, "deleted_at": None}).to_list(None) if emps else []
     sm_map = {s["employee_id"]: s for s in sms}
