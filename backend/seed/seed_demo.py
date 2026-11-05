@@ -2,7 +2,9 @@
 
 Creates:
 - 1 Group (FnB Group)
-- 5 Brands (The Coffeeshop, The Restaurant, The Bistro, The Lounge, The Bakery) — 1 outlet each
+- 5 Brands (The Coffeeshop, The Restaurant, The Bistro, The Lounge, The Bakery) — 1 outlet each,
+  kecuali The Coffeeshop: 3 toko (The Coffeeshop, Coffeeshop Kemang, Coffeeshop BSD) untuk menguji
+  konteks brand dengan banyak toko
 - Standard Indonesian COA (~50 accounts)
 - Tax codes (PPN-11, PPN-In/Out)
 - Payment methods (Cash, Transfer BCA/Mandiri, QRIS, Card)
@@ -328,7 +330,7 @@ async def seed():
     group_id = group["id"]
 
     # 2. Brands + Outlets
-    print("Creating 4 Brands & Outlets…")
+    print("Creating 5 Brands & 7 Outlets…")
     brand_outlets = [
         ("CFS", "The Coffeeshop",      "#5B5FE3"),
         ("RST", "The Restaurant",   "#F59E0B"),
@@ -348,6 +350,17 @@ async def seed():
             "address": f"Jl. Demo {name}, Jakarta",
             "phone": "+62-21-555-0000",
             "open_time": "08:00", "close_time": "23:00",
+        })
+        await db.outlets.insert_one(outlet)
+        outlets_map[code] = outlet["id"]
+
+    # Brand dengan banyak toko: konteks global "Brand › Toko" (docs/audit/OUTLET_SCOPE_ANALYSIS_2026-10-29.md)
+    for code, name in [("CFK", "Coffeeshop Kemang"), ("CFB", "Coffeeshop BSD")]:
+        outlet = doc({
+            "brand_id": brands_map["CFS"], "code": code, "name": name,
+            "address": f"Jl. Demo {name}, Jakarta",
+            "phone": "+62-21-555-0000",
+            "open_time": "07:00", "close_time": "22:00",
         })
         await db.outlets.insert_one(outlet)
         outlets_map[code] = outlet["id"]
@@ -661,6 +674,20 @@ async def seed():
             "mfa_enabled": False,
         }))
 
+    # Area manager: semua toko The Coffeeshop (user terbatas dengan banyak toko dalam satu brand)
+    await db.users.insert_one(doc({
+        "email": "cfs.area@fnbgroup.id",
+        "password_hash": hash_password("Demo@2026"),
+        "full_name": "Area Manager The Coffeeshop",
+        "status": "active",
+        "role_ids": [role_ids["OUTLET_MANAGER"]],
+        "outlet_ids": [outlets_map[c] for c in ("CFS", "CFK", "CFB")],
+        "brand_ids": [brands_map["CFS"]],
+        "default_portal": "outlet",
+        "failed_login_count": 0, "locked_until": None,
+        "mfa_enabled": False,
+    }))
+
     print()
     print("=" * 60)
     print("Seed complete.")
@@ -679,8 +706,9 @@ async def seed():
     print("  bst.manager@fnbgroup.id    — The Bistro Outlet Manager")
     print("  lng.manager@fnbgroup.id    — The Lounge Outlet Manager")
     print("  bky.manager@fnbgroup.id    — The Bakery Outlet Manager")
+    print("  cfs.area@fnbgroup.id       — Area Manager The Coffeeshop (3 toko)")
     print()
-    print("Group: FnB Group | Brands: 5 | Outlets: 5")
+    print(f"Group: FnB Group | Brands: 5 | Outlets: {len(outlets_map)}")
     print(f"Roles: {len(ROLES)} | COA: {len(COA_TREE)} | "
           f"Items: {len(items_seed)} | Vendors: {len(vendors_seed)} | "
           f"Employees: {emp_idx-1}")

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from core.db import get_db
+from services._finance.scope import coerce_scope
 
 
 async def _aggregate_balance(
@@ -10,6 +11,7 @@ async def _aggregate_balance(
     *,
     period_only: bool = False,
     outlet_id: str | None = None,
+    scope=None,
 ) -> dict[str, dict]:
     """Aggregate journal line totals by COA.
     Returns {coa_id: {period_dr, period_cr, cumulative_dr, cumulative_cr}}
@@ -20,7 +22,8 @@ async def _aggregate_balance(
     pipeline = [
         {"$match": {"deleted_at": None, "status": "posted", "period": {"$lte": period}}},
         {"$unwind": "$lines"},
-        {"$match": {"lines.coa_id": {"$in": coa_ids}, **(_outlet_line_filter(outlet_id) if outlet_id else {})}},
+        {"$match": {"lines.coa_id": {"$in": coa_ids}}},
+        {"$match": coerce_scope(scope, outlet_id).line_match()},
         {"$group": {
             "_id": {"coa_id": "$lines.coa_id", "is_current": {"$eq": ["$period", period]}},
             "dr": {"$sum": "$lines.dr"},
@@ -38,12 +41,6 @@ async def _aggregate_balance(
             result[coa_id]["period_dr"] += float(row["dr"])
             result[coa_id]["period_cr"] += float(row["cr"])
     return result
-
-
-def _outlet_line_filter(outlet_id: str) -> dict:
-    """SSOT-05: auto-JE carries lines[].dim_outlet; manual JE carries top-level outlet_id."""
-    return {"$or": [{"lines.dim_outlet": outlet_id},
-                    {"outlet_id": outlet_id, "lines.dim_outlet": {"$in": [None, ""]}}]}
 
 
 def is_debit_normal(normal_balance: str | None) -> bool:

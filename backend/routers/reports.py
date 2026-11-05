@@ -29,6 +29,7 @@ from core.validators import (
     validate_period,
 )
 from services import reports_service
+from services._finance.scope import ledger_scope
 from services.excel_export_service import workbook_to_bytes
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -520,6 +521,9 @@ async def journal_ledger_excel(
     """Generate Journal Ledger Excel report."""
     pf, pt = validate_date_range(period_from, period_to)
     o_ids = validate_id_list(outlet_ids, field="outlet_ids")
+    scope = await ledger_scope(user)
+    if not scope.is_all:  # user terbatas: hanya toko miliknya, permintaan di luar akses tidak ikut
+        o_ids = [o for o in (o_ids or scope.outlet_ids) if o in scope.outlet_ids] or ["__none__"]
     
     wb = await reports_service.generate_journal_ledger_excel(
         period_from=pf,
@@ -543,6 +547,7 @@ async def journal_ledger_excel(
 async def trial_balance_excel(
     period: str = Query(..., description="Period in YYYY-MM format"),
     dim_outlet: Optional[str] = None,
+    brand_id: Optional[str] = None,
     user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
 ):
     """Generate Trial Balance Excel report for given period."""
@@ -551,6 +556,7 @@ async def trial_balance_excel(
     wb = await reports_service.generate_trial_balance_excel(
         period=period,
         dim_outlet=dim_outlet,
+        scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)
@@ -649,6 +655,7 @@ async def pl_group_excel(
     period_from: str = Query(..., description="YYYY-MM"),
     period_to: str = Query(..., description="YYYY-MM"),
     dim_outlet: Optional[str] = None,
+    brand_id: Optional[str] = None,
     user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
 ):
     """Generate Custom Profit & Loss in FnB Group format (multi-month layout)."""
@@ -656,6 +663,7 @@ async def pl_group_excel(
         period_from=period_from,
         period_to=period_to,
         dim_outlet=dim_outlet,
+        scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)

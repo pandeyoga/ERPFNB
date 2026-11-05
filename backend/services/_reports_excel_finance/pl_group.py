@@ -19,6 +19,7 @@ async def generate_pl_group_excel(
     period_from: str,  # YYYY-MM
     period_to: str,    # YYYY-MM
     dim_outlet: Optional[str] = None,
+    scope=None,
 ):
     """Generate Profit & Loss in FnB Group custom format.
     
@@ -78,7 +79,7 @@ async def generate_pl_group_excel(
     pl_per_month: dict[str, dict] = {}
     for p in months:
         pl_per_month[p] = await finance_service.profit_loss(
-            period=p, dim_outlet=dim_outlet, compare_prev=False,
+            period=p, dim_outlet=dim_outlet, compare_prev=False, scope=scope,
         )
     
     # Outlet name for header

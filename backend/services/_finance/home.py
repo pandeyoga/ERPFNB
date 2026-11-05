@@ -10,6 +10,7 @@ async def sales_validation_queue(
     *,
     period: Optional[str] = None,
     outlet_id: Optional[str] = None,
+    outlet_ids: Optional[list[str]] = None,
     status: Optional[str] = None,
     page: int = 1,
     per_page: int = 20,
@@ -19,7 +20,9 @@ async def sales_validation_queue(
     q: dict = {"deleted_at": None}
     if period:
         q["sales_date"] = {"$gte": f"{period}-01", "$lte": f"{period}-31"}
-    if outlet_id:
+    if outlet_ids is not None:
+        q["outlet_id"] = {"$in": outlet_ids}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
@@ -40,19 +43,25 @@ async def sales_validation_queue(
     return result, {"page": page, "per_page": per_page, "total": total}
 
 
-async def finance_home() -> dict:
-    """Finance dashboard summary (Finance › Overview KPI tiles)."""
+async def finance_home(*, outlet_ids: Optional[list[str]] = None, scope=None) -> dict:
+    """Finance dashboard summary (Finance › Overview KPI tiles).
+
+    Penjualan & jurnal mengikuti konteks brand/toko; AP, AR dan status periode tetap tingkat Group.
+    """
     from core.clock import period_now
+    from services._finance.scope import coerce_scope
     db = get_db()
     period = period_now()  # SSOT-11: WIB business period, not the server's UTC date
+    ds: dict = {"deleted_at": None} if outlet_ids is None else {"deleted_at": None, "outlet_id": {"$in": outlet_ids}}
+    je: dict = {"deleted_at": None, **coerce_scope(scope).entry_match()}
 
-    pending_sales = await db.daily_sales.count_documents({"deleted_at": None, "status": "submitted"})
-    rejected_sales = await db.daily_sales.count_documents({"deleted_at": None, "status": "rejected"})
-    je_this_period = await db.journal_entries.count_documents({"deleted_at": None, "period": period})
-    je_total = await db.journal_entries.count_documents({"deleted_at": None})
+    pending_sales = await db.daily_sales.count_documents({**ds, "status": "submitted"})
+    rejected_sales = await db.daily_sales.count_documents({**ds, "status": "rejected"})
+    je_this_period = await db.journal_entries.count_documents({**je, "period": period})
+    je_total = await db.journal_entries.count_documents(je)
     period_from_service_start = f"{period}-01"
     revenue_agg = await db.daily_sales.aggregate([
-        {"$match": {"deleted_at": None, "status": "validated", "sales_date": {"$gte": period_from_service_start}}},
+        {"$match": {**ds, "status": "validated", "sales_date": {"$gte": period_from_service_start}}},
         {"$group": {"_id": None, "total": {"$sum": "$grand_total"}}},
     ]).to_list(1)
     revenue_mtd = float(revenue_agg[0]["total"]) if revenue_agg else 0.0

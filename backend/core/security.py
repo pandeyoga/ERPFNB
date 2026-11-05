@@ -168,13 +168,19 @@ def resolve_outlet_filter(user: dict, outlet_id: str | None = None) -> list[str]
     """Outlet filter for list/aggregate queries. None = unrestricted; [] = nothing visible.
 
     A requested outlet outside the caller's scope yields [] (never silently widened), and a scoped
-    user without any outlet grant sees nothing.
+    user without any outlet grant sees nothing. A `brand_id` query on the request (core.scope) narrows
+    the result to that brand's outlets.
     """
+    from core.scope import request_brand_outlets
+
     scope = scoped_outlet_ids(user)
-    if scope is None:
-        return [outlet_id] if outlet_id else None
+    brand = request_brand_outlets()
     if outlet_id:
-        return [outlet_id] if outlet_id in scope else []
+        if brand is not None and outlet_id not in brand:
+            return []
+        return [outlet_id] if scope is None or outlet_id in scope else []
+    if brand is not None:
+        return brand if scope is None else [o for o in brand if o in scope]
     return scope
 
 

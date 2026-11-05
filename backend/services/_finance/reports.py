@@ -12,6 +12,7 @@ async def trial_balance(
     period: str,
     outlet_id: Optional[str] = None,
     dim_outlet: Optional[str] = None,
+    scope=None,
 ) -> dict:
     """Compute Trial Balance for the given period."""
     if dim_outlet and not outlet_id:
@@ -19,7 +20,7 @@ async def trial_balance(
     db = get_db()
     all_coa = await db.chart_of_accounts.find({"deleted_at": None}).to_list(None)
     coa_ids = [c["id"] for c in all_coa]
-    balances = await _aggregate_balance(coa_ids, period, outlet_id=outlet_id)
+    balances = await _aggregate_balance(coa_ids, period, outlet_id=outlet_id, scope=scope)
 
     rows = []
     total_period_dr = total_period_cr = total_cumul_dr = total_cumul_cr = 0.0
@@ -81,6 +82,7 @@ async def profit_loss(
     compare_prev: bool = True,
     outlet_id: Optional[str] = None,
     dim_outlet: Optional[str] = None,
+    scope=None,
 ) -> dict:
     """P&L for the given period, with optional prior-period comparison."""
     if dim_outlet and not outlet_id:
@@ -94,11 +96,11 @@ async def profit_loss(
     all_coa = await db.chart_of_accounts.find({"deleted_at": None}).to_list(None)
     coa_ids = [c["id"] for c in all_coa]
 
-    current_balances = await _aggregate_balance(coa_ids, period, outlet_id=outlet_id)
+    current_balances = await _aggregate_balance(coa_ids, period, outlet_id=outlet_id, scope=scope)
     prev_balances: dict = {}
     prev_period = _prev_period(period)
     if compare_prev:
-        prev_balances = await _aggregate_balance(coa_ids, prev_period, period_only=True, outlet_id=outlet_id)
+        prev_balances = await _aggregate_balance(coa_ids, prev_period, period_only=True, outlet_id=outlet_id, scope=scope)
 
     def _get_period_net(b: dict, normal: str) -> float:
         if not is_debit_normal(normal):

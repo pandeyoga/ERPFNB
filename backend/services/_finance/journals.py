@@ -59,17 +59,21 @@ async def list_journals(
     search: Optional[str] = None,
     page: int = 1,
     per_page: int = 50,
+    scope=None,
 ) -> tuple[list[dict], dict]:
+    from services._finance.scope import coerce_scope
+
     if dim_outlet and not outlet_id:
         outlet_id = dim_outlet
     db = get_db()
     q: dict = {"deleted_at": None}
+    scope_match = coerce_scope(scope, outlet_id).entry_match()
+    if scope_match:
+        q["$and"] = [scope_match]
     if period:
         q["period"] = period
     if source_type:
         q["source_type"] = source_type
-    if outlet_id:
-        q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
     if date_from or date_to:

@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -23,6 +23,7 @@ from core.exceptions import AuroraException, error_envelope  # noqa: E402
 from core.logging_config import configure_logging, get_db_sink  # noqa: E402
 from core.middleware import RateLimitMiddleware, RequestIDMiddleware, SecurityHeadersMiddleware  # noqa: E402
 from core.rate_limiter import limiter as rate_limiter  # noqa: E402
+from core.scope import brand_scope  # noqa: E402
 
 # Routers
 from routers import crm_analytics
@@ -138,6 +139,8 @@ app = FastAPI(
     # silently redirecting to /api/foo (which would break POST body on 307).
     # The TrailingSlashMiddleware below converts 400 with a helpful hint.
     redirect_slashes=False,
+    # Konteks brand global (`?brand_id=`) → daftar toko, dipakai resolve_outlet_filter (core/scope.py).
+    dependencies=[Depends(brand_scope)],
 )
 
 # Order matters: outermost first.

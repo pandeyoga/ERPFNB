@@ -101,7 +101,7 @@ async def _cash_coa_ids() -> list[str]:
     return list(ids)
 
 
-async def cashflow(*, period: str, dim_outlet: Optional[str] = None) -> dict:
+async def cashflow(*, period: str, dim_outlet: Optional[str] = None, scope=None) -> dict:
     """Generate cashflow for a period.
 
     Returns:
@@ -113,8 +113,12 @@ async def cashflow(*, period: str, dim_outlet: Optional[str] = None) -> dict:
         transactions: [...],   # top 200 for UI list
       }
     """
+    from services._finance.scope import coerce_scope
+
     db = get_db()
     start, end = _parse_period(period)
+    scope = coerce_scope(scope, dim_outlet)
+    line_match = scope.line_match()
 
     cash_coas = await _cash_coa_ids()
     if not cash_coas:
@@ -131,8 +135,8 @@ async def cashflow(*, period: str, dim_outlet: Optional[str] = None) -> dict:
         {"$unwind": "$lines"},
         {"$match": {"lines.coa_id": {"$in": cash_coas}}},
     ]
-    if dim_outlet:
-        opening_pipe.append({"$match": {"lines.dim_outlet": dim_outlet}})
+    if line_match:
+        opening_pipe.append({"$match": line_match})
     opening_pipe.append({
         "$group": {"_id": None, "dr": {"$sum": "$lines.dr"}, "cr": {"$sum": "$lines.cr"}},
     })
@@ -159,7 +163,7 @@ async def cashflow(*, period: str, dim_outlet: Optional[str] = None) -> dict:
         for ln in je.get("lines", []):
             if ln.get("coa_id") not in cash_coas:
                 continue
-            if dim_outlet and ln.get("dim_outlet") != dim_outlet:
+            if not scope.has_line(je, ln):
                 continue
             dr = float(ln.get("dr", 0) or 0)
             cr = float(ln.get("cr", 0) or 0)

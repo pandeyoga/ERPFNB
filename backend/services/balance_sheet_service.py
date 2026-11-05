@@ -23,8 +23,11 @@ def _parse_date(s: str) -> str:
         raise ValidationError(f"as_of harus YYYY-MM-DD: {e}")
 
 
-async def balance_sheet(*, as_of: Optional[str] = None, dim_outlet: Optional[str] = None) -> dict:
-    """Generate BS grouped by type/sub-type."""
+async def balance_sheet(*, as_of: Optional[str] = None, dim_outlet: Optional[str] = None, scope=None) -> dict:
+    """Generate BS grouped by type/sub-type. Dipotong ke brand/toko = parsial (bank & utang milik pusat)."""
+    from services._finance.scope import coerce_scope
+
+    line_match = coerce_scope(scope, dim_outlet).line_match()
     as_of = _parse_date(as_of) if as_of else datetime.now().strftime("%Y-%m-%d")
     db = get_db()
 
@@ -38,8 +41,8 @@ async def balance_sheet(*, as_of: Optional[str] = None, dim_outlet: Optional[str
         {"$match": base_match},
         {"$unwind": "$lines"},
     ]
-    if dim_outlet:
-        pipeline.append({"$match": {"lines.dim_outlet": dim_outlet}})
+    if line_match:
+        pipeline.append({"$match": line_match})
     pipeline.append({
         "$group": {
             "_id": "$lines.coa_id",
@@ -67,7 +70,7 @@ async def balance_sheet(*, as_of: Optional[str] = None, dim_outlet: Optional[str
     async for d in db.journal_entries.aggregate([
         {"$match": {**base_match}},
         {"$unwind": "$lines"},
-        *([{"$match": {"lines.dim_outlet": dim_outlet}}] if dim_outlet else []),
+        *([{"$match": line_match}] if line_match else []),
         {"$lookup": {
             "from": "chart_of_accounts", "localField": "lines.coa_id",
             "foreignField": "id", "as": "coa",
