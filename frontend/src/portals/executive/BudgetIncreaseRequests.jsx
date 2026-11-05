@@ -40,6 +40,7 @@ const STATUS_LABEL = { pending: "Menunggu", approved: "Disetujui", rejected: "Di
 export default function BudgetIncreaseRequests() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const canListUsers = permitted(user, "admin.user.read");
   const [status, setStatus] = useState("pending");
   const [items, setItems] = useState([]);
   const [outletsById, setOutletsById] = useState({});
@@ -56,7 +57,7 @@ export default function BudgetIncreaseRequests() {
         const [olRes, usRes] = await Promise.all([
           api.get("/master/outlets"),
           // daftar user hanya untuk pemegang admin.user.read; peran lain memakai nama yang ikut di dokumen
-          permitted(user, "admin.user.read")
+          canListUsers
             ? api.get("/admin/users").catch(() => ({ data: { data: [] } }))
             : Promise.resolve({ data: { data: [] } }),
         ]);
@@ -69,7 +70,7 @@ export default function BudgetIncreaseRequests() {
         setUsersById(u);
       } catch (e) { /* ignore */ }
     })();
-  }, []);
+  }, [canListUsers]);
 
   const load = async () => {
     setLoading(true);
