@@ -28,6 +28,8 @@ import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import KeyFacts from "@/components/shared/KeyFacts";
+import RowActions from "@/components/shared/RowActions";
 
 export default function PODetail() {
   const { id } = useParams();
@@ -215,29 +217,17 @@ export default function PODetail() {
         <PageHeader
           icon={FileCheck}
           title={<span data-testid="po-detail-doc-no">{docNo}</span>}
-          subtitle={
-            <span className="inline-flex items-center gap-2 flex-wrap">
-              <StatusPill status={po.status} />
-              <span>Purchase Order · {vendorName}</span>
-            </span>
-          }
+          subtitle={`Purchase Order · ${vendorName}`}
           className="mb-0 md:mb-0"
           actions={
             <div className="flex items-center gap-2 flex-wrap" data-testid="po-detail-actions">
-              <Button onClick={downloadPdf} variant="outline" disabled={downloadingPdf} data-testid="po-download-pdf">
-                <FileDown /> {downloadingPdf ? "Mengunduh…" : "Unduh PDF"}
-              </Button>
-              {can("procurement.po.send") && (
-                <Button onClick={openEmailDialog} variant="outline" disabled={acting} data-testid="po-email">
-                  <Mail /> Email PO
-                </Button>
-              )}
-              {canCancel && (
-                <Button onClick={() => { setCancelOpen(true); setReason(""); }}
-                  variant="outline" className="text-destructive hover:text-destructive" disabled={acting} data-testid="po-cancel">
-                  <Ban /> Batalkan PO
-                </Button>
-              )}
+              {/* Aksi sekunder di "⋯" — maks. ±5 tombol terlihat (Carbon); aksi alur tetap terlihat */}
+              <RowActions size="default" promote={false} testId="po-more-actions" items={[
+                { label: downloadingPdf ? "Mengunduh…" : "Unduh PDF", icon: FileDown, disabled: downloadingPdf, onSelect: downloadPdf, testId: "po-download-pdf" },
+                { label: "Email PO", icon: Mail, hidden: !can("procurement.po.send"), disabled: acting, onSelect: openEmailDialog, testId: "po-email" },
+                { label: "Batalkan PO", icon: Ban, destructive: true, hidden: !canCancel, disabled: acting,
+                  onSelect: () => { setCancelOpen(true); setReason(""); }, testId: "po-cancel" },
+              ]} />
               {wfNeedsApproval && isAwaitingApproval && canApproveNow && (
                 <>
                   <Button onClick={() => { setRejectOpen(true); setReason(""); }}
@@ -268,16 +258,18 @@ export default function PODetail() {
               )}
             </div>
           }
-        />
-      </div>
-
-      <div className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 text-sm" data-testid="po-info-card">
-        <Field label="Vendor" value={vendorName} testid="po-info-vendor" />
-        <Field label="Kirim ke" value={outletName} testid="po-info-outlet" />
-        <Field label="Tanggal order" value={fmtDate(po.order_date)} testid="po-info-order-date" />
-        <Field label="Estimasi tiba" value={po.expected_delivery_date ? fmtDate(po.expected_delivery_date) : "—"} testid="po-info-expected" />
-        <Field label="Termin pembayaran" value={`${po.payment_terms_days} hari`} testid="po-info-terms" />
-        {po.sent_at && <Field label="Dikirim" value={fmtDate(po.sent_at)} testid="po-info-sent-at" />}
+        >
+          {/* Fakta kunci di header, bukan kartu tipis (DESIGN_SYSTEM §10.10) */}
+          <KeyFacts testId="po-info-card" items={[
+            { label: "Status", value: <StatusPill status={po.status} /> },
+            { label: "Vendor", value: vendorName, testId: "po-info-vendor" },
+            { label: "Kirim ke", value: outletName, testId: "po-info-outlet" },
+            { label: "Tanggal order", value: fmtDate(po.order_date), testId: "po-info-order-date" },
+            { label: "Estimasi tiba", value: po.expected_delivery_date ? fmtDate(po.expected_delivery_date) : "—", testId: "po-info-expected" },
+            { label: "Termin pembayaran", value: `${po.payment_terms_days} hari`, testId: "po-info-terms" },
+            { label: "Dikirim", hidden: !po.sent_at, value: po.sent_at && fmtDate(po.sent_at), testId: "po-info-sent-at" },
+          ]} />
+        </PageHeader>
       </div>
 
       {hasWf && (
@@ -482,11 +474,3 @@ export default function PODetail() {
   );
 }
 
-function Field({ label, value, testid }) {
-  return (
-    <div data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5">{value}</div>
-    </div>
-  );
-}

@@ -26,6 +26,7 @@ import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { useScope, useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
 import PlBreakdown from "./PlBreakdown";
+import PageHeader from "@/components/shared/PageHeader";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -155,6 +156,8 @@ export default function ProfitLoss() {
 
   return (
     <div data-testid="profit-loss-page" className="space-y-3 lg:space-y-4">
+      {/* Di dalam hub Reports: subtitle & aksi layar mengisi header hub (DESIGN_SYSTEM §10.1) */}
+      <PageHeader title="Profit & Loss" subtitle="Laba rugi periode terpilih, dengan pembanding bulan lalu dan kolom per brand / per toko." actions={<Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="pl-export"><Download /> Ekspor CSV</Button>} />
       <div data-testid="pl-filter-card" className="flex flex-wrap gap-3 items-end">
         <div className="min-w-[140px]">
           <Label htmlFor="pl-period" className={LABEL}>Periode</Label>
@@ -170,9 +173,6 @@ export default function ProfitLoss() {
             </div>
           </div>
         )}
-        <Button onClick={exportCsv} variant="outline" className="ml-auto" data-testid="pl-export" disabled={!data}>
-          <Download /> Ekspor CSV
-        </Button>
       </div>
 
       <ScopeNote show={belowGroup} />

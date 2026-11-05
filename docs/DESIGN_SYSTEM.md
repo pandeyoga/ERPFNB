@@ -291,3 +291,56 @@ bukan buku terpisah. Analisis lengkap: `docs/audit/OUTLET_SCOPE_ANALYSIS_2026-10
   `useExcelExport` / `withScopeTag`. Judul di dalam Excel menyebut brand/toko.
 - **Label:** "Toko" (bukan "Outlet (dim)"/"Consolidated"/"Konsolidasi (semua)"); opsi semua = "Semua toko ‹brand›";
   transaksi tanpa toko = "Pusat".
+
+### 10.8 Navigasi tab hub (riset 5 Nov 2026)
+Sumber:
+- [Carbon v10 Tabs](https://v10.carbondesignsystem.com/components/tabs/usage/): ≤ 6 tab; lebih dari itu, pertimbangkan side-nav.
+- [Carbon v11](https://carbondesignsystem.com/components/tabs/usage/): tab meluap digulir dengan panah.
+- [NN/g — Tabs, Used Right](https://www.nngroup.com/articles/tabs-used-right/): jangan dua baris tab; tab terlalu banyak = kompleksitas, kelompokkan jadi sub-kategori.
+- [Material 3](https://developer.android.com/reference/kotlin/androidx/compose/material3/PrimaryScrollableTabRow.composable): gulir bila tidak muat.
+
+Aturan:
+- **Maks. 6 tab per bar.** Hub dengan lebih banyak halaman memakai `HubTabs`: ≤ 6 **kelompok** di baris utama
+  (pill) + **sub-tab garis** (`TabsList variant="line"`) untuk kelompok berisi > 1 halaman.
+- `?tab=` tetap memakai id halaman. Kelompok berisi 1 halaman tampil sebagai tab biasa dengan testid halaman itu.
+  Pindah kelompok membuka halaman terakhir di kelompok itu.
+- **Bila tetap meluap** (layar sempit), `TabsList` menggulir dengan tombol ‹ › di samping daftar, dan tab aktif
+  selalu terlihat.
+- **Pengelompokan saat ini:**
+  - Payments: Hutang (AP) · Kas & Bank · Piutang (AR)
+  - Reports: Laporan keuangan · Analisis · Procurement
+  - Compensation: Penggajian · Service charge & LB · Voucher & FOC
+  - CMS: Konten · Media & halaman · Review · Analytics
+  - Monitoring: Pemantauan · Jadwal & job · Data management · Tour analytics
+  - CRM analytics: Overview · Retensi · Segmen · Nilai pelanggan
+
+### 10.9 Filter & toolbar (riset 5 Nov 2026)
+Sumber:
+- [Polaris Filters](https://polaris.shopify.com/components/filters): 2–3 filter utama terlihat, sisanya di balik "More filters".
+- [SAP Fiori filter bar](https://www.sap.com/design-system/fiori-design-web/v1-139/ui-elements/filter-bar/usage): jumlah filter aktif ditampilkan; default yang masuk akal.
+- [Carbon data table](https://carbondesignsystem.com/components/data-table/usage/): toolbar memuat cari, filter, dan maks. ±5 aksi; sisanya overflow.
+
+Aturan:
+- **Satu baris filter = maks. 3–4 kontrol terlihat.** Kontrol sekunder/lanjutan masuk `MoreFilters` (tombol
+  "Filter lain" / nama yang spesifik, mis. "Pengaturan model"), dengan badge jumlah pengaturan non-default.
+- **Tombol Ekspor dan aksi layar lain tidak ditaruh di baris filter**, tetapi di `PageHeader` (di hub: mengisi
+  header hub). Baris filter hanya berisi filter.
+- **Header halaman: maks. ±5 tombol terlihat.** Aksi sekunder (Unduh PDF, Email, Batalkan) masuk
+  `RowActions size="default" promote={false}` ("⋯"). Aksi alur (Ajukan, Setujui, Kirim, Terima) tetap terlihat.
+
+### 10.10 Halaman detail dokumen (riset 5 Nov 2026)
+Sumber: [SAP Fiori object page](https://www.sap.com/design-system/fiori-design-web/v1-84/page-types/floorplans/object-page/usage).
+Header memuat informasi kunci dan aksi global objek; *key value facets* untuk data penting; isi berupa bagian yang
+masing-masing berjudul.
+
+Aturan:
+- **Header** = `PageHeader`:
+  - judul = nomor dokumen; subtitle = deskripsi singkat;
+  - aksi dokumen di kanan judul, bukan di kartu "Aksi" di samping;
+  - `KeyFacts` sebagai children: Status, Tanggal, Nominal, Toko/Vendor, dokumen terkait.
+- **Tidak ada kartu tipis berisi label/nilai** di bawah judul. Kartu KPI (`CompactStatCard`) hanya untuk angka,
+  bukan "Dibuat oleh", "Catatan", atau status.
+- **Setiap kartu isi berjudul** (`h3`/`CardTitle`): Rincian, Approval, Baris jurnal, Item, Riwayat.
+- **Banner status** (dibatalkan, ditolak, berhasil diposting) boleh berupa kartu bergaris kiri berwarna; isinya
+  pesan, bukan data.
+- **Halaman detail di Outlet Portal** memakai `PageHeader noExtras`: tokonya ditentukan dokumen, bukan pemilih toko.

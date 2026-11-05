@@ -1,7 +1,7 @@
 /** Daily Sales Detail — read-only view + Validate/Reject (finance) buttons + Edit (outlet). */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, Edit2, CheckCircle2, XCircle, FileText, Receipt } from "lucide-react";
+import { ArrowLeft, Edit2, CheckCircle2, XCircle, Receipt } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import KeyFacts from "@/components/shared/KeyFacts";
 export default function DailySalesDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ export default function DailySalesDetail() {
         <PageHeader
           icon={Receipt}
           title={`Daily Sales ${fmtDate(ds.sales_date)}`}
+          noExtras
           subtitle={outletName}
           className="mb-0 md:mb-0"
           actions={(canEdit || canReject || canValidate) && (
@@ -101,7 +103,7 @@ export default function DailySalesDetail() {
               {canEdit && (
                 <Button variant="outline" asChild>
                   <Link to={`/outlet/daily-sales/${id}/edit`} data-testid="ds-edit">
-                    <Edit2 className="h-4 w-4" /> Ubah
+                    <Edit2 className="h-4 w-4" /> Edit
                   </Link>
                 </Button>
               )}
@@ -118,7 +120,17 @@ export default function DailySalesDetail() {
             </>
           )}
         >
-          <StatusPill status={ds.status} />
+          {/* Fakta kunci di header, bukan kartu tipis (DESIGN_SYSTEM §10.10) */}
+          <KeyFacts testId="ds-key-facts" items={[
+            { label: "Status", value: <StatusPill status={ds.status} /> },
+            { label: "Toko", value: outletName },
+            { label: "Tanggal", value: fmtDate(ds.sales_date) },
+            { label: "Jumlah transaksi", numeric: true, value: ds.transaction_count || 0 },
+            { label: "Diajukan", value: ds.submitted_at ? fmtDateTime(ds.submitted_at) : "—" },
+            { label: "Jurnal", hidden: !ds.journal_entry_id, value: ds.journal_entry_id && (
+              <Link to={`/finance/journals/${ds.journal_entry_id}`} className="hover:underline" data-testid="ds-journal-link">Lihat jurnal</Link>
+            ) },
+          ]} />
         </PageHeader>
       </div>
 
@@ -127,19 +139,6 @@ export default function DailySalesDetail() {
           <strong className="text-red-700 dark:text-red-400">Ditolak:</strong> {ds.rejected_reason}
         </div>
       )}
-      {ds.journal_entry_id && (
-        <div className="glass-card border-l-4 border-emerald-500 p-3 text-sm flex items-center gap-2">
-          <FileText className="h-4 w-4" />
-          <span>Jurnal dibuat · ID <span className="text-xs text-muted-foreground tabular-nums">{ds.journal_entry_id}</span></span>
-        </div>
-      )}
-
-      <div className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 text-sm">
-        <Field label="Outlet" value={outletName} />
-        <Field label="Tanggal" value={fmtDate(ds.sales_date)} />
-        <Field label="Jumlah Transaksi" value={ds.transaction_count || 0} />
-        <Field label="Submitted" value={ds.submitted_at ? fmtDateTime(ds.submitted_at) : "-"} />
-      </div>
 
       <div className="glass-card p-4">
         <h3 className="text-sm md:text-base font-semibold mb-2">Channels</h3>
@@ -209,11 +208,3 @@ export default function DailySalesDetail() {
   );
 }
 
-function Field({ label, value }) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5">{value}</div>
-    </div>
-  );
-}

@@ -12,11 +12,15 @@ import { Button } from "@/components/ui/button"
  */
 const Tabs = TabsPrimitive.Root
 
+// variant "line" = sub-tab tingkat kedua (HubTabs): garis bawah, tanpa latar — tidak terlihat sebagai baris tab kedua
+// yang setara dengan tab utama (NN/g: hindari tab bertumpuk dua baris).
+const TabsVariantContext = React.createContext("pill")
+
 /**
  * TabsList — bila tab tidak muat (hub dengan banyak tab di 1280px), daftar digulir horizontal: tombol ‹ › muat di
  * samping daftar pada sisi yang masih menyimpan tab, dan tab aktif selalu digulir ke area terlihat.
  */
-const TabsList = React.forwardRef(({ className, ...props }, ref) => {
+const TabsList = React.forwardRef(({ className, variant = "pill", ...props }, ref) => {
   const innerRef = React.useRef(null)
   const [edges, setEdges] = React.useState({ left: false, right: false })
   const setRefs = React.useCallback((el) => {
@@ -62,28 +66,39 @@ const TabsList = React.forwardRef(({ className, ...props }, ref) => {
   return (
     <div className={cn("inline-flex max-w-full min-w-0 items-center gap-0.5 align-middle", /\bw-full\b/.test(className || "") && "flex w-full")}>
       {edges.left && scrollBtn(-1)}
-      <TabsPrimitive.List
-        ref={setRefs}
-        className={cn(
-          "no-scrollbar inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto rounded-[calc(var(--radius)-2px)] bg-white/35 dark:bg-white/5 border border-border/60 p-1 text-muted-foreground",
-          className
-        )}
-        {...props} />
+      <TabsVariantContext.Provider value={variant}>
+        <TabsPrimitive.List
+          ref={setRefs}
+          data-variant={variant}
+          className={cn(
+            variant === "line"
+              ? "no-scrollbar inline-flex min-w-0 max-w-full items-center gap-1 overflow-x-auto border-b border-border text-muted-foreground"
+              : "no-scrollbar inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto rounded-[calc(var(--radius)-2px)] bg-white/35 dark:bg-white/5 border border-border/60 p-1 text-muted-foreground",
+            className
+          )}
+          {...props} />
+      </TabsVariantContext.Provider>
       {edges.right && scrollBtn(1)}
     </div>
   )
 })
 TabsList.displayName = TabsPrimitive.List.displayName
 
-const TabsTrigger = React.forwardRef(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--radius)-4px)] px-2.5 text-[13px] font-medium ring-offset-background transition-colors data-[state=inactive]:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:pill-active [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0",
-      className
-    )}
-    {...props} />
-))
+const TabsTrigger = React.forwardRef(({ className, ...props }, ref) => {
+  const variant = React.useContext(TabsVariantContext)
+  return (
+    <TabsPrimitive.Trigger
+      ref={ref}
+      className={cn(
+        "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap text-[13px] font-medium ring-offset-background transition-colors data-[state=inactive]:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0",
+        variant === "line"
+          ? "-mb-px rounded-none border-b-2 border-transparent px-2.5 data-[state=active]:border-foreground data-[state=active]:text-foreground"
+          : "rounded-[calc(var(--radius)-4px)] px-2.5 data-[state=active]:pill-active",
+        className
+      )}
+      {...props} />
+  )
+})
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
 const TabsContent = React.forwardRef(({ className, ...props }, ref) => (

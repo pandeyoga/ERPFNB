@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
+import PageHeader from "@/components/shared/PageHeader";
 
 const LABEL = "text-xs font-medium text-muted-foreground";
 
@@ -64,6 +65,8 @@ export default function TrialBalance() {
 
   return (
     <div data-testid="trial-balance-page" className="space-y-3 lg:space-y-4">
+      {/* Di dalam hub Reports: subtitle & aksi layar mengisi header hub (DESIGN_SYSTEM §10.1) */}
+      <PageHeader title="Trial Balance" subtitle="Neraca saldo seluruh akun untuk periode terpilih — saldo awal, mutasi, dan saldo akhir." actions={<Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="tb-export"><Download /> Ekspor CSV</Button>} />
       <div data-testid="tb-filter-card" className="flex flex-wrap gap-3 items-end">
         <div className="min-w-[140px]">
           <Label htmlFor="tb-period" className={LABEL}>Periode</Label>
@@ -79,9 +82,6 @@ export default function TrialBalance() {
               placeholder="Kode / nama akun…" className="glass-input pl-9 h-9" data-testid="tb-search" />
           </div>
         </div>
-        <Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="tb-export">
-          <Download /> Ekspor CSV
-        </Button>
       </div>
 
       <ScopeNote show={belowGroup} />

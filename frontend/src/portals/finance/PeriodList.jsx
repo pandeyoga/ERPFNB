@@ -14,6 +14,7 @@ import { fmtDateTime } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
+import RowActions from "@/components/shared/RowActions";
 
 export default function PeriodList({ embedded = false }) {
   const { can } = useAuth();
@@ -133,32 +134,25 @@ export default function PeriodList({ embedded = false }) {
               render: (p) => <span className="text-xs text-muted-foreground">{fmtDateTime(p.updated_at)}</span> },
           ]}
           rowAction={(p) => (
-            <div className="inline-flex gap-2">
-              <Button size="sm" variant="outline" asChild>
-                <Link to={`/finance/period-closing/${p.period}`} data-testid={`period-wizard-${p.period}`}>
-                  <ListChecks /> Wizard
-                </Link>
-              </Button>
-              {p.status === "open" && canClose && (
-                <Button size="sm" variant="outline" disabled={acting === p.period} onClick={() => close(p.period)}
-                  data-testid={`period-close-${p.period}`}>
-                  Tutup
+            // Aksi baris: Wizard + "⋯" (DESIGN_SYSTEM §10.1) — sebelumnya 3–4 tombol berjajar per periode.
+            <RowActions
+              testId={`period-actions-${p.period}`}
+              primary={(
+                <Button size="sm" variant="outline" asChild>
+                  <Link to={`/finance/period-closing/${p.period}`} data-testid={`period-wizard-${p.period}`}>
+                    <ListChecks /> Wizard
+                  </Link>
                 </Button>
               )}
-              {(p.status === "open" || p.status === "closed") && canLock && (
-                <Button size="sm" variant="outline" disabled={acting === p.period} onClick={() => lock(p.period)}
-                  data-testid={`period-lock-${p.period}`}>
-                  <Lock /> Kunci
-                </Button>
-              )}
-              {(p.status === "locked" || p.status === "closed") && canUnlock && (
-                <Button size="sm" variant="outline" disabled={acting === p.period}
-                  onClick={() => unlock(p.period)}
-                  className="text-amber-700 dark:text-amber-400" data-testid={`period-unlock-${p.period}`}>
-                  <Unlock /> Buka kembali
-                </Button>
-              )}
-            </div>
+              items={[
+                { label: "Tutup (soft-close)", hidden: !(p.status === "open" && canClose), disabled: acting === p.period,
+                  onSelect: () => close(p.period), testId: `period-close-${p.period}` },
+                { label: "Kunci", icon: Lock, hidden: !((p.status === "open" || p.status === "closed") && canLock), disabled: acting === p.period,
+                  onSelect: () => lock(p.period), testId: `period-lock-${p.period}` },
+                { label: "Buka kembali", icon: Unlock, hidden: !((p.status === "locked" || p.status === "closed") && canUnlock), disabled: acting === p.period,
+                  onSelect: () => unlock(p.period), testId: `period-unlock-${p.period}` },
+              ]}
+            />
           )}
         />
       </div>

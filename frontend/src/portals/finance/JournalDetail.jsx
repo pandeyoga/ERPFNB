@@ -1,7 +1,7 @@
 /** Journal Detail with drill-down to source + reverse action. */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, RotateCcw, ExternalLink, FileText, BookOpenCheck } from "lucide-react";
+import { ArrowLeft, RotateCcw, ExternalLink, BookOpenCheck } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 export default function JournalDetail() {
   const { id } = useParams();
@@ -100,46 +101,34 @@ export default function JournalDetail() {
         <PageHeader
           icon={BookOpenCheck}
           title={<span data-testid="je-detail-doc-no">{je.doc_no || je.id.slice(0, 8)}</span>}
+          subtitle={<span data-testid="je-detail-description">{je.description || "—"}</span>}
           actions={canReverse ? (
             <Button onClick={() => setRevOpen(true)} variant="outline" className="text-amber-700 dark:text-amber-400" data-testid="je-reverse">
               <RotateCcw className="h-4 w-4" /> Reverse JE
             </Button>
           ) : null}
         >
-          <span data-testid="je-detail-status"><StatusPill status={je.status} /></span>
+          {/* Fakta kunci di header, bukan kartu tipis terpisah (DESIGN_SYSTEM §10.10) */}
+          <KeyFacts testId="je-detail-meta" items={[
+            { label: "Status", value: <span data-testid="je-detail-status"><StatusPill status={je.status} /></span> },
+            { label: "Tanggal", value: fmtDate(je.entry_date) },
+            { label: "Periode", value: je.period },
+            { label: "Sumber", value: <span className="capitalize">{(je.source_type || "").replace(/_/g, " ")}</span> },
+            { label: "Diposting", value: je.posted_at ? fmtDateTime(je.posted_at) : "—" },
+            { label: "Dokumen sumber", hidden: !je.source_link, testId: "je-detail-source-card", value: je.source_link && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="tabular-nums" data-testid="je-detail-source-doc-no">{je.source_link.doc_no || je.source_link.id.slice(0, 8)}</span>
+                {je.source_link.route && (
+                  <Link to={`${je.source_link.route}/${je.source_link.id}`} data-testid="je-drill-source"
+                    className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground">
+                    Buka <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                )}
+              </span>
+            ) },
+          ]} />
         </PageHeader>
       </div>
-
-      <div className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm" data-testid="je-detail-meta">
-        <Field label="Entry Date" value={fmtDate(je.entry_date)} />
-        <Field label="Period" value={je.period} />
-        <Field label="Source" value={(je.source_type || "").replace(/_/g, " ")} />
-        <Field label="Posted At" value={je.posted_at ? fmtDateTime(je.posted_at) : "—"} />
-        <div className="md:col-span-4">
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Description</div>
-          <div className="font-medium mt-0.5" data-testid="je-detail-description">{je.description || "—"}</div>
-        </div>
-      </div>
-
-      {je.source_link && (
-        <div className="glass-card p-4" data-testid="je-detail-source-card">
-          <div className="flex items-center gap-3 text-sm">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Source document:</span>
-            <span className="text-xs font-medium tabular-nums" data-testid="je-detail-source-doc-no">{je.source_link.doc_no || je.source_link.id.slice(0, 8)}</span>
-            <span className="text-xs text-muted-foreground">({je.source_link.date})</span>
-            {je.source_link.route && (
-              <Link
-                to={`${je.source_link.route}/${je.source_link.id}`}
-                className="ml-auto inline-flex items-center gap-1 text-sm text-foreground/80 hover:text-foreground font-medium"
-                data-testid="je-drill-source"
-              >
-                Buka <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
 
       <div className="glass-card p-4">
         <h3 className="text-sm md:text-base font-semibold mb-3">Baris jurnal</h3>
@@ -195,11 +184,3 @@ export default function JournalDetail() {
   );
 }
 
-function Field({ label, value }) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5 capitalize">{value}</div>
-    </div>
-  );
-}

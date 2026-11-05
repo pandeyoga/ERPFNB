@@ -317,7 +317,7 @@ export default function ReservationList() {
                   <Eye className="h-4 w-4 mr-2" /> Lihat detail
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate(`/outlet/reservations/${r.id}/edit`)}>
-                  <Edit2 className="h-4 w-4 mr-2" /> Ubah
+                  <Edit2 className="h-4 w-4 mr-2" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {r.status === "pending" && (
@@ -501,7 +501,7 @@ export default function ReservationList() {
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setDetailOpen(false)}>Tutup</Button>
                 <Button variant="outline" onClick={() => navigate(`/outlet/reservations/${selected.id}/edit`)} data-testid="btn-edit-reservation">
-                  <Edit2 className="h-4 w-4" /> Ubah
+                  <Edit2 className="h-4 w-4" /> Edit
                 </Button>
               </div>
             </DialogFooter>

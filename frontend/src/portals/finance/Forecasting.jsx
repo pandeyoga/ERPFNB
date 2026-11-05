@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import useOutletScope from "@/hooks/useOutletScope";
 import { StoreFilter } from "@/components/shared/ScopeControls";
+import { MoreFilters } from "@/components/shared/ListToolbar";
 
 const METHOD_COLORS = {
   linear: "#10b981",   // emerald
@@ -92,8 +93,8 @@ export default function Forecasting({ embedded = false }) {
     <div data-testid="forecasting-page">
       {header}
       <div className="space-y-3 lg:space-y-4">
-      {/* Filter bar */}
-      <div className="glass-card p-3 flex flex-wrap gap-3 items-end">
+      {/* Filter halaman = baris polos (§10.3): Target · Toko · Horizon terlihat; pengaturan model di balik satu tombol (§10.9) */}
+      <div className="flex flex-wrap gap-3 items-end" data-testid="forecast-filters">
         <div className="w-full sm:w-52">
           <Label className={LABEL}>Target</Label>
           <SimpleSelect value={target} onValueChange={setTarget} ariaLabel="Target"
@@ -102,28 +103,29 @@ export default function Forecasting({ embedded = false }) {
         </div>
         <StoreFilter filter={storeFilter} testId="forecast-outlet" className="w-full sm:w-52 min-w-0" />
         <div>
-          <div className={LABEL} id="forecast-method-label">Metode</div>
-          <Segmented labelledBy="forecast-method-label" value={method} onChange={setMethod}
-            options={methodsCatalog.methods.map(m => ({ value: m.key, label: m.key, title: m.description }))}
-            testIdPrefix="forecast-method" capitalize />
-        </div>
-        <div>
           <div className={LABEL} id="forecast-months-label">Horizon</div>
           <Segmented labelledBy="forecast-months-label" value={months} onChange={setMonths}
             options={[1, 3, 6].map(m => ({ value: m, label: `${m} bln` }))}
             testIdPrefix="forecast-months" />
         </div>
-        <div className="w-28">
-          <Label htmlFor="forecast-history-days" className={LABEL}>Histori (hari)</Label>
-          <Input id="forecast-history-days" type="number" value={historyDays}
-            onChange={e => setHistoryDays(Math.max(14, Math.min(365, +e.target.value || 90)))}
-            className="glass-input mt-1 h-9" min={14} max={365} data-testid="forecast-history-days" />
-        </div>
-        {methodDesc && (
-          <p className="basis-full text-xs text-muted-foreground">
-            <span className="font-medium capitalize text-foreground/80">{method}:</span> {methodDesc}
-          </p>
-        )}
+        <MoreFilters label="Pengaturan model" testId="forecast-model-settings"
+          count={(method !== "hybrid" ? 1 : 0) + (historyDays !== 90 ? 1 : 0)}>
+          <div>
+            <div className={LABEL} id="forecast-method-label">Metode</div>
+            <div className="mt-1">
+              <Segmented labelledBy="forecast-method-label" value={method} onChange={setMethod}
+                options={methodsCatalog.methods.map(m => ({ value: m.key, label: m.key, title: m.description }))}
+                testIdPrefix="forecast-method" capitalize />
+            </div>
+            {methodDesc && <p className="mt-1.5 text-xs text-muted-foreground">{methodDesc}</p>}
+          </div>
+          <div className="w-32">
+            <Label htmlFor="forecast-history-days" className={LABEL}>Histori (hari)</Label>
+            <Input id="forecast-history-days" type="number" value={historyDays}
+              onChange={e => setHistoryDays(Math.max(14, Math.min(365, +e.target.value || 90)))}
+              className="glass-input mt-1 h-9" min={14} max={365} data-testid="forecast-history-days" />
+          </div>
+        </MoreFilters>
       </div>
 
       {loading && <LoadingState rows={6} />}

@@ -51,7 +51,11 @@ function analyze() {
       const ctrlKids = kids.filter((k) => isControl(k) || k.matches('[role=tablist]') || k.querySelector(':scope > input, :scope > button, :scope > [role=tablist], :scope > [role=combobox]'));
       if (ctrlKids.length < 2) return;
       const rows = [];
-      kids.forEach((k) => { const kr = R(k); const row = rows.find((x) => Math.abs(x.top - kr.top) < 6); if (row) row.items.push(kr); else rows.push({ top: kr.top, items: [kr] }); });
+      // satu baris = rentang vertikal yang bertumpuk (kontrol berlabel & tombol rata bawah tetap satu baris visual)
+      kids.forEach((k) => { const kr = R(k);
+        const row = rows.find((x) => Math.min(x.bottom, kr.bottom) - Math.max(x.top, kr.top) > 0.5 * Math.min(x.bottom - x.top, kr.height));
+        if (row) { row.items.push(kr); row.top = Math.min(row.top, kr.top); row.bottom = Math.max(row.bottom, kr.bottom); }
+        else rows.push({ top: kr.top, bottom: kr.bottom, items: [kr] }); });
       if (rows.length < 2) return;
       const cs = getComputedStyle(c); const inner = r.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const fills = rows.map((x) => x.items.reduce((s, i) => s + i.width, 0) / inner);

@@ -638,7 +638,7 @@ const financePeriodClosingHubTour = {
 // ─── Finance Payments Hub (consolidated) ──────────────────────────────
 const financePaymentsHubTour = {
   name: "Payments Hub",
-  description: "Payment Requests, AP, Payments, Runs, Bank Recon & AR kini satu workspace bertab.",
+  description: "Hutang (AP), Kas & Bank, dan Piutang (AR) dalam satu workspace berkelompok.",
   steps: [
     {
       target: "[data-testid='finance-payments-hub']",
@@ -661,9 +661,9 @@ const financePaymentsHubTour = {
       placement: "bottom",
     },
     {
-      target: "[data-testid='payments-tab-bank-recon']",
-      title: "Bank Reconciliation",
-      content: "Cocokkan mutasi rekening dengan jurnal. Tab **AR Invoices** untuk piutang customer.",
+      target: "[data-testid='payments-group-cash']",
+      title: "Kas & Bank",
+      content: "**Cash position** dan **Bank reconciliation** (cocokkan mutasi rekening dengan jurnal). Kelompok **Piutang (AR)** untuk invoice customer & deposit reservasi.",
       placement: "bottom",
       variant: "tip",
     },
@@ -859,7 +859,7 @@ const financeForecastingTour = {
   description: "Proyeksi keuangan berbasis tren historis.",
   steps: [
     { target: "[data-testid='forecasting-page']", title: "Forecasting", content: "Proyeksi **arus & performa** ke depan berdasarkan tren data historis.", placement: "center", disableBeacon: true, variant: "hero" },
-    { target: "[data-testid='forecast-history-days']", title: "Basis Historis", content: "Atur jumlah hari historis yang dipakai sebagai dasar proyeksi.", placement: "bottom" },
+    { target: "[data-testid='forecast-model-settings']", title: "Pengaturan model", content: "Pilih **metode** proyeksi dan jumlah **hari historis** yang dipakai sebagai dasar. Angka di tombol = pengaturan yang diubah dari default.", placement: "bottom" },
     { target: "[data-testid='forecast-chart']", title: "Kurva Proyeksi", content: "Grafik aktual vs proyeksi — bantu antisipasi kebutuhan kas/pembelian.", placement: "top", variant: "tip" },
   ],
 };

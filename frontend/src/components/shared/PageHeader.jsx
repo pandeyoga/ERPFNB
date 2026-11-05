@@ -14,6 +14,7 @@
  *  - actions (alias lama: action) — tombol aksi layar, rata kanan
  *  - children — baris tambahan di bawah judul (mis. chip filter/status)
  *  - hub — PageHeader milik hub (menyediakan slot untuk tab aktif)
+ *  - noExtras — jangan tampilkan konteks layar (mis. halaman detail dokumen: tokonya ditentukan dokumen itu)
  *
  * Konteks layar (mis. pemilih "Outlet aktif" di portal Outlet) masuk lewat <PageHeaderExtrasProvider extras>:
  * PageHeader halaman menampilkannya paling kiri di area aksi — bukan kartu terpisah di atas judul (§10.3).
@@ -49,13 +50,13 @@ export function usePageHeaderExtrasConsumed() {
   return useContext(ExtrasContext)?.consumed ?? 0;
 }
 
-function ExtrasSlot({ ex }) {
+function ExtrasSlot({ ex, hidden = false }) {
   const { setConsumed } = ex;
   useLayoutEffect(() => {
     setConsumed((n) => n + 1);
     return () => setConsumed((n) => n - 1);
   }, [setConsumed]);
-  return ex.extras;
+  return hidden ? null : ex.extras; // hidden: slot "terpakai" (bar cadangan tidak muncul) tetapi tidak ditampilkan
 }
 
 const SUBTITLE = "text-xs md:text-sm text-muted-foreground leading-[1.3] mt-0.5";
@@ -85,18 +86,22 @@ export default function PageHeader({
   actions,
   children,
   hub = false,
+  noExtras = false,
   colorClass = "grad-aurora",
   className,
   testId = "page-header",
 }) {
   const ctx = useContext(HubHeaderContext);
-  const ex = useContext(ExtrasContext);
+  const exCtx = useContext(ExtrasContext);
+  const ex = noExtras ? null : exCtx;
+  const muted = noExtras && exCtx?.extras ? <ExtrasSlot ex={exCtx} hidden /> : null;
   const slot = actions ?? action;
   if (ctx && !hub) return <HubSlotFill ctx={ctx} subtitle={subtitle} actions={slot}>{children}</HubSlotFill>;
   const hubSlots = hub && ctx;
   const showOwnSubtitle = subtitle && !(hubSlots && ctx.filled > 0);
   return (
     <div className={cn("mb-3 md:mb-4", className)} data-testid={testId}>
+      {muted}
       {/* Judul mengisi sisa lebar (subtitle boleh 2 baris); aksi tidak pernah turun ke baris sendiri di ≥ md. */}
       <div className="flex items-start md:items-center justify-between gap-3 flex-wrap md:flex-nowrap">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">

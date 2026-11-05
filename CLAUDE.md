@@ -7,7 +7,8 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
 
 - Pakai primitive yang ada: `components/ui/*` (Button, Input, Select, Tabs, Card, Dialog) dan
   `components/shared/*` (PageHeader, DataTable, StatusPill, CompactStatCard, EmptyState, SegmentedFilter,
-  SimpleSelect, InlineHelp, ConfirmDialog, RowActions). Jangan membuat ulang tombol/pill/kartu/tabel sendiri.
+  SimpleSelect, InlineHelp, ConfirmDialog, RowActions, HubTabs, KeyFacts, ListToolbar/MoreFilters).
+  Jangan membuat ulang tombol/pill/kartu/tabel sendiri.
 - `Button`: pilih `size` (`default` 36px, `sm` 32px, `icon`, `icon-sm`) dan `variant`
   (`default`/`outline`/`ghost`/`secondary`/`destructive`/`success`/`link`). **Jangan** override `h-*`,
   `rounded-full`, atau `pill-active` lewat `className`. Chip = `<Button size="sm" variant="outline" aria-pressed>`.
@@ -25,6 +26,9 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
   - Filter tabel di dalam kartu tabel (`ListToolbar`); filter halaman tanpa kartu; daftar sejenis = baris dalam
     1 kartu, bukan kartu per item; maks. 2 lapis bingkai; grid tanpa item yatim.
   - Form yang mengubah data: `FormActionBar` (sticky bawah) + `useUnsavedChanges(dirty)`.
+  - Maks. 6 tab per bar → `HubTabs` (kelompok + sub-tab). Baris filter maks. 3–4 kontrol, sisanya `MoreFilters`;
+    tombol Ekspor di `PageHeader`, bukan di baris filter. Halaman detail: `KeyFacts` di header, tanpa kartu tipis
+    label/nilai (§10.8–10.10).
   - Bahasa: istilah teknis EN (Payment, COA, Posted, Overdue, Partial); aksi, kalimat & status persetujuan ID
     (Simpan, Disetujui, Ditolak); label = kata umum ID + istilah EN ("Tanggal Invoice", "Nominal").
     Buat ‹dokumen› / Tambah ‹data›; uang = Nominal, hitungan = Jumlah.

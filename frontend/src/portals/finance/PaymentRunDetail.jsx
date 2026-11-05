@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, CheckCircle2, Play, X, AlertTriangle, FileText, Banknote, Layers, Receipt, User, StickyNote,
+  ArrowLeft, CheckCircle2, Play, X, AlertTriangle, FileText, Banknote, Layers, Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +20,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 const BACK_PATH = "/finance/payments-hub?tab=payment-runs";
 
@@ -85,7 +86,7 @@ export default function PaymentRunDetail() {
         <PageHeader
           icon={Layers}
           title={<span data-testid="prn-doc-no">{run.doc_no}</span>}
-          subtitle={<>Payment date: <strong>{fmtDate(run.payment_date)}</strong>{" · "}Bank: <strong>{run.bank_account_name || run.bank_account_id}</strong></>}
+          subtitle={run.notes || "Pembayaran beberapa PAY sekaligus dari satu rekening bank."}
           actions={
             <div className="flex gap-2 flex-wrap" data-testid="prn-action-bar">
               {canCancel && (
@@ -110,7 +111,13 @@ export default function PaymentRunDetail() {
             </div>
           }
         >
-          <span data-testid="prn-status-badge"><StatusPill status={run.status} /></span>
+          {/* Fakta kunci di header (DESIGN_SYSTEM §10.10); kartu KPI hanya untuk angka */}
+          <KeyFacts testId="prn-key-facts" items={[
+            { label: "Status", value: <span data-testid="prn-status-badge"><StatusPill status={run.status} /></span> },
+            { label: "Tanggal bayar", value: fmtDate(run.payment_date) },
+            { label: "Rekening bank", value: run.bank_account_name || run.bank_account_id },
+            { label: "Dibuat oleh", value: <span data-testid="prn-created-by">{run.created_by_name || "-"}</span> },
+          ]} />
         </PageHeader>
       </div>
 
@@ -159,19 +166,15 @@ export default function PaymentRunDetail() {
       )}
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="prn-summary-grid">
+      <div className={`grid grid-cols-2 gap-3 ${run.total_wht > 0 ? "md:grid-cols-4" : "md:grid-cols-2"}`} data-testid="prn-summary-grid">
         <CompactStatCard label="Total gross" icon={Banknote} color="aurora-1" value={fmtRp(run.total_amount)} testId="prn-total-amount" />
-        {run.total_wht > 0 ? (
+        {run.total_wht > 0 && (
           <>
             <CompactStatCard label="Total WHT (PPh)" icon={Receipt} color="aurora-5" tone="warning" value={fmtRp(run.total_wht)} testId="prn-total-wht" />
             <CompactStatCard label="Net ke bank" icon={Banknote} color="aurora-4" value={fmtRp(run.net_amount ?? (run.total_amount - (run.total_wht || 0)))} testId="prn-net-amount" />
           </>
-        ) : (
-          <CompactStatCard label="Jumlah payment" icon={Layers} color="aurora-2" value={`${run.payments?.length || run.pay_count || 0} PAY`} testId="prn-pay-count" />
         )}
-        <CompactStatCard label="Dibuat oleh" icon={User} color="aurora-3" size="sm" value={run.created_by_name || "-"} testId="prn-created-by" />
-        {run.total_wht > 0 && <CompactStatCard label="Jumlah payment" icon={Layers} color="aurora-2" value={`${run.payments?.length || run.pay_count || 0} PAY`} testId="prn-pay-count" />}
-        {!run.total_wht && <CompactStatCard label="Catatan" icon={StickyNote} color="aurora-6" size="sm" value={run.notes || "—"} testId="prn-notes" />}
+        <CompactStatCard label="Jumlah payment" icon={Layers} color="aurora-2" value={`${run.payments?.length || run.pay_count || 0} PAY`} testId="prn-pay-count" />
       </div>
       {/* WHT info banner */}
       {run.total_wht > 0 && (

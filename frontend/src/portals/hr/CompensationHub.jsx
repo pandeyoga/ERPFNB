@@ -15,7 +15,7 @@
  */
 import { useSearchParams } from "react-router-dom";
 import { DollarSign, Receipt, Gift, Ticket, Coffee, Wallet, PiggyBank } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import PayrollList from "./PayrollList";
@@ -38,6 +38,13 @@ const TABS = [
   { id: "lb-fund",        name: "LB Fund",        icon: PiggyBank,  desc: "Buku besar dana Loss & Breakage", render: () => <LBFundLedger embedded />, perm: "hr.lb_fund" },
 ];
 
+// Kasbon dipotong saat payroll; LB Fund diisi dari porsi service charge.
+const GROUPS = [
+  { id: "pay", label: "Penggajian", icon: DollarSign, ids: ["payroll", "incentive", "advances"] },
+  { id: "sc", label: "Service charge & LB", icon: Receipt, ids: ["service-charge", "lb-fund"] },
+  { id: "benefit", label: "Voucher & FOC", icon: Ticket, ids: ["voucher", "foc"] },
+];
+
 export default function CompensationHub() {
   const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -55,21 +62,18 @@ export default function CompensationHub() {
           subtitle={activeTab.desc}
           actions={<InlineHelp id="hr-compensation-hub" size="sm" />}
         />
-        <Tabs value={activeTab.id} onValueChange={setTab}>
-          <TabsList data-testid="comp-tabs">
-            {tabs.map(t => {
-              const Icon = t.icon;
-              return (
-                <TabsTrigger key={t.id} value={t.id} data-testid={`comp-tab-${t.id}`}>
-                  <Icon /> {t.name}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          <TabsContent value={activeTab.id} data-testid={`comp-content-${activeTab.id}`}>
-            {activeTab.render()}
-          </TabsContent>
-        </Tabs>
+        {/* 7 halaman → 3 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(tabs.map(t => ({ ...t, label: t.name })), GROUPS)}
+          value={activeTab.id}
+          onChange={setTab}
+          testId="comp-tabs"
+          itemTestId={(id) => `comp-tab-${id}`}
+          groupTestId={(id) => `comp-group-${id}`}
+        />
+        <div className="mt-3" data-testid={`comp-content-${activeTab.id}`} role="tabpanel" aria-label={activeTab.name}>
+          {activeTab.render()}
+        </div>
       </div>
     </HubHeaderProvider>
   );

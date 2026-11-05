@@ -1,7 +1,7 @@
 /** Transfer Detail — full page with header, status timeline, line items, and action buttons. */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, ArrowLeftRight, Send, Inbox, Package, Calendar, CircleDot, FileText, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Send, Inbox, Package, FileText, AlertCircle } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import StatusPill from "@/components/shared/StatusPill";
@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 /** Daftar transfer ada sebagai tab di Stock Movements hub (item sidebar "Stock Movements"). */
 const LIST_URL = "/inventory/movements-hub?type=transfers";
@@ -100,7 +101,6 @@ export default function TransferDetail() {
         className="mb-0 md:mb-0"
         actions={
           <div className="flex items-center gap-2" data-testid="trf-detail-actions">
-            <StatusPill status={transfer.status} />
             {transfer.status === "draft" && can("inventory.transfer.send") && (
               <Button onClick={send} disabled={acting} data-testid="trf-detail-send">
                 <Send /> Kirim
@@ -113,14 +113,19 @@ export default function TransferDetail() {
             )}
           </div>
         }
-      />
+      >
+        {/* Fakta kunci di header; kartu KPI hanya untuk angka (DESIGN_SYSTEM §10.10) */}
+        <KeyFacts testId="trf-key-facts" items={[
+          { label: "Status", value: <span data-testid="trf-summary-status"><StatusPill status={transfer.status} /></span> },
+          { label: "Tanggal transfer", value: <span data-testid="trf-summary-date">{fmtDate(transfer.transfer_date)}</span> },
+          { label: "Dari", value: fromName },
+          { label: "Ke", value: toName },
+        ]} />
+      </PageHeader>
 
-      {/* Summary tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="trf-summary">
-        <CompactStatCard size="sm" icon={Calendar} color="aurora-1" label="Tanggal transfer" value={fmtDate(transfer.transfer_date)} testId="trf-summary-date" />
+      <div className="grid grid-cols-2 gap-3" data-testid="trf-summary">
         <CompactStatCard size="sm" icon={Package} color="aurora-2" label="Total item" value={`${transfer.lines?.length || 0} item`} sub={`${fmtNumber(totalQty)} qty`} testId="trf-summary-items" />
         <CompactStatCard size="sm" icon={ArrowLeftRight} color="aurora-3" label="Total nilai" value={fmtRp(totalValue)} testId="trf-summary-value" />
-        <CompactStatCard size="sm" icon={CircleDot} color="aurora-5" label="Status" value={<StatusPill status={transfer.status} />} testId="trf-summary-status" />
       </div>
 
       {/* Timeline */}

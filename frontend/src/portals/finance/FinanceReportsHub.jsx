@@ -10,8 +10,8 @@ import {
   BarChart3, TrendingUp, Scale, Droplets, GitCompareArrows,
   Wand2, Table2, ShoppingCart, FileText,
 } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 
 import TrialBalance from "./TrialBalance";
@@ -34,6 +34,12 @@ const TABS = [
   { id: "procurement-reports", label: "Procurement reports", icon: ShoppingCart,     component: ProcurementReportsTab },
 ];
 
+const GROUPS = [
+  { id: "statements", label: "Laporan keuangan", icon: BarChart3, ids: ["trial-balance", "profit-loss", "balance-sheet", "cashflow"] },
+  { id: "analysis", label: "Analisis", icon: Table2, ids: ["comparatives", "pivot", "report-builder"] },
+  { id: "procurement", label: "Procurement reports", ids: ["procurement-reports"] },
+];
+
 export default function FinanceReportsHub() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "trial-balance");
@@ -53,30 +59,28 @@ export default function FinanceReportsHub() {
   const ActiveComponent = active.component;
 
   return (
+    <HubHeaderProvider>
     <div data-testid="finance-reports-hub">
-      <PageHeader
+      <PageHeader hub
         icon={FileText}
         title="Reports"
         subtitle="Laporan keuangan, perbandingan periode, custom report, pivot, dan ekspor pengadaan"
         actions={<InlineHelp id="finance-reports-hub" size="xs" placement="left" />}
       />
 
-      <Tabs value={active.id} onValueChange={handleTabChange}>
-        <TabsList data-testid="reports-hub-tabs">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <TabsTrigger key={tab.id} value={tab.id} data-testid={`reports-tab-${tab.id}`}>
-                <Icon />
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-        <TabsContent value={active.id} data-testid="reports-hub-content">
-          <ActiveComponent />
-        </TabsContent>
-      </Tabs>
+      {/* 8 laporan → 3 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+      <HubTabs
+        groups={groupTabs(TABS, GROUPS)}
+        value={active.id}
+        onChange={handleTabChange}
+        testId="reports-hub-tabs"
+        itemTestId={(id) => `reports-tab-${id}`}
+        groupTestId={(id) => `reports-group-${id}`}
+      />
+      <div className="mt-3" data-testid="reports-hub-content" role="tabpanel" aria-label={active.label}>
+        <ActiveComponent />
+      </div>
     </div>
+    </HubHeaderProvider>
   );
 }

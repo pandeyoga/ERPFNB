@@ -19,6 +19,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import { fmtRp, fmtDate, fmtDateTime, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 const BACK_PATH = "/finance/payments-hub?tab=payments";
 
@@ -89,28 +90,43 @@ export default function PaymentDetail() {
       <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate(BACK_PATH)}
         data-testid="pay-back"><ArrowLeft className="h-4 w-4" />Kembali ke Payments</Button>
       <div data-testid="pay-detail-header">
+        {/* Aksi dokumen di kanan judul + fakta kunci di header (DESIGN_SYSTEM §10.1 / §10.10) */}
         <PageHeader
           icon={Banknote}
           title={<span data-testid="pay-doc-no">{doc.doc_no}</span>}
-          subtitle={<span data-testid="pay-meta">Diajukan {fmtDate(doc.request_date)} · <span className="capitalize">{doc.payee_type}</span> · {doc.payee_name || doc.payee_text || "-"}</span>}
+          subtitle={<span data-testid="pay-meta">{doc.description || `Payment ke ${doc.payee_name || doc.payee_text || "-"}`}</span>}
+          actions={hasActions ? (
+            <div className="flex items-center gap-2" data-testid="pay-actions-card">
+              {canCancel && <Button disabled={acting} variant="ghost" onClick={() => setShowCancel(true)} data-testid="pay-cancel">Batalkan</Button>}
+              {canReject && <Button disabled={acting} variant="outline" onClick={() => setShowReject(true)} className="text-red-700 dark:text-red-400 hover:text-red-700" data-testid="pay-reject"><X /> Tolak</Button>}
+              {canSubmit && <Button disabled={acting} onClick={() => doAction("submit")} data-testid="pay-submit">Ajukan approval</Button>}
+              {canApprove && <Button disabled={acting} onClick={() => doAction("approve", { note: "" })} data-testid="pay-approve"><Check /> Setujui</Button>}
+              {canMarkPaid && <Button disabled={acting} onClick={() => setShowPay(true)} data-testid="pay-markpaid"><CreditCard /> Tandai dibayar</Button>}
+            </div>
+          ) : null}
         >
-          <StatusPill status={doc.status} />
+          <KeyFacts testId="pay-key-facts" items={[
+            { label: "Status", value: <StatusPill status={doc.status} /> },
+            { label: "Nominal", numeric: true, value: <span data-testid="pay-amount-display">{fmtRp(doc.amount)}</span> },
+            { label: "Tanggal pengajuan", value: fmtDate(doc.request_date) },
+            { label: "Payee", value: <span><span className="capitalize">{doc.payee_type}</span> · {doc.payee_name || doc.payee_text || "-"}</span> },
+            { label: "Dibayar", hidden: !doc.payment_date, value: doc.payment_date && `${fmtDate(doc.payment_date)} · ref ${doc.payment_ref || "-"}` },
+          ]} />
         </PageHeader>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-3 lg:gap-4">
         <div className="lg:col-span-2 space-y-3 lg:space-y-4">
           <div className="glass-card p-4 space-y-3" data-testid="pay-info-card">
-            <Row label="Amount" value={<span className="text-xl font-semibold tabular-nums" data-testid="pay-amount-display">{fmtRp(doc.amount)}</span>} />
-            <Row label="Description" value={doc.description} />
+            <h3 className="text-base font-semibold">Rincian</h3>
+            <Row label="Deskripsi" value={doc.description} />
             <Row label="GL Debit" value={doc.gl_debit_code ? `${doc.gl_debit_code} · ${doc.gl_debit_name}` : doc.gl_debit_id} />
-            <Row label="Bank Account" value={doc.bank_account_name || "-"} />
+            <Row label="Rekening bank" value={doc.bank_account_name || "-"} />
             {doc.invoice_no && <Row label="Invoice" value={`${doc.invoice_no} (${fmtDate(doc.invoice_date)})`} />}
-            {doc.gr_id && <Row label="Linked GR" value={<Link className="text-primary hover:underline" to={`/procurement/gr/${doc.gr_id}`} data-testid="pay-linked-gr">{doc.gr_id.slice(0, 8)} <ExternalLink className="h-3 w-3 inline" /></Link>} />}
-            {doc.payment_date && <Row label="Paid on" value={`${fmtDate(doc.payment_date)} · ref ${doc.payment_ref || '-'}`} />}
-            {doc.journal_entry_id && <Row label="Journal Entry" value={<Link className="text-primary hover:underline" to={`/finance/journals/${doc.journal_entry_id}`} data-testid="pay-linked-je">Lihat jurnal <ExternalLink className="h-3 w-3 inline" /></Link>} />}
-            {doc.reconciled_at && <Row label="Reconciled" value={`✓ ${fmtDateTime(doc.reconciled_at)}`} />}
-            {doc.notes && <Row label="Notes" value={doc.notes} />}
+            {doc.gr_id && <Row label="GR terkait" value={<Link className="text-primary hover:underline" to={`/procurement/gr/${doc.gr_id}`} data-testid="pay-linked-gr">{doc.gr_id.slice(0, 8)} <ExternalLink className="h-3 w-3 inline" /></Link>} />}
+            {doc.journal_entry_id && <Row label="Journal entry" value={<Link className="text-primary hover:underline" to={`/finance/journals/${doc.journal_entry_id}`} data-testid="pay-linked-je">Lihat jurnal <ExternalLink className="h-3 w-3 inline" /></Link>} />}
+            {doc.reconciled_at && <Row label="Direkonsiliasi" value={`✓ ${fmtDateTime(doc.reconciled_at)}`} />}
+            {doc.notes && <Row label="Catatan" value={doc.notes} />}
           </div>
 
           {doc.cancelled_at && (
@@ -129,7 +145,7 @@ export default function PaymentDetail() {
 
         <div className="space-y-3 lg:space-y-4">
           <div className="glass-card p-4" data-testid="pay-approval-card">
-            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">Approval chain</div>
+            <h3 className="text-base font-semibold mb-2">Approval</h3>
             {st.has_workflow ? (
               <ApprovalChain steps={st.steps || []} executedSteps={st.executed_steps || []} currentStepIdx={st.current_step_idx} isRejected={st.is_rejected} isComplete={st.is_complete} />
             ) : (
@@ -142,16 +158,6 @@ export default function PaymentDetail() {
             )}
           </div>
 
-          {hasActions && (
-            <div className="glass-card p-4 space-y-2" data-testid="pay-actions-card">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Aksi</div>
-              {canSubmit && <Button disabled={acting} onClick={() => doAction("submit")} className="w-full" data-testid="pay-submit">Ajukan approval</Button>}
-              {canApprove && <Button disabled={acting} onClick={() => doAction("approve", { note: "" })} className="w-full" data-testid="pay-approve"><Check className="h-4 w-4" /> Setujui</Button>}
-              {canReject && <Button disabled={acting} variant="outline" onClick={() => setShowReject(true)} className="w-full text-red-700 dark:text-red-400 hover:text-red-700" data-testid="pay-reject"><X className="h-4 w-4" /> Tolak</Button>}
-              {canMarkPaid && <Button disabled={acting} onClick={() => setShowPay(true)} className="w-full" data-testid="pay-markpaid"><CreditCard className="h-4 w-4" /> Tandai dibayar</Button>}
-              {canCancel && <Button disabled={acting} variant="ghost" onClick={() => setShowCancel(true)} className="w-full" data-testid="pay-cancel">Batalkan PAY</Button>}
-            </div>
-          )}
         </div>
       </div>
 

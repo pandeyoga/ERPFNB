@@ -13,7 +13,7 @@
  */
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { FileText } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import CMSBrands from "./cms/CMSBrands";
 import CMSOutlets from "./cms/CMSOutlets";
@@ -37,6 +37,13 @@ const TABS = [
   { entity: "analytics", name: "Analytics",       render: () => <CMSAnalytics /> },
 ];
 
+const GROUPS = [
+  { id: "content", label: "Konten", ids: ["brands", "outlets", "news", "menu", "careers"] },
+  { id: "media", label: "Media & halaman", ids: ["media", "pages"] },
+  { id: "reviews", label: "Review", ids: ["reviews"] },
+  { id: "analytics", label: "Analytics", ids: ["analytics"] },
+];
+
 export default function CMSStudio() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -55,15 +62,15 @@ export default function CMSStudio() {
           subtitle="Semua konten website publik dalam satu tempat — brand, outlet, berita, menu, karier, dan halaman."
         />
 
-        <Tabs value={activeItem.entity} onValueChange={(v) => navigate(`/admin/cms/${v}`)}>
-          <TabsList data-testid="cms-tabs">
-            {TABS.map(t => (
-              <TabsTrigger key={t.entity} value={t.entity} data-testid={`cms-tab-${t.entity}`}>
-                {t.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {/* 9 halaman → 4 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(TABS.map(t => ({ id: t.entity, label: t.name })), GROUPS)}
+          value={activeItem.entity}
+          onChange={(v) => navigate(`/admin/cms/${v}`)}
+          testId="cms-tabs"
+          itemTestId={(id) => `cms-tab-${id}`}
+          groupTestId={(id) => `cms-group-${id}`}
+        />
 
         <div className="mt-3" data-testid={`cms-content-${activeItem.entity}`}>
           {activeItem.render()}

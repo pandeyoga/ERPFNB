@@ -13,7 +13,7 @@ import {
   Receipt, Banknote, Layers, ClipboardList,
   Landmark, FileSpreadsheet, CalendarCheck, Wallet, CreditCard,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { useVisibleTabs } from "@/lib/portalGate";
 import { GroupLevelBadge } from "@/components/shared/ScopeControls";
@@ -37,6 +37,12 @@ const TABS = [
   { id: "cash-position",    label: "Cash position",        icon: Wallet,          component: CashPosition,           perm: "finance.cash.read" },
   { id: "ar-invoices",      label: "AR invoices",          icon: FileSpreadsheet, component: ARInvoiceList,          perm: "finance.ar", group: true },
   { id: "deposits",         label: "Reservation deposits", icon: CalendarCheck,   component: ReservationDeposits,    perm: "finance.ar" },
+];
+
+const GROUPS = [
+  { id: "ap", label: "Hutang (AP)", icon: Receipt, ids: ["ap-aging", "payments", "payment-runs", "run-templates"] },
+  { id: "cash", label: "Kas & Bank", icon: Wallet, ids: ["cash-position", "bank-recon"] },
+  { id: "ar", label: "Piutang (AR)", icon: FileSpreadsheet, ids: ["ar-invoices", "deposits"] },
 ];
 
 // group: true = tab tingkat Group (vendor/rekening/customer milik pusat) — tidak mengikuti konteks brand/toko.
@@ -68,19 +74,15 @@ export default function FinancePaymentsHub() {
           actions={current.group ? <GroupLevelBadge /> : null}
         />
 
-        <Tabs value={current.id} onValueChange={handleTabChange}>
-          <TabsList data-testid="payments-hub-tabs">
-            {tabs.map(tab => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger key={tab.id} value={tab.id} data-testid={`payments-tab-${tab.id}`}>
-                  <Icon />
-                  {tab.label}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+        {/* 8 halaman → 3 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(tabs, GROUPS)}
+          value={current.id}
+          onChange={handleTabChange}
+          testId="payments-hub-tabs"
+          itemTestId={(id) => `payments-tab-${id}`}
+          groupTestId={(id) => `payments-group-${id}`}
+        />
 
         <div data-testid="payments-hub-content" role="tabpanel" aria-label={current.label}>
           <ActiveComponent embedded />

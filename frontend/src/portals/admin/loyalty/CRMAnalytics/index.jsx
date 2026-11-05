@@ -19,6 +19,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 
 const TIER_COLORS = { bronze: "#CD7F32", silver: "#9CA3AF", gold: "#F59E0B" };
 const SEG_ICONS = { new: UserCheck, active: Activity, at_risk: UserMinus, churned: UserX };
@@ -45,6 +46,13 @@ const CRM_TABS = [
   { value: "top-customers", label: "Top customers" },
   { value: "rfm", label: "RFM" },
   { value: "clv", label: "CLV" },
+];
+
+const CRM_GROUPS = [
+  { id: "overview", label: "Overview", ids: ["overview"] },
+  { id: "retention", label: "Retensi", ids: ["retention", "cohorts"] },
+  { id: "segments", label: "Segmen", ids: ["segments", "rfm"] },
+  { id: "value", label: "Nilai pelanggan", ids: ["top-customers", "clv"] },
 ];
 
 /** Segmented control (periode / urutan) — tampilan sama dengan Tabs terpadu. */
@@ -159,6 +167,7 @@ function RFMChart({ data }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CRMAnalytics({ embedded = false }) {
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState("overview");
   const [retentionMonths, setRetentionMonths] = useState(12);
   const [trendMonths, setTrendMonths] = useState(12);
   const [sortBy, setSortBy] = useState("total_spend");
@@ -242,12 +251,16 @@ export default function CRMAnalytics({ embedded = false }) {
       {/* Header */}
       <PageHeader icon={BarChart2} title="CRM Analytics" subtitle={intro} actions={refreshBtn} />
 
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList data-testid="crm-analytics-tabs">
-          {CRM_TABS.map(t => (
-            <TabsTrigger key={t.value} value={t.value}>{t.label}</TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs value={view} onValueChange={setView} className="w-full">
+        {/* 7 analisis → 4 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(CRM_TABS.map(t => ({ id: t.value, label: t.label })), CRM_GROUPS)}
+          value={view}
+          onChange={setView}
+          testId="crm-analytics-tabs"
+          itemTestId={(id) => `crm-tab-${id}`}
+          groupTestId={(id) => `crm-group-${id}`}
+        />
 
         {/* ─── OVERVIEW ─────────────────────────────────────────── */}
         <TabsContent value="overview" className="space-y-3 lg:space-y-4">

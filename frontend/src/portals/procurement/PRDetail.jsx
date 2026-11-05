@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/auth";
 import { confirmDialog } from "@/components/shared/confirmDialog";
 
 import { fetchAll } from "@/lib/api";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 export default function PRDetail() {
   const { id } = useParams();
@@ -114,12 +115,7 @@ export default function PRDetail() {
         <PageHeader
           icon={FileText}
           title={<span data-testid="pr-detail-doc-no">{docNo}</span>}
-          subtitle={
-            <span className="inline-flex items-center gap-2 flex-wrap">
-              <StatusPill status={pr.status} />
-              <span>Purchase Request · {outletName}</span>
-            </span>
-          }
+          subtitle={`Purchase Request · ${outletName}`}
           className="mb-0 md:mb-0"
           actions={
             <div className="flex items-center gap-2 flex-wrap" data-testid="pr-detail-actions">
@@ -142,14 +138,16 @@ export default function PRDetail() {
               )}
             </div>
           }
-        />
-      </div>
-
-      <div className="glass-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 text-sm" data-testid="pr-info-card">
-        <Field label="Outlet" value={outletName} testid="pr-info-outlet" />
-        <Field label="Tanggal request" value={fmtDate(pr.request_date)} testid="pr-info-date" />
-        <Field label="Dibutuhkan" value={pr.needed_by ? fmtDate(pr.needed_by) : "—"} testid="pr-info-needed" />
-        <Field label="Source" value={pr.source || "—"} testid="pr-info-source" />
+        >
+          {/* Fakta kunci di header, bukan kartu tipis (DESIGN_SYSTEM §10.10) */}
+          <KeyFacts testId="pr-info-card" items={[
+            { label: "Status", value: <StatusPill status={pr.status} /> },
+            { label: "Toko", value: outletName, testId: "pr-info-outlet" },
+            { label: "Tanggal pengajuan", value: fmtDate(pr.request_date), testId: "pr-info-date" },
+            { label: "Tanggal dibutuhkan", value: pr.needed_by ? fmtDate(pr.needed_by) : "—", testId: "pr-info-needed" },
+            { label: "Sumber", value: pr.source || "—", testId: "pr-info-source" },
+          ]} />
+        </PageHeader>
       </div>
 
       {state?.has_workflow && (
@@ -243,11 +241,3 @@ export default function PRDetail() {
   );
 }
 
-function Field({ label, value, testid }) {
-  return (
-    <div data-testid={testid}>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5">{value}</div>
-    </div>
-  );
-}

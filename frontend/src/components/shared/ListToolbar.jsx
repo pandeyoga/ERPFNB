@@ -9,7 +9,7 @@
  *
  * Aksi layar (Buat …, Ekspor semua) tetap di PageHeader; `actions` di sini hanya untuk aksi milik tabel ini.
  */
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function ListToolbar({ search, children, actions, className, testId }) {
   return (
@@ -85,5 +86,29 @@ export function StatusTabs({ value, onChange, options, max = 5, ariaLabel = "Fil
         </DropdownMenu>
       )}
     </div>
+  );
+}
+
+/**
+ * MoreFilters — filter sekunder di balik satu tombol (DESIGN_SYSTEM §10.9; Polaris: 2–3 filter utama terlihat,
+ * sisanya di "More filters"; Fiori: tampilkan jumlah filter yang aktif). `count` = filter non-default yang aktif.
+ */
+export function MoreFilters({ label = "Filter lain", count = 0, children, testId = "more-filters", align = "end" }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" data-testid={testId} aria-label={count ? `${label} (${count} aktif)` : label}>
+          <SlidersHorizontal /> {label}
+          {count > 0 && (
+            <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[11px] font-semibold text-background">
+              {count}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align={align} className="w-80 space-y-3" data-testid={`${testId}-panel`}>
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }

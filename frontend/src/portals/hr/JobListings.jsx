@@ -233,7 +233,7 @@ export default function JobListings() {
                   onClick={() => openEdit(job)}
                   data-testid={`edit-job-${job.id}`}
                 >
-                  <Edit2 /> Ubah
+                  <Edit2 /> Edit
                 </Button>
                 <Button
                   variant="outline"

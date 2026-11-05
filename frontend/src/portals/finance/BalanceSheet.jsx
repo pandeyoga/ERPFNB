@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
 import { StoreFilter } from "@/components/shared/ScopeControls";
 import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
+import PageHeader from "@/components/shared/PageHeader";
 
 export default function BalanceSheet() {
   const [asOf, setAsOf] = useState(todayJakartaISO());
@@ -53,6 +54,8 @@ export default function BalanceSheet() {
 
   return (
     <div data-testid="balance-sheet-page" className="space-y-3 lg:space-y-4">
+      {/* Di dalam hub Reports: subtitle & aksi layar mengisi header hub (DESIGN_SYSTEM §10.1) */}
+      <PageHeader title="Balance Sheet" subtitle="Posisi aset, liabilitas, dan ekuitas per tanggal." actions={<Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="bs-export"><Download /> Ekspor CSV</Button>} />
       <div data-testid="bs-filter-card" className="flex flex-wrap items-end gap-3">
         <div className="min-w-[180px]">
           <Label htmlFor="bs-asof" className="text-xs font-medium text-muted-foreground">Per tanggal</Label>
@@ -60,9 +63,6 @@ export default function BalanceSheet() {
             className="glass-input mt-1 h-9" data-testid="bs-asof" />
         </div>
         <StoreFilter filter={storeFilter} testId="bs-outlet" />
-        <Button onClick={exportCsv} variant="outline" className="ml-auto" disabled={!data} data-testid="bs-export">
-          <Download /> Ekspor CSV
-        </Button>
       </div>
 
       {loading && <LoadingState rows={8} />}

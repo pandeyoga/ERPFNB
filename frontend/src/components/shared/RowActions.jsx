@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export default function RowActions({ primary, items = [], testId, label = "Aksi lain", promote = true }) {
+export default function RowActions({ primary, items = [], testId, label = "Aksi lain", promote = true, size = "sm" }) {
+  // size "default" = di header halaman (tinggi sama dengan tombol aksi layar 36px)
   const visible = items.filter((i) => i && !i.hidden);
   const element = isValidElement(primary) ? primary : null;
   let main = !element && primary && !primary.hidden ? primary : null;
@@ -31,7 +32,7 @@ export default function RowActions({ primary, items = [], testId, label = "Aksi 
     <div className="inline-flex items-center gap-1" data-testid={testId}>
       {element}
       {main && (
-        <Button size="sm" variant={main.variant || "outline"} onClick={main.onClick || main.onSelect} disabled={main.disabled}
+        <Button size={size === "default" ? "default" : "sm"} variant={main.variant || "outline"} onClick={main.onClick || main.onSelect} disabled={main.disabled}
           className={cn(main.destructive && "text-destructive hover:text-destructive")} data-testid={main.testId}>
           {MainIcon && <MainIcon />} {main.label}
         </Button>
@@ -39,7 +40,7 @@ export default function RowActions({ primary, items = [], testId, label = "Aksi 
       {rest.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="icon-sm" variant="ghost" aria-label={label} data-testid={testId ? `${testId}-more` : undefined}>
+            <Button size={size === "default" ? "icon" : "icon-sm"} variant={size === "default" ? "outline" : "ghost"} aria-label={label} data-testid={testId ? `${testId}-more` : undefined}>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>

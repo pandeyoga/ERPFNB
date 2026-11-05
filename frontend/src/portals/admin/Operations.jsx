@@ -8,7 +8,7 @@
  */
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Activity } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
 import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 
 import MetricsView from "./operations/MetricsView";
@@ -29,6 +29,13 @@ const SUB_PAGES = [
   { path: "report-schedules", label: "Report schedules", tid: "laporan-terjadwal", render: () => <ReportSchedules embedded /> },
   { path: "data-management", label: "Data management", tid: "manajemen-data", render: () => <DataManagement embedded /> },
   { path: "tour-analytics", label: "Tour analytics", tid: "tour-analytics", render: () => <TourAnalytics embedded /> },
+];
+
+const GROUPS = [
+  { id: "monitor", label: "Pemantauan", ids: ["index", "logs", "rate-limits"] },
+  { id: "jobs", label: "Jadwal & job", ids: ["scheduler", "report-schedules", "archival"] },
+  { id: "data", label: "Data management", ids: ["data-management"] },
+  { id: "tour", label: "Tour analytics", ids: ["tour-analytics"] },
 ];
 
 export default function Operations() {
@@ -57,22 +64,15 @@ export default function Operations() {
           subtitle="Metrics, logs, scheduler, archival, rate limit, laporan terjadwal, manajemen data, dan tour analytics."
         />
 
-        <Tabs
+        {/* 8 halaman → 4 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(SUB_PAGES.map((pg) => ({ id: pg.path || "index", label: pg.label })), GROUPS)}
           value={tabValue}
-          onValueChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
-        >
-          <TabsList data-testid="operations-tabs">
-            {SUB_PAGES.map((page) => (
-              <TabsTrigger
-                key={page.path || "index"}
-                value={page.path || "index"}
-                data-testid={`operations-tab-${page.tid}`}
-              >
-                {page.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          onChange={(v) => navigate(v === "index" ? "/admin/operations" : `/admin/operations/${v}`)}
+          testId="operations-tabs"
+          itemTestId={(id) => `operations-tab-${SUB_PAGES.find((pg) => (pg.path || "index") === id)?.tid || id}`}
+          groupTestId={(id) => `operations-group-${id}`}
+        />
 
         {/* Render active component with key to force remount on navigation */}
         <div

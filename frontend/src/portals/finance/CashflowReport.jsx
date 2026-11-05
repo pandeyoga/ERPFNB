@@ -15,6 +15,7 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { ScopeNote, StoreFilter } from "@/components/shared/ScopeControls";
 import { cn } from "@/lib/utils";
 import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
+import PageHeader from "@/components/shared/PageHeader";
 
 export default function CashflowReport() {
   const now = new Date();
@@ -52,6 +53,8 @@ export default function CashflowReport() {
 
   return (
     <div data-testid="cashflow-report-page" className="space-y-3 lg:space-y-4">
+      {/* Di dalam hub Reports: subtitle & aksi layar mengisi header hub (DESIGN_SYSTEM §10.1) */}
+      <PageHeader title="Cashflow" subtitle="Arus kas masuk & keluar per kategori untuk periode terpilih." actions={<Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="cf-export"><Download /> Ekspor CSV</Button>} />
       <div data-testid="cf-filter-card" className="flex flex-wrap items-end gap-3">
         <div className="min-w-[160px]">
           <Label htmlFor="cf-period" className="text-xs font-medium text-muted-foreground">Periode</Label>
@@ -59,9 +62,6 @@ export default function CashflowReport() {
             className="glass-input mt-1 h-9" data-testid="cf-period" />
         </div>
         <StoreFilter filter={storeFilter} testId="cf-outlet" />
-        <Button onClick={exportCsv} variant="outline" className="ml-auto" disabled={!data} data-testid="cf-export">
-          <Download /> Ekspor CSV
-        </Button>
       </div>
       <ScopeNote show={belowGroup} />
 
