@@ -99,7 +99,7 @@ const pathToTours = {
   "/procurement/vendor-recommend": ["procurement-vendor-recommend"],
   "/procurement/rfq": ["procurement-rfq"],
   "/procurement/consolidation": ["procurement-consolidation"],
-  "/procurement/price-intelligence": ["procurement-price-intelligence"],
+  "/procurement/sourcing": ["procurement-sourcing"],
   "/procurement/vendor-catalog": ["procurement-vendor-catalog"],
   // NOTE: `/{pr,po,gr,rfq}/new` form pages intentionally NOT mapped to their
   // list tours — the form has different testids than the list. Detail routes
@@ -154,7 +154,6 @@ const pathToTours = {
   "/inventory/transfers/:id": ["inventory-transfers"],
   "/inventory/movements-hub?type=adjustments": ["inventory-adjustment"],
   "/inventory/low-stock": ["inventory-low-stock"],
-  "/inventory/market-list": ["inventory-market-list"],
   "/inventory/valuation": ["inventory-valuation"],
 
   // ==== Executive portal ====
@@ -274,7 +273,7 @@ const tourMetadata = {
   "procurement-rfq": { title: "RFQ — Request for Quotation", description: "Kirim permintaan penawaran harga ke vendor" },
   "procurement-consolidation": { title: "PR Consolidation", description: "Gabungkan banyak PR jadi PO efisien per vendor" },
   "procurement-po-comparison": { title: "PO Comparison", description: "Bandingkan beberapa PO berdampingan (Vendor Comparison › Per PO)" },
-  "procurement-price-intelligence": { title: "Price Intelligence", description: "Pantau deviasi harga beli vs harga acuan pasar" },
+  "procurement-sourcing": { title: "Sourcing", description: "Harga acuan, penawaran supplier, dan analisis harga per item" },
   "procurement-vendor-catalog": { title: "Vendor Catalog", description: "Katalog item per vendor + riwayat harga" },
 
   // ==== Finance ====
@@ -320,7 +319,6 @@ const tourMetadata = {
   "inventory-transfers": { title: "Transfer Stok", description: "Pindahkan stok antar outlet dengan traceability" },
   "inventory-adjustment": { title: "Stock Adjustment", description: "Koreksi stok: damage, expired, loss" },
   "inventory-low-stock": { title: "Low Stock Alert", description: "Monitor item di bawah par level dan buat PR otomatis" },
-  "inventory-market-list": { title: "Market List — Harga Acuan", description: "Pantau harga pasar referensi dan approve harga kwartal" },
   "inventory-valuation": { title: "Inventory Valuation", description: "Nilai stok per outlet pada tanggal tertentu" },
 
   // ==== Executive ====

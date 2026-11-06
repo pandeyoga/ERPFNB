@@ -19,6 +19,7 @@ const TABS = [
   { entity: "vendors",           name: "Vendors" },
   { entity: "employees",         name: "Employees" },
   { entity: "outlets",           name: "Outlets" },
+  { entity: "regions",           name: "Wilayah", title: "Wilayah harga (Sourcing)" },
   { entity: "brands",            name: "Brands" },
   { entity: "categories",        name: "Categories" },
   { entity: "chart-of-accounts", name: "COA", title: "Chart of Accounts" },

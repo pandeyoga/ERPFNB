@@ -54,11 +54,13 @@ export const procurementNav = {
       ],
     },
     {
-      id: "smart-procurement",
-      name: "Price Intelligence",
+      id: "sourcing",
+      name: "Sourcing",
       icon: BarChart3,
       items: [
-        { id: "price-intelligence", name: "Price Intelligence", path: "/procurement/price-intelligence" },
+        // Harga acuan per periode & wilayah, penawaran supplier, analisis per item (dulu Price Intelligence +
+        // Market Price List di Inventory).
+        { id: "sourcing", name: "Sourcing", path: "/procurement/sourcing", matchPaths: ["/procurement/sourcing/items"] },
       ],
     },
   ],

@@ -19,7 +19,8 @@ import GRForm from "./GRForm";
 import VendorRecommendPage from "./VendorRecommendPage";
 import RFQList from "./RFQList";
 import RFQDetail, { RFQForm } from "./RFQDetail";
-import PriceIntelligence from "./PriceIntelligence";
+import SourcingHub from "./sourcing/SourcingHub";
+import SourcingItemPage from "./sourcing/SourcingItemPage";
 import VendorCatalog from "./VendorCatalog";
 import PRConsolidation from "./PRConsolidation";
 import AllVendors from "./AllVendors";
@@ -37,8 +38,10 @@ export default function ProcurementPortal() {
       {/* Gate = gabungan izin tab (Per item / Per PO). */}
       <Route path="vendor-comparison" element={g(["procurement.view", "procurement.vendor.read", "procurement.po"], <VendorComparison />)} />
       <Route path="vendor-recommend" element={g(["procurement.view", "procurement.vendor.read"], <VendorRecommendPage />)} />
-      {/* API /market-list/intelligence butuh inventory.view */}
-      <Route path="price-intelligence" element={g("inventory.view", <PriceIntelligence />)} />
+      {/* Sourcing: harga acuan, penawaran supplier, analisis per item (menggantikan Price Intelligence) */}
+      <Route path="sourcing" element={g("procurement.sourcing.read", <SourcingHub />)} />
+      <Route path="sourcing/items/:id" element={g("procurement.sourcing.read", <SourcingItemPage />)} />
+      <Route path="price-intelligence" element={<Navigate to="/procurement/sourcing" replace />} />
       <Route path="vendor-catalog" element={g(["procurement.view", "procurement.vendor.read"], <VendorCatalog />)} />
       <Route path="rfq" element={g("procurement.rfq", <RFQList />)} />
       <Route path="rfq/new" element={g("procurement.rfq.create", <RFQForm />)} />

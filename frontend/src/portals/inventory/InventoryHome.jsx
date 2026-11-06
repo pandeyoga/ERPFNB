@@ -133,7 +133,7 @@ export default function InventoryHome() {
               </p>
             </div>
             <Button asChild size="sm">
-              <Link to="/inventory/market-list?ml_status=pending_review" data-testid="market-pending-cta">
+              <Link to="/procurement/sourcing?tab=benchmarks" data-testid="market-pending-cta">
                 <Star /> Tinjau sekarang <ArrowRight />
               </Link>
             </Button>

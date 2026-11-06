@@ -556,6 +556,19 @@ def _supplier_stats(lines: list[dict]) -> dict:
     }
 
 
+def _score_basis(price: Optional[float], best: Optional[float], st: dict) -> list[str]:
+    basis = []
+    if price and best:
+        basis.append("harga")
+    if st.get("fill_rate_pct") is not None:
+        basis.append("kelengkapan")
+    if st.get("on_time_pct") is not None:
+        basis.append("tepat waktu")
+    if st.get("reject_rate_pct") is not None:
+        basis.append("kualitas")
+    return basis
+
+
 def supplier_score(*, price: Optional[float], best_price: Optional[float], fill_rate: Optional[float],
                    on_time: Optional[float], reject_rate: Optional[float]) -> Optional[float]:
     """Skor 0–100: Harga 40 · Kelengkapan 25 · Ketepatan 20 · Kualitas 15. Komponen tanpa data tidak dihitung dan
@@ -724,6 +737,8 @@ async def item_detail(item_id: str, *, region_id: Optional[str] = None, outlet_i
             "availability": vi.get("availability_status") or "available",
             "score": supplier_score(price=price_for_score, best_price=ref_best, fill_rate=st["fill_rate_pct"],
                                     on_time=st["on_time_pct"], reject_rate=st["reject_rate_pct"]),
+            # komponen yang benar-benar dihitung (UI: "harga saja" bila belum ada riwayat kirim)
+            "score_basis": _score_basis(price_for_score, ref_best, st),
         })
     suppliers.sort(key=lambda r: (r["score"] is None, -(r["score"] or 0)))
 

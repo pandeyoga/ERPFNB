@@ -109,11 +109,23 @@ const SCHEMA = {
       { key: "name", label: "Nama Outlet", required: true },
       { key: "address", label: "Alamat", type: "textarea" },
       { key: "phone", label: "Telepon" },
+      { key: "region_id", label: "Wilayah harga", type: "region" },
       { key: "open_time", label: "Jam Buka", placeholder: "08:00" },
       { key: "close_time", label: "Jam Tutup", placeholder: "22:00" },
       { key: "active", label: "Aktif", type: "bool", default: true },
     ],
-    columns: ["code", "name", "phone", "open_time", "close_time", "active"],
+    columns: ["code", "name", "region_id", "phone", "open_time", "close_time", "active"],
+  },
+  regions: {
+    // Wilayah harga: harga acuan & penawaran supplier bisa berbeda per wilayah (Procurement › Sourcing).
+    label: "Wilayah", singular: "Wilayah", uniq: "code", nameField: "name",
+    fields: [
+      { key: "code", label: "Kode", required: true },
+      { key: "name", label: "Nama Wilayah", required: true, placeholder: "Mis. Jabodetabek, Bandung" },
+      { key: "notes", label: "Catatan", type: "textarea" },
+      { key: "active", label: "Aktif", type: "bool", default: true },
+    ],
+    columns: ["code", "name", "active"],
   },
   categories: {
     label: "Categories", singular: "Category", uniq: "code", nameField: "name",
@@ -176,6 +188,7 @@ const ENTITY_TABS = [
   { key: "vendors", label: "Vendors" },
   { key: "employees", label: "Employees" },
   { key: "outlets", label: "Outlets" },
+  { key: "regions", label: "Wilayah" },
   { key: "brands", label: "Brands" },
   { key: "categories", label: "Categories" },
   { key: "chart-of-accounts", label: "COA" },
@@ -381,6 +394,7 @@ function renderCell(v, col, schema) {
   }
   // Field select → tampilkan label opsi (mis. status "active" → "Aktif", tipe "liability" → "Liability")
   const field = schema?.fields?.find((f) => f.key === col);
+  if (field?.type === "region") return <RegionName id={v} />;
   if (field?.type === "select") {
     const opt = field.options.find((o) => o.v === v);
     if (opt) return <span>{opt.l}</span>;
@@ -539,6 +553,37 @@ function FieldLabel({ field, htmlFor, className }) {
   );
 }
 
+function useRegionOptions() {
+  return useQuery({
+    queryKey: ["master", "regions", "picker"],
+    queryFn: async () => unwrap(await fetchAll("/master/regions", { active: true })) || [],
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+function RegionField({ field, value, onChange }) {
+  const { data: regions = [] } = useRegionOptions();
+  return (
+    <div className="space-y-1.5" data-testid="master-field-region">
+      <FieldLabel field={field} />
+      <SimpleSelect
+        value={value || ""}
+        onValueChange={(v) => onChange(v || null)}
+        options={[{ value: "", label: "— tanpa wilayah —" }, ...regions.map((r) => ({ value: r.id, label: r.name }))]}
+        className="glass-input w-full"
+        ariaLabel={field.label}
+        testId="master-field-region-select"
+      />
+      <p className="text-xs text-muted-foreground">Harga acuan & penawaran supplier wilayah ini dipakai untuk toko ini.</p>
+    </div>
+  );
+}
+
+function RegionName({ id }) {
+  const { data: regions = [] } = useRegionOptions();
+  return <span>{regions.find((r) => r.id === id)?.name || "—"}</span>;
+}
+
 function OutletField({ field, value, onChange }) {
   const { data: outlets = [] } = useQuery({
     queryKey: ["master", "outlets", "picker"],
@@ -566,6 +611,7 @@ function FieldRender({ field, value, onChange, isNew, uniq }) {
   const disabled = !isNew && field.key === uniq;
   const id = `master-field-${field.key}`;
   if (field.type === "outlet") return <OutletField field={field} value={value} onChange={onChange} />;
+  if (field.type === "region") return <RegionField field={field} value={value} onChange={onChange} />;
   if (field.type === "bool") {
     return (
       <div className="flex items-center justify-between glass-input rounded-lg px-3 h-9">

@@ -268,41 +268,6 @@ const inventoryLowStockTour = {
   ],
 };
 
-// ─── Market List ─────────────────────────────────────────────────
-const inventoryMarketListTour = {
-  name: "Market List — Harga Acuan",
-  description: "Pantau harga pasar referensi dan approve harga kwartal.",
-  steps: [
-    {
-      target: "[data-testid='market-list-page']",
-      title: "Market List",
-      content: "Daftar **harga pasar acuan** untuk semua item. Digunakan sebagai benchmark saat membandingkan harga dari vendor.",
-      placement: "center",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='market-list-stats']",
-      title: "Overview Harga",
-      content: "Statistik harga: total items terdaftar, **pending approval** (harga baru yang belum dikonfirmasi), dan quarter aktif.",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='market-list-create-quarter-btn']",
-      title: "Buat Quarter Baru",
-      content: "Di awal kuartal, klik **Buat Quarter** untuk generate harga acuan baru. Tim procurement akan input harga pasar terkini untuk di-approve.",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='market-list-export']",
-      title: "Export & Report",
-      content: "Export market list ke Excel untuk dibagikan ke vendor saat negosiasi harga tahunan/kuartalan.",
-      placement: "bottom",
-      variant: "tip",
-    },
-  ],
-};
-
 // ─── Inventory Valuation ──────────────────────────────────────────────
 const inventoryValuationTour = {
   name: "Inventory Valuation",
@@ -347,6 +312,5 @@ export {
   inventoryAdjustmentTour,
   inventoryMovementsHubTour,
   inventoryLowStockTour,
-  inventoryMarketListTour,
   inventoryValuationTour,
 };

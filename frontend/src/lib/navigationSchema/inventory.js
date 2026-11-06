@@ -24,7 +24,6 @@ export const inventoryNav = {
         { id: "low-stock", name: "Low Stock Alert", path: "/inventory/low-stock" },
         { id: "opname", name: "Stock Opname", path: "/inventory/opname" },
         { id: "valuation", name: "Stock Valuation", path: "/inventory/valuation" },
-        { id: "market-list", name: "Market Price List", path: "/inventory/market-list" },
       ],
     },
     {

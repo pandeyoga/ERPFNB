@@ -60,7 +60,7 @@ import {
   procurementRFQTour,
   procurementConsolidationTour,
   procurementPOComparisonTour,
-  procurementPriceIntelligenceTour,
+  procurementSourcingTour,
   procurementVendorCatalogTour,
 } from './procurement';
 import {
@@ -106,7 +106,6 @@ import {
   inventoryAdjustmentTour,
   inventoryMovementsHubTour,
   inventoryLowStockTour,
-  inventoryMarketListTour,
   inventoryValuationTour,
 } from './inventory';
 import {
@@ -213,7 +212,7 @@ export const tourRegistry = {
   "procurement-rfq": procurementRFQTour,
   "procurement-consolidation": procurementConsolidationTour,
   "procurement-po-comparison": procurementPOComparisonTour,
-  "procurement-price-intelligence": procurementPriceIntelligenceTour,
+  "procurement-sourcing": procurementSourcingTour,
   "procurement-vendor-catalog": procurementVendorCatalogTour,
 
   // ==== Finance ====
@@ -259,7 +258,6 @@ export const tourRegistry = {
   "inventory-adjustment": inventoryAdjustmentTour,
   "inventory-movements-hub": inventoryMovementsHubTour,
   "inventory-low-stock": inventoryLowStockTour,
-  "inventory-market-list": inventoryMarketListTour,
   "inventory-valuation": inventoryValuationTour,
 
   // ==== Executive ====
@@ -374,7 +372,7 @@ export const TOUR_VERSIONS = {
   "procurement-rfq": 1,
   "procurement-consolidation": 1,
   "procurement-po-comparison": 2,
-  "procurement-price-intelligence": 1,
+  "procurement-sourcing": 1,
   "procurement-vendor-catalog": 1,
 
   // Finance
@@ -420,7 +418,6 @@ export const TOUR_VERSIONS = {
   "inventory-adjustment": 1,
   "inventory-movements-hub": 1,
   "inventory-low-stock": 1,
-  "inventory-market-list": 1,
   "inventory-valuation": 1,
 
   // Executive

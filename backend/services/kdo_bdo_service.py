@@ -176,7 +176,7 @@ async def _enrich_lines_with_market_list(lines: list[dict], *, user: dict, outle
                             type="market_list_pending",
                             title="Item baru menunggu approval",
                             body=f"'{name}' otomatis dibuat dari {ln.get('source', 'KDO/BDO/FDO')}. Klik untuk review.",
-                            link="/inventory/market-list?ml_status=pending_review",
+                            link="/procurement/sourcing?tab=benchmarks",
                             source_type="item",
                             source_id=new_item["id"],
                         )

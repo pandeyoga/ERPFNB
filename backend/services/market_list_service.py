@@ -379,19 +379,12 @@ async def approve_pending_item(
     }
     await db.items.update_one({"id": item_id}, {"$set": updates})
 
-    # Set ref price if provided
+    # Harga acuan (opsional) → periode berjalan sesuai tipe periode kategori (Sourcing)
     if ref_price and ref_price > 0:
-        active_q = await get_active_quarter()
-        if active_q:
-            unit = item.get("unit_default", "pcs")
-            await set_ref_price(
-                quarter_id=active_q["id"],
-                item_id=item_id,
-                unit=unit,
-                ref_price=ref_price,
-                notes=f"Set saat approval item pending oleh {user.get('email', user['id'])}",
-                user=user,
-            )
+        from services import sourcing_service
+        await sourcing_service.set_benchmark(
+            item_id=item_id, unit=item.get("unit_default", "pcs"), price=ref_price, source="manual",
+            source_note=f"Ditetapkan saat review item baru oleh {user.get('email', user['id'])}", user=user)
 
     fresh = await db.items.find_one({"id": item_id})
     logger.info(f"Approved pending item {item_id} by {user['id']}")

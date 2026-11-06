@@ -167,10 +167,6 @@ export const ROUTE_PERMS = {
     "inventory.balance.read",
     "inventory.view"
   ],
-  "/inventory/market-list": [
-    "inventory.view",
-    "procurement.market_list.manage"
-  ],
   "/inventory/movements-hub": [
     "inventory.adjustment",
     "inventory.movement.read",
@@ -277,9 +273,6 @@ export const ROUTE_PERMS = {
   "/procurement/pr/new": [
     "procurement.pr.create"
   ],
-  "/procurement/price-intelligence": [
-    "inventory.view"
-  ],
   "/procurement/rfq": [
     "procurement.rfq"
   ],
@@ -288,6 +281,12 @@ export const ROUTE_PERMS = {
   ],
   "/procurement/rfq/new": [
     "procurement.rfq.create"
+  ],
+  "/procurement/sourcing": [
+    "procurement.sourcing.read"
+  ],
+  "/procurement/sourcing/items/:id": [
+    "procurement.sourcing.read"
   ],
   "/procurement/vendor-catalog": [
     "procurement.vendor.read",
