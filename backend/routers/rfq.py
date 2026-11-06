@@ -91,6 +91,11 @@ async def upsert_quote(
     rfq = await svc.upsert_quote(rfq_id, vendor_id, payload)
     if not rfq:
         raise AuroraException('RFQ not found', code='NOT_FOUND', field='rfq_id')
+    # Penawaran RFQ = penawaran supplier yang berlaku (Sourcing) — dibandingkan dengan acuan & supplier lain
+    quote = next((q for q in rfq.get("quotes", []) if q.get("vendor_id") == vendor_id), None)
+    if quote:
+        from services import sourcing_service
+        await sourcing_service.offers_from_rfq_quote(rfq, quote, user=user)
     return ok_envelope(rfq)
 
 

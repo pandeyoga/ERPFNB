@@ -168,19 +168,21 @@ async def vendor_scorecard(
             (b["qty_ordered"] - b["qty_received"]) / b["qty_ordered"] * 100, 2,
         ) if b["qty_ordered"] > 0 else None
 
-        # Composite score 0-100 (weighted)
-        components: list[float] = []
+        # Composite score 0-100 (weighted). Komponen tanpa data TIDAK dihitung sebagai 0: bobotnya dibagi ulang ke
+        # komponen yang ada (dulu vendor tanpa data on-time maksimal 60). "defect_rate" = kekurangan kirim (qty).
+        components: list[tuple[float, float]] = []
         if on_time_pct is not None:
-            components.append(on_time_pct * 0.40)
+            components.append((on_time_pct, 0.40))
         if price_stability is not None:
-            components.append(price_stability * 0.25)
+            components.append((price_stability, 0.25))
         if defect_rate is not None:
-            components.append(max(0, 100 - defect_rate) * 0.20)
+            components.append((max(0, 100 - defect_rate), 0.20))
         if avg_lead is not None:
             # 0-day = 100, >=14 days = 0
             lead_score = max(0, 100 - (avg_lead / 14) * 100)
-            components.append(lead_score * 0.15)
-        composite = round(sum(components), 2) if components else None
+            components.append((lead_score, 0.15))
+        weight = sum(w for _, w in components)
+        composite = round(sum(v * w for v, w in components) / weight, 2) if components else None
 
         row: dict[str, Any] = {
             "vendor_id": vid,

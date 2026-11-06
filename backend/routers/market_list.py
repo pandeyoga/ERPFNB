@@ -82,9 +82,12 @@ async def get_item_prices(
 async def get_item_ref_price(
     item_id: str,
     quarter_id: Optional[str] = None,
+    unit: Optional[str] = None,
+    outlet_id: Optional[str] = None,
     user: dict = Depends(require_perm("inventory.view")),
 ):
-    return ok_envelope(await market_list_service.get_ref_price(item_id, quarter_id=quarter_id))
+    return ok_envelope(await market_list_service.get_ref_price(item_id, quarter_id=quarter_id, unit=unit,
+                                                               outlet_id=outlet_id))
 
 
 @router.get("/items/{item_id}/vendors")
@@ -190,10 +193,11 @@ async def bulk_set_ref_prices(
 async def get_ref_prices_bulk(
     item_ids: str = Query(..., description="Comma-separated item IDs"),
     quarter_id: Optional[str] = None,
+    outlet_id: Optional[str] = None,
     user: dict = Depends(require_perm("inventory.view")),
 ):
     ids = [i.strip() for i in item_ids.split(",") if i.strip()]
-    return ok_envelope(await market_list_service.get_ref_prices_bulk(ids, quarter_id=quarter_id))
+    return ok_envelope(await market_list_service.get_ref_prices_bulk(ids, quarter_id=quarter_id, outlet_id=outlet_id))
 
 
 # =================== EXPORT ===================

@@ -31,6 +31,7 @@ _ENTITIES: dict[str, dict] = {
     "payment-methods":  {"col": "payment_methods",   "uniq": "code"},
     "bank-accounts":    {"col": "bank_accounts",     "uniq": "code"},
     "number-series":    {"col": "number_series",     "uniq": "code"},
+    "regions":          {"col": "regions",           "uniq": "code"},  # wilayah harga (Sourcing); outlets.region_id
 }
 
 _NAME_FIELDS: dict[str, str] = {

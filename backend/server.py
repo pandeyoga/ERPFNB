@@ -28,7 +28,7 @@ from core.scope import brand_scope  # noqa: E402
 # Routers
 from routers import crm_analytics
 from routers import data_management
-from routers import admin, admin_loyalty, admin_ops, ai, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, item_pricing, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
+from routers import admin, admin_loyalty, admin_ops, ai, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, item_pricing, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
 
 # Configure structured JSON logging EARLY (before any logger.info calls)
 configure_logging()
@@ -92,6 +92,16 @@ async def lifespan(_: FastAPI):
         logger.info("object storage initialized")
     except Exception:  # noqa: BLE001
         logger.exception("object_storage_init_failed")
+
+    try:
+        # Sourcing: kuartal Market List lama → price_periods + indeks koleksi harga
+        from services.sourcing_service import ensure_indexes as _sourcing_indexes, migrate_legacy_quarters
+        await _sourcing_indexes()
+        m = await migrate_legacy_quarters()
+        if m:
+            logger.info("sourcing legacy quarter migration: %d", m)
+    except Exception:  # noqa: BLE001
+        logger.exception("sourcing_migration_failed")
 
     try:
         from services.rbac_sync import ensure_rbac_grants
@@ -297,6 +307,7 @@ app.include_router(user_preferences.router) # Sprint F: User Preferences + Dashb
 app.include_router(payment_requests.router) # Fase 1: Payment Request Workflow (Excel Migration)
 app.include_router(item_pricing.router)    # Fase 2: Item Price Versioning (Market List multi-periode)
 app.include_router(market_list.router)     # Smart Procurement: Market List + Quarterly Pricing
+app.include_router(sourcing.router)        # Sourcing: harga acuan per periode/wilayah, penawaran supplier, analisis
 app.include_router(vendor_items.router)    # Smart Procurement: Vendor Item Catalog
 app.include_router(reservations.router)    # Reservation Feature: Online booking + outlet management
 app.include_router(data_management.router)  # Data Management: Import / Export / Delete

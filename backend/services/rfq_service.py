@@ -109,6 +109,9 @@ async def get_rfq(rfq_id: str) -> Optional[dict]:
         {"id": 1, "name": 1, "_id": 0}
     ).to_list(len(vendor_ids) + 1) if vendor_ids else []
     vendor_map: dict = {v["id"]: v["name"] for v in vendors_raw}
+    # vendor yang sudah dihapus: label terbaca, bukan UUID mentah di UI
+    for vid in vendor_ids:
+        vendor_map.setdefault(vid, "(supplier tidak ditemukan)")
     rfq["vendor_map"] = vendor_map
     return rfq
 
@@ -134,7 +137,7 @@ async def upsert_quote(rfq_id: str, vendor_id: str, quote_data: dict) -> Optiona
         return None
 
     vendor = await db.vendors.find_one({"id": vendor_id})
-    vendor_name = (vendor or {}).get("name", vendor_id)
+    vendor_name = (vendor or {}).get("name") or "(supplier tidak ditemukan)"
 
     lines = []
     for ln in quote_data.get("lines", []):

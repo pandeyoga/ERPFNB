@@ -208,6 +208,11 @@ PERMISSIONS_CATALOG: list[dict] = [
     # ── Missing Procurement permissions ──
     {"code": "procurement.view",               "category": "Procurement", "label": "View procurement portal"},
     {"code": "procurement.market_list.manage", "category": "Procurement", "label": "Manage market list"},
+    # Sourcing (harga acuan per periode/wilayah, penawaran supplier, analisis)
+    {"code": "procurement.sourcing.read", "category": "Procurement", "label": "View sourcing analysis, benchmarks and supplier offers"},
+    {"code": "procurement.price_list.manage", "category": "Procurement", "label": "Manage supplier offers / price list"},
+    {"code": "procurement.sourcing.settings", "category": "Procurement", "label": "Configure sourcing periods and alert thresholds"},
+    {"code": "procurement.rfq.approve", "category": "Procurement", "label": "Accept RFQ quote"},
 
     # ── Missing Inventory permissions ──
     {"code": "inventory.view", "category": "Inventory", "label": "View inventory portal"},

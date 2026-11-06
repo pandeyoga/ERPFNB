@@ -270,10 +270,13 @@ async def vendor_scorecard(
     days: int = Query(180, ge=1, le=730),
     user: dict = Depends(require_perm("procurement.vendor.read")),
 ):
-    """Vendor performance scorecard (lead time, on-time%, defect rate, price stability)."""
-    return ok_envelope(await vendor_comparison_service.vendor_scorecard(
-        vendor_id, days=days,
-    ))
+    """Vendor performance scorecard — satu implementasi dengan Finance/Procurement list (reports_service)."""
+    from datetime import date as _date, timedelta as _td
+    from services import reports_service
+    res = await reports_service.vendor_scorecard(
+        vendor_id=vendor_id, date_from=(_date.today() - _td(days=days)).isoformat(), date_to=_date.today().isoformat())
+    row = next(iter(res.get("vendors") or res.get("rows") or res.get("items") or []), None) if isinstance(res, dict) else None
+    return ok_envelope({"vendor_id": vendor_id, "period_days": days, **(row or {})})
 
 
 # =================== PHASE 9B - KANBAN WORKBOARD ===================

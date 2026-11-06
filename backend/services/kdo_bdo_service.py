@@ -56,13 +56,13 @@ async def create(payload: dict, *, kind: str, user: dict) -> dict:
 
     # Auto-create items not in market list as pending_review
     lines = payload.get("lines", [])
-    enriched_lines = await _enrich_lines_with_market_list(lines, user=user)
+    enriched_lines = await _enrich_lines_with_market_list(lines, user=user, outlet_id=outlet_id)
 
     enriched = {**payload, "source": kind, "lines": enriched_lines}
     return await procurement_service.create_pr(enriched, user=user)
 
 
-async def _enrich_lines_with_market_list(lines: list[dict], *, user: dict) -> list[dict]:
+async def _enrich_lines_with_market_list(lines: list[dict], *, user: dict, outlet_id: str | None = None) -> list[dict]:
     """For each line without item_id, try to resolve from items master.
     If not found, auto-create as pending_review in market list.
 
@@ -74,19 +74,22 @@ async def _enrich_lines_with_market_list(lines: list[dict], *, user: dict) -> li
     from datetime import datetime as _dt, timezone as _tz
     db = get_db()
 
+    from services import sourcing_service
+    region_id = await sourcing_service.region_of_outlet(outlet_id)
+
     async def _latest_unit_cost(item_id: str, unit: str | None) -> float:
-        """Return most recent ref_price for the item (optionally matching unit)."""
-        q = {"item_id": item_id, "deleted_at": None}
-        if unit:
-            q["unit"] = unit
-        doc = await db.market_list_prices.find_one(q, sort=[("created_at", -1)])
-        if not doc and unit:
-            # Fallback: try without unit filter
-            doc = await db.market_list_prices.find_one(
-                {"item_id": item_id, "deleted_at": None},
-                sort=[("created_at", -1)],
-            )
-        return float(doc.get("ref_price", 0) or 0) if doc else 0.0
+        """Estimasi harga: acuan periode berjalan (wilayah toko, satuan sama) → penawaran berlaku termurah → 0.
+        Dulu: acuan terbaru menurut created_at lintas kuartal & tanpa wajib satuan sama."""
+        item = await db.items.find_one({"id": item_id, "deleted_at": None})
+        if not item:
+            return 0.0
+        unit = unit or item.get("unit_default")
+        bm = await sourcing_service.benchmark_for(item, unit, region_id)
+        if bm and bm.get("ref_price"):
+            return float(bm["ref_price"])
+        offers = [o for o in await sourcing_service.active_offers([item_id], region_id)
+                  if o.get("unit_norm") == (unit or "").strip().lower()]
+        return float(min(o["price"] for o in offers)) if offers else 0.0
 
     async def _resolve_unit_cost(ln: dict) -> float:
         # Caller-provided unit_cost wins

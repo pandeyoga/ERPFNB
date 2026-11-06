@@ -178,9 +178,18 @@ async def get_ref_price(
     *,
     quarter_id: Optional[str] = None,
     unit: Optional[str] = None,
+    outlet_id: Optional[str] = None,
 ) -> Optional[dict]:
-    """Get reference price for item in given quarter (or active quarter if None)."""
+    """Harga acuan berlaku untuk item (Sourcing: periode kategori, wilayah toko, satuan sama).
+    `quarter_id` eksplisit = perilaku lama (acuan kuartal tertentu)."""
     db = get_db()
+    if not quarter_id:
+        from services import sourcing_service
+        item = await db.items.find_one({"id": item_id, "deleted_at": None})
+        if not item:
+            return None
+        region_id = await sourcing_service.region_of_outlet(outlet_id)
+        return await sourcing_service.benchmark_for(item, unit or item.get("unit_default"), region_id)
     if not quarter_id:
         active = await get_active_quarter()
         if not active:
@@ -197,9 +206,20 @@ async def get_ref_prices_bulk(
     item_ids: list[str],
     *,
     quarter_id: Optional[str] = None,
+    outlet_id: Optional[str] = None,
 ) -> dict[str, dict]:
-    """Get reference prices for multiple items. Returns {item_id: price_doc}."""
+    """Harga acuan berlaku per item (satuan default item, wilayah toko). Returns {item_id: price_doc}."""
     db = get_db()
+    if not quarter_id:
+        from services import sourcing_service
+        region_id = await sourcing_service.region_of_outlet(outlet_id)
+        settings = await sourcing_service.get_settings()
+        out: dict[str, dict] = {}
+        async for item in db.items.find({"id": {"$in": item_ids}, "deleted_at": None}):
+            bm = await sourcing_service.benchmark_for(item, item.get("unit_default"), region_id, settings=settings)
+            if bm:
+                out[item["id"]] = bm
+        return out
     if not quarter_id:
         active = await get_active_quarter()
         quarter_id = active["id"] if active else None
@@ -391,7 +411,15 @@ async def get_all_quarter_prices_for_item(item_id: str) -> list[dict]:
     q_map = {q["id"]: q["label"] for q in quarters}
     for d in result:
         d["quarter_label"] = q_map.get(d["quarter_id"], d.get("quarter_label", ""))
-    return sorted(result, key=lambda x: (x.get("quarter_label") or ""), reverse=True)
+    # urut kronologis (tahun, kuartal) — dulu diurutkan string "Q1-2026" sehingga salah lintas tahun
+    def _qkey(d):
+        lbl = d.get("quarter_label") or ""
+        try:
+            q, y = lbl.lstrip("Q").split("-")
+            return (int(y), int(q))
+        except ValueError:
+            return (0, 0)
+    return sorted(result, key=_qkey, reverse=True)
 
 
 # =================== EXCEL EXPORT ===================
