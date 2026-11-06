@@ -104,8 +104,9 @@ async def lifespan(_: FastAPI):
         logger.exception("sourcing_migration_failed")
 
     try:
-        from services.rbac_sync import ensure_rbac_grants
+        from services.rbac_sync import ensure_rbac_grants, ensure_role_defaults
         n = await ensure_rbac_grants()
+        await ensure_role_defaults()
         if n:
             logger.info("rbac grants synced: %d roles updated", n)
     except Exception:  # noqa: BLE001

@@ -229,6 +229,9 @@ async def disable_user(user_id: str, user: dict = Depends(require_perm("admin.us
 
 
 # ---------- ROLES ----------
+# Peran dapat dikonfigurasi penuh: peran bawaan (is_system) boleh diubah dan dikembalikan ke `default_permissions`;
+# hanya peran Super Admin (berisi "*") yang terkunci. Tidak ada izin di luar katalog, tidak ada eskalasi melebihi hak
+# pengubah, dan sistem tidak boleh kehilangan pemegang admin.role.manage terakhir (anti terkunci).
 class RoleCreateIn(BaseModel):
     code: str
     name: str
@@ -242,39 +245,98 @@ class RoleUpdateIn(BaseModel):
     permissions: Optional[list[str]] = None
 
 
+class RoleDuplicateIn(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+
+
+_ROLE_CODE_RE = re.compile(r"^[A-Z][A-Z0-9_]{1,39}$")
+
+
+def _is_locked(role: dict) -> bool:
+    return "*" in (role.get("permissions") or [])
+
+
+def _clean_perms(perms: list[str]) -> list[str]:
+    from core.perms_registry import known_codes
+    known = known_codes()
+    out: list[str] = []
+    bad = []
+    for p in perms or []:
+        p = str(p).strip()
+        if not p or p in out:
+            continue
+        if p not in known:
+            bad.append(p)
+            continue
+        out.append(p)
+    if bad:
+        raise ValidationError(f"Izin tidak dikenal: {', '.join(bad[:5])}", field="permissions")
+    return out
+
+
+async def _role_view(doc: dict, counts: Optional[dict] = None) -> dict:
+    d = serialize(doc)
+    if counts is None:
+        db = get_db()
+        d["user_count"] = await db.users.count_documents({"role_ids": d["id"], "deleted_at": None})
+    else:
+        d["user_count"] = counts.get(d["id"], 0)
+    d["locked"] = _is_locked(d)
+    default = d.get("default_permissions")
+    d["has_default"] = default is not None
+    d["modified"] = bool(default is not None and set(default) != set(d.get("permissions") or []))
+    return d
+
+
+async def _ensure_not_last_admin(role_id: str, new_perms: list[str]) -> None:
+    """Tolak perubahan yang membuat tidak ada user aktif tersisa dengan admin.role.manage (atau *)."""
+    if "admin.role.manage" in new_perms or "*" in new_perms:
+        return
+    db = get_db()
+    holders = {r["id"] async for r in db.roles.find(
+        {"deleted_at": None, "id": {"$ne": role_id}, "permissions": {"$in": ["admin.role.manage", "*"]}}, {"id": 1})}
+    if holders and await db.users.count_documents({"role_ids": {"$in": list(holders)}, "deleted_at": None,
+                                                   "status": {"$ne": "disabled"}}):
+        return
+    raise ValidationError("Perubahan ini membuat tidak ada lagi user yang bisa mengelola peran (admin.role.manage).",
+                          code="LAST_ROLE_ADMIN", field="permissions")
+
+
 @router.get("/roles")
 async def list_roles(user: dict = Depends(require_perm("admin.role.manage"))):
-    items, _ = await roles_repo.list({}, page=1, per_page=100, sort=[("name", 1)])
-    return ok_envelope(items)
+    items, _ = await roles_repo.list({}, page=1, per_page=200, sort=[("name", 1)])
+    db = get_db()
+    counts = {}
+    async for row in db.users.aggregate([{"$match": {"deleted_at": None}}, {"$unwind": "$role_ids"},
+                                         {"$group": {"_id": "$role_ids", "n": {"$sum": 1}}}]):
+        counts[row["_id"]] = row["n"]
+    return ok_envelope([await _role_view(r, counts) for r in items])
 
 
 @router.post("/roles")
 async def create_role(payload: RoleCreateIn, user: dict = Depends(require_perm("admin.role.manage"))):
     db = get_db()
-    await _guard_role_perms(user, payload.permissions)
-    if await db.roles.find_one({"code": payload.code, "deleted_at": None}):
-        raise ConflictError(f"Role code '{payload.code}' sudah ada", field="code")
+    code = payload.code.strip().upper()
+    if not _ROLE_CODE_RE.match(code):
+        raise ValidationError("Kode peran: huruf besar/angka/underscore, diawali huruf (mis. AREA_MANAGER)", field="code")
+    perms = _clean_perms(payload.permissions)
+    await _guard_role_perms(user, perms)
+    if await db.roles.find_one({"code": code, "deleted_at": None}):
+        raise ConflictError(f"Role code '{code}' sudah ada", field="code")
+    now = datetime.now(timezone.utc).isoformat()
     doc = {
-        "id": str(uuid.uuid4()),
-        "code": payload.code,
-        "name": payload.name,
-        "description": payload.description,
-        "permissions": payload.permissions,
-        "is_system": False,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "deleted_at": None,
+        "id": str(uuid.uuid4()), "code": code, "name": payload.name.strip(), "description": payload.description,
+        "permissions": perms, "is_system": False, "created_at": now, "updated_at": now, "deleted_at": None,
         "created_by": user["id"],
     }
     try:
         await db.roles.insert_one(doc)
     except DuplicateKeyError as e:
-        raise ConflictError(
-            f"Role code sudah ada: {e.details.get('keyValue', {})}",
-            field="code",
-        )
+        raise ConflictError(f"Role code sudah ada: {e.details.get('keyValue', {})}", field="code")
     await audit_log(user_id=user["id"], entity_type="role", entity_id=doc["id"], action="create", after=serialize(doc))
-    return ok_envelope(serialize(doc))
+    return ok_envelope(await _role_view(doc))
 
 
 @router.patch("/roles/{role_id}")
@@ -283,17 +345,92 @@ async def update_role(role_id: str, payload: RoleUpdateIn, user: dict = Depends(
     before = await db.roles.find_one({"id": role_id, "deleted_at": None})
     if not before:
         raise NotFoundError("Role")
-    if before.get("is_system"):
-        raise ValidationError("System role tidak dapat diubah")
-    await _guard_role_perms(user, payload.permissions)
+    if _is_locked(before):
+        raise ValidationError("Peran Super Admin terkunci (akses penuh) dan tidak bisa diubah", code="ROLE_LOCKED")
     patch = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
+    if "permissions" in patch:
+        perms = _clean_perms(patch["permissions"])
+        if "*" in perms:
+            raise ValidationError("Akses penuh (*) hanya untuk peran Super Admin", field="permissions")
+        # eskalasi dicek hanya untuk izin yang DITAMBAHKAN (mencabut izin yang tidak dimiliki pengubah tetap boleh)
+        added = [p for p in perms if p not in (before.get("permissions") or [])]
+        await _guard_role_perms(user, added)
+        await _ensure_not_last_admin(role_id, perms)
+        patch["permissions"] = perms
+    if "name" in patch:
+        patch["name"] = patch["name"].strip()
+        if not patch["name"]:
+            raise ValidationError("Nama peran wajib", field="name")
     patch["updated_at"] = datetime.now(timezone.utc).isoformat()
-    after = await db.roles.find_one_and_update(
-        {"id": role_id}, {"$set": patch}, return_document=True,
-    )
+    patch["updated_by"] = user["id"]
+    after = await db.roles.find_one_and_update({"id": role_id}, {"$set": patch}, return_document=True)
     await audit_log(user_id=user["id"], entity_type="role", entity_id=role_id,
                     action="update", before=serialize(before), after=serialize(after))
-    return ok_envelope(serialize(after))
+    return ok_envelope(await _role_view(after))
+
+
+@router.post("/roles/{role_id}/reset")
+async def reset_role(role_id: str, user: dict = Depends(require_perm("admin.role.manage"))):
+    """Kembalikan peran bawaan ke izin default-nya."""
+    db = get_db()
+    before = await db.roles.find_one({"id": role_id, "deleted_at": None})
+    if not before:
+        raise NotFoundError("Role")
+    if before.get("default_permissions") is None:
+        raise ValidationError("Peran ini tidak punya izin bawaan (peran kustom)", code="NO_DEFAULT")
+    if _is_locked(before):
+        raise ValidationError("Peran Super Admin terkunci", code="ROLE_LOCKED")
+    perms = list(before["default_permissions"])
+    added = [p for p in perms if p not in (before.get("permissions") or [])]
+    await _guard_role_perms(user, added)
+    await _ensure_not_last_admin(role_id, perms)
+    after = await db.roles.find_one_and_update(
+        {"id": role_id}, {"$set": {"permissions": perms, "updated_at": datetime.now(timezone.utc).isoformat(),
+                                   "updated_by": user["id"]}}, return_document=True)
+    await audit_log(user_id=user["id"], entity_type="role", entity_id=role_id, action="reset",
+                    before=serialize(before), after=serialize(after))
+    return ok_envelope(await _role_view(after))
+
+
+@router.post("/roles/{role_id}/duplicate")
+async def duplicate_role(role_id: str, payload: RoleDuplicateIn, user: dict = Depends(require_perm("admin.role.manage"))):
+    db = get_db()
+    src = await db.roles.find_one({"id": role_id, "deleted_at": None})
+    if not src:
+        raise NotFoundError("Role")
+    perms = [p for p in (src.get("permissions") or []) if p != "*"]
+    return await create_role(RoleCreateIn(code=payload.code, name=payload.name,
+                                          description=payload.description or src.get("description"),
+                                          permissions=perms), user=user)
+
+
+@router.get("/roles/{role_id}/users")
+async def role_users(role_id: str, user: dict = Depends(require_perm("admin.role.manage"))):
+    db = get_db()
+    docs = await db.users.find({"role_ids": role_id, "deleted_at": None},
+                               {"_id": 0, "id": 1, "full_name": 1, "email": 1, "status": 1}).sort("full_name", 1).to_list(500)
+    return ok_envelope(docs)
+
+
+@router.get("/roles/{role_id}/history")
+async def role_history(role_id: str, limit: int = Query(30, ge=1, le=200),
+                       user: dict = Depends(require_perm("admin.role.manage"))):
+    """Riwayat perubahan peran: izin ditambah/dicabut per perubahan, siapa & kapan."""
+    db = get_db()
+    rows = await db.audit_log.find({"entity_type": "role", "entity_id": role_id}, {"_id": 0}) \
+        .sort("timestamp", -1).limit(limit).to_list(limit)
+    uids = list({r.get("user_id") for r in rows if r.get("user_id")})
+    names = {u["id"]: u.get("full_name") or u.get("email") async for u in db.users.find({"id": {"$in": uids}}, {"id": 1, "full_name": 1, "email": 1})}
+    out = []
+    for r in rows:
+        b = set(((r.get("before") or {}).get("permissions")) or [])
+        a = set(((r.get("after") or {}).get("permissions")) or [])
+        out.append({"id": r.get("id"), "action": r.get("action"), "timestamp": r.get("timestamp"),
+                    "user_name": names.get(r.get("user_id")) or "(user tidak ditemukan)",
+                    "added": sorted(a - b) if r.get("before") is not None else sorted(a),
+                    "removed": sorted(b - a),
+                    "renamed": (r.get("before") or {}).get("name") != (r.get("after") or {}).get("name") and r.get("before") is not None})
+    return ok_envelope(out)
 
 
 @router.delete("/roles/{role_id}")
@@ -303,20 +440,41 @@ async def delete_role(role_id: str, user: dict = Depends(require_perm("admin.rol
     if not role:
         raise NotFoundError("Role")
     if role.get("is_system"):
-        raise ValidationError("System role tidak dapat dihapus")
-    # Check usage
+        raise ValidationError("Peran bawaan tidak dapat dihapus (izinnya bisa diubah atau dikembalikan ke bawaan)")
     in_use = await db.users.count_documents({"role_ids": role_id, "deleted_at": None})
     if in_use:
         raise ValidationError(f"Role masih dipakai oleh {in_use} user")
     await db.roles.update_one({"id": role_id},
         {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}})
-    await audit_log(user_id=user["id"], entity_type="role", entity_id=role_id, action="delete")
+    await audit_log(user_id=user["id"], entity_type="role", entity_id=role_id, action="delete", before=serialize(role))
     return ok_envelope({"message": "Role deleted"})
+
+
+@router.get("/users/{user_id}/effective-permissions")
+async def user_effective_permissions(user_id: str, user: dict = Depends(require_perm("admin.role.manage"))):
+    """Izin efektif user = gabungan semua perannya, dengan asal peran per izin."""
+    db = get_db()
+    target = await db.users.find_one({"id": user_id, "deleted_at": None})
+    if not target:
+        raise NotFoundError("User")
+    roles = await db.roles.find({"id": {"$in": target.get("role_ids") or []}, "deleted_at": None},
+                                {"_id": 0, "id": 1, "name": 1, "permissions": 1}).to_list(50)
+    src: dict[str, list[str]] = {}
+    for r in roles:
+        for p in r.get("permissions") or []:
+            src.setdefault(p, []).append(r["name"])
+    return ok_envelope({"user_id": user_id, "roles": [{"id": r["id"], "name": r["name"]} for r in roles],
+                        "permissions": [{"code": k, "roles": v} for k, v in sorted(src.items())],
+                        "full_access": "*" in src})
 
 
 # ---------- PERMISSIONS CATALOG ----------
 @router.get("/permissions")
-async def permissions_catalog(user: dict = Depends(current_user)):
+async def permissions_catalog(grouped: bool = False, user: dict = Depends(current_user)):
+    """Datar (kompatibel) atau `?grouped=true`: portal → modul → izin (label ID, aksi, sensitif, dependensi)."""
+    if grouped:
+        from core.perms_registry import grouped as _grouped
+        return ok_envelope(_grouped())
     return ok_envelope(PERMISSIONS_CATALOG)
 
 

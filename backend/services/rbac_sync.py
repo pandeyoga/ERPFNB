@@ -48,8 +48,22 @@ async def ensure_rbac_grants() -> int:
         res = await db.roles.update_one({"code": code, "deleted_at": None},
                                         {"$addToSet": {"permissions": {"$each": pending}}})
         changed += res.modified_count
+        # izin bawaan baru juga masuk ke default peran (dipakai "Kembalikan ke bawaan")
+        await db.roles.update_one({"code": code, "deleted_at": None, "default_permissions": {"$exists": True}},
+                                  {"$addToSet": {"default_permissions": {"$each": pending}}})
         newly += [f"{code}:{p}" for p in pending]
     if newly:
         await db.system_settings.update_one(
             {"key": _LEDGER_KEY}, {"$set": {"key": _LEDGER_KEY, "value": sorted(applied | set(newly))}}, upsert=True)
     return changed
+
+
+async def ensure_role_defaults() -> int:
+    """Peran bawaan tanpa `default_permissions` → snapshot izin saat ini sebagai bawaan (sekali)."""
+    db = get_db()
+    n = 0
+    async for r in db.roles.find({"is_system": True, "deleted_at": None, "default_permissions": {"$exists": False}},
+                                 {"id": 1, "permissions": 1}):
+        await db.roles.update_one({"id": r["id"]}, {"$set": {"default_permissions": list(r.get("permissions") or [])}})
+        n += 1
+    return n
