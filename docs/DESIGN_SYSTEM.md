@@ -354,3 +354,18 @@ Aturan:
 - **Banner status** (dibatalkan, ditolak, berhasil diposting) boleh berupa kartu bergaris kiri berwarna; isinya
   pesan, bukan data.
 - **Halaman detail di Outlet Portal** memakai `PageHeader noExtras`: tokonya ditentukan dokumen, bukan pemilih toko.
+
+### 10.11 Peran & hak akses (6 Nov 2026)
+Acuan: Admin → Users & Roles → Roles & permissions (`portals/admin/roles/`). Pola mengikuti DAHOST.
+
+- **Izin dikelompokkan portal → modul → izin** (`GET /admin/permissions?grouped=true`, dari `core/perms_registry.py`).
+  Jangan menampilkan kode izin mentah ke user; kode hanya di tooltip.
+- **Tingkat cepat** per portal & per modul: Tidak ada / Lihat / Penuh; campuran tampil "Kustom". Izin tunggal = chip
+  (`Button size="sm" variant="outline" aria-pressed`). Izin sensitif ditandai ikon perisai amber.
+- **Dependensi otomatis**: menyalakan aksi ikut menyalakan izin lihat modulnya; mematikan izin lihat ikut mematikan
+  aksinya. Beri tahu lewat toast, jangan diam-diam.
+- **Anti-eskalasi** juga di UI: izin yang tidak dimiliki pengubah tampil nonaktif.
+- **Simpan** lewat `FormActionBar` dengan ringkasan +/− dan daftar perubahan; menambah izin sensitif minta konfirmasi.
+- Menambah izin: tulis kodenya di `core/perms_catalog.py`; prefix baru → label di `PORTALS`/`MODULES`
+  (`perms_registry.py`); label kurang jelas → `LABEL_OVERRIDES`; default untuk peran bawaan → `GRANTS`
+  (`services/rbac_sync.py`, diberikan sekali per pasangan peran:izin).

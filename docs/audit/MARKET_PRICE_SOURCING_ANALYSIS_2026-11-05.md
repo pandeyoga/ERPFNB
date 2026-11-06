@@ -268,3 +268,72 @@ fleksibel.
 4. **Benchmark publik** (PIHPS/Bapanas): mulai dengan impor manual?
 5. **Resep/BOM**: sudah ada di POS (bisa diimpor) atau perlu dibuat di ERP?
 6. **Tahap 0** langsung dikerjakan?
+
+---
+
+## 8. Keputusan & status implementasi (6 Nov 2026)
+
+### 8.1 Jawaban keputusan §7
+
+| No. | Keputusan |
+|---|---|
+| 1 | Periode harga acuan **bisa dikonfigurasi**: mingguan / bulanan / kuartalan, default + per kategori (Sourcing → Pengaturan). |
+| 2 | Harga **dibedakan per wilayah** (master `regions`, `outlets.region_id`); harga tanpa wilayah = berlaku semua wilayah. |
+| 3 | Siapa boleh menetapkan acuan / price list = **izin yang dikonfigurasi penuh** di Peran & Hak Akses (§8.3). |
+| 4 | Benchmark publik PIHPS/Bapanas — **ditunda**. |
+| 5 | Resep/BOM — **ditunda** (POS belum ada). |
+| 6 | Tahap 0 dikerjakan, **tanpa seed demo**. |
+
+### 8.2 Sourcing — yang sudah jadi
+
+Backend: `services/sourcing_service.py`, `routers/sourcing.py` (`/api/sourcing/*`).
+
+- **Periode**: koleksi `price_periods` (key `2026-W45` / `2026-11` / `2026-Q4`). Kuartal lama dimigrasi otomatis saat
+  startup (`migrate_legacy_quarters`).
+- **Harga acuan** (`market_list_prices`): item × satuan × wilayah × periode. Pencarian: periode berjalan → wilayah toko →
+  semua wilayah → periode terakhir sebelumnya (ditandai *basi*). **Satuan tidak pernah dicampur.**
+- **Penawaran supplier** (`supplier_prices`): masa berlaku, MOQ, lead time, wilayah, sumber (RFQ / kontrak / manual /
+  impor CSV). Penawaran RFQ otomatis masuk price list.
+- **Skor supplier**: harga 40 / fill rate 25 / tepat waktu 20 / kualitas 15, bobot dibagi ulang ke komponen yang ada
+  datanya; UI menyebut dasar skornya ("harga saja", dst.). Scorecard vendor memakai rumus yang sama.
+- **Perbaikan Tahap 0**: harga KDO/BDO memakai acuan sesuai wilayah & satuan; ref-price di PO menerima `unit` dan
+  `outlet_id`; vendor yang hilang tampil "(supplier tidak ditemukan)"; urutan histori kuartal; tautan notifikasi.
+
+UI: hub **Procurement → Sourcing** (`portals/procurement/sourcing/`).
+
+| Tab / halaman | Isi |
+|---|---|
+| Ringkasan | KPI; tabel semua item: acuan, penawaran terbaik, harga terakhir, spend & potensi hemat; penanda (di atas acuan, satu sumber, penawaran kurang, akan habis, acuan basi / belum ada); filter kategori & wilayah. |
+| Halaman item (`/procurement/sourcing/items/:id`) | KeyFacts, insight, tabel supplier (penawaran, harga terakhir & rata-rata, pengiriman, skor), grafik tren mingguan vs acuan, penawaran aktif, histori acuan. |
+| Harga acuan | Lembar kerja per periode & wilayah: isi dari median GR / salin periode lalu, simpan massal; persetujuan item baru. |
+| Penawaran supplier | Daftar penawaran per status (berlaku / akan datang / habis), tambah/ubah, impor CSV dengan template. |
+| Pengaturan | Periode default & per kategori, ambang peringatan %, minimal penawaran, hari "akan habis", jendela analisis. |
+
+Halaman lama *Price Intelligence* dan *Market Price List* (Inventory) dialihkan ke hub ini.
+
+### 8.3 Peran & hak akses — yang sudah jadi
+
+- `core/perms_registry.py` menurunkan katalog datar (`perms_catalog.py`, 188 kode + `*`) menjadi **portal → modul → izin**
+  dengan label Indonesia, jenis aksi, penanda sensitif, dan dependensi (aksi butuh izin lihat modulnya).
+- Peran bawaan **bisa diubah** dan **dikembalikan ke bawaan**; Super Admin (`*`) terkunci. Peran kustom: buat kosong /
+  salin, duplikat, hapus (bila tanpa user). Anti-eskalasi: hanya bisa memberi izin yang dimiliki sendiri. Admin terakhir
+  dilindungi. Riwayat perubahan dari `audit_log`. Izin efektif per user (gabungan peran + asal perannya).
+- Izin baru untuk fitur baru diberikan sekali ke peran bawaan lewat `services/rbac_sync.py` (ledger
+  `rbac_grants_applied`), jadi izin yang sengaja dicabut admin tidak dikembalikan saat restart.
+- UI: Admin → Users & Roles → **Roles & permissions** (`portals/admin/roles/`): daftar peran + editor, matriks izin
+  dengan tingkat cepat Tidak ada / Lihat / Penuh, cari, filter aktif / sensitif, bandingkan dua peran, ringkasan
+  perubahan (+/−) dan konfirmasi untuk izin sensitif.
+
+Izin Sourcing baru: `procurement.sourcing.read`, `procurement.price_list.manage`, `procurement.sourcing.settings`
+(+ `procurement.market_list.manage` untuk harga acuan). Default: Procurement Manager semua; Procurement Staff
+read + price list; Executive / Owner / GM / Finance Manager read.
+
+> Catatan: Outlet Manager dan Inventory Manager **tidak** mendapat `procurement.sourcing.read` secara default.
+> Bila perlu, beri lewat layar Peran.
+
+### 8.4 Belum dikerjakan
+
+- Tahap 2 — kualitas di GR (qty ditolak + alasan + foto) → komponen kualitas skor masih kosong bila tidak ada data.
+- Peringatan berambang langsung di form PO/GR (saat ini penanda hanya di hub Sourcing).
+- Benchmark PIHPS/Bapanas, resep/BOM & dampak HPP (ditunda sesuai keputusan).
+- Koleksi `item_pricings` dan endpoint lama `/market-list/intelligence` masih ada, tidak dipakai UI.

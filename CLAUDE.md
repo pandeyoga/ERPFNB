@@ -57,3 +57,7 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
 
 - Konfigurasi dari `backend/.env` (template lokal: `backend/env.local.example`). Jangan commit secret.
 - Tes: `cd backend && python -m pytest -q tests/<file>`.
+- Izin baru: kode di `core/perms_catalog.py` → otomatis masuk layar Peran (`core/perms_registry.py`: label portal/modul,
+  `LABEL_OVERRIDES`); default untuk peran bawaan lewat `GRANTS` di `services/rbac_sync.py` (`DESIGN_SYSTEM.md` §10.11).
+- Harga sourcing (acuan per wilayah & periode, penawaran supplier, skor): `services/sourcing_service.py`.
+  Jangan membandingkan harga beda satuan.
