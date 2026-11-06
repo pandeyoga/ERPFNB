@@ -20,7 +20,7 @@ import { useVisibleTabs } from "@/lib/portalGate";
 // perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
   { id: "users",     label: "Users",           icon: UsersIcon,  component: Users, perm: "admin.user" },
-  { id: "roles",     label: "Roles & permissions", icon: Shield,     component: Roles, perm: "admin.user" },
+  { id: "roles",     label: "Roles & permissions", icon: Shield,     component: Roles, perm: "admin.role" },
   { id: "audit-log", label: "Activity log",        icon: ScrollText, component: AuditLog, perm: "admin.audit_log" },
 ];
 

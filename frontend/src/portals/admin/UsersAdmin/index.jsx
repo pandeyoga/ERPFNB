@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import RowActions from "@/components/shared/RowActions";
+import EffectivePermissionsButton from "../roles/EffectivePermissions";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import StatusPill from "@/components/shared/StatusPill";
@@ -36,6 +37,7 @@ import { confirmDialog } from "@/components/shared/confirmDialog";
 import { fetchAll } from "@/lib/api";
 export default function Users({ embedded = false } = {}) {
   const { user: me } = useAuth();
+  const canSeeRoles = (me?.permissions || []).some((p) => p === "*" || p === "admin.role.manage");
   const { allOutlets } = useOutletScope();
   const outlets = allOutlets;
   const [users, setUsers] = useState([]);
@@ -180,6 +182,12 @@ export default function Users({ embedded = false } = {}) {
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">Akses Outlet / Brand</div>
                   <AccessBadge u={u} outlets={outlets} brands={brands} />
                 </div>
+                {canSeeRoles && (
+                  <div>
+                    {/* gabungan izin semua peran + asal peran per izin (Roles & permissions) */}
+                    <EffectivePermissionsButton user={u} />
+                  </div>
+                )}
               </div>
             );
           }}

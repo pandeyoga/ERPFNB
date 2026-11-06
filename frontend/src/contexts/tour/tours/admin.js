@@ -170,34 +170,34 @@ const adminUsersTour = {
 
 // ─── Roles ────────────────────────────────────────────────────────
 const adminRolesTour = {
-  name: "Roles & Permissions",
-  description: "Kelola peran dan izin akses untuk semua user.",
+  name: "Peran & Hak Akses",
+  description: "Atur peran dan izin akses tiap user secara rinci.",
   steps: [
     {
       target: "[data-testid='roles-page']",
-      title: "Roles & Permissions",
-      content: "Sistem **RBAC (Role-Based Access Control)** FnB ERP. Setiap role memiliki set permissions yang menentukan apa yang bisa dilakukan user.",
+      title: "Peran & Hak Akses",
+      content: "Setiap user punya satu atau beberapa **peran**; izinnya digabung. Peran bawaan bisa diubah dan **dikembalikan ke bawaan** kapan saja, peran kustom bisa dibuat sebanyak perlu.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
       target: "[data-testid='roles-grid']",
-      title: "Daftar Role",
-      content: "Semua role yang ada di sistem. Klik **Edit** pada role untuk ubah permissions-nya. Klik **Hapus** untuk nonaktifkan role (user yang punya role ini akan kehilangan akses).",
-      placement: "top",
+      title: "Daftar Peran",
+      content: "Klik peran untuk membuka editornya. Label **BAWAAN / KUSTOM / DIUBAH** dan jumlah user terlihat di tiap baris. Super Admin selalu akses penuh dan tidak bisa diubah.",
+      placement: "right",
     },
     {
       target: "[data-testid='roles-new']",
-      title: "Tambah Role",
-      content: "Klik **Tambah Role** untuk membuat role custom. Isi kode (unik), nama, dan pilih permissions dari daftar.",
+      title: "Tambah Peran",
+      content: "Buat peran baru dari kosong atau **salin dari peran yang mirip**, lalu sesuaikan izinnya.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='roles-grid']",
-      title: "Format Permission",
-      content: "Format: **modul.aksi** (misal: `finance.journals.read`)\n\n• `finance.*` — semua aksi finance\n• `*` — super admin\n• `outlet.manager` — role khusus outlet",
-      placement: "top",
+      target: "[data-testid='perm-matrix']",
+      title: "Matriks Izin",
+      content: "Izin dikelompokkan per **portal → modul**. Pilih tingkat cepat (**Tidak ada / Lihat / Penuh**) atau klik izin satu per satu. Mengaktifkan aksi otomatis menyalakan izin lihatnya; ikon perisai menandai izin sensitif.",
+      placement: "left",
       variant: "tip",
     },
   ],

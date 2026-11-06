@@ -138,6 +138,16 @@ LABEL_OVERRIDES = {
     "outlet.daily_close.execute": "Jalankan Daily Close",
     "outlet.opname.execute": "Jalankan stock opname toko",
     "owner.cockpit.access": "Buka Owner cockpit",
+    "procurement.rfq.read": "Lihat RFQ",
+    "procurement.rfq.create": "Buat & ubah RFQ, catat penawaran",
+    "procurement.rfq.approve": "Terima penawaran RFQ",
+    "procurement.pr.consolidate": "Konsolidasi PR",
+    "procurement.market_list.manage": "Tetapkan harga acuan & review item baru",
+    "procurement.sourcing.read": "Lihat analisis sourcing, harga acuan & penawaran",
+    "procurement.price_list.manage": "Kelola penawaran supplier (termasuk impor)",
+    "procurement.sourcing.settings": "Atur periode harga acuan & ambang peringatan",
+    "outlet_budget.monitor": "Pantau budget semua outlet",
+    "finance.payment_request.submit": "Ajukan payment request untuk approval",
 }
 
 
