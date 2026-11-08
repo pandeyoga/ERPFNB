@@ -27,7 +27,7 @@ function shiftDate(iso, type, dir) {
 
 export default function BenchmarkWorksheet() {
   const qc = useQueryClient();
-  const { canBenchmark } = useSourcingPerms();
+  const { canBenchmark, canSeePending } = useSourcingPerms();
   const { data: settings } = useSourcingSettings();
   const [periodType, setPeriodType] = useState("");
   const [on, setOn] = useState(() => new Date().toISOString().slice(0, 10));
@@ -186,7 +186,7 @@ export default function BenchmarkWorksheet() {
             description="Tipe periode per kategori diatur di tab Pengaturan." />} />
       </div>
 
-      <PendingItems />
+      {canSeePending && <PendingItems />}
 
       {editable && (
         <FormActionBar dirty={dirtyCount > 0} hint={dirtyCount ? `${dirtyCount} harga acuan berubah` : "Belum ada perubahan"}>

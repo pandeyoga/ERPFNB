@@ -39,6 +39,8 @@ export function useSourcingPerms() {
     canOffers: permitted(user, "procurement.price_list.manage"),
     canSettings: permitted(user, "procurement.sourcing.settings"),
     canRfq: permitted(user, "procurement.rfq.create"),
+    // daftar item baru menunggu persetujuan memakai GET /market-list/items (guard inventory.view)
+    canSeePending: permitted(user, "inventory.view"),
   };
 }
 
