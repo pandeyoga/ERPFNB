@@ -172,6 +172,13 @@ const procurementGRTour = {
     },
     {
       target: "[data-testid='gr-table-card']",
+      title: "Barang Ditolak",
+      content: "Di form GR, kolom **Kondisi** mencatat barang yang ditolak saat diterima: qty, alasan (busuk, rusak, tidak sesuai spesifikasi, …), dan foto bukti.\n\n• Barang ditolak tidak masuk stok & tagihan\n• Sisa PO tetap terbuka untuk kiriman ulang\n• Datanya menjadi **skor kualitas** supplier di Sourcing",
+      placement: "top",
+      variant: "tip",
+    },
+    {
+      target: "[data-testid='gr-table-card']",
       title: "Auto-Journal dari GR",
       content: "Setelah GR di-post:\n\n• **Stok** di inventory otomatis bertambah\n• **AP** ke vendor otomatis tercatat\n• **Journal entry** Dr: Persediaan/Beban | Cr: AP",
       placement: "top",
