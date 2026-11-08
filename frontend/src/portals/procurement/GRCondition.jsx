@@ -36,7 +36,8 @@ export default function GRConditionCell({ line, index, onChange }) {
           {rejected > 0 ? `${rejected} ditolak` : line.condition_note ? "Ada catatan" : "Sesuai"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[22rem] space-y-3" data-testid={`gr-line-condition-panel-${index}`}>
+      <PopoverContent align="end" collisionPadding={8}
+        className="w-[22rem] max-w-[calc(100vw-1rem)] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto space-y-3" data-testid={`gr-line-condition-panel-${index}`}>
         <div>
           <p className="text-sm font-semibold">Kondisi barang</p>
           <p className="text-xs text-muted-foreground">
