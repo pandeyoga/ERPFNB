@@ -524,9 +524,12 @@ async def _gr_lines(item_ids: Optional[list[str]], since: date, outlet_ids: Opti
             out.append({
                 "item_id": iid, "vendor_id": g.get("vendor_id"), "outlet_id": g.get("outlet_id"), "date": g.get("receive_date"),
                 "doc_no": g.get("doc_no"), "unit_norm": _u(ln.get("unit")), "unit": ln.get("unit"),
+                "po_id": g.get("po_id"), "po_line_index": ln.get("po_line_index"),
                 "price": float(ln.get("unit_cost") or 0), "qty_received": float(ln.get("qty_received") or 0),
                 "qty_ordered": float(ln.get("qty_ordered") or ln.get("qty_received") or 0),
                 "qty_rejected": float(ln.get("qty_rejected") or 0),
+                "inspected": bool(ln.get("inspected")) or float(ln.get("qty_rejected") or 0) > 0,
+                "reject_reason": ln.get("reject_reason"),
                 "on_time": (rec <= exp) if (rec and exp) else None,
                 "lead_days": (rec - ordered).days if (rec and ordered) else None,
             })
@@ -535,13 +538,26 @@ async def _gr_lines(item_ids: Optional[list[str]], since: date, outlet_ids: Opti
 
 def _supplier_stats(lines: list[dict]) -> dict:
     lines = sorted(lines, key=lambda x: x["date"] or "")
-    qo = sum(x["qty_ordered"] for x in lines)
+    # Qty dipesan dihitung sekali per baris PO (GR parsial menyalin qty PO penuh ke tiap GR → dulu terhitung ganda).
+    ordered: dict = {}
+    for i, x in enumerate(lines):
+        key = (x.get("po_id"), x.get("po_line_index")) if x.get("po_id") and x.get("po_line_index") is not None else ("gr", i)
+        ordered[key] = max(ordered.get(key, 0.0), x["qty_ordered"])
+    qo = sum(ordered.values())
     qr = sum(x["qty_received"] for x in lines)
-    rej = sum(x["qty_rejected"] for x in lines)
+    # Kualitas hanya dari baris GR yang diperiksa (form GR baru); GR lama tanpa data kualitas tidak dianggap 100%.
+    insp = [x for x in lines if x.get("inspected")]
+    rej = sum(x["qty_rejected"] for x in insp)
+    insp_qty = sum(x["qty_received"] + x["qty_rejected"] for x in insp)
+    reasons: dict[str, float] = {}
+    for x in insp:
+        if x["qty_rejected"] > 0 and x.get("reject_reason"):
+            reasons[x["reject_reason"]] = reasons.get(x["reject_reason"], 0.0) + x["qty_rejected"]
     ot = [x["on_time"] for x in lines if x["on_time"] is not None]
     lead = [x["lead_days"] for x in lines if x["lead_days"] is not None]
-    prices = [x["price"] for x in lines if x["price"] > 0]
-    last = lines[-1] if lines else None
+    paid = [x for x in lines if x["qty_received"] > 0]  # kiriman yang ditolak seluruhnya tidak dibayar
+    prices = [x["price"] for x in paid if x["price"] > 0]
+    last = paid[-1] if paid else None
     return {
         "purchases": len({x["doc_no"] for x in lines}),
         "qty": round(qr, 3),
@@ -550,7 +566,9 @@ def _supplier_stats(lines: list[dict]) -> dict:
         "avg_price": round(sum(x["price"] * x["qty_received"] for x in lines) / qr, 2) if qr else None,
         "min_price": min(prices) if prices else None, "max_price": max(prices) if prices else None,
         "fill_rate_pct": round(min(qr, qo) / qo * 100, 1) if qo else None,
-        "reject_rate_pct": round(rej / (qr + rej) * 100, 1) if (qr + rej) else None,
+        "reject_rate_pct": round(rej / insp_qty * 100, 1) if insp_qty else None,
+        "qty_rejected": round(rej, 3),
+        "reject_reasons": dict(sorted(reasons.items(), key=lambda kv: -kv[1])),
         "on_time_pct": round(sum(ot) / len(ot) * 100, 1) if ot else None,
         "avg_lead_days": round(statistics.mean(lead), 1) if lead else None,
     }
@@ -627,7 +645,7 @@ async def overview(*, region_id: Optional[str] = None, category_id: Optional[str
         unit_n = _u(it.get("unit_default"))
         bm = await benchmark_for(it, it.get("unit_default"), region_id, today, s)
         bm_price = (bm or {}).get("ref_price")
-        its = [x for x in by_item.get(it["id"], []) if x["unit_norm"] == unit_n and x["price"] > 0]
+        its = [x for x in by_item.get(it["id"], []) if x["unit_norm"] == unit_n and x["price"] > 0 and x["qty_received"] > 0]
         offs = sorted([o for o in off_by_item.get(it["id"], []) if o["unit_norm"] == unit_n], key=lambda o: o["price"])
         best = offs[0] if offs else None
         last = max(its, key=lambda x: x["date"] or "") if its else None
@@ -713,7 +731,7 @@ async def item_detail(item_id: str, *, region_id: Optional[str] = None, outlet_i
     best_offer = min((o["price"] for o in offers), default=None)
     cut = today - timedelta(days=s["analysis_days"])
     recent = [x for x in lines if (_d(x["date"]) or today) >= cut]
-    best_actual = min((x["price"] for x in recent), default=None)
+    best_actual = min((x["price"] for x in recent if x["qty_received"] > 0), default=None)
     ref_best = min([p for p in (best_offer, best_actual) if p], default=None)
 
     suppliers = []
@@ -780,6 +798,12 @@ async def item_detail(item_id: str, *, region_id: Optional[str] = None, outlet_i
         insights.append({"tone": "warning", "text": "Hanya 1 supplier aktif — cari supplier cadangan."})
     if len({o["vendor_id"] for o in offers}) < s["min_quotes"]:
         insights.append({"tone": "info", "text": f"Penawaran berlaku dari {len({o['vendor_id'] for o in offers})} supplier; target minimal {s['min_quotes']}."})
+    if total["qty_rejected"]:
+        from services.procurement_service import GR_REJECT_REASONS
+        top = next(iter(total["reject_reasons"]), None)
+        insights.append({"tone": "warning" if (total["reject_rate_pct"] or 0) >= 5 else "info",
+                         "text": f"Ditolak saat diterima: {total['qty_rejected']:g} {unit or ''} ({total['reject_rate_pct']}%)"
+                                 + (f", terbanyak karena {GR_REJECT_REASONS.get(top, top).lower()}." if top else ".")})
     if other_units:
         insights.append({"tone": "info", "text": f"Ada pembelian dalam satuan lain ({', '.join(other_units)}) yang tidak dibandingkan."})
 
@@ -794,6 +818,56 @@ async def item_detail(item_id: str, *, region_id: Optional[str] = None, outlet_i
         "suppliers": suppliers, "offers": all_offers, "trend": trend, "insights": insights,
         "settings": s, "analysis_days": s["analysis_days"],
     }
+
+
+# =================== CEK HARGA DI TITIK KEPUTUSAN (PO / persetujuan) ===================
+
+async def price_check(lines: list[dict], *, outlet_id: Optional[str] = None, vendor_id: Optional[str] = None,
+                      on: Optional[str] = None) -> dict:
+    """Per baris {item_id, unit, unit_cost}: acuan (wilayah toko, satuan sama), penawaran termurah, penawaran vendor
+    terpilih, dan status terhadap ambang `alert_pct` (Pengaturan Sourcing). Dipakai form PO & detail PO."""
+    db = get_db()
+    s = await get_settings()
+    day = _d(on) or today_local()
+    region_id = await region_of_outlet(outlet_id)
+    ids = list({ln.get("item_id") for ln in lines if ln.get("item_id")})
+    items = {i["id"]: i async for i in db.items.find({"id": {"$in": ids}, "deleted_at": None}, {"_id": 0})}
+    offers = await active_offers(ids, region_id, day)
+    vids = {o["vendor_id"] for o in offers}
+    vnames = {v["id"]: v.get("name") async for v in db.vendors.find({"id": {"$in": list(vids)}}, {"id": 1, "name": 1})}
+    out = []
+    for ln in lines:
+        item = items.get(ln.get("item_id"))
+        if not item:
+            out.append(None)
+            continue
+        unit = ln.get("unit") or item.get("unit_default")
+        un = _u(unit)
+        cost = float(ln.get("unit_cost") or 0)
+        bm = await benchmark_for(item, unit, region_id, day, s)
+        bm_price = (bm or {}).get("ref_price")
+        mine = sorted((o for o in offers if o["item_id"] == item["id"] and o["unit_norm"] == un), key=lambda o: o["price"])
+        best = mine[0] if mine else None
+        own = next((o for o in mine if vendor_id and o["vendor_id"] == vendor_id), None)
+        vs_bm = _pct(cost, bm_price) if (cost and bm_price) else None
+        flags = []
+        if vs_bm is not None and vs_bm > s["alert_pct"]:
+            flags.append("above_benchmark")
+        if own and cost > own["price"] * 1.005:
+            flags.append("above_vendor_offer")
+        if best and cost > best["price"] * 1.005 and best["vendor_id"] != vendor_id:
+            flags.append("cheaper_offer")
+        out.append({
+            "item_id": item["id"], "unit": unit,
+            "benchmark": {"price": bm_price, "label": bm.get("period_label") or bm.get("quarter_label"),
+                          "stale": bool(bm.get("stale"))} if bm else None,
+            "vs_benchmark_pct": vs_bm,
+            "best_offer": {"price": best["price"], "vendor_id": best["vendor_id"], "vendor_name": vnames.get(best["vendor_id"]),
+                           "valid_to": best.get("valid_to"), "min_order_qty": best.get("min_order_qty")} if best else None,
+            "vendor_offer": {"price": own["price"], "valid_to": own.get("valid_to")} if own else None,
+            "flags": flags,
+        })
+    return {"alert_pct": s["alert_pct"], "region_id": region_id, "lines": out}
 
 
 # =================== WORKSHEET (LEMBAR KERJA HARGA ACUAN) ===================
@@ -823,7 +897,8 @@ async def benchmark_worksheet(*, period_type: str, on: Optional[str] = None, reg
     for it in items:
         u = _u(it.get("unit_default"))
         offs = sorted(o["price"] for o in offers if o["item_id"] == it["id"] and o["unit_norm"] == u)
-        ls = sorted((x for x in lines if x["item_id"] == it["id"] and x["unit_norm"] == u and x["price"] > 0), key=lambda x: x["date"] or "")
+        ls = sorted((x for x in lines if x["item_id"] == it["id"] and x["unit_norm"] == u and x["price"] > 0 and x["qty_received"] > 0),
+                    key=lambda x: x["date"] or "")
         c, p = cur.get((it["id"], u)), prv.get((it["id"], u))
         rows.append({
             "item_id": it["id"], "item_code": it.get("code"), "item_name": it.get("name"), "unit": it.get("unit_default"),

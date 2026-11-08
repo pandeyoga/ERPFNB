@@ -11,7 +11,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ok_envelope
-from core.security import require_perm, resolve_outlet_filter
+from core.security import require_any_perm, require_perm, resolve_outlet_filter
 from services import sourcing_service as svc
 
 router = APIRouter(prefix="/api/sourcing", tags=["sourcing"])
@@ -50,6 +50,16 @@ async def overview(region_id: Optional[str] = None, category_id: Optional[str] =
 @router.get("/items/{item_id}")
 async def item_detail(item_id: str, region_id: Optional[str] = None, user: dict = Depends(require_perm(READ))):
     return ok_envelope(await svc.item_detail(item_id, region_id=region_id, outlet_ids=_outlets(user)))
+
+
+@router.post("/price-check")
+async def price_check(payload: dict = Body(...),
+                      user: dict = Depends(require_any_perm(READ, "procurement.po.create", "procurement.po.approve"))):
+    """Cek harga baris PO terhadap acuan & penawaran: {lines:[{item_id, unit, unit_cost}], outlet_id?, vendor_id?, on?}.
+    Terbuka untuk pembuat & penyetuju PO walau tanpa akses halaman Sourcing."""
+    lines = (payload.get("lines") or [])[:200]
+    return ok_envelope(await svc.price_check(lines, outlet_id=payload.get("outlet_id"), vendor_id=payload.get("vendor_id"),
+                                             on=payload.get("on")))
 
 
 # ---------- Harga acuan ----------

@@ -20,6 +20,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtDate } from "@/lib/format";
 import ListToolbar from "@/components/shared/ListToolbar";
+import { GRLineCondition } from "./GRCondition";
 
 export default function GRList() {
   const { user } = useAuth();
@@ -183,7 +184,7 @@ export default function GRList() {
                     <tr key={i} className="border-b border-border/30 last:border-0">
                       <td className="py-1.5">
                         {ln.item_name || "—"}
-                        {ln.condition_note && <span className="block text-muted-foreground">{ln.condition_note}</span>}
+                        <GRLineCondition line={ln} />
                       </td>
                       <td className="text-right py-1.5">{ln.qty_ordered ?? "—"} {ln.unit}</td>
                       <td className={`text-right py-1.5 ${ln.qty_variance ? "text-amber-700 dark:text-amber-400 font-medium" : ""}`}>{ln.qty_received} {ln.unit}</td>

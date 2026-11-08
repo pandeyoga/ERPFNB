@@ -162,7 +162,7 @@ export default function VendorScorecardList() {
       </div>
 
       <p className="text-xs text-muted-foreground text-center" data-testid="scorecard-footer-link">
-        Untuk detail KPI per vendor (delivery time, defect rate, price benchmark), buka <Link to="/finance/vendor-scorecard" className="text-primary hover:underline">Finance → Vendor Scorecard</Link>.
+        Untuk detail KPI per vendor (ketepatan kirim, kekurangan kirim, barang ditolak, stabilitas harga), buka <Link to="/finance/vendor-scorecard" className="text-primary hover:underline">Finance → Vendor Scorecard</Link>.
       </p>
     </div>
   );
@@ -175,7 +175,8 @@ function VendorScoreDrilldown({ v, scoreLabel }) {
     { label: "Jumlah PO", value: fmtNumber(v.po_count || 0) },
     { label: "Total Nilai", value: fmtRp(v.total_value || 0) },
     // Backend mengirim defect_rate_pct / avg_lead_time_days (nama lama tetap sebagai fallback)
-    { label: "Defect / selisih qty", value: (v.defect_rate_pct ?? v.defect_rate) != null ? pct(v.defect_rate_pct ?? v.defect_rate) : (v.quality_score != null ? Number(v.quality_score).toFixed(0) : "—") },
+    { label: "Kurang kirim", value: (v.defect_rate_pct ?? v.defect_rate) != null ? pct(v.defect_rate_pct ?? v.defect_rate) : "—" },
+    { label: "Ditolak saat GR", value: v.reject_rate_pct != null ? pct(v.reject_rate_pct) : "—" },
     { label: "Rata-rata lead time", value: (v.avg_lead_time_days ?? v.avg_lead_time) != null ? `${Number(v.avg_lead_time_days ?? v.avg_lead_time).toFixed(1)} hari` : "—" },
     { label: "Stabilitas harga", value: pct(v.price_stability_pct) },
     { label: "Skor gabungan", value: score != null ? `${Number(score).toFixed(0)} · ${scoreLabel(score)}` : "N/A" },
@@ -183,7 +184,7 @@ function VendorScoreDrilldown({ v, scoreLabel }) {
   return (
     <div className="space-y-2" data-testid={`scorecard-breakdown-${v.vendor_id}`}>
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Rincian KPI Vendor</div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2">
         {metrics.map((m) => (
           <div key={m.label}>
             <div className="text-xs text-muted-foreground">{m.label}</div>

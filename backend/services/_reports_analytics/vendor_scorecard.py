@@ -21,7 +21,8 @@ async def vendor_scorecard(
       - on_time_pct: GR receive_date <= PO expected_delivery_date
       - avg_lead_time_days: receive_date - sent_at (POs that have GR)
       - price_stability: 1 - (stddev(unit_cost) / avg(unit_cost)) per item, averaged
-      - defect_rate: sum(qty_ordered - qty_received) / sum(qty_ordered)
+      - defect_rate: sum(qty_ordered - qty_received) / sum(qty_ordered)  (= kekurangan kirim, bukan kualitas)
+      - reject_rate: qty ditolak / (diterima + ditolak) pada baris GR yang diperiksa (data kualitas GR)
       - late_delivery_count
 
     If vendor_id given → returns single vendor detail with per-PO breakdown.
@@ -81,6 +82,8 @@ async def vendor_scorecard(
             "lead_times": [],
             "qty_ordered": 0.0,
             "qty_received": 0.0,
+            "qty_inspected": 0.0,
+            "qty_rejected": 0.0,
             "item_costs": {},  # item_id -> [unit_cost,...]
             "po_breakdown": [],
         })
@@ -105,6 +108,10 @@ async def vendor_scorecard(
             po_spend += float(gr.get("grand_total", 0) or 0)
             for gln in gr.get("lines", []):
                 po_qty_received += float(gln.get("qty_received", 0) or 0)
+                rj = float(gln.get("qty_rejected", 0) or 0)
+                if gln.get("inspected") or rj > 0:
+                    bucket["qty_rejected"] += rj
+                    bucket["qty_inspected"] += float(gln.get("qty_received", 0) or 0) + rj
             # Lead time
             try:
                 if po.get("sent_at") and gr.get("receive_date"):
@@ -168,6 +175,8 @@ async def vendor_scorecard(
             (b["qty_ordered"] - b["qty_received"]) / b["qty_ordered"] * 100, 2,
         ) if b["qty_ordered"] > 0 else None
 
+        reject_rate = round(b["qty_rejected"] / b["qty_inspected"] * 100, 2) if b["qty_inspected"] > 0 else None
+
         # Composite score 0-100 (weighted). Komponen tanpa data TIDAK dihitung sebagai 0: bobotnya dibagi ulang ke
         # komponen yang ada (dulu vendor tanpa data on-time maksimal 60). "defect_rate" = kekurangan kirim (qty).
         components: list[tuple[float, float]] = []
@@ -177,6 +186,8 @@ async def vendor_scorecard(
             components.append((price_stability, 0.25))
         if defect_rate is not None:
             components.append((max(0, 100 - defect_rate), 0.20))
+        if reject_rate is not None:
+            components.append((max(0, 100 - reject_rate * 5), 0.20))  # tiap 1% ditolak = −5 (sama dengan skor Sourcing)
         if avg_lead is not None:
             # 0-day = 100, >=14 days = 0
             lead_score = max(0, 100 - (avg_lead / 14) * 100)
@@ -197,6 +208,9 @@ async def vendor_scorecard(
             "avg_lead_time_days": avg_lead,
             "price_stability_pct": price_stability,
             "defect_rate_pct": defect_rate,
+            "fill_rate_pct": round(min(100.0, 100 - defect_rate), 2) if defect_rate is not None else None,
+            "reject_rate_pct": reject_rate,
+            "qty_rejected": round(b["qty_rejected"], 3),
             "composite_score": composite,
         }
         if vendor_id:

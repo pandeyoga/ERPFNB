@@ -11,6 +11,18 @@ from core.exceptions import NotFoundError, ValidationError, AuroraException
 from services import approval_service, journal_service, outlet_budget_service
 from utils.number_series import next_doc_no
 
+# Alasan barang ditolak saat GR (Tahap 2 sourcing: kualitas terukur). Label tampil di UI (GRForm / GRList).
+GR_REJECT_REASONS: dict[str, str] = {
+    "busuk": "Busuk / tidak segar",
+    "rusak": "Rusak / cacat",
+    "spesifikasi": "Tidak sesuai spesifikasi",
+    "kedaluwarsa": "Kedaluwarsa / tanggal pendek",
+    "suhu": "Suhu tidak sesuai",
+    "kemasan": "Kemasan rusak",
+    "salah_item": "Salah item",
+    "lainnya": "Lainnya",
+}
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -430,8 +442,15 @@ async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
     header_tax_rate = float(payload.get("tax_rate", 0) or 0)
     for ln in payload["lines"]:
         qty = float(ln.get("qty_received", 0) or 0)
-        if qty <= 0:
+        rejected = float(ln.get("qty_rejected", 0) or 0)
+        if qty < 0 or rejected < 0:
+            raise ValidationError("Qty tidak boleh negatif", field="qty_received")
+        if qty <= 0 and rejected <= 0:
             raise ValidationError("qty_received harus > 0", field="qty_received")
+        reject_reason = (ln.get("reject_reason") or "").strip() or None
+        if rejected > 0 and reject_reason not in GR_REJECT_REASONS:
+            raise ValidationError(f"Pilih alasan barang ditolak untuk {ln.get('item_name') or 'item'}",
+                                  field="reject_reason")
         idx, pl = _po_line_for(ln)
         if pl is not None:
             ordered = float(pl.get("qty", 0) or 0)
@@ -470,6 +489,12 @@ async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
             "tax_amount": round(line_tax, 2),
             "total_cost": round(line_net, 2),
             "condition_note": ln.get("condition_note"),
+            # Kualitas: qty ditolak di tempat (tidak masuk stok/AP, tidak mengurangi sisa PO) + alasan + foto bukti.
+            # `inspected` = form mengirim data kualitas → baris ini dihitung di skor kualitas supplier.
+            "inspected": "qty_rejected" in ln,
+            "qty_rejected": rejected,
+            "reject_reason": reject_reason if rejected > 0 else None,
+            "photo_id": (ln.get("photo_id") or None) if rejected > 0 else None,
         })
         subtotal += line_net
         tax_total += line_tax
@@ -505,6 +530,13 @@ async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
         "created_by": user["id"],
     }
 
+    if not any(ln["qty_received"] > 0 for ln in lines):
+        # Seluruh kiriman ditolak: dicatat untuk skor kualitas, tanpa stok, jurnal, maupun hutang; sisa PO tetap terbuka.
+        gr_doc.update({"status": "rejected", "posted_at": None})
+        await db.goods_receipts.insert_one(gr_doc)
+        await audit_log(user_id=user["id"], entity_type="goods_receipt", entity_id=gr_id, action="reject")
+        return serialize(await db.goods_receipts.find_one({"id": gr_id}))
+
     # A5: JE first (fails → nothing written); subsequent writes are compensated on failure
     je = await journal_service.post_for_gr(gr_doc, user_id=user["id"])
     ap_id = str(uuid.uuid4())
@@ -512,6 +544,8 @@ async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
     try:
         movements = []
         for ln in lines:
+            if ln["qty_received"] <= 0:
+                continue  # baris ditolak seluruhnya: tidak ada pergerakan stok
             mov_id = str(uuid.uuid4())
             movements.append({
                 "id": mov_id,

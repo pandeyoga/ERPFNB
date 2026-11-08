@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { fetchAll } from "@/lib/api";
+import { usePriceCheck, PriceCheckNote, priceCheckSummary } from "../priceCheck";
 const fmt = (n) => fmtNumber(n); // DUP-10: shared formatter
 
 export default function POForm() {
@@ -55,6 +56,9 @@ export default function POForm() {
   });
 
   const { dirty, markSaved } = useDirtyState(form);
+  // Cek harga per baris: acuan wilayah toko (satuan sama), penawaran vendor ini & termurah; ambang dari Pengaturan Sourcing
+  const { checks, alertPct } = usePriceCheck({ lines: form.lines, outletId: form.outlet_id, vendorId: form.vendor_id, on: form.order_date });
+  const priceSummary = priceCheckSummary(checks, alertPct);
 
   // Guard: warn if pre-filled outlet (from PR) is not in user's scope
   useOutletScopeGuard({
@@ -420,19 +424,12 @@ export default function POForm() {
                 const i = ln._idx;
                 const vendorItem = ln.item_id ? vendorCatalog[ln.item_id] : null;
                 const isUnavailable = vendorItem?.availability_status === "unavailable";
-                const refPrice = ln.ref_price || vendorItem?.ref_price;
-                const deviation = refPrice && ln.unit_cost > 0 ? ((ln.unit_cost - refPrice) / refPrice) * 100 : null;
                 return (
                   <div>
                     <ItemAutocomplete
                       value={ln.item_name}
                       onChange={v => setLine(i, "item_name", v)}
-                      onSelect={async (it) => {
-                        let ref = null;
-                        try {
-                          const refRes = await api.get(`/market-list/items/${it.id}/ref-price`);
-                          ref = refRes.data.data;
-                        } catch (_) {}
+                      onSelect={(it) => {
                         setForm(f => {
                           const lines = [...f.lines];
                           const vi = vendorCatalog[it.id];
@@ -440,8 +437,6 @@ export default function POForm() {
                             ...lines[i], item_name: it.name, item_id: it.id,
                             unit: it.unit || lines[i].unit,
                             unit_cost: vi?.current_price || (it.last_price ?? lines[i].unit_cost),
-                            ref_price: ref?.ref_price || null,
-                            ref_quarter: ref?.quarter_label || null,
                             availability_status: vi?.availability_status || null,
                           };
                           return { ...f, lines };
@@ -449,16 +444,7 @@ export default function POForm() {
                       }}
                       dataTestId={`po-line-item-${i}`}
                     />
-                    {ln.ref_price && (
-                      <div className="text-xs mt-0.5 flex items-center gap-1">
-                        <span className="text-blue-700 dark:text-blue-400">Ref {ln.ref_quarter}: Rp {fmt(ln.ref_price)}</span>
-                        {deviation != null && (
-                          <span className={`font-semibold ${Math.abs(deviation) > 10 ? "text-red-700 dark:text-red-400" : deviation > 0 ? "text-orange-800 dark:text-orange-400" : "text-green-700 dark:text-green-400"}`}>
-                            ({deviation > 0 ? "+" : ""}{deviation.toFixed(1)}%)
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <PriceCheckNote check={checks[i]} alertPct={alertPct} unitCost={ln.unit_cost} testId={`po-line-price-check-${i}`} />
                     {isUnavailable && (
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1">
@@ -607,6 +593,13 @@ export default function POForm() {
 
       {/* Simpan selalu terlihat di bawah form (DESIGN_SYSTEM §10.4). */}
       <FormActionBar dirty={dirty} hint="PO tersimpan sebagai draft sebelum diajukan/dikirim.">
+        {(priceSummary.above > 0 || priceSummary.overOffer > 0) && (
+          <span className="text-xs text-amber-800 dark:text-amber-400 mr-2" data-testid="po-price-warning">
+            <AlertTriangle className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+            {[priceSummary.above > 0 && `${priceSummary.above} baris > acuan +${alertPct}%`,
+              priceSummary.overOffer > 0 && `${priceSummary.overOffer} baris di atas penawaran vendor`].filter(Boolean).join(" · ")}
+          </span>
+        )}
         <Button onClick={save} disabled={saving} data-testid="po-save">
           <Save /> {saving ? "Menyimpan…" : "Simpan PO"}
         </Button>

@@ -106,7 +106,12 @@ export default function SourcingItemPage() {
       render: (r) => (r.fill_rate_pct == null && r.on_time_pct == null) ? <span className="text-muted-foreground">—</span> : (
         <div className="text-xs leading-5 whitespace-nowrap">
           <div><span className="font-medium tabular-nums">{pct(r.fill_rate_pct)}</span> lengkap · <span className="font-medium tabular-nums">{pct(r.on_time_pct)}</span> tepat waktu</div>
-          <div className="text-muted-foreground">Lead time {r.avg_lead_days != null ? `${r.avg_lead_days} hari` : (r.offer_lead_days ? `${r.offer_lead_days} hari (penawaran)` : "—")}</div>
+          <div className="text-muted-foreground">
+            Lead time {r.avg_lead_days != null ? `${r.avg_lead_days} hari` : (r.offer_lead_days ? `${r.offer_lead_days} hari (penawaran)` : "—")}
+            {r.reject_rate_pct != null && (
+              <span className={r.reject_rate_pct > 0 ? "text-amber-800 dark:text-amber-400" : undefined}> · {pct(r.reject_rate_pct)} ditolak</span>
+            )}
+          </div>
         </div>
       ) },
     { key: "score", label: "Skor", numeric: true, sortable: true,

@@ -198,3 +198,30 @@ def test_settings_and_permissions(ctx):
     _denied(c.put("/sourcing/settings", json={"alert_pct": 1}, headers={"Authorization": f"Bearer {m}"}))
     # menandai item vendor tidak tersedia = aksi tulis (dulu cukup procurement.view)
     _denied(api_post(c, f"/vendor-items/vendor/{vendors[0]['id']}/item/{item['id']}/unavailable", m, json={}))
+
+
+def test_price_check_for_po_lines(ctx):
+    """Cek harga di titik keputusan: acuan + ambang, penawaran vendor ini, penawaran termurah; izin pembuat PO cukup."""
+    c, t, item, vendors = ctx["c"], ctx["t"], ctx["item"], ctx["vendors"]
+    if len(vendors) < 2:
+        pytest.skip("butuh 2 vendor")
+    unit = item["unit_default"]
+    _ok(api_post(c, "/sourcing/benchmarks", t["procurement"], json={
+        "item_id": item["id"], "unit": unit, "price": 50000, "period_type": "monthly"}))
+    today = date.today().isoformat()
+    for v, price in ((vendors[0], 52000), (vendors[1], 48000)):
+        _ok(api_post(c, "/sourcing/offers", t["procurement"], json={
+            "vendor_id": v["id"], "item_id": item["id"], "unit": unit, "price": price, "valid_from": today}))
+    body = {"vendor_id": vendors[0]["id"], "lines": [
+        {"item_id": item["id"], "unit": unit, "unit_cost": 60000},   # +20% > ambang 10%, di atas penawaran vendor
+        {"item_id": item["id"], "unit": unit, "unit_cost": 49000},
+        {"item_id": item["id"], "unit": "gram", "unit_cost": 60},     # satuan lain: tidak dibandingkan
+        {"item_id": "tidak-ada", "unit_cost": 1}]}
+    d = _ok(api_post(c, "/sourcing/price-check", t["procurement"], json=body))
+    a, b, g, x = d["lines"]
+    assert d["alert_pct"] > 0
+    assert a["benchmark"]["price"] == 50000 and a["vs_benchmark_pct"] == 20.0
+    assert set(a["flags"]) >= {"above_benchmark", "above_vendor_offer", "cheaper_offer"}
+    assert a["vendor_offer"]["price"] == 52000 and a["best_offer"]["price"] <= 48000  # tes lain di modul bisa menambah penawaran
+    assert "above_benchmark" not in b["flags"] and "above_vendor_offer" not in b["flags"]
+    assert g["best_offer"] is None and x is None

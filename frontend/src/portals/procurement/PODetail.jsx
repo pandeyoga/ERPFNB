@@ -30,6 +30,7 @@ import { confirmDialog } from "@/components/shared/confirmDialog";
 import { fetchAll } from "@/lib/api";
 import KeyFacts from "@/components/shared/KeyFacts";
 import RowActions from "@/components/shared/RowActions";
+import { usePriceCheck, PriceCheckNote, priceCheckSummary } from "./priceCheck";
 
 export default function PODetail() {
   const { id } = useParams();
@@ -47,6 +48,9 @@ export default function PODetail() {
   const [reason, setReason] = useState("");
   const [acting, setActing] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  // Cek harga untuk penyetuju: acuan pada tanggal order (wilayah toko tujuan) & penawaran vendor
+  const { checks: priceChecks, alertPct } = usePriceCheck({ lines: po?.lines || [], outletId: po?.outlet_id, vendorId: po?.vendor_id, on: po?.order_date });
+  const priceSummary = priceCheckSummary(priceChecks, alertPct);
 
   async function load() {
     setLoading(true);
@@ -268,6 +272,9 @@ export default function PODetail() {
             { label: "Estimasi tiba", value: po.expected_delivery_date ? fmtDate(po.expected_delivery_date) : "—", testId: "po-info-expected" },
             { label: "Termin pembayaran", value: `${po.payment_terms_days} hari`, testId: "po-info-terms" },
             { label: "Dikirim", hidden: !po.sent_at, value: po.sent_at && fmtDate(po.sent_at), testId: "po-info-sent-at" },
+            { label: "Cek harga", hidden: !(priceSummary.above || priceSummary.overOffer), testId: "po-info-price-check",
+              value: <span className="text-amber-800 dark:text-amber-400">{[priceSummary.above > 0 && `${priceSummary.above} baris > acuan +${alertPct}%`,
+                priceSummary.overOffer > 0 && `${priceSummary.overOffer} di atas penawaran vendor`].filter(Boolean).join(" · ")}</span> },
           ]} />
         </PageHeader>
       </div>
@@ -300,7 +307,13 @@ export default function PODetail() {
               render: (ln) => <span className="font-medium">{ln.item_name}</span> },
             { key: "qty", label: "Qty", numeric: true },
             { key: "unit", label: "Unit", render: (ln) => <span className="text-muted-foreground">{ln.unit}</span> },
-            { key: "unit_cost", label: "Harga satuan", numeric: true, render: (ln) => fmtRp(ln.unit_cost || 0) },
+            { key: "unit_cost", label: "Harga satuan", numeric: true,
+              render: (ln) => (
+                <div className="text-right">
+                  {fmtRp(ln.unit_cost || 0)}
+                  <PriceCheckNote check={priceChecks[ln._idx]} alertPct={alertPct} unitCost={ln.unit_cost} testId={`po-line-price-check-${ln._idx}`} alignEnd />
+                </div>
+              ) },
             { key: "total", label: "Total", numeric: true,
               render: (ln) => <span className="font-medium" data-testid={`po-line-total-${ln._idx}`}>{fmtRp(ln.total || 0)}</span> },
           ]}

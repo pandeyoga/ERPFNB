@@ -194,6 +194,8 @@ async def upsert_from_gr(gr_doc: dict, *, user_id: str = "system") -> None:
         unit = ln.get("unit", "pcs")
         unit_cost = float(ln.get("unit_cost", 0) or 0)
         qty_received = float(ln.get("qty_received", 0) or 0)
+        if qty_received <= 0:
+            continue  # ditolak seluruhnya — harga tidak dibayar, jangan jadi "harga terakhir"
         try:
             await upsert_vendor_item(
                 vendor_id=vendor_id,

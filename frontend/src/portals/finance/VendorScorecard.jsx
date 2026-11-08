@@ -93,13 +93,13 @@ export default function VendorScorecard() {
 
   function exportCsv() {
     if (!data?.vendors?.length) return;
-    const headers = ["Vendor", "Code", "Spend", "PO", "GR", "OnTime%", "AvgLead(d)", "PriceStability%", "Defect%", "Score"];
+    const headers = ["Vendor", "Code", "Spend", "PO", "GR", "OnTime%", "AvgLead(d)", "PriceStability%", "KurangKirim%", "Ditolak%", "Score"];
     const lines = [headers.join(",")];
     data.vendors.forEach(v => {
       lines.push([
         `"${v.vendor_name}"`, v.vendor_code, v.total_spend, v.po_count, v.gr_count,
         v.on_time_pct ?? "", v.avg_lead_time_days ?? "",
-        v.price_stability_pct ?? "", v.defect_rate_pct ?? "",
+        v.price_stability_pct ?? "", v.defect_rate_pct ?? "", v.reject_rate_pct ?? "",
         v.composite_score ?? "",
       ].join(","));
     });
@@ -131,8 +131,10 @@ export default function VendorScorecard() {
       render: (r) => `${r.on_time_pct ?? "-"}%` },
     { key: "avg_lead_time_days", label: "Lead (d)", numeric: true, sortable: true,
       render: (r) => r.avg_lead_time_days ?? "-" },
-    { key: "defect_rate_pct", label: "Defect", numeric: true, sortable: true,
-      render: (r) => `${r.defect_rate_pct ?? "-"}%` },
+    { key: "defect_rate_pct", label: "Kurang kirim", numeric: true, sortable: true,
+      render: (r) => r.defect_rate_pct != null ? `${r.defect_rate_pct}%` : "-" },
+    { key: "reject_rate_pct", label: "Ditolak", numeric: true, sortable: true,
+      render: (r) => r.reject_rate_pct != null ? `${r.reject_rate_pct}%` : "-" },
     { key: "composite_score", label: "Score", numeric: true, sortable: true,
       render: (r) => (
         <div className="flex items-center justify-end gap-2">
@@ -226,7 +228,9 @@ export default function VendorScorecard() {
                     <Metric label="On-Time %" value={detail.on_time_pct ?? "-"} suffix={detail.on_time_pct != null ? "%" : ""} />
                     <Metric label="Lead Time" value={detail.avg_lead_time_days ?? "-"} suffix={detail.avg_lead_time_days != null ? " hari" : ""} />
                     <Metric label="Price Stab." value={detail.price_stability_pct ?? "-"} suffix={detail.price_stability_pct != null ? "%" : ""} />
-                    <Metric label="Defect Rate" value={detail.defect_rate_pct ?? "-"} suffix={detail.defect_rate_pct != null ? "%" : ""} />
+                    <Metric label="Kurang kirim" value={detail.defect_rate_pct ?? "-"} suffix={detail.defect_rate_pct != null ? "%" : ""} />
+                    <Metric label="Ditolak saat GR" value={detail.reject_rate_pct ?? "-"} suffix={detail.reject_rate_pct != null ? "%" : ""} />
+                    <Metric label="Lengkap dikirim" value={detail.fill_rate_pct ?? "-"} suffix={detail.fill_rate_pct != null ? "%" : ""} />
                   </div>
                   {detail.po_breakdown?.length > 0 && (
                     <div data-testid="po-breakdown">

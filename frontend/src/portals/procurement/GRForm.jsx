@@ -21,6 +21,9 @@ import useOutletScope from "@/hooks/useOutletScope";
 import useOutletScopeGuard from "@/hooks/useOutletScopeGuard";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
+import GRConditionCell from "./GRCondition";
+
+const pctDiff = (a, b) => (b ? ((Number(a) - Number(b)) / Number(b)) * 100 : 0);
 
 export default function GRForm() {
   const navigate = useNavigate();
@@ -40,7 +43,7 @@ export default function GRForm() {
     invoice_no: "", invoice_date: "",
     tax_rate: 0,
     payment_terms_days: 30,
-    lines: [{ item_name: "", item_id: null, qty_ordered: 0, qty_received: 1, unit: "pcs", unit_cost: 0, condition_note: "" }],
+    lines: [{ item_name: "", item_id: null, qty_ordered: 0, qty_received: 1, unit: "pcs", unit_cost: 0, condition_note: "", qty_rejected: 0, reject_reason: "" }],
     notes: "",
   });
 
@@ -102,8 +105,8 @@ export default function GRForm() {
             item_id: ln.item_id, item_name: ln.item_name,
             qty_ordered: ln.qty || 0,
             qty_received: Math.max(0, (ln.qty || 0) - (received[idx] || 0)),
-            unit: ln.unit, unit_cost: ln.unit_cost || 0,
-            condition_note: "",
+            unit: ln.unit, unit_cost: ln.unit_cost || 0, po_unit_cost: ln.unit_cost || 0,
+            condition_note: "", qty_rejected: 0, reject_reason: "",
           })).filter(l => l.qty_received > 0),
         }));
         // Sync outlet picker with PO's outlet
@@ -122,7 +125,7 @@ export default function GRForm() {
   }
   function addLine() {
     setForm(f => ({
-      ...f, lines: [...f.lines, { item_name: "", item_id: null, qty_ordered: 0, qty_received: 1, unit: "pcs", unit_cost: 0, condition_note: "" }],
+      ...f, lines: [...f.lines, { item_name: "", item_id: null, qty_ordered: 0, qty_received: 1, unit: "pcs", unit_cost: 0, condition_note: "", qty_rejected: 0, reject_reason: "" }],
     }));
   }
   function removeLine(i) {
@@ -130,7 +133,8 @@ export default function GRForm() {
   }
 
   const totals = useMemo(() => {
-    const subtotal = form.lines.reduce((s, l) => s + Number(l.qty_received || 0) * Number(l.unit_cost || 0), 0);
+    // Dari PO: dibukukan dengan harga PO (sama dengan backend); harga invoice hanya dibandingkan.
+    const subtotal = form.lines.reduce((s, l) => s + Number(l.qty_received || 0) * Number(l.po_unit_cost ?? l.unit_cost ?? 0), 0);
     const tax = subtotal * Number(form.tax_rate || 0);
     return { subtotal, tax, grand: subtotal + tax };
   }, [form.lines, form.tax_rate]);
@@ -138,9 +142,11 @@ export default function GRForm() {
   async function save() {
     if (!form.vendor_id) { toast.error("Vendor wajib"); return; }
     if (!form.outlet_id) { toast.error("Outlet wajib"); return; }
-    if (form.lines.length === 0 || form.lines.some(l => !l.item_name || !l.qty_received)) {
+    if (form.lines.length === 0 || form.lines.some(l => !l.item_name || !(Number(l.qty_received) > 0 || Number(l.qty_rejected) > 0))) {
       toast.error("Lengkapi line items"); return;
     }
+    const noReason = form.lines.find(l => Number(l.qty_rejected) > 0 && !l.reject_reason);
+    if (noReason) { toast.error(`Pilih alasan barang ditolak untuk ${noReason.item_name}`); return; }
     setSaving(true);
     try {
       const payload = {
@@ -159,12 +165,16 @@ export default function GRForm() {
           qty_received: Number(l.qty_received),
           unit: l.unit, unit_cost: Number(l.unit_cost || 0),
           condition_note: l.condition_note,
+          qty_rejected: Number(l.qty_rejected || 0),
+          reject_reason: Number(l.qty_rejected) > 0 ? l.reject_reason : null,
+          photo_id: Number(l.qty_rejected) > 0 ? l.photo_id || null : null,
         })),
         notes: form.notes,
       };
       const res = await api.post("/procurement/grs", payload);
       const gr = unwrap(res);
-      toast.success(`GR ${gr.doc_no} di-posting. Stok & jurnal terbuat.`);
+      if (gr.status === "rejected") toast.warning(`GR ${gr.doc_no}: seluruh kiriman ditolak — dicatat tanpa stok, jurnal, dan tagihan.`);
+      else toast.success(`GR ${gr.doc_no} di-posting. Stok & jurnal terbuat.`);
       navigate("/procurement/gr");
     } catch (e) {
       toast.error(e.response?.data?.errors?.[0]?.message || "Gagal posting");
@@ -317,24 +327,32 @@ export default function GRForm() {
               } },
             { key: "unit", label: "Unit", render: (ln) => <span className="text-muted-foreground">{ln.unit}</span> },
             { key: "unit_cost", label: "Harga satuan", numeric: true,
-              render: (ln) => (
-                <Input type="number" min="0" value={ln.unit_cost}
-                  aria-label={`Harga satuan baris ${ln._idx + 1}`}
-                  onChange={e => setLine(ln._idx, "unit_cost", e.target.value)}
-                  className="glass-input h-9 text-right tabular-nums w-32" data-testid={`gr-line-cost-${ln._idx}`} />
-              ) },
+              render: (ln) => {
+                // Harga invoice vs harga PO: GR tetap dibukukan dengan harga PO; selisih ditandai untuk dicek.
+                const diff = ln.po_unit_cost ? pctDiff(ln.unit_cost, ln.po_unit_cost) : 0;
+                const off = Math.abs(diff) >= 0.5;
+                return (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <Input type="number" min="0" value={ln.unit_cost}
+                      aria-label={`Harga satuan baris ${ln._idx + 1}`}
+                      onChange={e => setLine(ln._idx, "unit_cost", e.target.value)}
+                      className={`glass-input h-9 text-right tabular-nums w-32 ${off ? "ring-1 ring-amber-500/60" : ""}`} data-testid={`gr-line-cost-${ln._idx}`} />
+                    {off && (
+                      <span className="text-xs text-amber-800 dark:text-amber-400 whitespace-nowrap" data-testid={`gr-line-price-diff-${ln._idx}`}
+                        title="GR dibukukan dengan harga PO. Selisih dengan invoice perlu dicek ke vendor.">
+                        PO {fmtRp(ln.po_unit_cost)} ({diff > 0 ? "+" : ""}{diff.toFixed(1)}%)
+                      </span>
+                    )}
+                  </div>
+                );
+              } },
             { key: "total", label: "Total", numeric: true,
               render: (ln) => {
-                const total = Number(ln.qty_received || 0) * Number(ln.unit_cost || 0);
+                const total = Number(ln.qty_received || 0) * Number(ln.po_unit_cost ?? ln.unit_cost ?? 0);
                 return <span className="font-medium" data-testid={`gr-line-total-${ln._idx}`}>{fmtRp(total)}</span>;
               } },
-            { key: "note", label: "Catatan",
-              render: (ln) => (
-                <Input value={ln.condition_note || ""}
-                  aria-label={`Catatan kondisi baris ${ln._idx + 1}`}
-                  onChange={e => setLine(ln._idx, "condition_note", e.target.value)}
-                  className="glass-input h-9" placeholder="mis. rusak ringan" data-testid={`gr-line-note-${ln._idx}`} />
-              ) },
+            { key: "condition", label: "Kondisi",
+              render: (ln) => <GRConditionCell line={ln} index={ln._idx} onChange={setLine} /> },
           ]}
           rowAction={(ln) => !fromPO ? (
             <Button variant="ghost" size="icon-sm" onClick={() => removeLine(ln._idx)}
