@@ -294,8 +294,10 @@ Backend: `services/sourcing_service.py`, `routers/sourcing.py` (`/api/sourcing/*
   semua wilayah → periode terakhir sebelumnya (ditandai *basi*). **Satuan tidak pernah dicampur.**
 - **Penawaran supplier** (`supplier_prices`): masa berlaku, MOQ, lead time, wilayah, sumber (RFQ / kontrak / manual /
   impor CSV). Penawaran RFQ otomatis masuk price list.
-- **Skor supplier**: harga 40 / fill rate 25 / tepat waktu 20 / kualitas 15, bobot dibagi ulang ke komponen yang ada
-  datanya; UI menyebut dasar skornya ("harga saja", dst.). Scorecard vendor memakai rumus yang sama.
+- **Skor supplier (per item, Sourcing)**: harga 40 / fill rate 25 / tepat waktu 20 / kualitas 15, bobot dibagi ulang
+  ke komponen yang ada datanya; UI menyebut dasar skornya ("harga saja", dst.).
+- **Scorecard vendor (Procurement & Finance, satu implementasi)**: tepat waktu, stabilitas harga, kurang kirim, lead
+  time, dan (sejak 8 Nov) % ditolak saat GR; komponen tanpa data tidak dihitung.
 - **Perbaikan Tahap 0**: harga KDO/BDO memakai acuan sesuai wilayah & satuan; ref-price di PO menerima `unit` dan
   `outlet_id`; vendor yang hilang tampil "(supplier tidak ditemukan)"; urutan histori kuartal; tautan notifikasi.
 
@@ -331,9 +333,28 @@ read + price list; Executive / Owner / GM / Finance Manager read.
 > Catatan: Outlet Manager dan Inventory Manager **tidak** mendapat `procurement.sourcing.read` secara default.
 > Bila perlu, beri lewat layar Peran.
 
-### 8.4 Belum dikerjakan
+### 8.4 Tahap 2 — kualitas di GR & cek harga di titik keputusan (8 Nov 2026)
 
-- Tahap 2 — kualitas di GR (qty ditolak + alasan + foto) → komponen kualitas skor masih kosong bila tidak ada data.
-- Peringatan berambang langsung di form PO/GR (saat ini penanda hanya di hub Sourcing).
+- **Kualitas di GR.** Tiap baris GR punya kolom **Kondisi**: qty ditolak, alasan (busuk, rusak, tidak sesuai
+  spesifikasi, kedaluwarsa, suhu, kemasan, salah item, lainnya), catatan, dan foto bukti.
+  - Barang ditolak tidak masuk stok & tagihan, dan tidak mengurangi sisa PO (vendor bisa mengirim ulang).
+  - Kiriman yang ditolak seluruhnya dicatat sebagai GR berstatus **Ditolak** tanpa jurnal, hutang, atau stok.
+  - Skor kualitas hanya dari baris GR yang diperiksa lewat form baru; GR lama tidak dianggap 100%.
+  - Halaman item Sourcing menampilkan "% ditolak" per supplier dan insight alasan terbanyak.
+- **Cek harga di PO** (`POST /api/sourcing/price-check`, terbuka untuk pembuat & penyetuju PO):
+  - per baris: acuan (wilayah toko tujuan, satuan sama) dengan selisih %, penawaran vendor ini bila harga PO di
+    atasnya, dan penawaran termurah dari supplier lain;
+  - form PO: ringkasan di bar simpan ("1 baris > acuan +10%"); detail PO: fakta "Cek harga" untuk penyetuju.
+  - Ambang = Pengaturan Sourcing (`alert_pct`). Peringatan saja; tidak memblokir atau mewajibkan alasan.
+- **GR dari PO**: harga invoice yang berbeda dari harga PO ditandai (GR tetap dibukukan dengan harga PO).
+- **Perbaikan**: fill rate tidak lagi menghitung qty PO berulang untuk GR parsial; baris yang ditolak seluruhnya
+  tidak dipakai sebagai "harga terakhir" (Sourcing, katalog vendor, perbandingan vendor).
+
+### 8.5 Belum dikerjakan
+
 - Benchmark PIHPS/Bapanas, resep/BOM & dampak HPP (ditunda sesuai keputusan).
-- Koleksi `item_pricings` dan endpoint lama `/market-list/intelligence` masih ada, tidak dipakai UI.
+- **Perlu keputusan**: harga PO di atas acuan cukup peringatan (sekarang), atau wajib alasan / approval tambahan?
+- **Perlu keputusan**: koleksi `item_pricings` (API `/api/inventory/items/{id}/pricing`, tanpa UI) dan endpoint lama
+  `/market-list/intelligence` — dihapus, atau dialihkan ke penawaran supplier?
+- Konversi satuan (kg ↔ pack 500 g) dan spesifikasi/grade item belum ada; harga beda satuan tidak dibandingkan.
+- Upload foto memakai object storage; di lingkungan lokal tanpa akses storage, upload gagal (perilaku lama).
