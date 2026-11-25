@@ -76,10 +76,11 @@ def main():
     ap.add_argument("--cases", default="")
     ap.add_argument("--agen", default="")
     ap.add_argument("--max-cost", type=float, default=3.0)
+    ap.add_argument("--save", default="", help="simpan jawaban & langkah kasus gagal ke file JSON ini")
     a = ap.parse_args()
     token = call(a.base, "POST", "/api/auth/login", body={"email": a.email, "password": a.password})["data"]["access_token"]
     sel = [c for c in CASES if (not a.cases or c["id"] in a.cases.split(",")) and (not a.agen or c["agen"] in a.agen.split(","))]
-    total_cost, results = 0.0, []
+    total_cost, results, saved = 0.0, [], []
     for c in sel:
         if total_cost >= a.max_cost:
             print(f"Batas biaya ${a.max_cost} tercapai — berhenti.")
@@ -104,6 +105,12 @@ def main():
         total_cost += cost
         results.append((c["id"], not fails, fails, cost, time.time() - t0))
         print(f"{'LULUS' if not fails else 'GAGAL'}  {c['id']:<22} ${cost:.3f}  {time.time() - t0:5.0f}s  {'; '.join(fails)}")
+        if fails and a.save:
+            last = [d for d in s.get("display", []) if d.get("role") == "assistant"]
+            saved.append({"id": c["id"], "gagal": fails, "jawaban": (last[-1].get("text") if last else ""),
+                          "langkah": [st for d in last for st in d.get("steps") or []],
+                          "usulan": [f"{x['method']} {x['path']}" for x in acts]})
+            Path(a.save).write_text(json.dumps(saved, ensure_ascii=False, indent=1))
         call(a.base, "DELETE", f"/api/ai/agent/sessions/{st['session_id']}", token)
     ok = sum(1 for r in results if r[1])
     print(f"\n{ok}/{len(results)} lulus · biaya ${total_cost:.2f}")
