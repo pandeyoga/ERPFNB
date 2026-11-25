@@ -42,12 +42,12 @@ const generalNavigationTour = {
 // APPROVAL CENTER (shared across all portals — /{portal}/approvals)
 // ============================================================
 const approvalCenterTour = {
-  name: "Approval Center",
+  name: "Pusat Persetujuan",
   description: "Inbox persetujuan terpusat + delegasi untuk semua dokumen.",
   steps: [
     {
       target: "[data-testid='approval-center']",
-      title: "Approval Center",
+      title: "Pusat Persetujuan",
       content:
         "**Satu inbox** untuk semua dokumen yang menunggu persetujuan Anda (PR, PO, Payment, Journal, Budget, dll) lintas modul.",
       placement: "center",
@@ -58,7 +58,7 @@ const approvalCenterTour = {
       target: "[data-testid='approval-kpi']",
       title: "Ringkasan per Tipe",
       content:
-        "Kartu KPI per tipe dokumen — klik salah satu untuk **filter cepat** antrean ke jenis tertentu.",
+        "Tab per tipe dokumen beserta jumlahnya — klik salah satu untuk **filter cepat** antrean ke jenis tertentu.",
       placement: "bottom",
     },
     {
@@ -99,7 +99,7 @@ const myApprovalsTour = {
       target: "[data-testid='stat-total']",
       title: "Filter per Tipe",
       content:
-        "Kartu statistik per tipe dokumen. Klik untuk **filter cepat** antrean ke jenis tertentu.",
+        "Tab per tipe dokumen beserta jumlahnya. Klik untuk **filter cepat** antrean ke jenis tertentu.",
       placement: "bottom",
     },
     {
@@ -118,4 +118,43 @@ const myApprovalsTour = {
 // ============================================================
 
 
-export { generalNavigationTour, approvalCenterTour, myApprovalsTour };
+// ============================================================
+// ASISTEN AI (/ai + panel di TopNav)
+// ============================================================
+const aiAssistantTour = {
+  name: "Asisten AI",
+  description: "Tanya, analisis, baca foto/PDF/Excel, dan minta AI menyiapkan aksi yang Anda setujui.",
+  steps: [
+    {
+      target: "[data-testid='ai-chat-page']",
+      title: "Asisten AI",
+      content:
+        "AI membaca data **sesuai izin Anda** di semua modul, bisa mencari di web, dan menyiapkan aksi (buat/ubah/hapus) yang **selalu menunggu persetujuan** Anda.",
+      placement: "center",
+      disableBeacon: true,
+      variant: "hero",
+    },
+    {
+      target: "[data-testid='ai-input']",
+      title: "Tulis permintaan",
+      content:
+        "Contoh: *Bandingkan sales per toko minggu ini vs lalu*, *Buat PO dari PR-2611-0004*, *Bagaimana cara tutup buku?*. Konteks brand/toko di TopNav ikut terkirim.",
+      placement: "top",
+    },
+    {
+      target: "[data-testid='ai-attach']",
+      title: "Lampiran",
+      content: "Lampirkan **foto struk/invoice, PDF, atau Excel/CSV** — AI membaca isinya (OCR) lalu bisa menyiapkan jurnal atau entri data.",
+      placement: "top",
+      variant: "tip",
+    },
+    {
+      target: "[data-testid='ai-session-list']",
+      title: "Riwayat percakapan",
+      content: "Percakapan tersimpan di sini dan sama dengan panel **Asisten AI** (ikon robot di kanan atas) yang bisa dibuka dari halaman mana pun.",
+      placement: "right",
+    },
+  ],
+};
+
+export { generalNavigationTour, approvalCenterTour, myApprovalsTour, aiAssistantTour };

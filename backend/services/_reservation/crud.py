@@ -149,7 +149,9 @@ async def list_reservations(
 ) -> tuple[list[dict], dict]:
     db = get_db()
     q: dict = {"deleted_at": None}
-    if outlet_id:
+    if isinstance(outlet_id, list):  # outlet scope list from the router (SEC: POS-07)
+        q["outlet_id"] = {"$in": outlet_id}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
@@ -171,7 +173,13 @@ async def list_reservations(
         [("reservation_date", 1), ("reservation_time", 1)]
     ).skip(skip).limit(per_page).to_list(per_page)
     total = await db.reservations.count_documents(q)
-    return [serialize(i) for i in items], {"page": page, "per_page": per_page, "total": total}
+    # Per-status counts over the whole filtered set (ignoring the status filter itself) so the
+    # summary tiles don't count only the rows on the current page.
+    q_all = {k: v for k, v in q.items() if k != "status"}
+    status_counts = {r["_id"]: r["n"] async for r in db.reservations.aggregate(
+        [{"$match": q_all}, {"$group": {"_id": "$status", "n": {"$sum": 1}}}])}
+    return [serialize(i) for i in items], {"page": page, "per_page": per_page, "total": total,
+                                           "status_counts": status_counts}
 
 
 async def get_reservation(reservation_id: str) -> Optional[dict]:

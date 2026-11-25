@@ -10,7 +10,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import {
-  GitBranch, Plus, Trash2, Save, Eye, ArrowDown, AlertCircle,
+  GitBranch, Plus, Trash2, Save, Eye, ArrowDown, ArrowUp, AlertCircle,
   User, Users as UsersIcon, Shield, Layers, Settings, RefreshCw,
   CheckCircle2, ChevronRight, Search, X, FileText, ClipboardList,
 } from "lucide-react";
@@ -41,7 +41,7 @@ function TierEditor({
 }) {
   return (
     <Card className="border-aurora/20" data-testid={`tier-${idx}`}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="bg-aurora/10 border-aurora/30">Tier {idx + 1}</Badge>
@@ -49,29 +49,31 @@ function TierEditor({
               value={tier.label || ""}
               onChange={(e) => onChange({ label: e.target.value })}
               placeholder="Label tier (mis: Small <5M)"
+              aria-label={`Label tier ${idx + 1}`}
               className="h-8 max-w-[280px]"
               data-testid={`tier-${idx}-label`}
             />
           </div>
           <div className="flex items-center gap-1">
-            <Button size="icon" variant="ghost" onClick={() => onMove(-1)} disabled={idx === 0} title="Naikkan" aria-label="Naikkan posisi tier">
-              ↑
+            <Button size="icon-sm" variant="ghost" onClick={() => onMove(-1)} disabled={idx === 0} title="Naikkan" aria-label="Naikkan posisi tier">
+              <ArrowUp />
             </Button>
-            <Button size="icon" variant="ghost" onClick={() => onMove(1)} disabled={idx === total - 1} title="Turunkan" aria-label="Turunkan posisi tier">
-              ↓
+            <Button size="icon-sm" variant="ghost" onClick={() => onMove(1)} disabled={idx === total - 1} title="Turunkan" aria-label="Turunkan posisi tier">
+              <ArrowDown />
             </Button>
-            <Button size="icon" variant="ghost" onClick={onRemove} title="Hapus tier" aria-label="Hapus tier">
-              <Trash2 className="h-4 w-4 text-red-500" />
+            <Button size="icon-sm" variant="ghost" onClick={onRemove} title="Hapus tier" aria-label="Hapus tier" className="text-destructive hover:bg-destructive/10">
+              <Trash2 />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {/* Amount range */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <Label>Min Amount</Label>
+            <Label htmlFor={`tier-${idx}-min`} className="text-xs md:text-sm font-medium">Nominal Min (Rp)</Label>
             <Input
+              id={`tier-${idx}-min`}
               type="number" min="0" step="100000"
               value={tier.min_amount ?? 0}
               onChange={(e) => onChange({ min_amount: Number(e.target.value) })}
@@ -80,8 +82,9 @@ function TierEditor({
             />
           </div>
           <div>
-            <Label>Max Amount (kosong = unlimited)</Label>
+            <Label htmlFor={`tier-${idx}-max`} className="text-xs md:text-sm font-medium">Nominal Maks (kosong = tanpa batas)</Label>
             <Input
+              id={`tier-${idx}-max`}
               type="number" min="0" step="100000"
               value={tier.max_amount ?? ""}
               onChange={(e) => onChange({ max_amount: e.target.value === "" ? null : Number(e.target.value) })}
@@ -94,8 +97,8 @@ function TierEditor({
 
         {/* Conditions */}
         <div className="rounded-lg border border-border/40 p-3 space-y-2 bg-foreground/[0.02]">
-          <div className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1">
-            <Layers className="h-3.5 w-3.5" /> Kondisi (opsional)
+          <div className="text-xs md:text-sm font-semibold flex items-center gap-1">
+            <Layers className="h-3.5 w-3.5 text-muted-foreground" /> Kondisi (opsional)
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <MultiSelectChips
@@ -119,7 +122,7 @@ function TierEditor({
 
         {/* Steps */}
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase text-muted-foreground">Approval Steps</div>
+          <div className="text-xs md:text-sm font-semibold">Langkah Approval</div>
           {(tier.steps || []).map((step, si) => (
             <StepEditor
               key={si} tierIdx={idx} idx={si} step={step}
@@ -128,8 +131,8 @@ function TierEditor({
               onRemove={() => onRemoveStep(si)}
             />
           ))}
-          <Button variant="outline" size="sm" onClick={onAddStep} className="gap-1" data-testid={`tier-${idx}-add-step`}>
-            <Plus className="h-3.5 w-3.5" /> Tambah Step
+          <Button variant="outline" size="sm" onClick={onAddStep} data-testid={`tier-${idx}-add-step`}>
+            <Plus /> Tambah Step
           </Button>
         </div>
       </CardContent>

@@ -65,21 +65,21 @@ function DepositPanel({ reservation, onUpdated }) {
   return (
     <>
       <div
-        className={`rounded-xl border p-4 ${
-          reservation.deposit_status === "paid"   ? "bg-emerald-50 border-emerald-200" :
-          reservation.deposit_status === "pending" ? "bg-amber-50 border-amber-200" :
-          reservation.deposit_status === "forfeited" ? "bg-red-50 border-red-200" :
-          "bg-gray-50 border-gray-200"
+        className={`rounded-lg border p-3 ${
+          reservation.deposit_status === "paid"   ? "bg-emerald-500/10 border-emerald-500/30" :
+          reservation.deposit_status === "pending" ? "bg-amber-500/10 border-amber-500/30" :
+          reservation.deposit_status === "forfeited" ? "bg-red-500/10 border-red-500/30" :
+          "bg-muted/40 border-border/60"
         }`}
         data-testid="deposit-panel"
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Banknote className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold text-sm">Down Payment (DP)</span>
+            <h3 className="font-semibold text-sm">Down Payment (DP)</h3>
           </div>
-          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setOpen(true)} data-testid="btn-update-dp">
-            <Edit2 className="h-3 w-3 mr-1" /> Edit DP
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)} data-testid="btn-update-dp">
+            <Edit2 className="h-3.5 w-3.5" /> Ubah DP
           </Button>
         </div>
 
@@ -107,7 +107,7 @@ function DepositPanel({ reservation, onUpdated }) {
           {reservation.dp_reference && (
             <div className="col-span-2">
               <p className="text-xs text-muted-foreground">No. Referensi / Bukti</p>
-              <p className="font-medium font-mono text-xs">{reservation.dp_reference}</p>
+              <p className="font-medium text-xs tracking-wide">{reservation.dp_reference}</p>
             </div>
           )}
           {reservation.dp_paid_at && (
@@ -120,14 +120,14 @@ function DepositPanel({ reservation, onUpdated }) {
 
         {/* Quick "Tandai Lunas" button */}
         {reservation.deposit_status === "pending" && reservation.deposit_amount > 0 && (
-          <div className="mt-3 pt-3 border-t border-amber-200">
+          <div className="mt-3 pt-3 border-t border-amber-500/30">
             <Button
               size="sm"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-8"
+              className="w-full"
               onClick={() => { setForm(f => ({ ...f, deposit_status: "paid" })); setOpen(true); }}
               data-testid="btn-tandai-dp-lunas"
             >
-              <CheckCheck className="h-3.5 w-3.5 mr-1.5" /> Tandai DP Lunas
+              <CheckCheck className="h-3.5 w-3.5" /> Tandai DP Lunas
             </Button>
           </div>
         )}
@@ -137,14 +137,14 @@ function DepositPanel({ reservation, onUpdated }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Update Down Payment</DialogTitle>
+            <DialogTitle>Ubah Down Payment</DialogTitle>
             <DialogDescription>Perbarui informasi DP untuk reservasi {reservation.customer_name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label>Status DP</Label>
+              <Label htmlFor="dp-status" className="text-xs md:text-sm font-medium">Status DP</Label>
               <Select value={form.deposit_status} onValueChange={v => setForm(f => ({ ...f, deposit_status: v }))}>
-                <SelectTrigger data-testid="dp-status-select">
+                <SelectTrigger id="dp-status" data-testid="dp-status-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,14 +155,14 @@ function DepositPanel({ reservation, onUpdated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Jumlah DP (Rp)</Label>
-              <Input type="number" value={form.deposit_amount}
+              <Label htmlFor="dp-amount" className="text-xs md:text-sm font-medium">Jumlah DP (Rp)</Label>
+              <Input id="dp-amount" type="number" value={form.deposit_amount}
                 onChange={e => setForm(f => ({ ...f, deposit_amount: parseFloat(e.target.value) || 0 }))} />
             </div>
             <div className="space-y-1">
-              <Label>Metode Pembayaran</Label>
+              <Label htmlFor="dp-method" className="text-xs md:text-sm font-medium">Metode pembayaran</Label>
               <Select value={form.dp_payment_method || ""} onValueChange={v => setForm(f => ({ ...f, dp_payment_method: v }))}>
-                <SelectTrigger data-testid="dp-method-select">
+                <SelectTrigger id="dp-method" data-testid="dp-method-select">
                   <SelectValue placeholder="Pilih metode..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -173,21 +173,21 @@ function DepositPanel({ reservation, onUpdated }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>No. Referensi / Bukti Transfer</Label>
-              <Input placeholder="Contoh: TRF-2026051100123"
+              <Label htmlFor="dp-reference" className="text-xs md:text-sm font-medium">No. referensi / bukti transfer</Label>
+              <Input id="dp-reference" placeholder="Contoh: TRF-2026051100123"
                 value={form.dp_reference || ""}
                 onChange={e => setForm(f => ({ ...f, dp_reference: e.target.value }))} />
             </div>
             <div className="space-y-1">
-              <Label>Deadline Bayar DP</Label>
-              <Input type="date" value={form.dp_deadline || ""}
+              <Label htmlFor="dp-deadline" className="text-xs md:text-sm font-medium">Deadline bayar DP</Label>
+              <Input id="dp-deadline" type="date" value={form.dp_deadline || ""}
                 onChange={e => setForm(f => ({ ...f, dp_deadline: e.target.value }))} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Batal</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>Batal</Button>
             <Button onClick={handleSave} disabled={loading} data-testid="btn-save-dp">
-              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Simpan
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />} Simpan
             </Button>
           </DialogFooter>
         </DialogContent>

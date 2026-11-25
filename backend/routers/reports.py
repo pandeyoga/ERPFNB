@@ -10,6 +10,7 @@ Endpoints:
 - CRUD /api/reports/saved                         — saved report definitions
 
 Excel Exports (Phase 4.1):
+- GET  /api/reports/sales/daily-sales             — Daily Sales preview (JSON, same rows as Excel)
 - GET  /api/reports/sales/daily-sales.xlsx        — Daily Sales Summary Excel
 - GET  /api/reports/outlet/performance.xlsx       — Outlet Performance Excel
 - GET  /api/reports/outlet/fdo-history.xlsx       — FDO History Excel
@@ -28,6 +29,7 @@ from core.validators import (
     validate_period,
 )
 from services import reports_service
+from services._finance.scope import ledger_scope
 from services.excel_export_service import workbook_to_bytes
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -55,7 +57,7 @@ def _scope_brands(user: dict, requested: Optional[list[str]]) -> Optional[list[s
     return user_brand_ids
 
 
-def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
+def _scope_outlets_user(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
     """Intersect requested outlet_ids with user's allowed outlet_ids."""
     if "*" in (user.get("permissions") or []):
         return requested
@@ -66,6 +68,29 @@ def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[
         allowed = [o for o in requested if o in user_outlet_ids]
         return allowed if allowed else user_outlet_ids
     return user_outlet_ids
+
+
+async def _brand_name(brand_id: Optional[str]) -> str:
+    if not brand_id:
+        return ""
+    from core.db import get_db
+    return ((await get_db().brands.find_one({"id": brand_id}, {"name": 1})) or {}).get("name", "")
+
+
+def _brand_narrow(outlets: Optional[list[str]]) -> Optional[list[str]]:
+    """Konteks brand global (`?brand_id=`, core/scope.py): hanya toko brand itu."""
+    from core.scope import request_brand_outlets
+
+    brand = request_brand_outlets()
+    if brand is None:
+        return outlets
+    narrowed = brand if outlets is None else [o for o in outlets if o in brand]
+    return narrowed or ["__none__"]
+
+
+def _scope_outlets(user: dict, requested: Optional[list[str]]) -> Optional[list[str]]:
+    """Akses user ∩ permintaan ∩ konteks brand."""
+    return _brand_narrow(_scope_outlets_user(user, requested))
 
 
 @router.get("/catalog")
@@ -202,6 +227,32 @@ async def delete_saved(saved_id: str,
 # EXCEL EXPORTS (Phase 4.1 — Sales & Outlet Reports)
 # ============================================================
 
+@router.get("/sales/daily-sales")
+async def daily_sales_preview(
+    date_from: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    date_to: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    outlet_ids: Optional[str] = None,
+    brand_ids: Optional[str] = None,
+    limit: int = Query(100, ge=1, le=500, description="Jumlah baris pratinjau; total dihitung atas semua baris"),
+    user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
+):
+    """Pratinjau Daily Sales di layar — baris & filter sama persis dengan daily-sales.xlsx."""
+    o_ids = [s.strip() for s in outlet_ids.split(",") if s.strip()] if outlet_ids else None
+    b_ids = [s.strip() for s in brand_ids.split(",") if s.strip()] if brand_ids else None
+    rows = await reports_service.daily_sales_rows(
+        date_from=date_from,
+        date_to=date_to,
+        outlet_ids=_scope_outlets(user, o_ids),
+        brand_ids=_scope_brands(user, b_ids),
+    )
+    return ok_envelope(rows[:limit], {
+        "total": len(rows),
+        "limit": limit,
+        "grand_total": round(sum(r["grand_total"] for r in rows), 2),
+        "transaction_count": sum(r["transaction_count"] for r in rows),
+    })
+
+
 @router.get("/sales/daily-sales.xlsx")
 async def daily_sales_excel(
     date_from: Optional[str] = None,
@@ -244,7 +295,7 @@ async def outlet_performance_excel(
     wb = await reports_service.generate_outlet_performance_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
     )
     
     file_bytes = workbook_to_bytes(wb)
@@ -271,7 +322,7 @@ async def fdo_history_excel(
     wb = await reports_service.generate_fdo_history_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         status=status,
     )
     
@@ -302,7 +353,7 @@ async def stock_balance_excel(
     c_ids = [s.strip() for s in category_ids.split(",") if s.strip()] if category_ids else None
     
     wb = await reports_service.generate_stock_balance_excel(
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         category_ids=c_ids,
         as_of_date=as_of_date,
     )
@@ -331,7 +382,7 @@ async def stock_movement_excel(
     wb = await reports_service.generate_stock_movement_excel(
         date_from=date_from,
         date_to=date_to,
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         movement_type=movement_type,
     )
     
@@ -343,6 +394,19 @@ async def stock_movement_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get("/inventory-valuation/excel")
+async def inventory_valuation_excel_canonical(
+    outlet_ids: Optional[str] = None,
+    category_ids: Optional[str] = None,
+    as_of: Optional[str] = None,
+    user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
+):
+    """DUP-10: canonical path used by the Reports portal (it returned 404 — only the deprecated
+    alias existed). Same report as /inventory/valuation.xlsx."""
+    return await inventory_valuation_excel(outlet_ids=outlet_ids, category_ids=category_ids,
+                                           as_of_date=as_of, user=user)
 
 
 @router.get("/inventory/valuation.xlsx", deprecated=True)
@@ -360,7 +424,7 @@ async def inventory_valuation_excel(
     c_ids = [s.strip() for s in category_ids.split(",") if s.strip()] if category_ids else None
     
     wb = await reports_service.generate_inventory_valuation_excel(
-        outlet_ids=o_ids,
+        outlet_ids=_scope_outlets(user, o_ids),
         category_ids=c_ids,
         as_of_date=as_of_date,
     )
@@ -480,12 +544,15 @@ async def journal_ledger_excel(
     """Generate Journal Ledger Excel report."""
     pf, pt = validate_date_range(period_from, period_to)
     o_ids = validate_id_list(outlet_ids, field="outlet_ids")
+    scope = await ledger_scope(user)
+    if not scope.is_all:  # user terbatas: hanya toko miliknya, permintaan di luar akses tidak ikut
+        o_ids = [o for o in (o_ids or scope.outlet_ids) if o in scope.outlet_ids] or ["__none__"]
     
     wb = await reports_service.generate_journal_ledger_excel(
         period_from=pf,
         period_to=pt,
         coa_id=coa_id,
-        outlet_ids=o_ids,
+        outlet_ids=_brand_narrow(o_ids),  # akses user sudah lewat ledger_scope (Group tetap memuat jurnal pusat)
         source_type=source_type,
     )
     
@@ -503,6 +570,7 @@ async def journal_ledger_excel(
 async def trial_balance_excel(
     period: str = Query(..., description="Period in YYYY-MM format"),
     dim_outlet: Optional[str] = None,
+    brand_id: Optional[str] = None,
     user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
 ):
     """Generate Trial Balance Excel report for given period."""
@@ -511,6 +579,8 @@ async def trial_balance_excel(
     wb = await reports_service.generate_trial_balance_excel(
         period=period,
         dim_outlet=dim_outlet,
+        scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
+        brand_name=await _brand_name(brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)
@@ -609,6 +679,7 @@ async def pl_group_excel(
     period_from: str = Query(..., description="YYYY-MM"),
     period_to: str = Query(..., description="YYYY-MM"),
     dim_outlet: Optional[str] = None,
+    brand_id: Optional[str] = None,
     user: dict = Depends(require_any_perm(*_REPORT_READ_PERMS)),
 ):
     """Generate Custom Profit & Loss in FnB Group format (multi-month layout)."""
@@ -616,6 +687,8 @@ async def pl_group_excel(
         period_from=period_from,
         period_to=period_to,
         dim_outlet=dim_outlet,
+        scope=await ledger_scope(user, outlet_id=dim_outlet, brand_id=brand_id),
+        brand_name=await _brand_name(brand_id),
     )
     
     file_bytes = workbook_to_bytes(wb)

@@ -65,8 +65,8 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
               Number(growth) >= 0
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                : "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-400"
+                : "bg-rose-500/10 text-rose-800 dark:text-rose-400"
             )}
           >
             {Number(growth) >= 0 ? (
@@ -83,7 +83,7 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
       {/* Recharts chart */}
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="areaTrendGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="hsl(var(--aurora-1))" stopOpacity={0.45} />
@@ -93,12 +93,13 @@ export default function SalesTrendChart({ series = [], height = 180 }) {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 12 }}
               tickFormatter={(v) => fmtDate(v, "DD/MM")}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 12 }}
+              width={44}
               tickFormatter={(v) => {
                 if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
                 if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;

@@ -133,7 +133,7 @@ const inventoryOpnameTour = {
     {
       target: "[data-testid='opn-table-card']",
       title: "Daftar Sesi Opname",
-      content: "Status sesi:\n\n• **In Progress** — sedang berjalan, bisa input qty fisik\n• **Submitted** — menunggu approval\n• **Finalized** — adjustment ter-apply ke stok",
+      content: "Status sesi:\n\n• **In Progress** — sedang berjalan, bisa input qty fisik\n• **Diajukan** — menunggu approval\n• **Finalized** — adjustment ter-apply ke stok",
       placement: "top",
     },
     {
@@ -162,13 +162,13 @@ const inventoryTransfersTour = {
     {
       target: "[data-testid='trf-header-card']",
       title: "Buat Transfer Baru",
-      content: "Klik **+ Transfer**. Isi outlet asal, outlet tujuan, item, qty. Setelah submit, status menjadi **In Transit** — stok sudah dikurangi dari asal.",
+      content: "Klik **+ Transfer**. Isi outlet asal, outlet tujuan, item, qty. Setelah submit, status menjadi **Dalam Perjalanan** — stok sudah dikurangi dari asal.",
       placement: "bottom",
     },
     {
       target: "[data-testid='trf-table-card']",
       title: "Status Transfer",
-      content: "**In Transit** → stok sedang dalam perjalanan.\n**Received** → outlet tujuan sudah konfirmasi penerimaan.\n\nOutlet tujuan harus klik **Terima** untuk finalize transfer.",
+      content: "**Dalam Perjalanan** → stok sedang dalam perjalanan.\n**Diterima** → outlet tujuan sudah konfirmasi penerimaan.\n\nOutlet tujuan harus klik **Terima** untuk finalize transfer.",
       placement: "top",
       variant: "tip",
     },
@@ -183,7 +183,7 @@ const inventoryAdjustmentTour = {
     {
       target: "[data-testid='inventory-adjustment-page']",
       title: "Stock Adjustment",
-      content: "Koreksi **stok manual** untuk:\n\n• **Kerusakan** (damage)\n• **Expired**\n• **Kehilangan** (loss/theft)\n• **Koreksi** (physical count variance)",
+      content: "Koreksi **stok manual** untuk:\n\n• **Kerusakan** (damage)\n• **Kedaluwarsa**\n• **Kehilangan** (loss/theft)\n• **Koreksi** (physical count variance)",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
@@ -203,7 +203,7 @@ const inventoryAdjustmentTour = {
     {
       target: "[data-testid='adj-table']",
       title: "Status Adjustment",
-      content: "**Draft** → **Pending** → **Approved** (stok ter-update) atau **Rejected**.",
+      content: "**Draft** → **Menunggu** → **Disetujui** (stok ter-update) atau **Ditolak**.",
       placement: "top",
       variant: "tip",
     },
@@ -268,41 +268,6 @@ const inventoryLowStockTour = {
   ],
 };
 
-// ─── Market List ─────────────────────────────────────────────────
-const inventoryMarketListTour = {
-  name: "Market List — Harga Acuan",
-  description: "Pantau harga pasar referensi dan approve harga kwartal.",
-  steps: [
-    {
-      target: "[data-testid='market-list-page']",
-      title: "Market List",
-      content: "Daftar **harga pasar acuan** untuk semua item. Digunakan sebagai benchmark saat membandingkan harga dari vendor.",
-      placement: "center",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='market-list-stats']",
-      title: "Overview Harga",
-      content: "Statistik harga: total items terdaftar, **pending approval** (harga baru yang belum dikonfirmasi), dan quarter aktif.",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='market-list-create-quarter-btn']",
-      title: "Buat Quarter Baru",
-      content: "Di awal kuartal, klik **Buat Quarter** untuk generate harga acuan baru. Tim procurement akan input harga pasar terkini untuk di-approve.",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='market-list-export']",
-      title: "Export & Report",
-      content: "Export market list ke Excel untuk dibagikan ke vendor saat negosiasi harga tahunan/kuartalan.",
-      placement: "bottom",
-      variant: "tip",
-    },
-  ],
-};
-
 // ─── Inventory Valuation ──────────────────────────────────────────────
 const inventoryValuationTour = {
   name: "Inventory Valuation",
@@ -347,6 +312,5 @@ export {
   inventoryAdjustmentTour,
   inventoryMovementsHubTour,
   inventoryLowStockTour,
-  inventoryMarketListTour,
   inventoryValuationTour,
 };

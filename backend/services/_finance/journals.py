@@ -28,6 +28,24 @@ async def _enrich_journal(je: dict) -> dict:
     return je
 
 
+_DIMS = (("dim_outlet", "outlets", "name"), ("dim_brand", "brands", "name"),
+         ("dim_vendor", "vendors", "name"), ("dim_employee", "employees", "full_name"))
+
+
+async def _enrich_dimensions(je: dict) -> dict:
+    """Detail view: add `<dim>_name` next to each dimension id (UI showed raw UUID fragments)."""
+    db = get_db()
+    for key, coll, field in _DIMS:
+        ids = {ln.get(key) for ln in je.get("lines", []) if ln.get(key)}
+        if not ids:
+            continue
+        names = {d["id"]: d.get(field) or d.get("name") or "" async for d in db[coll].find({"id": {"$in": list(ids)}}, {"id": 1, field: 1, "name": 1})}
+        for ln in je.get("lines", []):
+            if ln.get(key):
+                ln[f"{key}_name"] = names.get(ln[key], "")
+    return je
+
+
 async def list_journals(
     *,
     period: Optional[str] = None,
@@ -41,17 +59,21 @@ async def list_journals(
     search: Optional[str] = None,
     page: int = 1,
     per_page: int = 50,
+    scope=None,
 ) -> tuple[list[dict], dict]:
+    from services._finance.scope import coerce_scope
+
     if dim_outlet and not outlet_id:
         outlet_id = dim_outlet
     db = get_db()
     q: dict = {"deleted_at": None}
+    scope_match = coerce_scope(scope, outlet_id).entry_match()
+    if scope_match:
+        q["$and"] = [scope_match]
     if period:
         q["period"] = period
     if source_type:
         q["source_type"] = source_type
-    if outlet_id:
-        q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
     if date_from or date_to:
@@ -85,6 +107,7 @@ async def get_journal(je_id: str) -> dict:
         raise NotFoundError("Journal entry tidak ditemukan")
     d = serialize(je)
     await _enrich_journal(d)
+    await _enrich_dimensions(d)
     return d
 
 
@@ -104,10 +127,32 @@ async def post_manual_journal(payload: dict, *, user: dict) -> dict:
     coa_map = {}
     async for c in db.chart_of_accounts.find({"id": {"$in": coa_ids}}):
         coa_map[c["id"]] = c
-    entry_date = payload.get("entry_date", _biz_today())
+    from services._journal._common import normalize_entry_date
+    entry_date = normalize_entry_date(payload.get("entry_date") or _biz_today())  # FIN-10: "2019-1-15" bypassed locks
     period = entry_date[:7]  # FIN-01: period is derived from entry_date, never from payload
     from services._period import assert_period_unlocked
     await assert_period_unlocked(period, action="manual journal posting")
+    outlet_brand = None
+    if payload.get("outlet_id"):
+        o = await db.outlets.find_one({"id": payload["outlet_id"]}, {"brand_id": 1})
+        if not o:
+            raise ValidationError("outlet_id tidak dikenal", field="outlet_id")
+        from core.security import enforce_outlet_scope
+        enforce_outlet_scope(user, payload["outlet_id"])
+        outlet_brand = o.get("brand_id")
+    # Bukti & referensi dokumen (foto struk/invoice) — cegah bukti yang sama dibukukan dua kali
+    ref = {k: v for k, v in (payload.get("reference") or {}).items()
+           if k in ("vendor", "receipt_no", "total", "date", "image_hash", "npwp", "source") and v not in (None, "")}
+    if ref.get("image_hash") and not payload.get("allow_duplicate_evidence"):
+        dup = await db.journal_entries.find_one({"reference.image_hash": ref["image_hash"], "deleted_at": None,
+                                                 "reversed": {"$ne": True}}, {"doc_no": 1})
+        if dup:
+            raise ConflictError(f"Bukti (foto) yang sama sudah dibukukan di {dup.get('doc_no')}")
+    attachment_ids = [a for a in (payload.get("attachment_ids") or []) if isinstance(a, str)][:20]
+    if attachment_ids:
+        from services import upload_service
+        for a in attachment_ids:
+            await upload_service.get_attachment(a, user=user)      # ada & boleh diakses pembuat jurnal
     cleaned_lines = []
     for ln in lines:
         dr, cr = float(ln.get("dr", 0) or 0), float(ln.get("cr", 0) or 0)
@@ -122,6 +167,11 @@ async def post_manual_journal(payload: dict, *, user: dict) -> dict:
             "coa_id": ln["coa_id"], "coa_code": coa.get("code"), "coa_name": coa.get("name"),
             "dr": round(float(ln.get("dr", 0)), 2), "cr": round(float(ln.get("cr", 0)), 2),
             "memo": ln.get("memo", ""),
+            # dimensi tetap terbawa (sebelumnya hilang → jurnal manual tidak muncul di Laba Rugi per toko/brand)
+            "dim_outlet": ln.get("dim_outlet") or payload.get("outlet_id") or None,
+            "dim_brand": ln.get("dim_brand") or outlet_brand or None,
+            "dim_vendor": ln.get("dim_vendor") or payload.get("vendor_id") or None,
+            "dim_employee": ln.get("dim_employee") or None,
         })
     from utils.number_series import next_doc_no
     je_no = await next_doc_no("JE")
@@ -133,9 +183,21 @@ async def post_manual_journal(payload: dict, *, user: dict) -> dict:
         "status": "posted", "posted_at": datetime.now(timezone.utc).isoformat(),
         "posted_by": user["id"], "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": user["id"], "updated_at": datetime.now(timezone.utc).isoformat(),
-        "deleted_at": None,
+        "deleted_at": None, "reference": ref or None, "attachment_ids": attachment_ids,
     }
     await db.journal_entries.insert_one(je)
+    if attachment_ids:
+        await db.attachments.update_many({"id": {"$in": attachment_ids}, "deleted_at": None},
+                                         {"$set": {"source_type": "journal_entry", "source_id": je["id"]}})
+    learn = payload.get("learn") or {}
+    if learn.get("pattern") and learn.get("coa_id"):
+        # Belajar: vendor/kata kunci → akun beban yang akhirnya dipakai (setelah dicek/diubah pengguna)
+        pat = re.escape(str(learn["pattern"]).lower().strip())[:120]
+        await db.categorization_rules.update_one(
+            {"pattern": pat}, {"$set": {"gl_account_id": learn["coa_id"], "active": True, "source": "learned",
+                                        "updated_at": datetime.now(timezone.utc).isoformat()},
+                               "$setOnInsert": {"id": str(uuid.uuid4()), "hit_count": 0,
+                                                "created_at": datetime.now(timezone.utc).isoformat()}}, upsert=True)
     return serialize(je)
 
 

@@ -11,6 +11,8 @@ from services._budget._common import _enrich_lines, _check_editable, _now
 
 
 async def create_budget(payload: dict, *, user_id: str) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "period")
     db = get_db()
     lines = await _enrich_lines(payload.get("lines", []))
     scope = payload.get("scope", "outlet")
@@ -49,7 +51,11 @@ async def list_budgets(
         q["period"] = period
     if outlet_id:
         q["outlet_id"] = outlet_id
-    if brand_id:
+    if brand_id and not outlet_id:
+        # Konteks brand: budget brand itu + budget per toko milik brand itu
+        from core.scope import brand_outlet_ids
+        q["$or"] = [{"brand_id": brand_id}, {"outlet_id": {"$in": await brand_outlet_ids(brand_id)}}]
+    elif brand_id:
         q["brand_id"] = brand_id
     if scope:
         q["scope"] = scope

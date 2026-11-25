@@ -4,7 +4,7 @@ from typing import Optional
 from core.db import get_db
 from core.exceptions import ValidationError
 from services import gl_mapping
-from services._journal._common import _post_journal, resolve_payment_target
+from services._journal._common import _post_journal, resolve_payment_target, resolve_receipt_target
 
 
 async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
@@ -38,7 +38,7 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
         pm = pm_lookup.get(pm_id)
         if not pm:
             continue
-        target = await resolve_payment_target(pm, outlet_id, ba_lookup.get(pm.get("bank_account_id")))
+        target = await resolve_receipt_target(pm, outlet_id, ba_lookup.get(pm.get("bank_account_id")))
         lines.append({
             "coa_id": target, "dr": amount, "cr": 0,
             "memo": f"Sales {sales['sales_date']} via {pm['name']}",
@@ -72,11 +72,17 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
         coa_id = await gl_mapping.resolve("service_charge_liability")
         lines.append({"coa_id": coa_id, "dr": 0, "cr": svc, "memo": "Service charge"})
 
-    # Credit: output VAT
+    # Credit: sales tax. POS-02: restaurant F&B is subject to PB1/PBJT (regional tax) → its own liability
+    # account, kept OUT of PPN Keluaran so the PPN settlement / e-Faktur only see real PPN.
     tax = float(sales.get("tax_amount", 0) or 0)
     if tax:
-        coa_id = await gl_mapping.resolve("output_vat")
-        lines.append({"coa_id": coa_id, "dr": 0, "cr": tax, "memo": "PPN Keluaran"})
+        if sales.get("tax_type") == "ppn":
+            coa_id = await gl_mapping.resolve("output_vat")
+            memo = "PPN Keluaran"
+        else:
+            coa_id = await gl_mapping.resolve("pb1_payable")
+            memo = "PB1/PBJT (pajak restoran)"
+        lines.append({"coa_id": coa_id, "dr": 0, "cr": tax, "memo": memo})
 
     return await _post_journal(
         entry_date=sales["sales_date"],

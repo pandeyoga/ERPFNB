@@ -8,7 +8,16 @@ import {
   Users as UsersIcon,
   Settings,
   Crown,
+  FileSpreadsheet,
+  Bot,
 } from "lucide-react";
+
+/** Report Center (/reports) — sama dengan _REPORT_READ_PERMS di backend routers/reports.py. */
+export const REPORT_CENTER_PERMS = [
+  "finance.report.profit_loss",
+  "executive.dashboard.read",
+  "procurement.vendor.scorecard",
+];
 
 export const PORTALS = [
   {
@@ -52,6 +61,23 @@ export const PORTALS = [
     path: "/finance",
     icon: Banknote,
     perms: ["finance.ap.read", "finance.sales.validate", "finance.journal_entry.read"],
+  },
+  {
+    // Katalog laporan Excel lintas modul. Sebelumnya tidak ada di navigasi sama sekali
+    // (hanya bisa dibuka lewat URL) dan diblokir untuk semua role selain Super Admin.
+    id: "reports",
+    name: "Report Center",
+    path: "/reports",
+    icon: FileSpreadsheet,
+    perms: REPORT_CENTER_PERMS,
+  },
+  {
+    // Asisten AI: percakapan layar penuh, persetujuan usulan aksi, pemakaian & pengaturan (panel juga di TopNav).
+    id: "ai",
+    name: "Asisten AI",
+    path: "/ai",
+    icon: Bot,
+    perms: ["ai.agent.use"],
   },
   {
     id: "hr",

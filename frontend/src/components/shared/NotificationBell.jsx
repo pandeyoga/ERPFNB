@@ -32,7 +32,7 @@ export default function NotificationBell() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="relative h-10 w-10 rounded-full glass-input flex items-center justify-center hover:bg-foreground/5"
+        className="relative h-9 w-9 rounded-full glass-input flex items-center justify-center hover:bg-foreground/5"
         aria-label="Notifications"
         data-testid="open-notifications"
       >
@@ -40,7 +40,7 @@ export default function NotificationBell() {
         {unread > 0 && (
           <motion.span
             initial={{ scale: 0 }} animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-md"
+            className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-bold flex items-center justify-center shadow-md"
           >
             {unread > 9 ? "9+" : unread}
           </motion.span>

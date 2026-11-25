@@ -15,7 +15,7 @@ export const inlineHelpRegistry = {
   },
   "finance-period-validation": {
     title: "Fase Validasi",
-    content: "Pastikan semua **daily sales** dari outlet sudah divalidasi sebelum melanjutkan ke fase berikutnya.\n\n• Status harus **Approved**\n• Tidak ada laporan yang **Rejected** atau **Pending**",
+    content: "Pastikan semua **daily sales** dari outlet sudah divalidasi sebelum melanjutkan ke fase berikutnya.\n\n• Status harus **Disetujui**\n• Tidak ada laporan yang **Ditolak** atau **Menunggu**",
   },
   "finance-period-anomaly": {
     title: "Cek Anomali",
@@ -35,15 +35,15 @@ export const inlineHelpRegistry = {
   },
   "period-status": {
     title: "Status Periode Akuntansi",
-    content: "• **Open** — bisa posting transaksi baru\n• **Locked** — tidak bisa posting; perlu unlock oleh Finance Manager\n• **Closed** — finalized; audit trail permanent\n\nLock periode setelah semua transaksi sebulan sudah divalidasi.",
+    content: "• **Terbuka** — bisa posting transaksi baru\n• **Dikunci** — tidak bisa posting; perlu unlock oleh Finance Manager\n• **Ditutup** — finalized; audit trail permanent\n\nLock periode setelah semua transaksi sebulan sudah divalidasi.",
   },
   "payment-status": {
     title: "Status Payment Request",
-    content: "• **Draft** — belum disubmit\n• **Pending** — menunggu approval\n• **Approved** — siap bayar\n• **Paid** — sudah dibayar, JE ter-post\n• **Rejected** — ditolak, perlu revisi",
+    content: "• **Draft** — belum disubmit\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap bayar\n• **Dibayar** — sudah dibayar, JE ter-post\n• **Ditolak** — ditolak, perlu revisi",
   },
   "payment-request-workflow": {
     title: "Workflow Payment Request",
-    content: "**Alur lengkap PR dari awal sampai paid:**\n\n1. **Draft** → Buat PR, isi detail items\n2. **Submit** → Kirim untuk approval\n3. **Approve/Reject** → Manager/GM review\n4. **Payment** → Finance eksekusi pembayaran\n5. **Paid** → Auto-post JE (Dr Expense, Cr Bank)",
+    content: "**Alur lengkap PR dari awal sampai paid:**\n\n1. **Draft** → Buat PR, isi detail items\n2. **Submit** → Kirim untuk approval\n3. **Approve/Reject** → Manager/GM review\n4. **Payment** → Finance eksekusi pembayaran\n5. **Dibayar** → Auto-post JE (Dr Expense, Cr Bank)",
   },
   "payment-request-period": {
     title: "Period Week",
@@ -85,15 +85,15 @@ export const inlineHelpRegistry = {
   },
   "pr-status-workflow": {
     title: "Status Workflow PR",
-    content: "**Alur lengkap Purchase Request:**\n\n1. **Draft** → PR dibuat, belum submit\n2. **Submitted** → Menunggu approval manager\n3. **Approved** → Siap dibuatkan PO\n4. **Rejected** → Ditolak, perlu revisi\n5. **Converted** → Sudah dibuatkan PO",
+    content: "**Alur lengkap Purchase Request:**\n\n1. **Draft** → PR dibuat, belum submit\n2. **Diajukan** → Menunggu approval manager\n3. **Disetujui** → Siap dibuatkan PO\n4. **Ditolak** → Ditolak, perlu revisi\n5. **Dikonversi** → Sudah dibuatkan PO",
   },
   "po-status": {
     title: "Status Purchase Order",
-    content: "• **Draft** — belum dikirim ke vendor\n• **Sent** — sudah dikirim\n• **Partial** — GR sebagian\n• **Received** — GR semua item\n• **Cancelled** — dibatalkan",
+    content: "• **Draft** — belum dikirim ke vendor\n• **Terkirim** — sudah dikirim\n• **Sebagian** — GR sebagian\n• **Diterima** — GR semua item\n• **Dibatalkan** — dibatalkan",
   },
   "po-status-workflow": {
     title: "Workflow PO ke GR",
-    content: "**Alur dari PO sampai GR:**\n\n1. **Draft** → Buat PO dari PR/manual\n2. **Sent** → Kirim ke vendor (email/print)\n3. **Partial** → Terima barang sebagian (GR partial)\n4. **Received** → Terima semua barang (GR complete)\n\nSetiap GR otomatis:\n• Update stok di inventory\n• Posting jurnal (Dr Expense/Inventory, Cr AP)",
+    content: "**Alur dari PO sampai GR:**\n\n1. **Draft** → Buat PO dari PR/manual\n2. **Terkirim** → Kirim ke vendor (email/print)\n3. **Sebagian** → Terima barang sebagian (GR partial)\n4. **Diterima** → Terima semua barang (GR complete)\n\nSetiap GR otomatis:\n• Update stok di inventory\n• Posting jurnal (Dr Expense/Inventory, Cr AP)",
   },
   "gr-je-link": {
     title: "Auto Journal pada GR",
@@ -143,7 +143,7 @@ export const inlineHelpRegistry = {
   },
   "transfer-status": {
     title: "Status Transfer Stok",
-    content: "• **Draft** — belum dikirim\n• **In Transit** — sudah dikirim, belum diterima\n• **Received** — diterima outlet tujuan, stok ter-update\n• **Cancelled** — dibatalkan\n\nStok berkurang di outlet asal saat status = **In Transit**.",
+    content: "• **Draft** — belum dikirim\n• **Dalam Perjalanan** — sudah dikirim, belum diterima\n• **Diterima** — diterima outlet tujuan, stok ter-update\n• **Dibatalkan** — dibatalkan\n\nStok berkurang di outlet asal saat status = **Dalam Perjalanan**.",
   },
 
   // ===================== OUTLET =====================
@@ -157,7 +157,7 @@ export const inlineHelpRegistry = {
   },
   "outlet-eod-sales": {
     title: "Tutup Sales",
-    content: "Pastikan semua transaksi penjualan hari ini sudah diinput:\n\n• Daily sales status **Submitted**\n• Semua channel tercatat (Dine-In, Takeaway, Delivery)\n• Total match dengan struk mesin EDC",
+    content: "Pastikan semua transaksi penjualan hari ini sudah diinput:\n\n• Daily sales status **Diajukan**\n• Semua channel tercatat (Dine-In, Takeaway, Delivery)\n• Total match dengan struk mesin EDC",
   },
   "outlet-eod-petty-cash": {
     title: "Rekonsiliasi Petty Cash",
@@ -177,7 +177,7 @@ export const inlineHelpRegistry = {
   },
   "reservation-status": {
     title: "Status Reservasi",
-    content: "• **Pending** — belum dikonfirmasi\n• **Confirmed** — sudah konfirmasi\n• **Waitlist** — penuh, masuk daftar tunggu\n• **Rescheduled** — dijadwal ulang\n• **Completed** — selesai, tamu hadir\n• **Cancelled/No-Show** — tidak hadir",
+    content: "• **Menunggu** — belum dikonfirmasi\n• **Dikonfirmasi** — sudah konfirmasi\n• **Waitlist** — penuh, masuk daftar tunggu\n• **Rescheduled** — dijadwal ulang\n• **Selesai** — selesai, tamu hadir\n• **Cancelled/No-Show** — tidak hadir",
   },
   "end-of-day-flow": {
     title: "Alur End-of-Day",
@@ -205,7 +205,7 @@ export const inlineHelpRegistry = {
   },
   "approval-urgency": {
     title: "Prioritas Approval",
-    content: "• 🔴 **Merah** — sudah >2 hari menunggu atau nilai >50 juta\n• 🟡 **Kuning** — >1 hari atau nilai 10–50 juta\n• 🟢 **Hijau** — baru, nilai normal\n\nApproval dari Owner diperlukan untuk PR/PO di atas threshold.",
+    content: "• **Merah** — sudah >2 hari menunggu atau nilai >50 juta\n• **Kuning** — >1 hari atau nilai 10–50 juta\n• **Hijau** — baru, nilai normal\n\nApproval dari Owner diperlukan untuk PR/PO di atas threshold.",
   },
 
   // ===================== ADMIN =====================
@@ -236,7 +236,7 @@ export const inlineHelpRegistry = {
 
   // ===================== HR (EXPANDED) =====================
   "hr-leaves-page": {
-    title: "Leave Management",
+    title: "Leave Requests",
     content: "Kelola **cuti dan absensi** karyawan:\n\n• **Cuti Saya** — pengajuan cuti sendiri\n• **Approval Queue** — approve cuti bawahan\n\nSaldo cuti otomatis dihitung dari tanggal bergabung dan dipotong saat disetujui.",
   },
   "hr-leaves-balance": {
@@ -266,11 +266,11 @@ export const inlineHelpRegistry = {
     content: "Master komponen gaji per karyawan:\n\n• **Gaji Pokok** — basic salary\n• **Tunjangan** — jabatan, makan, transport, kesehatan\n• **BPJS** — enrolled/tidak + employee share\n• **PTKP Status** — untuk kalkulasi PPh21\n\nImport via Excel untuk bulk update atau edit manual satu-satu.",
   },
   "hr-compensation-hub": {
-    title: "Compensation & Benefits Hub",
+    title: "Compensation",
     content: "Workspace terpusat untuk semua jenis kompensasi karyawan:\n\n• **Payroll** — gaji bulanan\n• **Service Charge** — distribusi SC dari penjualan\n• **Incentive** — bonus & insentif program\n• **Voucher** — voucher internal karyawan\n• **FOC** — meal allowance gratis\n• **Advances** — kasbon\n• **LB Fund** — Lebaran & bonus fund\n\nSemua komponen tercatat untuk audit & rekonsiliasi.",
   },
   "hr-job-applications": {
-    title: "Manajemen Lamaran Kerja",
+    title: "Job Applications",
     content: "Kelola lamaran masuk dari portal karir public:\n\n• **Filter** — per status (New, Reviewed, Shortlisted, Rejected, Hired)\n• **Status Update** — ubah status kandidat\n• **Catatan Internal** — notes untuk tim HR\n• **Cover Letter** — lihat motivasi pelamar\n\nData terintegrasi dari form /careers di website public.",
   },
   "hr-job-application-status": {
@@ -288,8 +288,12 @@ export const inlineHelpRegistry = {
 
   // ===================== EXECUTIVE =====================
   "exec-kpi-overview": {
-    title: "Executive KPI Overview",
-    content: "KPI realtime untuk seluruh grup FnB Group:\n\n• **Sales Today** — total dari semua outlet hari ini\n• **MTD Revenue** — kumulatif bulan berjalan\n• **Gross Profit %** — margin kotor setelah COGS\n• **Inventory Value** — nilai stok terkini\n\nKlik angka untuk drill-down ke sumber data.",
+    title: "KPI Sales Analytics",
+    content: "KPI realtime untuk seluruh grup FnB Group (ikut filter brand/outlet):\n\n• **Sales Hari Ini / WTD / MTD** — daily sales tervalidasi\n• **Inventory Value** — nilai stok terkini\n• **AP Exposure** — hutang dagang outstanding\n• **Pending Validation** & **Opname Aktif** — pekerjaan yang belum selesai\n\nKlik kartu untuk drill-down ke sumber data.",
+  },
+  "exec-overview": {
+    title: "Executive Overview",
+    content: "Ringkasan satu layar untuk memulai hari:\n\n• **Revenue Hari Ini** dan **AP Exposure**\n• **Anomali Aktif** dan **Pending Approval** — klik untuk membuka daftar lengkap\n\nAnalisis lengkap (WTD/MTD, trend, top outlet) ada di **Sales Analytics**.",
   },
   "exec-live-mode": {
     title: "Live Mode",
@@ -306,12 +310,12 @@ export const inlineHelpRegistry = {
     content: "4 angka paling penting untuk owner:\n\n• **Cash Today** — total kas group saat ini\n• **MTD Revenue** — pendapatan bulan ini\n• **AP 7 Days** — hutang jatuh tempo 7 hari ke depan\n• **Anomalies** — alert AI yang perlu perhatian\n\nKlik kartu untuk masuk ke detail.",
   },
   "owner-daily-briefing": {
-    title: "Daily Briefing AI",
+    title: "AI Daily Briefing",
     content: "Ringkasan bisnis harian yang di-generate AI setiap pagi pukul 07.00 WIB.\n\nMencakup:\n• Sales kemarin vs target\n• Outlet terbaik & terburuk\n• Anomali yang perlu ditindaklanjuti\n• Pending approvals hari ini\n\nBisa juga dikirim ke Telegram otomatis.",
   },
   "owner-quick-approvals": {
     title: "Quick Approvals",
-    content: "Approve atau reject langsung dari cockpit:\n\n• 🔴 **Prioritas tinggi** — >2 hari atau >Rp50 juta\n• 🟡 **Sedang** — >1 hari atau Rp10–50 juta\n• 🟢 **Normal** — baru masuk\n\nKlik **Approve** / **Reject** tanpa perlu masuk ke halaman detail.",
+    content: "Approve atau reject langsung dari cockpit:\n\n• **Prioritas tinggi** — >2 hari atau >Rp50 juta\n• **Sedang** — >1 hari atau Rp10–50 juta\n• **Normal** — baru masuk\n\nKlik **Approve** / **Reject** tanpa perlu masuk ke halaman detail.",
   },
 
   // ===================== FINANCE REPORTS HUB =====================

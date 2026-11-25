@@ -95,7 +95,9 @@ async def create_invoice(payload: dict, *, user_id: str) -> dict:
     )
     await db.ar_invoices.insert_one(doc)
     if payload.get("auto_post"):
-        await _post_ar_je(doc, user_id=user_id)
+        # FIN-05: posting = issuing. Mark the invoice sent so it can no longer be edited behind
+        # the GL (edits after auto_post never reached the ledger: JE 112k vs invoice 1.12M).
+        return await mark_sent(doc["id"], user_id=user_id)
     return serialize(doc)
 
 
@@ -147,7 +149,8 @@ async def mark_sent(invoice_id: str, *, user_id: str) -> dict:
     db = get_db()
     doc = await db.ar_invoices.find_one({"id": invoice_id, "deleted_at": None})
     if not doc:
-        raise ValueError("Invoice not found")
+        from core.exceptions import NotFoundError
+        raise NotFoundError("Invoice")
     if doc.get("status") != "draft":
         raise ValueError(f"Hanya invoice draft yang bisa dikirim (status: {doc.get('status')})")
     if not doc.get("je_id"):
@@ -170,6 +173,8 @@ async def update_invoice(invoice_id: str, payload: dict, *, user_id: str) -> Opt
         return None
     if invoice.get("status") not in ("draft",):
         raise ValueError("Hanya invoice berstatus draft yang bisa diedit")
+    if invoice.get("je_id"):
+        raise ValueError("Invoice sudah diposting ke GL — batalkan/credit note, jangan diedit")
 
     allowed = ["customer_name", "customer_npwp", "customer_address", "channel",
                "invoice_date", "due_date", "lines", "notes", "outlet_id"]

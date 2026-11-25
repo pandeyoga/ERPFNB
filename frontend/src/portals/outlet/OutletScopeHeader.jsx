@@ -18,6 +18,42 @@ import {
 } from "@/components/ui/select";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
+/**
+ * Pemilih toko ringkas untuk area aksi PageHeader (DESIGN_SYSTEM §10.3/§10.7). Hanya muncul bila konteks TopNav berisi
+ * lebih dari satu toko; konteks satu toko sudah terlihat di TopNav, jadi tidak diulang di halaman.
+ */
+export function OutletScopeCompact() {
+  const { outletId, setOutletId, scopedOutlets, allowAllOption, loaded, locked } = useOutletScopeCtx();
+  if (!loaded || locked) return null;
+  if (scopedOutlets.length === 0) {
+    return (
+      <span className="text-xs font-medium text-amber-800 dark:text-amber-400" data-testid="outlet-scope-header">
+        Tidak ada toko dalam akses Anda
+      </span>
+    );
+  }
+  return (
+    <div data-testid="outlet-scope-header">
+      <Select value={outletId || "__all__"} onValueChange={(v) => setOutletId(v === "__all__" ? "" : v)}>
+        <SelectTrigger className="glass-input w-52 justify-start gap-2 [&>svg:last-child]:ml-auto" aria-label="Pilih toko" data-testid="outlet-scope-picker">
+          {outletId ? <Store className="h-4 w-4 shrink-0 text-muted-foreground" /> : <Globe2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
+          <SelectValue placeholder="Pilih toko" />
+        </SelectTrigger>
+        <SelectContent>
+          {allowAllOption && (
+            <SelectItem value="__all__" data-testid="outlet-option-all">Semua toko ({scopedOutlets.length})</SelectItem>
+          )}
+          {scopedOutlets.map((o) => (
+            <SelectItem key={o.id} value={o.id} data-testid={`outlet-option-${o.id}`}>
+              {o.name}{o.brand_name && o.brand_name !== o.name ? ` · ${o.brand_name}` : ""}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export default function OutletScopeHeader() {
   const {
     outletId,
@@ -27,11 +63,13 @@ export default function OutletScopeHeader() {
     allowAllOption,
     currentOutlet,
     loaded,
+    locked,
   } = useOutletScopeCtx();
 
+  if (locked) return null; // konteks satu toko sudah tampil di TopNav
   if (!loaded) {
     return (
-      <div className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4">
+      <div className="glass-card flex items-center gap-3 p-3 mb-3">
         <div className="skeleton h-4 w-32 rounded" />
       </div>
     );
@@ -42,14 +80,14 @@ export default function OutletScopeHeader() {
     const o = scopedOutlets[0];
     return (
       <div
-        className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-4"
+        className="glass-card flex items-center gap-2.5 px-4 py-2.5 mb-3"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
           <Store className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             Outlet Aktif
           </div>
           <div className="text-sm font-semibold truncate">
@@ -61,7 +99,7 @@ export default function OutletScopeHeader() {
             )}
           </div>
         </div>
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
           Outlet Anda
         </span>
       </div>
@@ -71,10 +109,10 @@ export default function OutletScopeHeader() {
   if (scopedOutlets.length === 0) {
     return (
       <div
-        className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4 border-amber-500/30"
+        className="glass-card flex items-center gap-3 p-3 mb-3 border-amber-500/30"
         data-testid="outlet-scope-header"
       >
-        <div className="h-8 w-8 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] bg-amber-500/15 text-amber-800 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -91,11 +129,11 @@ export default function OutletScopeHeader() {
 
   return (
     <div
-      className="glass-card flex items-center gap-3 px-4 py-2.5 mb-4 flex-wrap"
+      className="glass-card flex items-center gap-3 p-3 mb-3 flex-wrap"
       data-testid="outlet-scope-header"
     >
       <div className="flex items-center gap-2.5 flex-shrink-0">
-        <div className="h-8 w-8 rounded-lg grad-aurora-soft flex items-center justify-center">
+        <div className="h-8 w-8 rounded-[calc(var(--radius)-2px)] grad-aurora-soft flex items-center justify-center">
           {currentOutlet ? (
             <Store className="h-4 w-4" />
           ) : (
@@ -103,13 +141,13 @@ export default function OutletScopeHeader() {
           )}
         </div>
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
             Outlet Aktif
           </div>
           <div className="text-sm font-semibold truncate">
             {currentOutlet
               ? currentOutlet.name
-              : `Semua Outlet (${scopedOutlets.length})`}
+              : `Semua toko (${scopedOutlets.length})`}
             {currentOutlet?.brand_name && (
               <span className="text-muted-foreground font-normal ml-1.5">
                 · {currentOutlet.brand_name}
@@ -127,6 +165,7 @@ export default function OutletScopeHeader() {
       >
         <SelectTrigger
           className="glass-input min-w-[220px] max-w-[280px]"
+          aria-label="Pilih outlet aktif"
           data-testid="outlet-scope-picker"
         >
           <SelectValue placeholder="Pilih Outlet" />
@@ -136,7 +175,7 @@ export default function OutletScopeHeader() {
             <SelectItem value="__all__" data-testid="outlet-option-all">
               <span className="flex items-center gap-2">
                 <Globe2 className="h-3.5 w-3.5 text-muted-foreground" />
-                Semua Outlet ({scopedOutlets.length})
+                Semua toko ({scopedOutlets.length})
               </span>
             </SelectItem>
           )}
@@ -148,7 +187,7 @@ export default function OutletScopeHeader() {
                   {o.name}
                 </span>
                 {o.brand_name && (
-                  <span className="text-[10px] text-muted-foreground pl-5">
+                  <span className="text-xs text-muted-foreground pl-5">
                     {o.brand_name}
                   </span>
                 )}
@@ -159,13 +198,13 @@ export default function OutletScopeHeader() {
       </Select>
 
       {isFullAccess && !currentOutlet && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 font-medium border border-emerald-500/20 flex-shrink-0">
           <Globe2 className="h-3 w-3" />
           Agregat
         </span>
       )}
       {!isFullAccess && !currentOutlet && scopedOutlets.length > 1 && (
-        <span className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium border border-amber-500/20 flex-shrink-0">
           <Store className="h-3 w-3" />
           Outlet Anda
         </span>

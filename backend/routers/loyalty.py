@@ -10,6 +10,7 @@ import os
 from core.security import require_perm
 from core.exceptions import ok_envelope
 
+from core.config import settings
 from core.db import get_db
 from models.customer import (
     CustomerCreate,
@@ -38,7 +39,7 @@ LOYALTY_COOKIE = "loyalty_at"  # FE-06: customer session in httpOnly cookie
 
 
 def _set_customer_cookie(response: Response, token: str) -> None:
-    response.set_cookie(LOYALTY_COOKIE, token, httponly=True, secure=True, samesite="lax",
+    response.set_cookie(LOYALTY_COOKIE, token, httponly=True, secure=settings.cookie_secure, samesite="lax",
                         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60, path="/api/loyalty")
 
 # JWT settings untuk customer loyalty (terpisah dari ERP JWT)
@@ -168,7 +169,7 @@ async def login_customer(login_data: LoginRequest, response: Response):
 
 @router.post("/logout")
 async def logout_customer(response: Response):
-    response.delete_cookie(LOYALTY_COOKIE, path="/api/loyalty", secure=True, httponly=True, samesite="lax")
+    response.delete_cookie(LOYALTY_COOKIE, path="/api/loyalty", secure=settings.cookie_secure, httponly=True, samesite="lax")
     return {"message": "Logged out"}
 
 
@@ -306,6 +307,7 @@ async def get_customer_stats(
         "loyalty_tier": customer.loyalty_tier,
         "lifetime_points": customer.lifetime_points,
     }
+@router.put("/me", response_model=CustomerResponse)
 async def update_customer_profile(
     update_data: CustomerUpdate,
     customer = Depends(get_current_customer)
@@ -397,7 +399,7 @@ async def adjust_customer_points(
             detail="Customer not found"
         )
     
-    transaction_type = "earn" if points > 0 else "adjustment"
+    transaction_type = "adjustment"  # POS-22/CTL-13: manual adjustments never count as lifetime earnings (no tier jump)
     
     try:
         transaction = await create_transaction(

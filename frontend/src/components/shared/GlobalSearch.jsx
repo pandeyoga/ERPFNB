@@ -27,6 +27,7 @@ import { logger } from "@/lib/logger";
 import { useAuth } from "@/lib/auth";
 import { visiblePortalsFor } from "@/lib/portals";
 import { getPortalSections } from "@/lib/navigationSchema";
+import { itemVisible } from "@/lib/unifiedNav";
 
 const SECTIONS = [
   { key: "items",     icon: Package,   label: "Items",     name: "name",        sub: "code" },
@@ -59,6 +60,8 @@ function buildNavIndex(user) {
     for (const section of sections) {
       if (section.reqPerm && !hasPerm(userPerms, section.reqPerm)) continue;
       for (const item of section.items) {
+        // sama dengan sidebar: item yang guard route-nya menolak user tidak ditawarkan (lib/unifiedNav.itemVisible)
+        if (!itemVisible(userPerms, item)) continue;
         result.push({
           id: `${portal.id}::${section.id}::${item.id}`,
           name: item.name,
@@ -162,7 +165,7 @@ export default function GlobalSearch({ open, onClose }) {
     else if (section === "outlets") navigate(`/admin/master/outlets?id=${item.id}`);
     else if (section === "brands") navigate(`/admin/master/brands?id=${item.id}`);
     else if (section === "coa") navigate(`/admin/master/chart-of-accounts?id=${item.id}`);
-    else if (section === "users") navigate(`/admin/users?id=${item.id}`);
+    else if (section === "users") navigate(`/admin/user-management?tab=users&id=${item.id}`);
   }, [navigate, onClose]);
 
   // Flat keyboard navigation list (nav items first)
@@ -255,7 +258,7 @@ export default function GlobalSearch({ open, onClose }) {
                       {" "}<span className="font-mono bg-foreground/5 px-1.5 py-0.5 rounded">low stock</span>,
                       {" "}atau nama item / vendor
                     </div>
-                    <div className="text-[11px] mt-3 flex items-center justify-center gap-2 flex-wrap">
+                    <div className="text-xs mt-3 flex items-center justify-center gap-2 flex-wrap">
                       <span className="inline-flex items-center gap-1">
                         <kbd className="px-1.5 py-0.5 rounded bg-foreground/5">↑↓</kbd> navigasi
                       </span>

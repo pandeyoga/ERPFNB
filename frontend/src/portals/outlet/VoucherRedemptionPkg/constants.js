@@ -23,19 +23,19 @@ import { toast } from "sonner";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TIER_CONFIG = {
-  bronze:   { label: "Bronze",   className: "bg-amber-100 text-amber-800 border-amber-200" },
-  silver:   { label: "Silver",   className: "bg-gray-100 text-gray-700 border-gray-200" },
-  gold:     { label: "Gold",     className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  platinum: { label: "Platinum", className: "bg-purple-100 text-purple-800 border-purple-200" },
+  bronze:   { label: "Bronze",   className: "bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-200 dark:border-amber-500/30" },
+  silver:   { label: "Silver",   className: "bg-muted/40 text-foreground border-border" },
+  gold:     { label: "Gold",     className: "bg-yellow-100 dark:bg-yellow-500/15 text-yellow-800 dark:text-yellow-400 border-yellow-300 dark:border-yellow-500/30" },
+  platinum: { label: "Platinum", className: "bg-purple-100 dark:bg-purple-500/15 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-500/30" },
 };
 
 const STATUS_CONFIG = {
-  valid:            { label: "Voucher Valid",       icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
-  expired:          { label: "Voucher Kadaluarsa",  icon: XCircle,      color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  used:             { label: "Voucher Sudah Dipakai",icon: XCircle,     color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  already_claimed:  { label: "Sudah Diklaim",       icon: XCircle,      color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  invalid:          { label: "Kode Tidak Valid",    icon: AlertTriangle, color: "text-amber-600",  bg: "bg-amber-50 border-amber-200" },
-  customer_mismatch:{ label: "Bukan Milik Customer",icon: AlertTriangle, color: "text-amber-600",  bg: "bg-amber-50 border-amber-200" },
+  valid:            { label: "Voucher Valid",       icon: CheckCircle2, color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 border-emerald-200" },
+  expired:          { label: "Voucher Kadaluarsa",  icon: XCircle,      color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  used:             { label: "Voucher Sudah Dipakai",icon: XCircle,     color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  already_claimed:  { label: "Sudah Diklaim",       icon: XCircle,      color: "text-red-700 dark:text-red-400",     bg: "bg-red-50 border-red-200" },
+  invalid:          { label: "Kode Tidak Valid",    icon: AlertTriangle, color: "text-amber-800 dark:text-amber-400",  bg: "bg-amber-50 border-amber-200" },
+  customer_mismatch:{ label: "Bukan Milik Customer",icon: AlertTriangle, color: "text-amber-800 dark:text-amber-400",  bg: "bg-amber-50 border-amber-200" },
 };
 
 const STEP = { LOOKUP: 0, VERIFY: 1, CONFIRM: 2, SUCCESS: 3 };

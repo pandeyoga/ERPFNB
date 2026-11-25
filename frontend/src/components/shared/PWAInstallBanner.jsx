@@ -109,14 +109,14 @@ export default function PWAInstallBanner() {
                      shadow-lg p-3 flex items-center gap-3"
           data-testid="pwa-update-banner"
         >
-          <RefreshCw className="h-5 w-5 text-amber-600 shrink-0" />
+          <RefreshCw className="h-5 w-5 text-amber-800 dark:text-amber-400 shrink-0" />
           <p className="flex-1 text-sm font-medium text-amber-800 dark:text-amber-200">
             Update tersedia
           </p>
-          <Button size="sm" variant="outline" className="h-7 text-xs border-amber-500/30" onClick={handleUpdate}>
+          <Button size="sm" variant="outline" className="border-amber-500/30" onClick={handleUpdate}>
             Refresh
           </Button>
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowUpdate(false)}>
+          <Button size="icon-sm" variant="ghost" onClick={() => setShowUpdate(false)}>
             <X className="h-3.5 w-3.5" />
           </Button>
         </div>

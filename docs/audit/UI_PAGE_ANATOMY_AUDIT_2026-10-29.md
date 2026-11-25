@@ -1,0 +1,584 @@
+# Audit anatomi halaman — judul, kartu, letak aksi, simpan & bahasa (29 Okt 2026)
+
+**Concern user (dirangkum)**
+1. Judul blok kadang di luar kartu, kadang di dalam kartu, sehingga hierarki halaman tidak terbaca.
+   Contoh Budget: KPI tanpa judul, "Ringkasan P&L" di luar kartu, "Detail per COA" di dalam kartu, dan
+   satu slot grid kosong.
+2. Tombol simpan jauh dari yang diedit. Contoh Approval Matrix: user mengedit di bawah, simpan ada di atas,
+   sehingga mudah lupa menyimpan.
+3. Aksi kadang di samping judul halaman, kadang di bawahnya. Kalau levelnya sama, mengapa letaknya tidak konsisten?
+4. Kapan konten pantas dikotakkan (kartu) dan kapan tidak; terlalu banyak kotak juga buruk.
+5. Bahasa: tetap campur. Istilah teknis memakai bahasa Inggris (aturannya di §1.5).
+
+**Metode**
+- `scripts/ui_metrics/anatomy.js` membuka 170 URL ERP dan 560 state (halaman + tab), viewport 1280×800, super admin.
+  Setelah ID dan query digabung, hasilnya **121 halaman unik**.
+- Dari setiap state, crawler membaca:
+  - kerangka halaman (urutan header, tab, judul, kartu & jenis isinya);
+  - letak setiap judul (di luar kartu / di atas kartu / di tengah kartu);
+  - letak setiap tombol aksi (zona);
+  - posisi tombol simpan relatif terhadap field form;
+  - grup KPI;
+  - semua teks UI (label, kolom, tab, tombol, status, placeholder).
+- Kategori temuan diverifikasi lewat screenshot. Ringkasan: `python3 scripts/ui_metrics/anatomy_report.py`.
+- Bagian 1 adalah **draf standar** yang diusulkan. Bagian 2 mengukur aplikasi saat ini terhadap draf itu.
+  Lampiran berisi tabel per halaman.
+
+---
+
+## Bagian 1 — Draf standar "anatomi halaman"
+
+Standar disetujui 29 Okt 2026 dan kini menjadi **`docs/DESIGN_SYSTEM.md` §10**. Bagian 2 di bawah mengukur aplikasi (sebelum perbaikan) terhadap standar tersebut
+(§1.x di bawah = §10.x di DESIGN_SYSTEM).
+
+## Bagian 2 — Hasil audit terhadap draf standar
+
+### 2.1 Judul di luar vs di dalam kartu
+
+| Gaya judul (layar awal tiap halaman) | Halaman |
+|---|---|
+| Semua judul di dalam kartu | 65 |
+| Tanpa judul blok (mis. hanya 1 tabel) | 48 |
+| Campur luar + dalam | 6 |
+| Hanya di luar | 2 |
+
+Halaman campuran adalah halaman dashboard.
+
+*Budget (Budget vs Actual)*
+- 5 KPI tanpa judul.
+- "Ringkasan P&L" di luar kartu.
+- "Detail per COA" di dalam kartu.
+- 3 KPI total di bawah tabel tanpa judul.
+- Grid 4 kolom lalu 3 kolom.
+- 1 KPI yatim (kotak merah di screenshot Anda).
+
+*Owner Overview*
+- Judul bagian "Approval Pending" → kartu "Approval Pending (Top 5)": judul ganda.
+- "Cash & Digest" → kartu "Digest Preview".
+
+*Sales Analytics*
+- 2 grup KPI tanpa judul.
+- Bagian "Brand & Cash" / "Trend & AI Insights" / "Monitoring" (judul luar).
+- Tabel dengan judul dalam.
+
+*Antar halaman*
+- Strip KPI Owner berjudul "KPI Utama".
+- Strip KPI Sales Analytics tanpa judul.
+
+**Blok tanpa judul di antara blok berjudul** (16 halaman):
+- Form create/edit: PR Baru, Daily Sales new/edit, Opname detail, PO/PR detail. Kartu field pertama tanpa
+  judul, kartu "Item" dan "Catatan" berjudul.
+- Budget, Approval Matrix, Outlet Budget, Owner Cash, Payments › Cash position, Manual journal, Owner briefing.
+
+### 2.2 Penggunaan kartu
+
+| Temuan | Halaman | Contoh |
+|---|---|---|
+| **Daftar homogen dijadikan kartu per baris** | 12 | **Pusat Persetujuan: 35 kartu** (7 item per layar, masing-masing dengan tombol Setujui hijau) · Integrations (25 key, 1 kartu per key) · CMS: brand/outlet/berita/karier per kartu |
+| **Data seragam dijadikan grid kartu**, padahal semestinya tabel | 3 | Setup & Numbering: 18 kartu number series (kode, format, no. terakhir, padding, reset) yang jelas tabel 5 kolom · Roles (9 kartu) · Job listings |
+| **Kartu konteks "Outlet aktif" di atas judul halaman** | 18 (semua halaman outlet) | Petty Cash, End of Day, Daily Sales, Transfers, … Judul halaman tidak lagi menjadi hal pertama; "Semua Outlet (5)" tampil 2× + badge "Agregat" |
+| **Filter terpisah dari tabelnya** (kartu filter, lalu kartu tabel) | 17 | Payments, PO, PR, GR, RFQ, Journals, Low stock, Operations › Logs |
+| **Filter tingkat halaman dikotakkan** (berbobot sama dengan konten) | 38 (termasuk 18 outlet) | Budget, Reports P&L, Budget monitor, Anomaly, Inventory balance/valuation, Vendor scorecard |
+| **Kartu tipis** (pesan/progress satu baris) | ±20 setelah disaring | banner "Sehat — runway…" (Cash position), kartu "PROGRESS 0/4" (End of Day), status Trial Balance |
+| **Bingkai 3 lapis** | Approval Matrix, End of Day, Period Closing | kartu Tier › kotak Kondisi › kotak Step; kartu langkah › bingkai filter › bingkai tab › bingkai empty state |
+| **Kartu yang ternyata tombol filter** | Pusat Persetujuan | "Semua 35 / Purchase Request 9 / …" tampil persis seperti KPI, padahal bisa diklik (filter). Di halaman lain KPI tidak bisa diklik |
+
+Distribusi jumlah kartu per state:
+- 176 state hanya punya 1 kartu (wajar: halaman tabel);
+- 24 state punya ≥ 15 kartu (Pusat Persetujuan, Sales Analytics, Admin Overview, Setup, Roles, Integrations, CRM).
+
+Jadi masalah "terlalu banyak kotak" terkonsentrasi di daftar yang dikartukan dan di dashboard. Halaman umumnya tidak.
+
+### 2.3 Letak aksi
+
+Zona tombol per jenis aksi (layar awal tiap URL):
+
+| Aksi | Samping judul | Baris intro (bawah tab) | Lepas di luar kartu | Atas kartu | Bawah kartu | Kartu filter |
+|---|---|---|---|---|---|---|
+| Buat/Tambah | 17 | 16 | 10 | 7 | 9 | 3 |
+| Ekspor | 11 | 3 | 3 | — | 15 | 2 |
+| Muat ulang | 23 | 8 | 6 | 7 | — | 7 |
+| Simpan | 8 | — | 2 | 1 | 5 | 2 |
+
+- **Aksi pembuatan dokumen ada di 6 tempat berbeda.** Ini jawaban untuk pertanyaan Anda soal Payments vs
+  Sales Analytics: levelnya sama (aksi layar), letaknya tidak sama.
+- **Hub**: aksi milik tab aktif berada di baris intro (217 state), lepas (97), bawah kartu (87), atas kartu (16),
+  dan kartu filter (14). Tidak ada yang di samping judul.
+- **Penamaan aksi membuat** (jumlah label di seluruh halaman):
+
+| Pola | Jumlah | Contoh |
+|---|---|---|
+| "Tambah …" | 55 | |
+| "… Baru" | 35 | |
+| "Buat …" | 33 | |
+| "New" | 1 | |
+| ganda | — | "Buat Payment Run Baru", "Tambah Customer AR Baru", "Buat Template Baru" |
+
+- Tombol "Buat Payment" membuka halaman berjudul "New Payment".
+
+### 2.4 Simpan
+
+- **Tidak ada peringatan "perubahan belum disimpan" di seluruh aplikasi.**
+  - Di Approval Matrix, mengklik entitas lain di kiri **membuang editan tanpa peringatan**
+    (`ApprovalMatrixBuilder` memuat ulang workflow saat `selectedEntity` berubah).
+  - Menutup tab atau berpindah menu juga membuang editan.
+- **Simpan jauh di atas form panjang** (6 halaman):
+  - Approval Matrix: field sampai ±3.400px, simpan di header.
+  - Daily Sales new/edit: form sampai ±1.000px.
+  - Opname detail, Smart SEO, Budget Allocation: matriks sampai ±820px.
+- **Konvensi form create tidak seragam**:
+  - PR Baru, PO Baru, Daily Sales: simpan/ajukan di **header atas**.
+  - New Payment: simpan hanya di **bawah**, di luar layar awal (y≈970px).
+- **Simpan per baris**: System Settings (6 tombol "Simpan", sebagian hitam, sebagian pudar).
+
+### 2.5 Bahasa (terhadap aturan §1.5)
+
+**Kata umum EN yang sebaiknya ID** (istilah teknis dan nama fitur dibiarkan):
+
+| Di mana | Sekarang → usulan |
+|---|---|
+| Form New Payment | Payee Type → Tipe Payee · Request Date → Tanggal Pengajuan · Amount Bruto (Rp) → Nominal Bruto (Rp) · Invoice No → No. Invoice · Invoice Date → Tanggal Invoice · Description → Deskripsi · Notes (internal) → Catatan (internal) |
+| Kolom tabel | Date → Tanggal · Description → Deskripsi · Amount / Total Amount → Nominal · Name → Nama · Code → Kode · Type → Tipe · Source → Sumber · Count → Jumlah · Phone → Telepon · Day → Hari · Last Update → Terakhir Diperbarui · Payment Date → Tanggal Payment · Last Cost → Cost Terakhir · Retention (days) → Retensi (hari) |
+| Form lain | Entry Date → Tanggal Entry (Manual journal) · Tanggal request → Tanggal Pengajuan · Source → Sumber (PR) |
+| Label KPI | Inventory Value → Nilai Inventory · Total Value → Nilai Total · Days runway → Runway (hari) · Item Count → Jumlah Item · Avg/Day → Rata-rata/Hari · Active Sessions → Sesi Aktif |
+| Tombol | Refresh → Muat ulang · Submit → Ajukan · Preview / Preview Digest → Pratinjau / Pratinjau Digest · Generate / Generate Payroll → Buat / Buat Payroll · Tambah Category → Tambah Kategori |
+| Judul | Recent Runs → Run Terbaru · Quick Export / Opsi Export → Ekspor Cepat / Opsi Ekspor · Goods Receipt Summary → Ringkasan Goods Receipt · Digest Preview → Pratinjau Digest · Insights & Actions → Insight & Aksi · By Status Code / By Method → Per Status Code / Per Method |
+
+**Status**
+
+| Arah | Sekarang → usulan |
+|---|---|
+| Status umum yang masih EN → ID | KPI "Approved (siap bayar)" → "Disetujui (siap bayar)" · "Paid 2026-10" → "Dibayar 2026-10" · "Confirmed (siap eksekusi)" → "Dikonfirmasi (siap eksekusi)" · "Pending Validation" → "Menunggu Validasi" · "KDO/BDO pending" → "KDO/BDO menunggu" · tab CMS "Pending reviews" → "Review Menunggu" |
+| Status akuntansi yang masih ID → EN | Terlambat → **Overdue** · Sebagian → **Partial** · Dihapusbukukan → **Written Off** · Susut Penuh → **Fully Depreciated** · Direvaluasi → **Revalued** · Dilepas → **Disposed** · Memposting → **Posting** |
+| Perlu keputusan | "Jatuh Tempo" (Due) dan "Lunas" (Settled): kata sehari-hari yang sudah sangat dikenal · "Diterima Sebagian" pada PO (procurement, bukan akuntansi) · "Published" vs "Terbit" (CMS) |
+| Status ganda 2 bahasa | Integrations: pill "Not Configured" + teks "Belum dikonfigurasi" sekaligus |
+
+**Satu konsep, banyak kata**
+
+| Konsep | Variasi (jumlah halaman) |
+|---|---|
+| Tanggal | 60 · Date 6 · Tgl 1 |
+| Deskripsi | 4 · Description 6 |
+| Uang | Nominal 4 · Jumlah 10 (dipakai juga untuk hitungan) · Amount 3 |
+| Catatan | 17 · Notes 1 |
+| Tipe | 8 · Jenis 8 · Type 4 |
+| Edit / Ubah | Edit 7 · Ubah 3 |
+| Muat ulang | 37 · Refresh 1 |
+
+---
+
+## Bagian 3 — Usulan urutan perbaikan (setelah standar disetujui)
+
+1. **Primitive dulu** (sekali ubah, berlaku di banyak halaman):
+   - `PageHeader` menerima aksi & subtitle per tab hub.
+   - Komponen `FormActionBar` (sticky + penanda perubahan + peringatan keluar).
+   - `ListToolbar` di dalam kartu tabel.
+   - Selector outlet masuk ke header.
+   - `Alert` untuk pesan satu baris.
+2. **Simpan**: Approval Matrix (termasuk peringatan saat ganti entitas), System Settings (satu bar),
+   PR/PO/Payment/Daily Sales/Opname/Budget Allocation memakai `FormActionBar`.
+3. **Kartu**:
+   - Pusat Persetujuan, Setup & Numbering, Integrations, Roles, dan baris CMS menjadi daftar/tabel dalam satu kartu.
+   - Filter tabel masuk ke kartu tabel.
+   - Filter halaman tanpa kartu.
+4. **Judul & grid**: Budget, Owner Overview, Sales Analytics, form create (kartu pertama diberi judul).
+5. **Bahasa**: kamus di standar §1.5 dan §2.5 setelah keputusan "Perlu keputusan".
+6. Aturan dimasukkan ke `docs/DESIGN_SYSTEM.md` + `CLAUDE.md`. Crawler `anatomy.js` dipakai sebagai penjaga
+   regresi (temuan baru = gagal).
+
+
+---
+
+## Bagian 4 — Hasil perbaikan (29 Okt 2026)
+
+Standar disetujui dan diterapkan (`DESIGN_SYSTEM.md` §10). Diukur ulang dengan crawler yang sama (170 halaman, 550 state);
+angka = jumlah halaman unik yang masih memuat temuan.
+
+| Temuan | Sebelum | Sesudah |
+|---|---|---|
+| Kartu konteks "Outlet aktif" di atas judul (`context-above-h1`) | 18 | **0** |
+| Daftar sejenis dijadikan kartu per baris (`rows-as-cards`) | 12 | **0** |
+| Data seragam jadi grid kartu (`card-grid-uniform`) | 3 | **1** |
+| Simpan form di header halaman (`save-in-header`) | 6 | **0** |
+| Simpan jauh di atas form panjang (`save-far`) | 6 | **0** |
+| Simpan per baris (`save-per-row`) | 1 | **0** |
+| Simpan hanya di bawah lipatan (`save-below-fold`) | 1 | **0** |
+| Aksi header turun ke baris sendiri (`header-actions-wrap`) | 8 | **0** |
+| Kalimat pengantar bertumpuk (`intro-stacking`) | 20 | **1** |
+| Filter terpisah dari tabelnya (`filter-split`) | 17 | **4** |
+| Filter halaman dikotakkan (`page-filter-card`) | 38 | **14** |
+| Grid KPI dengan item yatim (`kpi-orphan`) | 1 | **0** |
+| Dua grid KPI beda jumlah kolom (`kpi-cols-jump`) | 2 | **1** |
+| Grup KPI berjudul & tidak (`kpi-group-mix`) | 2 | **1** |
+| Angka terpotong (`clipped-number`) | 5 | **3** |
+| Judul campur luar/dalam kartu (`heading-mix`) | 2 | **2** |
+| Judul ganda (heuristik) (`double-title`) | 2 | **2** |
+| Blok tanpa judul di antara blok berjudul (`untitled-sibling`) | 16 | **16** |
+| Kartu tipis (pesan/progress) (`note-card`) | 43 | **40** |
+| Bingkai 3 lapis (`frame-depth`) | 1 | **1** |
+| TabsList berbingkai di dalam kartu (`frame-in-frame`) | 9 | **9** |
+| Istilah EN/ID campur (konsep sama) (`term-mix`) | 2 | **2** |
+
+**Yang dikerjakan**
+- **Primitive baru:** `PageHeader` hub (tab mengisi subtitle & aksi header hub), `PageHeaderExtrasProvider` (pemilih outlet di
+  header), `FormActionBar` + `useDirtyState` + `UnsavedChangesGuard` (bar simpan sticky, penanda & peringatan perubahan belum
+  disimpan), `ListToolbar` + `StatusTabs` (filter di dalam kartu tabel, maks. 5 tab + "Status lain").
+- **Aksi layar di kanan judul** di 13 hub (Payments, Compensation, Budget, Users, Setup, Loyalty, Monitoring, Analytics, Tax,
+  Vendor Comparison, Stock Movements, CMS, Business Rules, Pusat Persetujuan).
+- **Simpan:** Approval Matrix (termasuk peringatan saat ganti entitas), System Settings (satu bar), PR/PO/Payment Baru, Daily Sales,
+  Opname, Budget Allocation (ganti periode juga dijaga), Smart SEO.
+- **Kartu:** Pusat Persetujuan, Number Series, Roles, Integrations, CMS (brand/outlet/berita/karier) → baris/tabel dalam satu
+  kartu; filter tabel masuk kartu tabel (±20 daftar); filter halaman tanpa kartu (±20 halaman); progress End of Day di header.
+- **Judul & grid:** Budget vs Actual (ringkasan halaman di atas + satu tabel kategori & P&L), Owner (tanpa judul ganda),
+  Sales Analytics (satu grup KPI); KPI tidak lagi memotong nominal.
+- **Bahasa:** status akuntansi EN (Partial, Overdue, Written Off, …), status persetujuan ID; label umum ID (Tanggal, Deskripsi,
+  Nominal, …); "Buat ‹dokumen›" / "Tambah ‹data›"; kolom Kanban & pill integrasi dalam Bahasa Indonesia; Payments: tab
+  "Diajukan" digabung ke "Menunggu Approval" (backend menerima beberapa status sekaligus, dengan tes regresi).
+
+**Contoh sebelum / sesudah**
+
+![Budget vs Actual](img/anatomy_budget.png)
+![Approval Matrix](img/anatomy_approval.png)
+![Payments](img/anatomy_payments.png)
+![Petty Cash](img/anatomy_petty.png)
+
+**Sisa & catatan**
+- *Judul ganda / judul campur* (Owner, Sales Analytics): sisa temuan adalah bagian dashboard berisi ≥ 2 kartu berjudul
+  (mis. "Cash & Digest" → "Cash Position" + "Digest Preview"), yang sesuai standar; heuristik menghitung kemiripan kata.
+- *TabsList berbingkai di dalam kartu*: sudah tampil tanpa border lewat CSS (§10.3); crawler masih menghitung lebar border.
+- *Filter halaman dikotakkan* (14): sebagian besar kartu form (header PR/GR/RFQ, form reservasi, kalkulator pajak) yang terbaca
+  sebagai filter; sisanya Pivot & Period compare di Reports.
+- *Istilah campur* (AR invoices): "Overdue" + "Jatuh Tempo" sesuai keputusan (konsep berbeda: lewat jatuh tempo vs jatuh tempo).
+- **Putaran 5 Nov 2026** (crawler komposisi, 150 halaman / 507 state, 0 error):
+
+  | Temuan | Sebelum | Sesudah | Perbaikan |
+  |---|---|---|---|
+  | Tab hub terpotong | 20 di 10 halaman | 0 | `TabsList`: tombol ‹ › di samping daftar saat meluap, tab aktif digulir ke area terlihat |
+  | ≥ 3 tombol utama bersaing | 28 di 17 halaman | 1 (Smart SEO, aksi layar) | aksi baris → `outline` + primitive `RowActions` (1 tombol + "⋯"): Advances, Cuti, Adjustment, Transfer, Service charge, Scheduler, CMS |
+  | Tabel butuh gulir horizontal | 20 | 12 | kolom aksi Advances tidak lagi melebar/terpotong |
+  | Kolom sempit (isi terlipat) | 44 | 42 | `DataTable`: uang, tanggal, periode & nomor dokumen tidak pernah dilipat |
+  | Nominal rata kiri | 1 | 0 | Budget Monitor detail |
+  | Grid yatim | 6 | 2 | Rate limits 4 kartu = 4 kolom |
+
+- **Heuristik crawler diperbaiki**, sehingga angka berikut turun bukan karena perubahan UI:
+  - TabsList ber-border transparan di dalam kartu tidak lagi dihitung "bingkai ganda" (34 → 0);
+  - tab yang bisa digulir dengan ‹ › tidak dihitung "terpotong";
+  - tumpukan diukur setelah dipotong wadah gulir;
+  - bar aksi sticky diabaikan.
+- **Putaran riset 5 Nov 2026** (standar baru `DESIGN_SYSTEM.md` §10.8–10.10, sumber di sana):
+
+  | Temuan | Awal | Putaran 1 | Akhir |
+  |---|---|---|---|
+  | Bar dengan > 6 tab | 24 | 36 | 0 |
+  | Elemen bertumpuk | 9 | 37 | 1 |
+  | Toolbar terlipat | 60 | 60 | 5 |
+  | Kolom sempit | 44 | 42 | 28 |
+  | Tinggi kontrol berbeda | 39 | 39 | 30 |
+  | Grid yatim | 6 | 6 | 1 |
+
+  Catatan pembacaan:
+  - "Bar dengan > 6 tab" naik di putaran 1 karena tab yang dulu dihitung "terpotong" dipindah ke kategori ini.
+    Lalu turun ke 0 karena **6 hub dikelompokkan** (`HubTabs`).
+  - "Elemen bertumpuk" turun karena tombol ‹ › dipindah ke samping tab; heuristik juga diperbaiki.
+  - "Toolbar terlipat" turun terutama karena **heuristik diperbaiki** (baris dihitung dari rentang vertikal yang
+    bertumpuk). Pengecekan visual menunjukkan toolbar itu memang satu baris. Sisa 5 = deretan chip pilihan di
+    kartu filter laporan, yang wajar membungkus.
+  - **Jumlah state crawl turun 507 → 369**, karena crawler hanya mengklik tab yang terlihat; sub-tab kelompok
+    yang tidak aktif tidak dikunjungi. Penurunan kolom sempit dan teks terpotong sebagian karena cakupan ini.
+  - **Perubahan nyata di luar angka:**
+    - Ekspor TB/P&L/BS/Cashflow pindah ke header;
+    - pengaturan model Forecasting di balik `MoreFilters`;
+    - 7 halaman detail (Journal, Payment, Payment run, PR, PO, Transfer, Daily Sales) memakai `KeyFacts` di
+      header, tanpa kartu tipis label/nilai;
+    - aksi Payment pindah ke header; aksi sekunder PO di "⋯";
+    - baris Period list jadi Wizard + "⋯".
+- Sisa temuan putaran ini ditangani di "Putaran 6" di bawah.
+
+### Putaran 6 (5 Nov 2026) — cakupan penuh, sisa temuan, cek per peran
+
+**Cakupan crawler dikembalikan.** `layout.js` kini juga mengunjungi sub-tab garis (`HubTabs`) setelah halaman dan
+setelah tiap tab tingkat pertama. Hasilnya **508 state** (awal 507, putaran riset 369), jadi angka di bawah
+sebanding dengan crawl awal.
+
+| Temuan | Cakupan penuh, sebelum | Sesudah | Perbaikan nyata | Heuristik diperbaiki |
+|---|---|---|---|---|
+| Tinggi kontrol berbeda sebaris | 35 | 0 | "Status lain" & tombol Validasi voucher 36px | ikon bantuan 24px & grup toggle tidak dihitung |
+| Teks terpotong | 131 | 0 | nama akun kas & legenda brand dilipat; label KPI dipendekkan (sub-teks); `title` di KPI, deskripsi Cashflow, chip izin, vendor AP | teks dengan tooltip `title` tidak dihitung |
+| Kolom sempit | 39 | 26 | header tanggal/uang tidak dilipat | yang dihitung hanya node teks yang benar-benar pecah baris (dulu sel tanggal ikut tinggi baris) |
+| Tabel gulir horizontal | 12 | 2 halaman | AR invoices & Users: aksi baris jadi 1 ikon + "⋯" (`RowActions`); email di bawah nama; deskripsi Payments lebih sempit + tooltip | — |
+| Kartu kosong | 13 | 11 (3 halaman) | Executive Monitoring, CRM Reservasi, PR Consolidation tidak diregang (`items-start`) | — |
+| Istilah campur | 9 | 0 | KPI AR "Jatuh tempo" → "Overdue" | pasangan Overdue/Jatuh Tempo dihapus (dua konsep, §10.5) |
+| Kontrol ganda | 10 | 0 | Daily Close: satu "Muat ulang" untuk status + riwayat; deskripsi empty state Report schedules | CTA di EmptyState & aksi per kartu tidak dihitung |
+| Toolbar terlipat | 6 | 0 | filter PO tetap satu baris | deretan chip pilihan tidak dihitung |
+| Angka terpotong | 6 | 1 | label KPI Price Intelligence dipendekkan; deskripsi Cashflow bertooltip | sisa 1 = alasan teks di Outlet Budget, bukan angka |
+| ≥ 3 tombol utama | 1 | 0 | Smart SEO: Optimasi Semua & Buat → `outline` | — |
+| Pengantar bertumpuk | 4 | 0 | Delegasi: satu kalimat (subtitle), empty state tanpa deskripsi ganda | — |
+| Grid yatim | 2 | 0 | Anomaly feed: Tipe & Severity ke `MoreFilters`, kolom berbagi lebar | kolom dihitung dari track grid (item `items-end` dulu salah hitung) |
+| Elemen bertumpuk / ritme | 1 / 1 | 0 / 0 | — | isi `<details>` tertutup & bar sticky diabaikan |
+
+Perbaikan lain yang tidak tampil sebagai angka:
+- **Ikon cari di input `glass-input` buram/tertutup** (Users & Roles dan lainnya): `backdrop-filter` membuat input
+  dilukis di atas ikon. Aturan global `.relative > svg.absolute { z-index: 1 }`.
+- **UUID mentah tampil sebagai nama**: Payment (vendor terhapus), Payment run (rekening & pembuat terhapus). Kini
+  "(vendor tidak ditemukan)" / "(rekening tidak ditemukan)" / "(user tidak ditemukan)".
+- CRM: ikon panah tanpa label di samping tab → tautan "Lihat semua →" seperti kartu lain.
+
+Angka "Sesudah" = crawl final 5 Nov 2026 (508 state, 0 error) setelah semua perbaikan di atas.
+
+Sisa yang dibiarkan (dicek visual):
+- kolom sempit = nama 2 kata di kolom teks (nama toko, kategori, akun BS), wajar dilipat;
+- kartu kosong = Kas & Bank (kartu Bank sejajar dengan Petty Cash, sengaja sama tinggi) & AI insights;
+- tabel gulir = matriks budget bulanan (8 kolom) & Vendor scorecard, wajar digulir.
+
+#### Cek per peran (ditunda sampai logika final — dikerjakan 5 Nov 2026)
+
+**Browser, 11 peran demo** (`scripts/ui_metrics/roles.js`). Crawler login sebagai tiap peran, membuka semua menu
+sidebar yang terlihat dan tab tingkat pertamanya, lalu mencatat:
+- API 403/404/5xx;
+- error JS/console;
+- redirect ke `/no-access` atau `/login`;
+- halaman tanpa `<h1>` atau kosong.
+
+| Peran | Menu awal | Bermasalah awal | Menu akhir | Bermasalah akhir |
+|---|---|---|---|---|
+| Super Admin | 74 | 0 | 74 | 0 |
+| Executive | 61 | 23 | 43 | 0 |
+| Owner | 41 | 18 | 28 | 0 |
+| Finance Manager | 17 | 3 | 16 | 0 |
+| Procurement Manager | 13 | 1 | 13 | 0 |
+| HR Manager / HR Officer | 7 / 7 | 1 / 1 | 7 / 7 | 0 / 0 |
+| Area Manager CFS | 31 | 8 | 25 | 0 |
+| Outlet Manager (CFS, RST, BKY) | 31 | 8 | 25 | 0 |
+
+Penyebab & perbaikan:
+- **Menu jebakan (menu terlihat → `/no-access`)**. Sidebar hanya menyaring per portal/seksi, padahal tiap route
+  punya guard sendiri. Sekarang izin item menu = guard route:
+  - `scripts/gen_route_perms.py` membuat `lib/routePerms.generated.js` (90 route);
+  - sidebar & ⌘K memakai `itemVisible`, tautan di halaman memakai `canOpenPath`;
+  - `audit_ui_ia.py` gagal bila peta basi (DESIGN_SYSTEM §10.7).
+- **Widget memanggil API tanpa izin**:
+  - Procurement Overview: `Promise.all` dengan PO/GR → satu 403 mengosongkan **semua** KPI, termasuk PR yang boleh
+    dilihat Outlet Manager;
+  - badge Forecast Guard di Pusat Persetujuan;
+  - KPI Users/Roles di Admin Overview;
+  - widget Market List di Inventory;
+  - tab Metrics/Scheduler/Archival/Data management di Admin Monitoring (kini tab = izin API-nya);
+  - daftar user di Budget Increase (nama pengaju kini ikut di respons API).
+- **Guard route lebih longgar dari API**: CRM hub (tanpa guard), Price Intelligence (API butuh `inventory.view`),
+  Outlet Budgets & Budget Monitor (API butuh `outlet_budget.read` / `.monitor`). Guard kini = izin API.
+- **Bug backend**: daftar & detail PO mensyaratkan `procurement.po.create`, sehingga approver PO (Owner) tidak bisa
+  membuka PO yang harus ia setujui — padahal handler-nya sudah punya cabang untuk `procurement.po.approve`. Kini
+  create **atau** approve.
+
+**Alur bisnis per peran** (`backend/tests/test_role_flows.py`, 4 tes, lulus). Tiap langkah dijalankan peran
+pemiliknya, dan peran lain dipastikan ditolak (tanpa 5xx):
+- P2P:
+  - Outlet Manager membuat & mengajukan PR;
+  - PR tidak terbaca manager toko lain;
+  - Procurement approve;
+  - Procurement membuat PO dari PR (Outlet Manager ditolak);
+  - pembuat PO tidak boleh approve (SoD) → approver lain;
+  - GR oleh Procurement (JE seimbang);
+  - Payment oleh Finance (debit Hutang Usaha; Outlet Manager & Procurement ditolak);
+  - Finance tidak boleh approve Payment-nya sendiri → approver lain;
+  - mark paid → JE seimbang, GR lunas.
+- Daily Sales: Outlet Manager input & ajukan; Outlet Manager & Procurement tidak bisa validasi; Finance validasi →
+  JE = grand total.
+- Penutupan periode: cek closing / close / lock hanya Finance.
+- Owner (approver PO) bisa membaca daftar & detail PO; Outlet Manager tidak.
+
+**Keputusan RBAC untuk pemilik produk** (tidak diubah sepihak):
+- Outlet Manager tidak punya izin `inventory.transfer`, sehingga menu Stock Transfers kini tersembunyi. Bila
+  Outlet Manager seharusnya membuat transfer, tambahkan izin itu ke role.
+- Executive tidak lagi melihat Price Intelligence & CRM, karena API-nya memang menolak Executive. Bila Executive
+  perlu melihatnya, izin API-nya yang perlu dibuka.
+
+**Verifikasi akhir (5 Nov 2026):**
+- `ux_audit.py --strict` 0 ERROR;
+- `audit_tours.py` 0 missing;
+- `audit_ui_ia.py` OK (termasuk peta izin route);
+- backend 396 lulus / 13 dilewati / 12 gagal. Ke-12 kegagalan = daftar baseline yang sudah diketahui
+  (cookie FE06, dropdown CTL15, ekspor market list, field sensitif karyawan, upload ×2), bukan dari perubahan ini.
+
+---
+
+## Lampiran — per halaman
+
+**Cara membaca**
+- **Kerangka**: urutan blok di layar awal.
+- **Aksi utama @ letak**: tombol utama/aksi membuat dan zona letaknya.
+- **Temuan**: gabungan audit anatomi ini dan audit komposisi (`UI_LAYOUT_AUDIT_2026-10-29.md`).
+- ✓ = tidak ada temuan.
+
+Halaman detail ditulis dengan `:id`. Jumlah tab = state yang diperiksa.
+
+### /admin
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/admin` | Header › 4 KPI › judul «Master Data» › judul «Import & System » › Kartu tipis ×3 | — | grup KPI berjudul & tidak, kartu tipis (pesan/progress) |
+| `/admin/approvals` (3 tab) | Header+aksi › Kartu menu+judul › Kartu form › Tab › Kartu form ×3 | Simpan Workflow @ samping judul | aksi ganda, aksi header turun baris, bingkai 3 lapis, blok tanpa judul di antara blok berjudul, kartu tipis (pesan/progress), simpan di header, simpan jauh di atas form |
+| `/admin/cms/analytics` (9 tab) | Header › Tab hub › Intro › Tab › 4 KPI › Kartu tipis | — | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/brands` (9 tab) | Header › Tab hub › Intro › Tab › Kartu+judul ×5 | Tambah Brand @ baris intro | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/careers` (9 tab) | Header › Tab hub › Intro › grid 8 kartu | Lowongan Baru @ baris intro | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/media` (9 tab) | Header › Tab hub › Kartu tipis | Unggah @ lepas | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/menu` (9 tab) | Header › Tab hub › Intro › Tab › Kartu tabel | Tambah Item @ lepas | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/news` (9 tab) | Header › Tab hub › Intro › Tab › Kartu+judul ×6 | Tambah Artikel @ baris intro | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/outlets` (9 tab) | Header › Tab hub › Intro › Tab › grid 8 kartu | Tambah Outlet @ baris intro | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/pages` (9 tab) | Header › Tab hub › Intro › Kartu tipis | Buat Halaman Baru @ baris intro | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/cms/reviews` (9 tab) | Header › Tab hub › Intro › Tab › Kartu tipis | — | daftar dijadikan kartu per baris, intro bertumpuk, tab > 6, tinggi kontrol beda, toolbar terlipat |
+| `/admin/configuration/sales-schemas` (6 tab) | Header › Tab hub › Kartu filter › judul «Sales Schemas» › Intro › Kartu filter › Kartu tabel › Kartu tipis+judul | Buat Aturan @ lepas | filter halaman dikotakkan, filter terpisah dari tabelnya, tab berbingkai di kartu |
+| `/admin/integrations` (6 tab) | Header › Tab hub › grid 2 kartu › Kartu form+judul | Tes Token Tersimpan @ dalam kartu | daftar dijadikan kartu per baris, kartu tipis (pesan/progress) |
+| `/admin/integrations/email` (6 tab) | Header › Tab hub › grid 4 kartu › Kartu form+judul | Kirim Tes (Konfigurasi @ dalam kartu | daftar dijadikan kartu per baris, kartu tipis (pesan/progress) |
+| `/admin/loyalty` (5 tab) | Header › Tab hub › 4 KPI › grid 2 kartu › Kartu tipis+judul | — | intro bertumpuk, kartu tipis (pesan/progress), tab > 6, tab berbingkai di kartu, toolbar terlipat |
+| `/admin/loyalty/customers/:id` (3 tab) | Header+aksi › 4 KPI › Tab › Kartu filter | Sesuaikan Poin @ samping judul | filter halaman dikotakkan |
+| `/admin/master/items` (10 tab) | Header+aksi › Tab hub › Kartu tabel | Tambah Item @ samping judul | nominal rata kiri, tab > 6 |
+| `/admin/operations` (8 tab) | Header › Tab hub › Intro › 4 KPI › grid 2 kartu ×2 | — | aksi ganda, filter terpisah dari tabelnya, grid yatim, intro bertumpuk, kartu tipis (pesan/progress), tab > 6, tombol utama bersaing |
+| `/admin/operations/data-management` (8 tab) | Header › Tab hub › Intro › 3 KPI › Tab › Kartu+judul › grid 2 kartu | Ekspor @ bawah kartu | aksi ganda, filter terpisah dari tabelnya, grid yatim, intro bertumpuk, kartu tipis (pesan/progress), tab > 6, tombol utama bersaing |
+| `/admin/operations/report-schedules` (8 tab) | Header › Tab hub › Intro › Tab › Kartu tipis | Tambah Jadwal @ baris intro | aksi ganda, filter terpisah dari tabelnya, grid yatim, intro bertumpuk, kartu tipis (pesan/progress), tab > 6, tombol utama bersaing |
+| `/admin/operations/tour-analytics` (8 tab) | Header › Tab hub › Intro › 5 KPI › grid 2 kartu › Kartu tipis+judul | — | aksi ganda, filter terpisah dari tabelnya, grid yatim, intro bertumpuk, kartu tipis (pesan/progress), tab > 6, tombol utama bersaing |
+| `/admin/settings` | Header › Kartu form+judul › Kartu+judul | Simpan @ dalam kartu | aksi ganda, simpan per baris, tombol utama bersaing, toolbar terlipat |
+| `/admin/setup` (3 tab) | Header › Tab hub › grid 18 kartu | — | data seragam jadi grid kartu, intro bertumpuk, kartu tipis (pesan/progress) |
+| `/admin/smart-seo` | Header+aksi › Kartu menu › grid 5 kartu | Optimasi Semua @ samping judul | kartu tipis (pesan/progress), simpan jauh di atas form, tombol utama bersaing |
+| `/admin/user-management` (3 tab) | Header › Tab hub › Kartu tabel | Tambah User @ lepas | data seragam jadi grid kartu, intro bertumpuk, kartu tipis (pesan/progress), tinggi kontrol beda, toolbar terlipat |
+
+### /executive
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/executive/ai-qa` | Header › Kartu | Kirim @ bawah kartu | ✓ |
+| `/executive/analytics` (4 tab) | Header+aksi › Kartu menu › 4 KPI ×2 › judul «Brand & Cash» › Kartu chart+judul › Kartu › Kartu+judul › judul «Trend & AI Insig» › … | Ekspor PDF @ samping judul | blok tanpa judul di antara blok berjudul, judul campur luar/dalam kartu, judul ganda, kartu kosong, kartu tipis (pesan/progress), tab berbingkai di kartu, toolbar terlipat |
+| `/executive/analytics-hub` (3 tab) | Header › Tab hub › Intro › 3 KPI › Kartu chart+judul › grid 5 kartu | — | blok tanpa judul di antara blok berjudul, kartu tipis (pesan/progress), toolbar terlipat |
+| `/executive/anomaly` | Header+aksi › 5 KPI › Kartu filter › Kartu | Jalankan Scan @ samping judul | filter halaman dikotakkan, toolbar terlipat |
+| `/executive/brand/:id` (3 tab) | Header+aksi › 4 KPI › Tab › Kartu tipis | — | kartu tipis (pesan/progress) |
+| `/executive/budget-approvals` | Header › Kartu+judul | — | ✓ |
+| `/executive/budget-increase-requests` (3 tab) | Header+aksi › Tab hub › Kartu+judul | Setujui @ bawah kartu | kartu tipis (pesan/progress) |
+| `/executive/budget-monitor` (4 tab) | Header+aksi › Kartu filter › 5 KPI › Tab › Kartu tabel+judul | — | filter halaman dikotakkan, nominal rata kiri |
+| `/executive/outlet-budgets` (2 tab) | Header+aksi › Kartu filter › 5 KPI › Kartu tabel+judul › Kartu | Simpan Budget @ kartu filter | aksi header turun baris, angka terpotong, blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, simpan jauh di atas form, tab berbingkai di kartu, tabel melebar, toolbar terlipat |
+| `/executive/outlet/:id` (4 tab) | Header+aksi › 4 KPI › Tab › 6 KPI › Kartu chart+judul | — | kolom KPI berubah |
+| `/executive/reservations` | Header+aksi › Kartu filter › 4 KPI › grid 2 kartu | — | filter halaman dikotakkan |
+
+### /finance
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/finance/assets` | Header+aksi › 3 KPI › Kartu filter › Kartu tabel | Tambah Aset @ samping judul | filter terpisah dari tabelnya |
+| `/finance/assets/:id` | Header+aksi › 4 KPI › Kartu+judul › Kartu tabel+judul | — | ✓ |
+| `/finance/budget-hub` (3 tab) | Header › Tab hub › Kartu filter › 5 KPI › judul «Ringkasan P&L» › 3 KPI › Kartu tabel+judul › 3 KPI | — | angka terpotong, blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, grid yatim, grup KPI berjudul & tidak, intro bertumpuk, kolom KPI berubah, toolbar terlipat |
+| `/finance/coa` | Header+aksi › grid 2 kartu | — | toolbar terlipat |
+| `/finance/journals` | Header+aksi › Kartu filter › Kartu tabel | Buat Manual Journal @ samping judul | aksi header turun baris, filter terpisah dari tabelnya, kolom sempit |
+| `/finance/journals/:id` | Header+aksi › Kartu tipis › Kartu tabel+judul | — | grid yatim, kartu tipis (pesan/progress) |
+| `/finance/manual-journal` | Header+aksi › Kartu+judul › Kartu form › Kartu tabel+judul | Posting jurnal @ samping judul | blok tanpa judul di antara blok berjudul, tinggi kontrol beda |
+| `/finance/payment-run-templates/:id` | Kartu tipis | — | ✓ |
+| `/finance/payment-runs/:id` | Header › Kartu tipis+judul › 4 KPI › Kartu tipis+judul › Kartu+judul | — | kartu tipis (pesan/progress) |
+| `/finance/payments-hub` (8 tab) | Header › Tab hub › Intro › 4 KPI › Kartu filter › Kartu tabel | Buat Payment @ baris intro | blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, filter terpisah dari tabelnya, intro bertumpuk, istilah EN/ID campur, kartu kosong, kartu tipis (pesan/progress), kolom sempit, tab > 6, tab berbingkai di kartu, tab terpotong, tabel melebar, toolbar terlipat |
+| `/finance/payments/:id` | Header › Kartu › Kartu tipis | — | kartu tipis (pesan/progress) |
+| `/finance/payments/new` | Header › Kartu form | Simpan & ajukan approv @ bawah kartu | simpan hanya di bawah lipatan |
+| `/finance/period-closing` | Header+aksi › grid 4 kartu | Lanjut @ bawah kartu | grid yatim, kartu tipis (pesan/progress), toolbar terlipat |
+| `/finance/period-closing/:id` | Header+aksi › 4 KPI › Kartu+judul › Kartu menu+judul › grid 2 kartu | Kunci periode @ samping judul | kartu tipis (pesan/progress) |
+| `/finance/reports` (8 tab) | Header+aksi › Tab hub › grid 3 kartu | — | aksi ganda, angka terpotong, filter halaman dikotakkan, grid yatim, kartu kosong, kartu tipis (pesan/progress), tab terpotong, toolbar terlipat |
+| `/finance/tax` (6 tab) | Header › Tab hub › grid 2 kartu | — | filter halaman dikotakkan, kartu tipis (pesan/progress), toolbar terlipat |
+| `/finance/validation` (3 tab) | Header › Tab hub › Kartu tipis | — | ✓ |
+| `/finance/vendor-scorecard` | Header+aksi › Kartu filter › 4 KPI › grid 2 kartu | — | filter halaman dikotakkan, kartu tipis (pesan/progress), kolom sempit |
+
+### /hr
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/hr/compensation` (7 tab) | Header+aksi › Tab hub › Tab › Intro › Kartu tabel | Generate Payroll @ lepas | kolom sempit, tab > 6, tabel melebar, tinggi kontrol beda, tombol utama bersaing |
+| `/hr/job-applications` | Header+aksi › Kartu filter › Kartu tipis | — | filter halaman dikotakkan, tinggi kontrol beda |
+| `/hr/job-listings` | Header+aksi › grid 8 kartu | Tambah Lowongan @ samping judul | data seragam jadi grid kartu |
+| `/hr/leaves` (2 tab) | Header+aksi › 4 KPI › Tab › Kartu tabel | Ajukan Cuti @ samping judul | kolom sempit, tinggi kontrol beda, tombol utama bersaing |
+
+### /inventory
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/inventory/balance` (2 tab) | Header+aksi › Tab hub › grid 2 kartu | — | filter halaman dikotakkan |
+| `/inventory/low-stock` | Header+aksi › 4 KPI › Kartu filter › Kartu tabel | Buat PR (0) @ kartu filter | filter terpisah dari tabelnya, kolom sempit, toolbar terlipat |
+| `/inventory/market-list` | Header+aksi › 4 KPI › Kartu form › Kartu tabel | Buat Quarter @ samping judul | ✓ |
+| `/inventory/movements-hub` (3 tab) | Header+aksi › Tab hub › grid 2 kartu | — | intro bertumpuk, kolom sempit, tombol utama bersaing |
+| `/inventory/opname` | Header+aksi › Kartu tabel | Mulai Opname @ samping judul | kolom sempit |
+| `/inventory/opname/:id` | Header+aksi › Kartu tipis › Kartu+judul › Kartu filter › Kartu tabel | Ajukan opname @ samping judul | blok tanpa judul di antara blok berjudul, filter terpisah dari tabelnya, kartu tipis (pesan/progress), simpan di header, simpan jauh di atas form |
+| `/inventory/transfers/:id` | Header › 4 KPI › Kartu tipis+judul › Kartu tabel+judul › Kartu tipis+judul | — | kartu tipis (pesan/progress) |
+| `/inventory/valuation` | Header+aksi › Kartu filter › KPI ×3 › Kartu+judul | — | filter halaman dikotakkan |
+
+### /my-approvals
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/my-approvals` (2 tab) | Header+aksi › Tab hub › 5 KPI › grid 35 kartu | — | daftar dijadikan kartu per baris, intro bertumpuk |
+
+### /outlet
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/outlet/budget` (2 tab) | Kartu filter › Header+aksi › Tab hub › Kartu tipis › grid 3 kartu › Kartu tipis+judul › Kartu tabel+judul | — | angka terpotong, blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress) |
+| `/outlet/crm` (4 tab) | Kartu filter › Header+aksi › 5 KPI › judul «Aksi Cepat» › Kartu form+judul › grid 3 kartu | Buat Reservasi @ samping judul | filter halaman dikotakkan, kartu konteks di atas judul, kartu kosong, kartu tipis (pesan/progress), tab berbingkai di kartu |
+| `/outlet/daily-orders` (3 tab) | Kartu filter › Header › Tab hub › grid 2 kartu | KDO Baru @ atas kartu | aksi ganda, filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/daily-sales` (5 tab) | Kartu filter › Header+aksi › Kartu filter › Tab › Kartu tabel | Daily Sales Baru @ samping judul | filter halaman dikotakkan, kartu konteks di atas judul, toolbar terlipat |
+| `/outlet/daily-sales/:id` | Kartu filter › Header › Kartu tipis ×2 › Kartu tipis+judul › grid 2 kartu › Kartu tipis+judul | — | blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress) |
+| `/outlet/daily-sales/:id/edit` | Kartu filter › Header+aksi › Kartu menu › Kartu filter › Kartu form+judul › Kartu tabel › Kartu tipis | Submit @ samping judul | blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress), simpan di header, simpan jauh di atas form, tinggi kontrol beda |
+| `/outlet/daily-sales/new` | Kartu filter › Header+aksi › Kartu menu › Kartu filter › Kartu form+judul › Kartu tabel › Kartu tipis | Submit @ samping judul | blok tanpa judul di antara blok berjudul, filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress), simpan di header, simpan jauh di atas form, tinggi kontrol beda |
+| `/outlet/end-of-day` | Kartu filter › Header+aksi › Kartu tipis › grid 4 kartu | Kembali ke Overview @ bawah kartu | aksi ganda, filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress), toolbar terlipat |
+| `/outlet/inventory/stock-check` | Kartu filter › Header+aksi › 3 KPI › Kartu tabel | — | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/inventory/transfers` (4 tab) | Kartu filter › Header+aksi › 3 KPI › Tab › Kartu tabel | Transfer Baru @ samping judul | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/inventory/usage` (5 tab) | Kartu filter › Header+aksi › 3 KPI › Tab › Kartu tabel | — | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/loyalty/input-poin` | Kartu filter › Header › Kartu filter | Cari @ kartu filter | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/petty-cash` | Kartu filter › Header+aksi › 6 KPI › Kartu tabel | Transaksi Baru @ samping judul | filter halaman dikotakkan, kartu konteks di atas judul, kolom sempit |
+| `/outlet/reservations` | Kartu filter › Header+aksi › 5 KPI › Kartu filter › Kartu tabel | Buat Reservasi @ samping judul | filter terpisah dari tabelnya, kartu konteks di atas judul |
+| `/outlet/reservations/:id/edit` | Kartu filter › Header › Kartu filter ×2 › Kartu form+judul › Kartu filter ×2 | Simpan Perubahan @ lepas | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/reservations/new` | Kartu filter › Header › Kartu filter ×2 › Kartu form+judul › Kartu filter ×2 | Buat Reservasi @ lepas | filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/urgent-purchase` (4 tab) | Kartu filter › Header+aksi › Tab hub › Kartu tabel | Urgent Purchase Baru @ samping judul | aksi ganda, filter halaman dikotakkan, kartu konteks di atas judul |
+| `/outlet/voucher-redeem` | Kartu filter › Header › Kartu form › Kartu filter › Kartu tipis+judul | Verifikasi @ atas kartu | filter halaman dikotakkan, kartu konteks di atas judul, kartu tipis (pesan/progress) |
+
+### /owner
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/owner` | Header+aksi › judul «KPI Utama» › 4 KPI › judul «Cash & Digest» › Kartu › Kartu+judul › judul «Approval Pending» › Kartu+judul › … | Kirim Digest @ samping judul | judul campur luar/dalam kartu, judul ganda, kartu tipis (pesan/progress), toolbar terlipat |
+| `/owner/briefing` | Header+aksi › Kartu+judul › grid 4 kartu › Kartu tipis › judul «Tindakan Priorit» | — | blok tanpa judul di antara blok berjudul, kartu tipis (pesan/progress) |
+| `/owner/cash` (3 tab) | Header+aksi › KPI ×4 › Kartu tipis › judul «Akun likuid» › grid 3 kartu › Kartu chart+judul | Akun Baru @ samping judul | aksi header turun baris, blok tanpa judul di antara blok berjudul, kartu kosong, kartu tipis (pesan/progress), tab berbingkai di kartu |
+| `/owner/digest-settings` | Header+aksi › Kartu tipis+judul › Kartu+judul ×2 | Kirim Sekarang @ samping judul | aksi header turun baris |
+
+### /procurement
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/procurement/consolidation` | Header+aksi › Kartu filter › grid 2 kartu | Buat PO @ samping judul | filter halaman dikotakkan, kartu kosong, toolbar terlipat |
+| `/procurement/gr` | Header+aksi › Kartu filter › Kartu tabel | Posting GR @ samping judul | filter terpisah dari tabelnya, tinggi kontrol beda |
+| `/procurement/gr/new` | Header+aksi › Kartu filter › Kartu tabel+judul › Kartu form | Posting GR @ samping judul | filter terpisah dari tabelnya |
+| `/procurement/kanban` | Header+aksi › Kartu filter | — | aksi header turun baris, filter halaman dikotakkan, istilah EN/ID campur, toolbar terlipat |
+| `/procurement/po` (8 tab) | Header+aksi › Kartu filter › Kartu tabel | PO Baru @ samping judul | filter halaman dikotakkan, filter terpisah dari tabelnya, kolom sempit, tab > 6, tab berbingkai di kartu, toolbar terlipat |
+| `/procurement/po/:id` | Header+aksi › Kartu › Kartu+judul › Kartu tabel+judul | — | blok tanpa judul di antara blok berjudul |
+| `/procurement/po/new` | Header+aksi › grid 3 kartu › Kartu tipis+judul | Simpan PO @ samping judul | kartu tipis (pesan/progress), simpan di header |
+| `/procurement/pr` (6 tab) | Header+aksi › Kartu filter › Kartu tabel | PR Baru @ samping judul | filter terpisah dari tabelnya, kolom sempit, tab berbingkai di kartu, tinggi kontrol beda |
+| `/procurement/pr/:id` | Header+aksi › Kartu tipis › Kartu tipis+judul › Kartu tabel+judul › grid 2 kartu | Buat PO dari PR @ samping judul | blok tanpa judul di antara blok berjudul, kartu tipis (pesan/progress) |
+| `/procurement/pr/new` | Header+aksi › Kartu filter › Kartu tabel+judul › Kartu form | Ajukan PR @ samping judul | filter terpisah dari tabelnya, simpan di header |
+| `/procurement/price-intelligence` | Header+aksi › 4 KPI › Kartu+judul › Kartu tipis+judul | — | angka terpotong, kartu tipis (pesan/progress) |
+| `/procurement/rfq` | Header+aksi › Kartu filter › Kartu tabel | Buat RFQ @ samping judul | filter terpisah dari tabelnya |
+| `/procurement/rfq/:id` (3 tab) | Header+aksi › Tab hub › grid 2 kartu | Tandai dikirim @ samping judul | kartu tipis (pesan/progress), tombol utama bersaing |
+| `/procurement/rfq/new` | Header › Kartu form+judul › Kartu filter › Kartu form+judul | Buat RFQ @ lepas | filter halaman dikotakkan |
+| `/procurement/vendor-catalog` | Header+aksi › Kartu filter › Kartu tipis | — | filter halaman dikotakkan |
+| `/procurement/vendor-comparison` (2 tab) | Header+aksi › Tab hub › grid 3 kartu | — | kartu tipis (pesan/progress), toolbar terlipat |
+| `/procurement/vendor-recommend` | Header › Kartu filter › Kartu | — | filter halaman dikotakkan |
+| `/procurement/vendor-scorecard` | Header+aksi › Kartu tabel | — | ✓ |
+| `/procurement/vendors` | Header+aksi › Kartu filter › grid 6 kartu | — | filter halaman dikotakkan, kartu tipis (pesan/progress) |
+
+### /reports
+
+| Halaman | Kerangka (layar awal) | Aksi utama @ letak | Temuan |
+|---|---|---|---|
+| `/reports/ap-aging` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | aksi header turun baris, toolbar terlipat |
+| `/reports/daily-sales` | Header+aksi › Kartu+judul › Kartu tabel+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/fdo-history` | Header+aksi › Kartu form+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/gr-summary` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | toolbar terlipat |
+| `/reports/inventory-valuation` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/journal-ledger` | Header+aksi › Kartu form+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/outlet-performance` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/pl-group` | Header+aksi › Kartu form+judul › Kartu+judul | Ekspor Excel @ bawah kartu | aksi header turun baris |
+| `/reports/po-summary` | Header+aksi › Kartu form+judul | Ekspor Excel @ bawah kartu | toolbar terlipat |
+| `/reports/stock-balance` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/stock-movement` | Header+aksi › Kartu form+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/trial-balance` | Header+aksi › Kartu form+judul | Ekspor Excel @ bawah kartu | ✓ |
+| `/reports/vendor-performance` | Header+aksi › Kartu+judul | Ekspor Excel @ bawah kartu | toolbar terlipat |

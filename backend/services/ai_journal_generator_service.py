@@ -17,14 +17,10 @@ import logging
 import re
 from typing import Optional
 
-from core.config import settings
 from core.db import get_db
-from core.runtime_config import get_setting
 
 logger = logging.getLogger("aurora.ai_journal_generator")
 
-PROVIDER = "gemini"
-MODEL = "gemini-2.5-flash"
 
 
 async def generate_journal_entry(
@@ -50,10 +46,10 @@ async def generate_journal_entry(
             "raw_ai_response": "..."  # For debugging
         }
     """
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return {
-            "error": "AI feature tidak aktif atau EMERGENT_LLM_KEY tidak tersedia",
+            "error": "AI tidak aktif atau ANTHROPIC_API_KEY belum diisi (Admin → Integrations)",
             "entry_date": None,
             "description": user_input,
             "lines": [],
@@ -64,7 +60,7 @@ async def generate_journal_entry(
     # Load COA untuk context
     db = get_db()
     coas = []
-    async for coa in db.chart_of_accounts.find({"is_postable": True, "active": True}).limit(100):
+    async for coa in db.chart_of_accounts.find({"is_postable": True, "active": True, "deleted_at": None}).sort("code", 1):
         coas.append({
             "code": coa.get("code"),
             "name": coa.get("name"),
@@ -98,14 +94,8 @@ async def generate_journal_entry(
     
     # Call LLM
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"journal-gen-{user['id']}",
-            system_message=system_prompt,
-        ).with_model(PROVIDER, MODEL)
-        
-        response_text = await chat.send_message(UserMessage(text=user_prompt)) or ""
+        response_text = await ai_client.ask(system=system_prompt, user=user_prompt, feature="journal_generator",
+                                            user_id=user.get("id"), max_tokens=4000, effort="medium") or ""
         
         if not response_text:
             return {
@@ -216,7 +206,10 @@ def _build_system_prompt(coas: list[dict], outlets: list[dict], brands: list[dic
 
 def _build_user_prompt(user_input: str, context: dict) -> str:
     """Build user prompt dengan context tambahan."""
-    parts = [f"Transaksi: {user_input}"]
+    from core.clock import today_str
+    # Tanpa tanggal hari ini, "bulan Oktober" ditafsirkan ke tahun yang salah (mis. 2025 padahal 2026).
+    parts = [f"Hari ini (WIB): {today_str()}. Bila tahun/tanggal tidak disebut, pakai yang terdekat ke hari ini "
+             f"dan tidak di masa depan.", f"Transaksi: {user_input}"]
     
     if context.get("outlet_id"):
         parts.append(f"Outlet context: {context['outlet_id']}")

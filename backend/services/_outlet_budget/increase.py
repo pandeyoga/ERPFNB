@@ -88,7 +88,19 @@ async def list_increase_requests(
     if outlet_ids is not None:
         q["outlet_id"] = {"$in": outlet_ids}
     docs = await db.budget_increase_requests.find(q).sort([("requested_at", -1)]).to_list(500)
-    return [serialize(d) for d in docs]
+    # Nama pengaju/pemutus ikut di respons — layar approval tidak perlu /admin/users (yang butuh admin.user.read)
+    uids = {d.get(k) for d in docs for k in ("requested_by", "decided_by") if d.get(k)}
+    names = {}
+    if uids:
+        async for u in db.users.find({"id": {"$in": list(uids)}}, {"_id": 0, "id": 1, "full_name": 1, "email": 1}):
+            names[u["id"]] = u.get("full_name") or u.get("email")
+    out = []
+    for d in docs:
+        row = serialize(d)
+        row["requested_by_name"] = names.get(d.get("requested_by"))
+        row["decided_by_name"] = names.get(d.get("decided_by"))
+        out.append(row)
+    return out
 
 
 async def approve_increase_request(

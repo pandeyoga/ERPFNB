@@ -91,7 +91,7 @@ const procurementPRListTour = {
     {
       target: "[data-testid='pr-status-tabs']",
       title: "Status PR",
-      content: "Status PR:\n\n• **Draft** — belum disubmit\n• **Pending** — menunggu approval\n• **Approved** — siap dibuatkan PO\n• **Rejected** — ditolak",
+      content: "Status PR:\n\n• **Draft** — belum disubmit\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap dibuatkan PO\n• **Ditolak** — ditolak",
       placement: "bottom",
     },
     {
@@ -103,7 +103,7 @@ const procurementPRListTour = {
     {
       target: "[data-testid='pr-table-card']",
       title: "Approve & Convert ke PO",
-      content: "Klik baris PR untuk detail. Dari detail: **Approve** PR lalu klik **Convert to PO** untuk buat PO ke vendor yang dipilih.",
+      content: "Klik baris PR untuk detail. Dari detail: **Setujui** PR lalu klik **Buat PO dari PR** untuk buat PO ke vendor yang dipilih.",
       placement: "top",
       variant: "tip",
     },
@@ -132,7 +132,7 @@ const procurementPOListTour = {
     {
       target: "[data-testid='po-status-tabs']",
       title: "Status PO",
-      content: "Status PO:\n\n• **Draft** — belum dikirim\n• **Sent** — sudah dikirim ke vendor\n• **Partial** — GR sebagian item\n• **Received** — semua item sudah diterima",
+      content: "Status PO:\n\n• **Draft** — belum dikirim\n• **Terkirim** — sudah dikirim ke vendor\n• **Sebagian** — GR sebagian item\n• **Diterima** — semua item sudah diterima",
       placement: "bottom",
     },
     {
@@ -172,6 +172,13 @@ const procurementGRTour = {
     },
     {
       target: "[data-testid='gr-table-card']",
+      title: "Barang Ditolak",
+      content: "Di form GR, kolom **Kondisi** mencatat barang yang ditolak saat diterima: qty, alasan (busuk, rusak, tidak sesuai spesifikasi, …), dan foto bukti.\n\n• Barang ditolak tidak masuk stok & tagihan\n• Sisa PO tetap terbuka untuk kiriman ulang\n• Datanya menjadi **skor kualitas** supplier di Sourcing",
+      placement: "top",
+      variant: "tip",
+    },
+    {
+      target: "[data-testid='gr-table-card']",
       title: "Auto-Journal dari GR",
       content: "Setelah GR di-post:\n\n• **Stok** di inventory otomatis bertambah\n• **AP** ke vendor otomatis tercatat\n• **Journal entry** Dr: Persediaan/Beban | Cr: AP",
       placement: "top",
@@ -179,7 +186,7 @@ const procurementGRTour = {
     {
       target: "[data-testid='gr-table-card']",
       title: "Link ke JE",
-      content: "Icon journal entry (📒) di kolom kanan menunjukkan GR sudah ter-journalkan. Klik untuk lihat detail JE yang dibuat otomatis.",
+      content: "Ikon jurnal di kolom kanan menunjukkan GR sudah ter-journalkan. Klik untuk lihat detail JE yang dibuat otomatis.",
       placement: "top",
       variant: "tip",
     },
@@ -189,21 +196,27 @@ const procurementGRTour = {
 // ─── Vendor Compare ──────────────────────────────────────────────
 const procurementVendorCompareTour = {
   name: "Bandingkan Vendor",
-  description: "Tool perbandingan vendor untuk pricing & performance.",
+  description: "Satu tempat perbandingan harga: per item lintas vendor atau per PO.",
   steps: [
     {
-      target: "body",
-      title: "Vendor Comparison Tool",
-      content: "Pilih **maksimal 10 item**, set periode, lalu sistem akan tampilkan:\n\n• **Matrix harga per vendor**\n• **Skor komposit** (harga 60% + recency 40%)\n• **Performance scorecard** (lead time, on-time, defect)",
+      target: "[data-testid='vendor-comparison-page']",
+      title: "Vendor Comparison",
+      content: "Satu tempat perbandingan harga:\n\n• **Per item** — pilih maksimal 10 item, lihat matrix harga per vendor & skor komposit (harga 60% + recency 40%)\n• **Per PO** — bandingkan hingga 4 PO berdampingan",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "body",
-      title: "Cara Pakai",
-      content: "1. Cari item yang ingin dibandingkan\n2. Pilih periode pembelian terakhir\n3. Klik **Bandingkan**\n4. Review matrix harga & skor vendor\n5. Klik **Pilih** untuk auto-apply vendor ke PO baru",
-      placement: "center",
+      target: "[data-testid='vc-search-section']",
+      title: "Pilih Item",
+      content: "1. Cari item yang ingin dibandingkan\n2. Atur periode pembelian di kanan atas\n3. Review matrix harga per vendor (klik ikon riwayat untuk histori harga)",
+      placement: "bottom",
+    },
+    {
+      target: "[data-testid='vc-scorecard-link']",
+      title: "Performa Vendor",
+      content: "Lead time, on-time delivery, defect, dan skor vendor ada di **Vendor Scorecard** — satu sumber untuk performa vendor.",
+      placement: "top",
       variant: "tip",
     },
   ],
@@ -369,56 +382,56 @@ const procurementConsolidationTour = {
 // ─── PO Comparison ────────────────────────────────────────────────────
 const procurementPOComparisonTour = {
   name: "PO Comparison",
-  description: "Bandingkan PO antar vendor untuk pilih penawaran terbaik.",
+  description: "Bandingkan beberapa PO berdampingan (tab Per PO di Vendor Comparison).",
   steps: [
     {
       target: "[data-testid='po-comparison-page']",
-      title: "PO Comparison",
-      content: "Bandingkan **Purchase Order** untuk item serupa antar vendor — temukan harga & term terbaik.",
+      title: "Perbandingan per PO",
+      content: "Pilih hingga **4 Purchase Order** untuk item serupa dan bandingkan harga & total berdampingan.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='po-cmp-table-card']",
-      title: "Tabel Perbandingan",
-      content: "Lihat harga, qty, dan total per vendor berdampingan. Baris **Totals** memudahkan keputusan cepat.",
+      target: "[data-testid='po-cmp-list-card']",
+      title: "Pilih PO",
+      content: "Filter vendor/status, lalu klik **Bandingkan** pada PO yang ingin dibandingkan. Tabel perbandingan muncul di bawah — sel hijau = harga terbaik per item.",
       placement: "top",
       variant: "tip",
     },
   ],
 };
 
-// ─── Price Intelligence ───────────────────────────────────────────────
-const procurementPriceIntelligenceTour = {
-  name: "Price Intelligence",
-  description: "Pantau deviasi harga beli vs harga acuan pasar (market list).",
+// ─── Sourcing (menggantikan Price Intelligence & Market List) ──────────
+const procurementSourcingTour = {
+  name: "Sourcing",
+  description: "Harga acuan per periode & wilayah, penawaran supplier, dan analisis harga per item.",
   steps: [
     {
-      target: "[data-testid='price-intel-page']",
-      title: "Price Intelligence",
-      content: "Deteksi **deviasi harga** pembelian vs harga acuan pasar — cegah overpaying ke vendor.",
+      target: "[data-testid='sourcing-hub']",
+      title: "Sourcing",
+      content: "Satu tempat untuk keputusan beli: **harga acuan pasar**, **penawaran supplier**, dan **harga yang benar-benar dibayar** (GR).",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='price-intel-summary']",
-      title: "Ringkasan Deviasi",
-      content: "Statistik: item dilacak, jumlah **di atas** vs **di bawah** acuan, dan item **berisiko**.",
+      target: "[data-testid='sourcing-kpis']",
+      title: "Ringkasan",
+      content: "Potensi hemat, item **di atas acuan**, item dengan **1 supplier**, dan item yang **belum punya acuan**. Klik kartu untuk menyaring tabel.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='price-intel-quarter']",
-      title: "Quarter Acuan",
-      content: "Pilih **kuartal acuan harga**. Filter kategori untuk fokus ke grup item tertentu.",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='price-intel-deviations-card']",
-      title: "Daftar Deviasi",
-      content: "Item dengan selisih signifikan muncul di sini — prioritas negosiasi ulang ke vendor.",
+      target: "[data-testid='sourcing-table-card']",
+      title: "Semua item",
+      content: "Satu baris per item: acuan, penawaran terbaik, harga terakhir, jumlah supplier. Klik baris untuk **analisis item** (perbandingan supplier & tren harga).",
       placement: "top",
+    },
+    {
+      target: "[data-testid='sourcing-tabs']",
+      title: "Harga acuan, penawaran, pengaturan",
+      content: "**Harga acuan**: lembar kerja per periode (mingguan/bulanan/kuartalan) & wilayah. **Penawaran supplier**: harga berlaku, MOQ, lead time — RFQ masuk otomatis. **Pengaturan**: periode & ambang.",
+      placement: "bottom",
       variant: "tip",
     },
   ],
@@ -448,6 +461,6 @@ export {
   procurementRFQTour,
   procurementConsolidationTour,
   procurementPOComparisonTour,
-  procurementPriceIntelligenceTour,
+  procurementSourcingTour,
   procurementVendorCatalogTour,
 };

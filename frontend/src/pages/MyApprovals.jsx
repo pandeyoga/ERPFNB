@@ -1,19 +1,29 @@
-/** MyApprovals — Phase 11F: mobile-first cards + inline quick approve/reject. */
+/** MyApprovals — "Pusat Persetujuan": SATU inbox approval untuk semua modul.
+ *
+ * Semua path lama (/finance/approvals, /hr/approvals, …) di-redirect ke sini.
+ * Tab: Antrean (kartu filter per tipe dokumen + quick approve/reject, swipe di mobile)
+ * dan Delegasi (sebelumnya hanya ada di ApprovalCenter yang tidak pernah ter-render).
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Inbox, RefreshCw, ShoppingCart, Package, Sliders, Wallet, ExternalLink,
+  Inbox, RefreshCw, ShoppingCart, Package, Sliders, Wallet,
   ClipboardCheck, Sparkles, AlertTriangle, ShoppingBag,
-  Check, X, MessageSquare, ChevronRight,
+  Check, X, ChevronRight, CalendarDays, CreditCard, ArrowLeftRight, PiggyBank, FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api, { unwrap } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { permitted } from "@/lib/portalGate";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
+import ListToolbar, { StatusTabs } from "@/components/shared/ListToolbar";
+import ApprovalDelegations, { APPROVAL_ENTITY_LABELS } from "@/components/shared/ApprovalDelegations";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import StatusPill from "@/components/shared/StatusPill";
@@ -21,24 +31,29 @@ import { fmtRp, fmtRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const TABS = [
-  { key: "all",               label: "Semua",            icon: Inbox },
-  { key: "purchase_request",  label: "PR",  icon: ClipboardCheck },
-  { key: "purchase_order",    label: "PO",  icon: ShoppingCart },
-  { key: "stock_adjustment",  label: "Adj", icon: Sliders },
-  { key: "employee_advance",  label: "Adv", icon: Wallet },
-];
-
+/** Tipe dokumen yang bisa masuk antrean. Kartu filter hanya tampil untuk tipe yang
+ * punya item menunggu (sebelumnya hanya 4 tipe statis → cuti, payment request, dll.
+ * tidak bisa difilter). */
 const ENTITY_ICONS = {
   purchase_request:  ClipboardCheck,
   purchase_order:    ShoppingCart,
   stock_adjustment:  Sliders,
   employee_advance:  Wallet,
   urgent_purchase:   ShoppingBag,
+  leave_request:     CalendarDays,
+  payment_request:   CreditCard,
+  stock_transfer:    ArrowLeftRight,
+  budget:            PiggyBank,
+  ar_invoice:        FileText,
+  item_master:       Package,
 };
 
+const FORECAST_GUARD_PERMS = ["executive.dashboard.read", "finance.report.profit_loss"];
+
 export default function MyApprovals() {
-  const [tab, setTab] = useState("all");
+  const { user } = useAuth();
+  const [view, setView] = useState("queue"); // queue | delegation
+  const [tab, setTab] = useState("all");      // filter tipe dokumen
   const [items, setItems] = useState([]);
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -58,18 +73,23 @@ export default function MyApprovals() {
       const queue = unwrap(q) || [];
       setItems(queue);
       setCounts((unwrap(c) || {}).by_entity || {});
-      try {
-        const lr = await api.get("/forecasting/guard/logs", { params: { days: 30, limit: 500 } });
-        const logs = unwrap(lr) || [];
-        const map = {};
-        logs.forEach(l => { if (l.source_id) map[l.source_id] = l; });
-        setGuardLogs(map);
-      } catch { /* empty */ }
+      // Badge Forecast Guard hanya untuk peran yang boleh membaca log-nya (API: executive.dashboard.read |
+      // finance.report.profit_loss) — peran lain tidak memanggil endpoint yang pasti 403.
+      if (permitted(user, FORECAST_GUARD_PERMS)) {
+        try {
+          const lr = await api.get("/forecasting/guard/logs", { params: { days: 30, limit: 500 } });
+          const logs = unwrap(lr) || [];
+          const map = {};
+          logs.forEach(l => { if (l.source_id) map[l.source_id] = l; });
+          setGuardLogs(map);
+        } catch { /* empty */ }
+      }
     } catch {
       toast.error("Gagal memuat queue");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [tab]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [tab]);
 
   const totalCount = useMemo(
     () => Object.values(counts || {}).reduce((s, v) => s + (v || 0), 0),
@@ -95,114 +115,126 @@ export default function MyApprovals() {
     } finally { setActioning(null); }
   }
 
+  // Kartu filter: "Semua" + tiap tipe yang punya antrean (+ tipe yang sedang dipilih).
+  const filterTypes = useMemo(
+    () => Object.keys(counts || {}).filter((k) => (counts[k] || 0) > 0 || k === tab),
+    [counts, tab],
+  );
+
   return (
-    <div className="space-y-4 max-w-6xl mx-auto" data-testid="my-approvals-page">
-      {/* Header — compact */}
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <div className="h-8 w-8 rounded-xl grad-aurora flex items-center justify-center shrink-0">
-          <Inbox className="h-4 w-4 text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="text-base font-bold leading-tight">My Approvals</h2>
-          <p className="text-[11px] text-muted-foreground hidden md:block">
-            Approve / reject langsung tanpa buka detail. Swipe ← → di mobile.
-          </p>
-        </div>
-        <Button variant="outline" onClick={load} className="rounded-full gap-1.5 h-7 text-xs px-3" data-testid="my-approvals-refresh">
-          <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} /> Refresh
-        </Button>
-      </div>
-
-      {/* Stats grid — compact */}
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5">
-        <StatTile label="Total" value={totalCount} accent active={tab === "all"} onClick={() => setTab("all")} dataTestId="stat-total" />
-        {TABS.slice(1).map(t => (
-          <StatTile key={t.key} label={t.label}
-            value={counts?.[t.key] ?? 0}
-            icon={t.icon}
-            active={tab === t.key}
-            onClick={() => setTab(t.key)}
-            dataTestId={`stat-${t.key}`} />
-        ))}
-      </div>
-
-      {/* List — mobile cards w/ swipe */}
-      {loading ? <LoadingState rows={6} /> : (
-        items.length === 0 ? (
-          <EmptyState icon={Sparkles} title="Tidak ada approval menunggu"
-            description="Semua dokumen yang membutuhkan aksi Anda sudah selesai. ✨" />
-        ) : (
-          <div className="space-y-2">
-            <AnimatePresence>
-              {items.map((it, i) => (
-                <SwipeRow
-                  key={it.entity_id}
-                  item={it}
-                  index={i}
-                  guardLog={guardLogs[it.entity_id]}
-                  busy={actioning?.startsWith(it.entity_id)}
-                  onApprove={() => quickAction(it, "approve")}
-                  onReject={() => { setRejectModal({ item: it }); setRejectReason(""); }}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )
-      )}
-
-      {/* Reject confirm modal */}
-      <Dialog open={!!rejectModal} onOpenChange={(v) => !v && setRejectModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Tolak {rejectModal?.item?.label}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-mono">{rejectModal?.item?.describe}</span> — {fmtRp(rejectModal?.item?.amount || 0)}
-            </p>
-            <div>
-              <label className="text-xs font-semibold">Alasan</label>
-              <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder="Mis. budget belum cukup, vendor belum diverifikasi, …"
-                        rows={3} data-testid="reject-reason-input" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectModal(null)}>Batal</Button>
-            <Button variant="destructive"
-                    onClick={async () => {
-                      if (!rejectReason.trim()) { toast.error("Alasan wajib"); return; }
-                      const it = rejectModal.item;
-                      setRejectModal(null);
-                      await quickAction(it, "reject", rejectReason.trim());
-                    }}
-                    data-testid="reject-confirm-btn">
-              Konfirmasi Tolak
+    <HubHeaderProvider>
+      <div className="space-y-3 max-w-6xl mx-auto" data-testid="my-approvals-page">
+        <PageHeader hub
+          icon={Inbox}
+          title="Pusat Persetujuan"
+          subtitle="Setujui atau tolak dokumen dari semua modul tanpa membuka detail."
+          actions={
+            <Button variant="outline" onClick={load} data-testid="my-approvals-refresh">
+              <RefreshCw className={cn(loading && "animate-spin")} /> Muat ulang
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          }
+        />
+
+        <Tabs value={view} onValueChange={setView} data-testid="approval-center">
+          <TabsList>
+            <TabsTrigger value="queue" data-testid="tab-queue">
+              Antrean
+              {totalCount > 0 && (
+                <span className="ml-0.5 rounded-full bg-foreground/10 px-1.5 text-xs leading-4 tabular-nums">{totalCount}</span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="delegation" data-testid="tab-delegation">Delegasi</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="queue" className="space-y-3">
+        {/* Satu kartu daftar: filter tipe di atas, baris antrean bergaris pemisah — bukan kartu per item (§10.3). */}
+        <div className="glass-card overflow-hidden">
+          <ListToolbar>
+            <StatusTabs
+              value={tab}
+              onChange={setTab}
+              ariaLabel="Filter tipe dokumen"
+              testId="approval-kpi"
+              tabTestId={(k) => (k === "all" ? "stat-total" : `stat-${k}`)}
+              options={[
+                { key: "all", label: <>Semua <Count n={totalCount} /></> },
+                ...filterTypes.map((key) => ({
+                  key,
+                  label: <>{APPROVAL_ENTITY_LABELS[key] || key.replace(/_/g, " ")} <Count n={counts?.[key] ?? 0} /></>,
+                })),
+              ]}
+            />
+          </ListToolbar>
+        {loading ? <div className="p-3"><LoadingState rows={6} /></div> : (
+          items.length === 0 ? (
+            <EmptyState icon={Sparkles} title="Tidak ada approval menunggu"
+              description="Semua dokumen yang membutuhkan aksi Anda sudah selesai." />
+          ) : (
+            <div className="divide-y divide-border/50">
+              <AnimatePresence>
+                {items.map((it, i) => (
+                  <SwipeRow
+                    key={it.entity_id}
+                    item={it}
+                    index={i}
+                    guardLog={guardLogs[it.entity_id]}
+                    busy={actioning?.startsWith(it.entity_id)}
+                    onApprove={() => quickAction(it, "approve")}
+                    onReject={() => { setRejectModal({ item: it }); setRejectReason(""); }}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          )
+        )}
+        </div>
+
+          </TabsContent>
+
+          <TabsContent value="delegation">
+            <ApprovalDelegations />
+          </TabsContent>
+        </Tabs>
+
+        {/* Reject confirm modal */}
+        <Dialog open={!!rejectModal} onOpenChange={(v) => !v && setRejectModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Tolak {rejectModal?.item?.label}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-mono">{rejectModal?.item?.describe}</span> — {fmtRp(rejectModal?.item?.amount || 0)}
+              </p>
+              <div>
+                <label className="text-xs font-semibold">Alasan</label>
+                <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
+                          placeholder="Mis. budget belum cukup, vendor belum diverifikasi, …"
+                          rows={3} data-testid="reject-reason-input" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRejectModal(null)}>Batal</Button>
+              <Button variant="destructive"
+                      onClick={async () => {
+                        if (!rejectReason.trim()) { toast.error("Alasan wajib"); return; }
+                        const it = rejectModal.item;
+                        setRejectModal(null);
+                        await quickAction(it, "reject", rejectReason.trim());
+                      }}
+                      data-testid="reject-confirm-btn">
+                Konfirmasi Tolak
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </HubHeaderProvider>
   );
 }
 
-function StatTile({ label, value, accent = false, active = false, icon: Icon, onClick, dataTestId }) {
-  return (
-    <motion.button
-      whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
-      onClick={onClick}
-      data-testid={dataTestId}
-      className={cn(
-        "glass-card px-2.5 py-2 text-left transition-colors relative overflow-hidden",
-        active && "ring-2 ring-aurora/60",
-      )}>
-      <div className="flex items-center gap-1.5">
-        {Icon ? <Icon className="h-3 w-3 text-muted-foreground" /> : null}
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold truncate">{label}</div>
-      </div>
-      <div className={cn("text-lg font-bold tabular-nums", accent && "text-aurora")}>{value}</div>
-    </motion.button>
-  );
+function Count({ n }) {
+  return <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[11px] leading-4 tabular-nums">{n}</span>;
 }
 
 function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
@@ -225,9 +257,9 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
       }}
       transition={{ delay: Math.min(index * 0.025, 0.4), duration: 0.18 }}
       className={cn(
-        "glass-card px-3 py-2 cursor-grab active:cursor-grabbing select-none",
-        isSevere && "ring-2 ring-red-500/40",
-        isMild   && "ring-2 ring-amber-500/40",
+        "p-3 cursor-grab active:cursor-grabbing select-none border-l-4 border-l-transparent",
+        isSevere && "border-l-red-500 bg-red-500/5",
+        isMild   && "border-l-amber-500 bg-amber-500/5",
         busy     && "opacity-60",
       )}
     >
@@ -250,13 +282,13 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
             >
               {item.title || item.describe || item.doc_no || item.entity_id?.slice(0,8)}
             </Link>
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{item.label}</span>
+            <span className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{item.label}</span>
             <StatusPill status={item.status} />
             {guardLog && (
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded-full font-bold",
-                  isSevere ? "bg-red-500/20 text-red-700 dark:text-red-300" : "bg-amber-500/20 text-amber-700 dark:text-amber-300",
+                  "inline-flex items-center gap-0.5 text-[11px] uppercase tracking-wide px-1.5 py-0.5 rounded-full font-bold",
+                  isSevere ? "bg-red-500/20 text-red-800 dark:text-red-300" : "bg-amber-500/20 text-amber-800 dark:text-amber-300",
                 )}
                 title={guardLog.message}
               >
@@ -265,8 +297,10 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-            <span>menunggu <b className="text-foreground">{item.step_label}</b></span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+            <span>
+              {item.step_label ? <>menunggu <b className="text-foreground">{item.step_label}</b></> : "menunggu persetujuan"}
+            </span>
             <span className="text-muted-foreground/60">·</span>
             <span>{fmtRelative(item.submitted_at || item.created_at)}</span>
             {item.amount > 0 && (
@@ -280,11 +314,13 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
 
         {/* Inline action buttons */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* Aksi baris = outline/ghost (tombol utama hitam/hijau hanya untuk aksi layar, §10.1). */}
           <Button
             size="sm"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onApprove(); }}
-            className="h-7 px-2.5 gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+            variant="outline"
+            className="gap-1 text-emerald-800 dark:text-emerald-400 border-emerald-600/40 hover:bg-emerald-500/10"
             data-testid={`quick-approve-${item.entity_id}`}
           >
             <Check className="h-3 w-3" />
@@ -292,17 +328,17 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={busy}
             onClick={e => { e.stopPropagation(); onReject(); }}
-            className="h-7 px-2.5 gap-1 text-xs border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
+            className="gap-1 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10"
             data-testid={`quick-reject-${item.entity_id}`}
           >
             <X className="h-3 w-3" />
             <span className="hidden sm:inline">Tolak</span>
           </Button>
           <Link to={item.link} onClick={e => e.stopPropagation()}>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" data-testid={`detail-${item.entity_id}`}>
+            <Button size="icon-sm" variant="ghost" aria-label="Buka detail" data-testid={`detail-${item.entity_id}`}>
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -311,7 +347,7 @@ function SwipeRow({ item, index, guardLog, busy, onApprove, onReject }) {
 
       {/* Mobile swipe hint — satu kali di baris pertama saja */}
       {index === 0 && (
-        <p className="md:hidden text-[10px] text-muted-foreground/60 mt-1.5 text-center italic">
+        <p className="md:hidden text-xs text-muted-foreground/60 mt-1.5 text-center italic">
           Swipe kanan = setujui · kiri = tolak
         </p>
       )}

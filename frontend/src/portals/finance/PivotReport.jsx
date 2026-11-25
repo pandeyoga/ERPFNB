@@ -11,7 +11,9 @@ import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
 import { fmtRp, fmtNumber, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+
+const LABEL = "text-xs font-medium text-muted-foreground";
+const shortLabel = (label, fallback) => String(label || fallback || "").split(" (")[0];
 
 export default function PivotReport() {
   const [catalog, setCatalog] = useState(null);
@@ -31,7 +33,7 @@ export default function PivotReport() {
   }, []);
 
   async function load() {
-    if (dimX === dimY) { toast.error("Dim X & Y harus berbeda"); return; }
+    if (dimX === dimY) { toast.error("Dimensi baris & kolom harus berbeda"); return; }
     setLoading(true);
     try {
       const r = await api.get("/reports/pivot", {
@@ -39,7 +41,7 @@ export default function PivotReport() {
       });
       setData(unwrap(r));
     } catch (e) {
-      toast.error("Gagal load pivot: " + (e.response?.data?.errors?.[0]?.message || e.message));
+      toast.error("Gagal memuat pivot: " + (e.response?.data?.errors?.[0]?.message || e.message));
     } finally { setLoading(false); }
   }
   useEffect(() => { if (catalog) load(); }, [dimX, dimY, metric, periodFrom, periodTo, catalog]); // eslint-disable-line
@@ -70,9 +72,11 @@ export default function PivotReport() {
 
   const isCount = metric === "transaction_count" || metric === "po_count" || metric === "gr_count";
   const fmt = isCount ? fmtNumber : fmtRp;
+  const dimLabel = (key) => shortLabel(catalog.dimensions.find(d => d.key === key)?.label, key);
+  const metricName = shortLabel(catalog.metrics.find(m => m.key === metric)?.label, metric);
 
   const pivotColumns = data ? [
-    { key: "__label", label: `${dimY} \\ ${dimX}`, primary: true,
+    { key: "__label", label: `${dimLabel(dimY)} \\ ${dimLabel(dimX)}`, primary: true,
       render: (r) => <span className="font-medium">{r.__label}</span> },
     ...data.x_labels.map((xl, ci) => ({
       key: `c${ci}`, label: xl, numeric: true, className: "relative",
@@ -99,39 +103,39 @@ export default function PivotReport() {
   }) : [];
 
   return (
-    <div className="space-y-4" data-testid="pivot-page">
-      <div className="glass-card p-4 grid grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+    <div className="space-y-3 lg:space-y-4" data-testid="pivot-page">
+      <div className="glass-card p-3 grid grid-cols-2 lg:grid-cols-6 gap-3 items-end">
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Y-axis (rows)</Label>
-          <SimpleSelect value={dimY} onValueChange={setDimY}
+          <Label className={LABEL}>Baris (sumbu Y)</Label>
+          <SimpleSelect value={dimY} onValueChange={setDimY} ariaLabel="Baris (sumbu Y)"
             options={catalog.dimensions.map(d => ({ value: d.key, label: d.label }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="pivot-dim-y" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">X-axis (cols)</Label>
-          <SimpleSelect value={dimX} onValueChange={setDimX}
+          <Label className={LABEL}>Kolom (sumbu X)</Label>
+          <SimpleSelect value={dimX} onValueChange={setDimX} ariaLabel="Kolom (sumbu X)"
             options={catalog.dimensions.filter(d => d.key !== dimY).map(d => ({ value: d.key, label: d.label }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="pivot-dim-x" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Metric</Label>
-          <SimpleSelect value={metric} onValueChange={setMetric}
-            options={catalog.metrics.map(m => ({ value: m.key, label: m.key }))}
+          <Label className={LABEL}>Metrik</Label>
+          <SimpleSelect value={metric} onValueChange={setMetric} ariaLabel="Metrik"
+            options={catalog.metrics.map(m => ({ value: m.key, label: shortLabel(m.label, m.key) }))}
             className="glass-input rounded-lg w-full h-9 text-sm mt-1" testId="pivot-metric" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Dari</Label>
-          <Input type="date" value={periodFrom} onChange={e => setPeriodFrom(e.target.value)}
+          <Label htmlFor="pivot-from" className={LABEL}>Dari</Label>
+          <Input id="pivot-from" type="date" value={periodFrom} onChange={e => setPeriodFrom(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="pivot-from" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Hingga</Label>
-          <Input type="date" value={periodTo} onChange={e => setPeriodTo(e.target.value)}
+          <Label htmlFor="pivot-to" className={LABEL}>Hingga</Label>
+          <Input id="pivot-to" type="date" value={periodTo} onChange={e => setPeriodTo(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="pivot-to" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="rounded-full gap-2 h-9 col-span-2 lg:col-span-1 lg:ml-auto"
+        <Button onClick={exportCsv} variant="outline" className="col-span-2 lg:col-span-1"
           disabled={!data} data-testid="pivot-export-csv">
-          <Download className="h-4 w-4" /> CSV
+          <Download /> Ekspor CSV
         </Button>
       </div>
 
@@ -139,10 +143,10 @@ export default function PivotReport() {
 
       {!loading && data && (
         <div className="glass-card p-0 overflow-hidden">
-          <div className="px-5 py-3 border-b border-border/30 flex items-center justify-between flex-wrap gap-2">
-            <h3 className="font-semibold">{dimY} × {dimX} — {metric}</h3>
+          <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between flex-wrap gap-2">
+            <h3 className="text-sm md:text-base font-semibold">{dimLabel(dimY)} × {dimLabel(dimX)} — {metricName}</h3>
             <div className="text-sm">
-              Total: <span className="font-bold tabular-nums">{fmt(data.grand_total)}</span>
+              Total: <span className="font-semibold tabular-nums">{fmt(data.grand_total)}</span>
             </div>
           </div>
           <DataTable
@@ -150,7 +154,7 @@ export default function PivotReport() {
             columns={pivotColumns}
             keyField="id"
             rowTestIdPrefix="pivot-row"
-            empty={<div className="p-8"><EmptyState title="Tidak ada data" description="Tidak ada data untuk kombinasi dimensi/periode ini." /></div>}
+            empty={<div className="p-4"><EmptyState title="Tidak ada data" description="Tidak ada data untuk kombinasi dimensi/periode ini." /></div>}
             footer={data.y_labels.length > 0 ? (
               <tr className="bg-muted/30 font-bold border-t-2 border-border">
                 <td className="px-4 py-3">Total</td>

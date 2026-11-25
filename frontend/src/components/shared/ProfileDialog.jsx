@@ -69,7 +69,7 @@ export default function ProfileDialog({ open, onOpenChange }) {
             label="Akses Data"
             value={scopeValue}
           />
-          <Row icon={ShieldCheck} label="Permissions" value={isFullAccess ? "Semua (superadmin)" : `${perms.length} permission`} />
+          <Row icon={ShieldCheck} label="Hak Akses" value={isFullAccess ? "Semua (superadmin)" : `${perms.length} hak akses`} />
           {user.last_login_at && (
             <Row icon={Building2} label="Login Terakhir" value={formatDateID(user.last_login_at)} />
           )}

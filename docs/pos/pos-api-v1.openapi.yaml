@@ -1,0 +1,810 @@
+openapi: 3.1.0
+info:
+  title: FnB ERP — POS Integration API
+  version: 1.0.0-draft
+  description: |
+    Kontrak target untuk aplikasi POS mobile. Penjelasan lengkap (status per endpoint, aturan bisnis,
+    jalur interim) ada di docs/pos/POS_API_CONTRACT.md. Semua respons memakai envelope
+    `{success, data, errors, meta}`. Uang = integer Rupiah. Waktu = ISO-8601 dengan offset.
+servers:
+  - url: https://erp.example.com/api/pos/v1
+security:
+  - deviceBearer: []
+tags:
+  - name: devices
+  - name: sync
+  - name: orders
+  - name: shifts
+  - name: members
+
+paths:
+  /devices/register:
+    post:
+      tags: [devices]
+      security: []
+      summary: Pair a device with an outlet using a one-time pairing code
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pairing_code, device_name, platform, app_version]
+              properties:
+                pairing_code: { type: string, minLength: 8, maxLength: 8 }
+                device_name: { type: string }
+                platform: { type: string, enum: [android, ios] }
+                app_version: { type: string }
+      responses:
+        '201':
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          device_id: { type: string, format: uuid }
+                          terminal_code: { type: string, example: T01 }
+                          outlet_id: { type: string, format: uuid }
+                          device_secret: { type: string, description: shown once — store in secure storage }
+                          refresh_token: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /auth/token:
+    post:
+      tags: [devices]
+      security: []
+      summary: Exchange device refresh token for a short-lived access token (15 min)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grant_type, device_id, refresh_token]
+              properties:
+                grant_type: { type: string, enum: [device_refresh] }
+                device_id: { type: string, format: uuid }
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token: { type: string }
+                          expires_in: { type: integer, example: 900 }
+                          refresh_token: { type: string }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /auth/staff-login:
+    post:
+      tags: [devices]
+      summary: Cashier PIN login on a paired device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_code, pin]
+              properties:
+                employee_code: { type: string }
+                pin: { type: string, minLength: 4, maxLength: 8 }
+      responses:
+        '200':
+          description: Staff session
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          staff_session_id: { type: string }
+                          staff: { $ref: '#/components/schemas/Staff' }
+                          permissions: { type: array, items: { type: string } }
+        '401': { $ref: '#/components/responses/Error' }
+
+  /sync/bootstrap:
+    get:
+      tags: [sync]
+      summary: Full master-data snapshot for the device's outlet
+      responses:
+        '200':
+          description: Snapshot
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/Bootstrap' }
+
+  /sync/changes:
+    get:
+      tags: [sync]
+      summary: Incremental changes (upserts + tombstones) since a cursor
+      parameters:
+        - { name: since, in: query, required: true, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 500, maximum: 1000 } }
+      responses:
+        '200':
+          description: Changes page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          changes:
+                            type: array
+                            items:
+                              type: object
+                              required: [entity, op, id, version]
+                              properties:
+                                entity: { type: string, enum: [product, category, modifier_group, price, tax_policy, payment_method, promotion, staff, availability, outlet] }
+                                op: { type: string, enum: [upsert, delete] }
+                                id: { type: string }
+                                version: { type: integer }
+                                data: { type: object, description: full entity on upsert }
+                      meta: { $ref: '#/components/schemas/CursorMeta' }
+
+  /number-blocks:
+    post:
+      tags: [orders]
+      summary: Reserve a block of receipt numbers for offline numbering
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                size: { type: integer, default: 500, maximum: 2000 }
+      responses:
+        '201':
+          description: Block reserved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          prefix: { type: string, example: CFS-T01-261024- }
+                          first: { type: integer }
+                          last: { type: integer }
+                          expires_on: { type: string, format: date }
+
+  /orders/quote:
+    post:
+      tags: [orders]
+      summary: Price/tax/points preview without persisting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderIn' }
+      responses:
+        '200':
+          description: Server totals
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/OrderResult' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /orders:
+    post:
+      tags: [orders]
+      summary: Submit one closed order (idempotent)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OrderIn' }
+      responses:
+        '201':
+          description: Accepted (new)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/OrderResult' }
+        '200':
+          description: Duplicate — original result replayed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/OrderResult' }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [orders]
+      summary: List orders of the device's outlet
+      parameters:
+        - { name: business_date, in: query, schema: { type: string, format: date } }
+        - { name: shift_id, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: per_page, in: query, schema: { type: integer, default: 50, maximum: 200 } }
+      responses:
+        '200':
+          description: Orders page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { type: array, items: { $ref: '#/components/schemas/OrderResult' } }
+
+  /orders/batch:
+    post:
+      tags: [orders]
+      summary: Upload up to 200 offline orders; each processed idempotently
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orders]
+              properties:
+                orders: { type: array, maxItems: 200, items: { $ref: '#/components/schemas/OrderIn' } }
+      responses:
+        '200':
+          description: Per-order results
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          results:
+                            type: array
+                            items:
+                              type: object
+                              required: [id, outcome]
+                              properties:
+                                id: { type: string }
+                                outcome: { type: string, enum: [accepted, duplicate, rejected] }
+                                error: { $ref: '#/components/schemas/ErrorItem' }
+                                result: { $ref: '#/components/schemas/OrderResult' }
+
+  /orders/{order_id}:
+    get:
+      tags: [orders]
+      summary: Server status and final totals of an order
+      parameters: [ { name: order_id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200':
+          description: Order
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/OrderResult' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /orders/{order_id}/void:
+    post:
+      tags: [orders]
+      summary: Void an order of an open business day (supervisor authorisation)
+      parameters:
+        - { name: order_id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason, supervisor_pin]
+              properties:
+                reason: { type: string, minLength: 3 }
+                supervisor_pin: { type: string }
+      responses:
+        '200': { description: Voided }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /refunds:
+    post:
+      tags: [orders]
+      summary: Full or partial refund of a closed order
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, order_id, lines, method_code, reason, supervisor_pin]
+              properties:
+                id: { type: string, description: client UUID v7 }
+                order_id: { type: string }
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    required: [line_id, qty]
+                    properties:
+                      line_id: { type: string }
+                      qty: { type: number }
+                method_code: { type: string }
+                reason: { type: string }
+                supervisor_pin: { type: string }
+      responses:
+        '201': { description: Refund recorded }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /shifts/open:
+    post:
+      tags: [shifts]
+      summary: Open a shift on this terminal (one open shift per terminal)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, staff_id, opening_float]
+              properties:
+                id: { type: string, description: client UUID v7 }
+                staff_id: { type: string }
+                opening_float: { type: integer, minimum: 0 }
+      responses:
+        '201': { description: Shift opened }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /shifts/{shift_id}/cash-movements:
+    post:
+      tags: [shifts]
+      summary: Pay-in, pay-out or cash drop
+      parameters:
+        - { name: shift_id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, type, amount, reason]
+              properties:
+                id: { type: string }
+                type: { type: string, enum: [pay_in, pay_out, drop] }
+                amount: { type: integer, minimum: 1 }
+                reason: { type: string }
+                supervisor_pin: { type: string }
+      responses:
+        '201': { description: Recorded }
+
+  /shifts/{shift_id}/x-report:
+    get:
+      tags: [shifts]
+      summary: Running shift report (does not close the shift)
+      parameters: [ { name: shift_id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200':
+          description: X report
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/ShiftReport' }
+
+  /shifts/{shift_id}/close:
+    post:
+      tags: [shifts]
+      summary: Close shift with blind cash count → Z report
+      parameters:
+        - { name: shift_id, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [counted_cash, counted_by]
+              properties:
+                counted_cash: { type: integer, minimum: 0 }
+                counted_by: { type: string }
+                blind: { type: boolean, default: true }
+      responses:
+        '200':
+          description: Z report
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/ShiftReport' }
+
+  /members:
+    get:
+      tags: [members]
+      summary: Look up a loyalty member by phone (any Indonesian format)
+      parameters: [ { name: phone, in: query, required: true, schema: { type: string } } ]
+      responses:
+        '200':
+          description: Member or null
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - properties:
+                      data:
+                        oneOf:
+                          - $ref: '#/components/schemas/Member'
+                          - type: 'null'
+    post:
+      tags: [members]
+      summary: Enrol a member at the counter (idempotent on phone)
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string }
+                full_name: { type: string }
+                consent_marketing: { type: boolean, default: false }
+      responses:
+        '200': { description: Existing member returned }
+        '201': { description: Member created }
+
+components:
+  securitySchemes:
+    deviceBearer:
+      type: http
+      scheme: bearer
+      description: Short-lived device access token (15 min) from /auth/token
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID per business operation; retries reuse the same key (stored 7 days)
+      schema: { type: string, format: uuid }
+
+  responses:
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  schemas:
+    Envelope:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+        data: {}
+        errors:
+          oneOf:
+            - type: 'null'
+            - type: array
+              items: { $ref: '#/components/schemas/ErrorItem' }
+        meta:
+          type: object
+          properties:
+            request_id: { type: string }
+            server_time: { type: string, format: date-time }
+
+    ErrorEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - properties:
+            success: { const: false }
+
+    ErrorItem:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [VALIDATION_ERROR, UNAUTHORIZED, TOKEN_EXPIRED, INSUFFICIENT_PERMISSION, OUTLET_OUT_OF_SCOPE,
+                 DEVICE_REVOKED, NOT_FOUND, CONFLICT, IDEMPOTENCY_MISMATCH, PERIOD_LOCKED, DAY_CLOSED,
+                 PRICE_MISMATCH, TAX_MISMATCH, TOTAL_MISMATCH, ITEM_UNAVAILABLE, RATE_LIMITED,
+                 INTERNAL_ERROR, MAINTENANCE]
+        message: { type: string, description: Indonesian, user-displayable }
+        field: { type: string }
+
+    CursorMeta:
+      type: object
+      properties:
+        next_cursor: { type: string }
+        has_more: { type: boolean }
+        server_time: { type: string, format: date-time }
+
+    Money:
+      type: integer
+      description: Integer Rupiah (no decimals)
+
+    Staff:
+      type: object
+      properties:
+        id: { type: string }
+        employee_code: { type: string }
+        display_name: { type: string }
+        roles: { type: array, items: { type: string } }
+
+    Bootstrap:
+      type: object
+      properties:
+        outlet:
+          type: object
+          properties:
+            id: { type: string }
+            code: { type: string }
+            name: { type: string }
+            brand_id: { type: string }
+            timezone: { type: string, example: Asia/Jakarta }
+            business_day_cutoff: { type: string, example: '04:00' }
+            receipt_header: { type: string }
+            receipt_footer: { type: string }
+        terminal:
+          type: object
+          properties:
+            id: { type: string }
+            code: { type: string }
+            receipt_prefix: { type: string }
+        tax_policy: { $ref: '#/components/schemas/TaxPolicy' }
+        payment_methods: { type: array, items: { $ref: '#/components/schemas/PaymentMethod' } }
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              sort_order: { type: integer }
+              updated_at: { type: string, format: date-time }
+        products: { type: array, items: { $ref: '#/components/schemas/Product' } }
+        modifier_groups: { type: array, items: { $ref: '#/components/schemas/ModifierGroup' } }
+        promotions: { type: array, items: { type: object } }
+        staff: { type: array, items: { $ref: '#/components/schemas/Staff' } }
+        sync_cursor: { type: string }
+
+    TaxPolicy:
+      type: object
+      properties:
+        pb1_rate: { type: number, example: 0.10 }
+        service_charge_rate: { type: number, example: 0.05 }
+        price_includes_tax: { type: boolean }
+        sc_taxable: { type: boolean }
+        rounding:
+          type: object
+          properties:
+            mode: { type: string, enum: [none, nearest, up, down] }
+            unit: { type: integer, example: 100 }
+        effective_from: { type: string, format: date }
+
+    PaymentMethod:
+      type: object
+      properties:
+        code: { type: string, example: QRIS }
+        name: { type: string }
+        type: { type: string, enum: [cash, card, qris, ewallet, transfer, voucher, other] }
+        requires_reference: { type: boolean }
+        opens_drawer: { type: boolean }
+
+    Product:
+      type: object
+      required: [id, sku, name, price, tax_category, revenue_bucket, available]
+      properties:
+        id: { type: string }
+        sku: { type: string }
+        name: { type: string }
+        category_id: { type: string }
+        price: { $ref: '#/components/schemas/Money' }
+        tax_category: { type: string, enum: [pb1, ppn, exempt] }
+        service_charge: { type: boolean }
+        revenue_bucket: { type: string, enum: [food, beverage, other] }
+        available: { type: boolean }
+        image_url: { type: string }
+        modifier_group_ids: { type: array, items: { type: string } }
+        updated_at: { type: string, format: date-time }
+
+    ModifierGroup:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        min: { type: integer }
+        max: { type: integer }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              price_delta: { $ref: '#/components/schemas/Money' }
+
+    OrderLine:
+      type: object
+      required: [line_id, product_id, qty, unit_price]
+      properties:
+        line_id: { type: string }
+        product_id: { type: string }
+        sku: { type: string }
+        name: { type: string }
+        qty: { type: number, exclusiveMinimum: 0 }
+        unit_price: { $ref: '#/components/schemas/Money' }
+        modifiers:
+          type: array
+          items:
+            type: object
+            properties:
+              option_id: { type: string }
+              name: { type: string }
+              price_delta: { $ref: '#/components/schemas/Money' }
+              qty: { type: number, default: 1 }
+        discount:
+          type: object
+          properties:
+            type: { type: string, enum: [percent, amount] }
+            value: { type: number }
+            reason: { type: string }
+            promotion_id: { type: string }
+            supervisor_pin: { type: string, description: required for manual discounts }
+        note: { type: string }
+
+    Payment:
+      type: object
+      required: [method_code, amount]
+      properties:
+        method_code: { type: string }
+        amount: { $ref: '#/components/schemas/Money' }
+        tendered: { $ref: '#/components/schemas/Money' }
+        change: { $ref: '#/components/schemas/Money' }
+        reference: { type: string, description: card/QRIS/e-wallet reference }
+
+    OrderIn:
+      type: object
+      required: [id, receipt_no, outlet_id, terminal_id, shift_id, staff_id, order_type, opened_at, closed_at, lines, payments, total, status]
+      properties:
+        id: { type: string, description: client UUID v7 }
+        receipt_no: { type: string, example: CFS-T01-261024-0042 }
+        outlet_id: { type: string }
+        terminal_id: { type: string }
+        shift_id: { type: string }
+        staff_id: { type: string }
+        order_type: { type: string, enum: [dine_in, takeaway, delivery] }
+        channel: { type: string, enum: [walk_in, gofood, grabfood, shopeefood, reservation, other], default: walk_in }
+        table_no: { type: string }
+        pax: { type: integer }
+        reservation_id: { type: string }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: string, format: date-time }
+        customer:
+          type: object
+          properties:
+            member_id: { type: string }
+            phone: { type: string }
+        lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/OrderLine' } }
+        order_discounts:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string, enum: [voucher, promotion, manual] }
+              voucher_code: { type: string }
+              promotion_id: { type: string }
+              value: { type: number }
+              supervisor_pin: { type: string }
+        service_charge: { $ref: '#/components/schemas/Money' }
+        tax: { $ref: '#/components/schemas/Money' }
+        rounding: { type: integer }
+        total: { $ref: '#/components/schemas/Money' }
+        payments: { type: array, minItems: 1, items: { $ref: '#/components/schemas/Payment' } }
+        status: { type: string, enum: [closed, voided] }
+
+    OrderResult:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [accepted, voided, refunded, partially_refunded] }
+        business_date: { type: string, format: date }
+        receipt_no: { type: string }
+        server_totals:
+          type: object
+          properties:
+            subtotal: { $ref: '#/components/schemas/Money' }
+            discount: { $ref: '#/components/schemas/Money' }
+            service_charge: { $ref: '#/components/schemas/Money' }
+            tax: { $ref: '#/components/schemas/Money' }
+            rounding: { type: integer }
+            total: { $ref: '#/components/schemas/Money' }
+        loyalty:
+          type: object
+          properties:
+            member_id: { type: string }
+            points_earned: { type: integer }
+        server_breakdown:
+          type: array
+          description: present on 422 *_MISMATCH — per-line server pricing
+          items: { type: object }
+
+    ShiftReport:
+      type: object
+      properties:
+        shift_id: { type: string }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: string, format: date-time }
+        opening_float: { $ref: '#/components/schemas/Money' }
+        sales_by_method:
+          type: array
+          items:
+            type: object
+            properties:
+              method_code: { type: string }
+              amount: { $ref: '#/components/schemas/Money' }
+              count: { type: integer }
+        voids: { type: object, properties: { count: { type: integer }, amount: { $ref: '#/components/schemas/Money' } } }
+        refunds: { type: object, properties: { count: { type: integer }, amount: { $ref: '#/components/schemas/Money' } } }
+        discounts: { $ref: '#/components/schemas/Money' }
+        pay_in: { $ref: '#/components/schemas/Money' }
+        pay_out: { $ref: '#/components/schemas/Money' }
+        expected_cash: { $ref: '#/components/schemas/Money' }
+        counted_cash: { $ref: '#/components/schemas/Money' }
+        variance: { type: integer }
+
+    Member:
+      type: object
+      properties:
+        id: { type: string }
+        full_name: { type: string }
+        phone: { type: string, description: E.164 }
+        loyalty_tier: { type: string, enum: [bronze, silver, gold, platinum] }
+        total_points: { type: integer }
+        multiplier: { type: number }

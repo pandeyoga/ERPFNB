@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ok_envelope
-from core.security import require_perm
+from core.security import enforce_outlet_scope, require_any_perm, require_perm, resolve_outlet_filter
 from services import outlet_service
 
 router = APIRouter(prefix="/api/outlet", tags=["outlet-ops"])
@@ -32,7 +32,7 @@ async def list_daily_sales(
     # Build outlet_ids scope
     outlet_ids = _resolve_outlet_ids(user, outlet_id)
     items, meta = await outlet_service.list_daily_sales(
-        outlet_ids=outlet_ids if outlet_ids else None,
+        outlet_ids=outlet_ids,
         date_from=date_from,
         date_to=date_to,
         status=status,
@@ -47,14 +47,14 @@ async def get_daily_sales(
     id_: str,
     user: dict = Depends(require_perm("outlet.daily_sales.read")),
 ):
-    """Get single daily sales record."""
-    return ok_envelope(await outlet_service.get_daily_sales(id_))
+    """Get single daily sales record (outlet-scoped)."""
+    return ok_envelope(await outlet_service.get_daily_sales(id_, user=user))
 
 
 @router.post("/daily-sales/draft")
 async def upsert_daily_sales_draft(
     payload: dict = Body(...),
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_any_perm("outlet.daily_sales.create", "outlet.daily_sales.update")),
 ):
     """Create or update a DRAFT daily sales record (one per outlet+date).
 
@@ -66,7 +66,7 @@ async def upsert_daily_sales_draft(
 @router.post("/daily-sales/{id_}/submit")
 async def submit_daily_sales(
     id_: str,
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_perm("outlet.daily_sales.submit")),
 ):
     """Submit daily sales for Finance validation."""
     return ok_envelope(await outlet_service.submit_daily_sales(id_, user=user))
@@ -103,12 +103,12 @@ async def list_petty_cash(
     date_to: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_any_perm("outlet.petty_cash.read", "outlet.daily_sales.read")),
 ):
     """List petty cash transactions for the user's outlet scope."""
     outlet_ids = _resolve_outlet_ids(user, outlet_id)
     items, meta = await outlet_service.list_petty_cash(
-        outlet_ids=outlet_ids if outlet_ids else None,
+        outlet_ids=outlet_ids,
         date_from=date_from,
         date_to=date_to,
         page=page,
@@ -120,9 +120,10 @@ async def list_petty_cash(
 @router.get("/petty-cash/balance")
 async def petty_cash_balance(
     outlet_id: str = Query(..., description="Outlet ID to get balance for"),
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_any_perm("outlet.petty_cash.read", "outlet.daily_sales.read")),
 ):
     """Get current petty cash balance for a specific outlet."""
+    enforce_outlet_scope(user, outlet_id)
     balance = await outlet_service.petty_cash_balance(outlet_id)
     return ok_envelope({"outlet_id": outlet_id, "balance": balance})
 
@@ -130,7 +131,7 @@ async def petty_cash_balance(
 @router.post("/petty-cash")
 async def add_petty_cash(
     payload: dict = Body(...),
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_perm("outlet.petty_cash.create")),
 ):
     """Record a petty cash transaction (purchase / replenish / adjustment)."""
     return ok_envelope(await outlet_service.add_petty_cash(payload, user=user))
@@ -160,7 +161,7 @@ async def list_urgent_purchases(
     """List urgent purchases for the user's outlet scope."""
     outlet_ids = _resolve_outlet_ids(user, outlet_id)
     items, meta = await outlet_service.list_urgent_purchases(
-        outlet_ids=outlet_ids if outlet_ids else None,
+        outlet_ids=outlet_ids,
         status=status,
         page=page,
         per_page=per_page,
@@ -171,7 +172,7 @@ async def list_urgent_purchases(
 @router.post("/urgent-purchases")
 async def create_urgent_purchase(
     payload: dict = Body(...),
-    user: dict = Depends(require_perm("outlet.daily_sales.read")),
+    user: dict = Depends(require_perm("outlet.urgent_purchase.create")),
 ):
     """Create a new urgent purchase request."""
     return ok_envelope(await outlet_service.create_urgent_purchase(payload, user=user))
@@ -190,19 +191,6 @@ async def approve_urgent_purchase(
 # HELPERS
 # ─────────────────────────────────────────────────────────
 
-def _resolve_outlet_ids(user: dict, outlet_id_filter: Optional[str]) -> list[str]:
-    """Resolve the list of outlet IDs to query based on user scope and filter."""
-    user_outlet_ids = user.get("outlet_ids", [])
-    # Super-admins have "*" in permissions, can see all
-    user_perms = set(user.get("permissions", []))
-    is_superadmin = "*" in user_perms
-
-    if is_superadmin:
-        # If specific filter requested, use it; else empty list = no restriction
-        if outlet_id_filter:
-            return [outlet_id_filter]
-        return []  # Will be handled: empty list = all outlets (no outlet_id filter in query)
-    else:
-        if outlet_id_filter and outlet_id_filter in user_outlet_ids:
-            return [outlet_id_filter]
-        return user_outlet_ids if user_outlet_ids else []
+def _resolve_outlet_ids(user: dict, outlet_id_filter: Optional[str]) -> Optional[list[str]]:
+    """Outlet scope for list queries (None = unrestricted, [] = no accessible outlet)."""
+    return resolve_outlet_filter(user, outlet_id_filter)

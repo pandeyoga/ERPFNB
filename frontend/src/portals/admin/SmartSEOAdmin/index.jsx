@@ -24,6 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
 
 // ─── Page Registry ─────────────────────────────────────────────────────────────
 const PUBLIC_PAGES = [
@@ -74,6 +76,8 @@ export default function SmartSEO() {
   const [showAnalysis, setShowAnalysis] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [aiElapsed, setAiElapsed] = useState(0);
+  const [formFor, setFormFor] = useState(null); // halaman yang isinya sudah dimuat ke form
+  const { dirty, markSaved } = useDirtyState(form, formFor === selected.path);
   const aiTimerRef = useRef(null);
 
   // Start/stop elapsed timer for AI operations
@@ -132,6 +136,7 @@ export default function SmartSEO() {
     }
     setGenerated(null);
     setInputKeywords("");
+    setFormFor(selected.path);
   }, [selected.path, seoMap]); // eslint-disable-line
 
   const handleAnalyze = useCallback(async () => {
@@ -221,11 +226,12 @@ export default function SmartSEO() {
       };
       const r = await api.post("/seo/pages", payload);
       setSeoMap(m => ({ ...m, [selected.path]: r.data?.data }));
+      markSaved();
       toast.success("SEO settings disimpan!");
     } catch (e) {
       toast.error("Gagal menyimpan SEO settings");
     } finally { setSaving(false); }
-  }, [selected, form, analysis]);
+  }, [selected, form, analysis, markSaved]);
 
   const handleApplyGenerated = () => {
     if (!generated) return;
@@ -243,44 +249,38 @@ export default function SmartSEO() {
   const hasSeoSaved = !!seoMap[selected.path];
 
   return (
-    <div className="space-y-6" data-testid="smart-seo-page">
-      {/* Header */}
-      <div className="glass-card p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Smart SEO Optimization</h2>
-              <p className="text-sm text-muted-foreground">AI-powered keyword analysis & meta tag generator untuk website publik FnB Group</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+    <div className="space-y-3 lg:space-y-4" data-testid="smart-seo-page">
+      {/* Header — satu-satunya <h1> (judul = nama nav "Smart SEO") */}
+      <PageHeader
+        icon={Sparkles}
+        title="Smart SEO"
+        subtitle="Analisis keyword berbasis AI & generator meta tag untuk website publik FnB Group."
+        actions={
+          <>
             {aiPowered === true && (
-              <Badge className="bg-violet-100 text-violet-700 border-violet-200">
+              <Badge className="bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-500/30">
                 <Sparkles className="w-3 h-3 mr-1" /> AI Aktif
               </Badge>
             )}
             {aiPowered === false && (
-              <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+              <Badge className="bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30">
                 Mode Dasar
               </Badge>
             )}
+            {/* Satu tombol utama per layar = Simpan; aksi massal & generate memakai outline (DESIGN_SYSTEM §10.1) */}
             <Button
+              variant="outline"
               onClick={() => setBulkOpen(true)}
-              size="sm"
               data-testid="bulk-optimize-open-btn"
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white"
             >
-              <Sparkles className="w-4 h-4 mr-1.5" />
-              Optimize Semua
+              <Sparkles className="w-4 h-4" />
+              Optimasi Semua
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-12 gap-3 lg:gap-4">
         {/* Sidebar — page list */}
         <div className="col-span-12 lg:col-span-3 space-y-1">
           <div className="glass-card p-3">
@@ -291,7 +291,9 @@ export default function SmartSEO() {
               return (
                 <button
                   key={pg.path}
-                  onClick={() => setSelected(pg)}
+                  type="button"
+                  onClick={async () => { if (pg.path === selected.path || await confirmDiscard()) setSelected(pg); }}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left text-sm transition-all",
                     isActive
@@ -302,7 +304,7 @@ export default function SmartSEO() {
                 >
                   <span className="truncate">{pg.page_name}</span>
                   {saved ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 flex-shrink-0" />
                   ) : (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
                   )}
@@ -313,33 +315,29 @@ export default function SmartSEO() {
         </div>
 
         {/* Main editor */}
-        <div className="col-span-12 lg:col-span-9 space-y-4">
+        <div className="col-span-12 lg:col-span-9 space-y-3 lg:space-y-4">
           {/* Page header */}
           <div className="glass-card p-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-semibold text-base">{selected.page_name}</p>
-              <p className="text-xs text-muted-foreground font-mono">{selected.path}</p>
+              <h2 className="text-base md:text-lg font-semibold">{selected.page_name}</h2>
+              <p className="text-xs text-muted-foreground">{selected.path}</p>
             </div>
             <div className="flex items-center gap-2">
-              {hasSeoSaved && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs"><Check className="w-3 h-3 mr-1" />Tersimpan</Badge>}
-              <Button size="sm" onClick={handleSave} disabled={saving} data-testid="seo-save-btn">
-                {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                <span className="ml-1.5">Simpan</span>
-              </Button>
+              {hasSeoSaved && <Badge className="bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 text-xs"><Check className="w-3 h-3 mr-1" />Tersimpan</Badge>}
             </div>
           </div>
 
           {/* AI Keyword Input */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-4">
-              <Target className="w-4 h-4 text-violet-500" />
-              <h3 className="font-semibold text-sm">AI Keyword Analysis</h3>
+              <Target className="w-4 h-4 text-violet-700 dark:text-violet-400" />
+              <h3 className="text-sm md:text-base font-semibold">AI Keyword Analysis</h3>
             </div>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs text-muted-foreground">Keywords (pisahkan dengan koma)</Label>
+                <Label htmlFor="seo-form-keywords" className="text-xs text-muted-foreground">Keywords (pisahkan dengan koma)</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input
+                  <Input id="seo-form-keywords"
                     placeholder="restoran bandung, cafe premium, fine dining bandung..."
                     value={inputKeywords}
                     onChange={e => setInputKeywords(e.target.value)}
@@ -358,13 +356,14 @@ export default function SmartSEO() {
                     <span className="ml-1.5 hidden sm:inline">Analisa</span>
                   </Button>
                   <Button
+                    variant="outline"
                     onClick={handleGenerate}
                     disabled={generating || analyzing}
                     data-testid="seo-generate-btn"
-                    className="flex-shrink-0 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                    className="flex-shrink-0"
                   >
                     {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    <span className="ml-1.5 hidden sm:inline">Generate</span>
+                    <span className="ml-1.5 hidden sm:inline">Buat</span>
                   </Button>
                 </div>
               </div>
@@ -372,14 +371,14 @@ export default function SmartSEO() {
               {/* AI Processing Banner */}
               {(analyzing || generating) && (
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-200" data-testid="ai-processing-banner">
-                  <RefreshCw className="w-4 h-4 animate-spin text-violet-600 flex-shrink-0" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-violet-700 dark:text-violet-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-violet-700 dark:text-violet-300">
                       {analyzing ? "AI menganalisis keyword..." : "AI generate konten SEO..."}
                     </p>
-                    <p className="text-[11px] text-violet-500">Harap tunggu, proses AI membutuhkan ~15-25 detik</p>
+                    <p className="text-xs text-violet-700 dark:text-violet-400">Harap tunggu, proses AI membutuhkan ~15-25 detik</p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs text-violet-500 font-mono flex-shrink-0">
+                  <span className="flex items-center gap-1 text-xs text-violet-700 dark:text-violet-400 tabular-nums flex-shrink-0">
                     <Clock className="w-3.5 h-3.5" />
                     {aiElapsed}s
                   </span>
@@ -390,11 +389,13 @@ export default function SmartSEO() {
               {analysis && !analyzing && (
                 <div className="rounded-xl border border-violet-200 bg-violet-50/50 dark:bg-violet-950/20 p-4">
                   <button
+                    type="button"
                     className="flex items-center justify-between w-full"
                     onClick={() => setShowAnalysis(v => !v)}
+                    aria-expanded={showAnalysis}
                   >
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-violet-500" />
+                      <Zap className="w-4 h-4 text-violet-700 dark:text-violet-400" />
                       <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">Hasil Analisis AI</span>
                       <IntentBadge intent={analysis.primary_intent} />
                     </div>
@@ -416,19 +417,19 @@ export default function SmartSEO() {
                           <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Keyword Clusters</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {analysis.keyword_clusters.slice(0, 4).map((cluster, i) => (
-                              <div key={i} className="bg-white dark:bg-background/50 rounded-lg p-2.5 border border-border/50">
+                              <div key={i} className="bg-background dark:bg-background/50 rounded-lg p-2.5 border border-border/50">
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-xs font-semibold">{cluster.cluster_name}</span>
                                   <IntentBadge intent={cluster.intent} />
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {cluster.keywords?.slice(0, 4).map((kw, j) => (
-                                    <span key={j} className="text-[10px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
+                                    <span key={j} className="text-xs px-1.5 py-0.5 bg-muted rounded text-muted-foreground">{kw}</span>
                                   ))}
                                 </div>
                                 <div className="flex gap-2 mt-1.5">
-                                  <span className="text-[10px] text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
-                                  <span className="text-[10px] text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
+                                  <span className="text-xs text-muted-foreground">Vol: <span className="font-medium capitalize">{cluster.estimated_volume}</span></span>
+                                  <span className="text-xs text-muted-foreground">Comp: <span className="font-medium capitalize">{cluster.competition}</span></span>
                                 </div>
                               </div>
                             ))}
@@ -443,7 +444,7 @@ export default function SmartSEO() {
                           <ul className="space-y-1">
                             {analysis.quick_wins.map((win, i) => (
                               <li key={i} className="flex items-start gap-1.5 text-xs">
-                                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                                <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
                                 {win}
                               </li>
                             ))}
@@ -457,7 +458,7 @@ export default function SmartSEO() {
                           <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">AI Suggestions</p>
                           {analysis.suggested_title && <p className="text-xs"><span className="font-medium">Title:</span> {analysis.suggested_title}</p>}
                           {analysis.suggested_description && <p className="text-xs"><span className="font-medium">Desc:</span> {analysis.suggested_description}</p>}
-                          <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
+                          <Button size="sm" variant="outline" onClick={() => {
                             setForm(f => ({
                               ...f,
                               title: analysis.suggested_title || f.title,
@@ -469,7 +470,7 @@ export default function SmartSEO() {
                             }));
                             toast.success("Suggestions diterapkan!");
                           }}>
-                            <Check className="w-3 h-3 mr-1" />Apply Suggestions
+                            <Check className="w-3 h-3" />Apply Suggestions
                           </Button>
                         </div>
                       )}
@@ -481,50 +482,50 @@ export default function SmartSEO() {
           </div>
 
           {/* SEO Fields Editor */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-4">
               <Settings className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold text-sm">SEO Fields</h3>
+              <h3 className="text-sm md:text-base font-semibold">SEO Fields</h3>
             </div>
             <div className="grid grid-cols-1 gap-4">
               {/* Title */}
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">Title Tag *</Label>
+                  <Label htmlFor="seo-form-title-tag" className="text-xs">Title Tag *</Label>
                   <CharCounter value={form.title} {...CHAR_LIMITS.title} />
                 </div>
-                <Input
-                  className="mt-1 font-mono text-sm"
+                <Input id="seo-form-title-tag"
+                  className="mt-1"
                   placeholder="Contoh: The Coffeeshop Coffee & Dining Bandung | FnB Group"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   data-testid="seo-title-input"
                 />
-                <p className="text-[11px] text-muted-foreground mt-0.5">Ideal: 50–60 karakter (tampil di tab browser & SERP)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Ideal: 50–60 karakter (tampil di tab browser & SERP)</p>
               </div>
 
               {/* Meta Description */}
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">Meta Description *</Label>
+                  <Label htmlFor="seo-form-meta-description" className="text-xs">Meta Description *</Label>
                   <CharCounter value={form.description} {...CHAR_LIMITS.description} />
                 </div>
-                <Textarea
-                  className="mt-1 font-mono text-sm resize-none"
+                <Textarea id="seo-form-meta-description"
+                  className="mt-1 resize-none"
                   rows={3}
                   placeholder="Nikmati pengalaman kuliner premium FnB Group di Bandung. Dari specialty coffee hingga fine dining..."
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   data-testid="seo-description-input"
                 />
-                <p className="text-[11px] text-muted-foreground mt-0.5">Ideal: 148–160 karakter (tampil di SERP snippet)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Ideal: 148–160 karakter (tampil di SERP snippet)</p>
               </div>
 
               {/* Keywords */}
               <div>
-                <Label className="text-xs">Meta Keywords</Label>
-                <Input
-                  className="mt-1 font-mono text-sm"
+                <Label htmlFor="seo-form-meta-keywords" className="text-xs">Meta Keywords</Label>
+                <Input id="seo-form-meta-keywords"
+                  className="mt-1"
                   placeholder="restoran bandung, cafe premium bandung, fine dining bandung..."
                   value={form.keywords}
                   onChange={e => setForm(f => ({ ...f, keywords: e.target.value }))}
@@ -537,11 +538,11 @@ export default function SmartSEO() {
               {/* OG Title */}
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">OG Title (Social)</Label>
+                  <Label htmlFor="seo-form-og-title" className="text-xs">OG Title (Social)</Label>
                   <CharCounter value={form.og_title} {...CHAR_LIMITS.og_title} />
                 </div>
-                <Input
-                  className="mt-1 font-mono text-sm"
+                <Input id="seo-form-og-title"
+                  className="mt-1"
                   placeholder="OG title untuk social sharing (lebih engaging dari title tag)"
                   value={form.og_title}
                   onChange={e => setForm(f => ({ ...f, og_title: e.target.value }))}
@@ -552,11 +553,11 @@ export default function SmartSEO() {
               {/* OG Description */}
               <div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">OG Description (Social)</Label>
+                  <Label htmlFor="seo-form-og-description" className="text-xs">OG Description (Social)</Label>
                   <CharCounter value={form.og_description} {...CHAR_LIMITS.og_description} />
                 </div>
-                <Textarea
-                  className="mt-1 font-mono text-sm resize-none"
+                <Textarea id="seo-form-og-description"
+                  className="mt-1 resize-none"
                   rows={2}
                   placeholder="OG description untuk social media preview"
                   value={form.og_description}
@@ -567,9 +568,9 @@ export default function SmartSEO() {
 
               {/* OG Image URL */}
               <div>
-                <Label className="text-xs">OG Image URL</Label>
-                <Input
-                  className="mt-1 font-mono text-xs"
+                <Label htmlFor="seo-form-og-image-url" className="text-xs">OG Image URL</Label>
+                <Input id="seo-form-og-image-url"
+                  className="mt-1"
                   placeholder="https://... (1200×630px recommended)"
                   value={form.og_image}
                   onChange={e => setForm(f => ({ ...f, og_image: e.target.value }))}
@@ -580,9 +581,9 @@ export default function SmartSEO() {
               {/* Canonical + noindex */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Canonical Path</Label>
-                  <Input
-                    className="mt-1 font-mono text-sm"
+                  <Label htmlFor="seo-form-canonical-path" className="text-xs">Canonical Path</Label>
+                  <Input id="seo-form-canonical-path"
+                    className="mt-1"
                     value={form.canonical_path}
                     onChange={e => setForm(f => ({ ...f, canonical_path: e.target.value }))}
                   />
@@ -607,9 +608,9 @@ export default function SmartSEO() {
                   <Label className="text-xs">Focus Keywords (dari AI)</Label>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {form.focus_keywords.map((kw, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full text-xs flex items-center gap-1">
+                      <span key={i} className="px-2 py-0.5 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 rounded-full text-xs flex items-center gap-1">
                         {kw}
-                        <button onClick={() => setForm(f => ({ ...f, focus_keywords: f.focus_keywords.filter((_, j) => j !== i) }))}>
+                        <button type="button" aria-label={`Hapus keyword ${kw}`} onClick={() => setForm(f => ({ ...f, focus_keywords: f.focus_keywords.filter((_, j) => j !== i) }))}>
                           <Trash2 className="w-3 h-3" />
                         </button>
                       </span>
@@ -621,14 +622,17 @@ export default function SmartSEO() {
           </div>
 
           {/* Preview */}
-          <div className="glass-card p-5">
+          <div className="glass-card p-4">
             <button
+              type="button"
               className="flex items-center justify-between w-full mb-3"
               onClick={() => setShowPreview(v => !v)}
+              aria-expanded={showPreview}
+              data-testid="seo-preview-toggle"
             >
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-muted-foreground" />
-                <h3 className="font-semibold text-sm">Preview</h3>
+                <h3 className="text-sm md:text-base font-semibold">Pratinjau</h3>
               </div>
               {showPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
@@ -649,7 +653,7 @@ export default function SmartSEO() {
           <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold text-sm">Structured Data (JSON-LD)</h3>
+              <h3 className="text-sm md:text-base font-semibold">Structured Data (JSON-LD)</h3>
             </div>
             <p className="text-xs text-muted-foreground">
               JSON-LD schema (Organization, LocalBusiness, Restaurant) sudah otomatis diterapkan
@@ -657,12 +661,20 @@ export default function SmartSEO() {
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {["Organization", "WebSite", "Restaurant", "LocalBusiness", "BreadcrumbList"].map(s => (
-                <span key={s} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[11px] font-medium">
-                  ✓ {s}
+                <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-full text-xs font-medium">
+                  <Check className="w-3 h-3" /> {s}
                 </span>
               ))}
             </div>
           </div>
+
+          {/* Simpan selalu terlihat di bawah editor (DESIGN_SYSTEM §10.4). */}
+          <FormActionBar dirty={dirty} hint={`SEO untuk ${selected.page_name} (${selected.path})`}>
+            <Button onClick={handleSave} disabled={saving} data-testid="seo-save-btn">
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Simpan
+            </Button>
+          </FormActionBar>
         </div>
       </div>
 

@@ -102,6 +102,8 @@ async def compare(
             if unit_cost <= 0:
                 continue
             qty = float(ln.get("qty_received") or ln.get("qty") or 0)
+            if qty <= 0:
+                continue  # baris ditolak seluruhnya saat GR: harganya tidak dibayar
             key = (iid, vendor_id)
             bucket.setdefault(key, []).append({
                 "date": date, "unit_cost": unit_cost,

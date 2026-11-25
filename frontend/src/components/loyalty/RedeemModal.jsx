@@ -37,14 +37,14 @@ export default function RedeemModal({ open, onClose, reward, customer, token, on
 
       setRedemption(response.data);
       setShowSuccess(true);
-      toast.success("Reward berhasil ditukar! 🎉");
+      toast.success("Reward berhasil ditukar");
       
       // Notify parent
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      const message = err.response?.data?.detail || "Gagal menukar reward";
+      const message = (err.response?.data?.errors?.[0]?.message || err.response?.data?.detail) || "Gagal menukar reward";
       setError(message);
       toast.error(message);
     } finally {

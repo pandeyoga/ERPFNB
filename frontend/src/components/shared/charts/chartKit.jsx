@@ -37,7 +37,7 @@ export function fmtCompact(n) {
 
 /** Recharts-compatible axis defaults — spread onto <XAxis/> / <YAxis/>. */
 export const axisProps = {
-  tick: { fontSize: 11, fill: "hsl(var(--muted-foreground))" },
+  tick: { fontSize: 12, fill: "hsl(var(--muted-foreground))" },
   axisLine: { stroke: "hsl(var(--border))" },
   tickLine: false,
 };

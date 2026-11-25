@@ -5,27 +5,19 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from core.config import settings
-from core.runtime_config import get_setting
 from services import executive_service
 
 logger = logging.getLogger("aurora.ai_insights")
 
 
-async def _llm_chat(system: str, user_text: str, *, session_id: str = "insights",
-                    model_provider: str = "openai", model_id: str = "gpt-5-mini") -> str:
-    """Lightweight wrapper. Returns empty string if unavailable."""
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+async def _llm_chat(system: str, user_text: str, *, session_id: str = "insights", feature: str = "insights",
+                    user_id: str | None = None) -> str:
+    """Lightweight wrapper (Claude — services/ai/client.py). Returns empty string if unavailable."""
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return ""
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=session_id,
-            system_message=system,
-        ).with_model(model_provider, model_id)
-        return await chat.send_message(UserMessage(text=user_text)) or ""
+        return await ai_client.ask(system=system, user=user_text, feature=feature, user_id=user_id, max_tokens=2000)
     except Exception as e:  # noqa: BLE001
         logger.warning(f"LLM call failed: {e}")
         return ""
@@ -129,8 +121,8 @@ async def conversational_qa(question: str, *, user: dict) -> dict:
     """
     if not question or len(question.strip()) < 3:
         return {"answer": "Mohon ajukan pertanyaan yang lebih spesifik.", "sources": []}
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return {"answer": "Layanan AI tidak aktif. Hubungi admin.", "sources": []}
 
     kpi = await executive_service.kpis()
@@ -147,7 +139,7 @@ async def conversational_qa(question: str, *, user: dict) -> dict:
         "If data not in context, say 'Data tidak tersedia.' Do NOT hallucinate numbers."
     )
     prompt = f"CONTEXT:\n{context}\n\nQUESTION:\n{question.strip()}\n\nANSWER:"
-    answer = await _llm_chat(sys, prompt, session_id=f"qa-{user['id'][:8]}")
+    answer = await _llm_chat(sys, prompt, feature="exec_qa_legacy", user_id=user["id"])
     if not answer:
         return {"answer": "Maaf, layanan AI sedang sibuk. Coba lagi sebentar.", "sources": []}
     sources = [

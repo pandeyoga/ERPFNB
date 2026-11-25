@@ -1,7 +1,6 @@
 """Finance home dashboard and sales validation queue."""
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
 from typing import Optional
 
 from core.db import get_db, serialize
@@ -11,6 +10,7 @@ async def sales_validation_queue(
     *,
     period: Optional[str] = None,
     outlet_id: Optional[str] = None,
+    outlet_ids: Optional[list[str]] = None,
     status: Optional[str] = None,
     page: int = 1,
     per_page: int = 20,
@@ -20,7 +20,9 @@ async def sales_validation_queue(
     q: dict = {"deleted_at": None}
     if period:
         q["sales_date"] = {"$gte": f"{period}-01", "$lte": f"{period}-31"}
-    if outlet_id:
+    if outlet_ids is not None:
+        q["outlet_id"] = {"$in": outlet_ids}
+    elif outlet_id:
         q["outlet_id"] = outlet_id
     if status:
         q["status"] = status
@@ -41,16 +43,25 @@ async def sales_validation_queue(
     return result, {"page": page, "per_page": per_page, "total": total}
 
 
-async def finance_home() -> dict:
-    """Finance dashboard summary."""
-    db = get_db()
-    today = date.today().isoformat()
-    period = today[:7]
+async def finance_home(*, outlet_ids: Optional[list[str]] = None, scope=None) -> dict:
+    """Finance dashboard summary (Finance › Overview KPI tiles).
 
-    pending_sales = await db.daily_sales.count_documents({"deleted_at": None, "status": "submitted"})
+    Penjualan & jurnal mengikuti konteks brand/toko; AP, AR dan status periode tetap tingkat Group.
+    """
+    from core.clock import period_now
+    from services._finance.scope import coerce_scope
+    db = get_db()
+    period = period_now()  # SSOT-11: WIB business period, not the server's UTC date
+    ds: dict = {"deleted_at": None} if outlet_ids is None else {"deleted_at": None, "outlet_id": {"$in": outlet_ids}}
+    je: dict = {"deleted_at": None, **coerce_scope(scope).entry_match()}
+
+    pending_sales = await db.daily_sales.count_documents({**ds, "status": "submitted"})
+    rejected_sales = await db.daily_sales.count_documents({**ds, "status": "rejected"})
+    je_this_period = await db.journal_entries.count_documents({**je, "period": period})
+    je_total = await db.journal_entries.count_documents(je)
     period_from_service_start = f"{period}-01"
     revenue_agg = await db.daily_sales.aggregate([
-        {"$match": {"deleted_at": None, "status": "validated", "sales_date": {"$gte": period_from_service_start}}},
+        {"$match": {**ds, "status": "validated", "sales_date": {"$gte": period_from_service_start}}},
         {"$group": {"_id": None, "total": {"$sum": "$grand_total"}}},
     ]).to_list(1)
     revenue_mtd = float(revenue_agg[0]["total"]) if revenue_agg else 0.0
@@ -69,6 +80,12 @@ async def finance_home() -> dict:
     return {
         "period": period,
         "pending_sales_validation": pending_sales,
+        # UI-DATA-04: Finance Overview reads these keys — they were never returned, so the
+        # tiles always showed 0 while the validation queue held hundreds of daily sales.
+        "submitted_validations": pending_sales,
+        "rejected_count": rejected_sales,
+        "je_this_period": je_this_period,
+        "je_total": je_total,
         "revenue_mtd": round(revenue_mtd, 2),
         "ap_overdue_90p": round(ap_overdue_total, 2),
         "ar_outstanding": round(outstanding_ar, 2),

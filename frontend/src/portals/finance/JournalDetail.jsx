@@ -1,10 +1,11 @@
 /** Journal Detail with drill-down to source + reverse action. */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, RotateCcw, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft, RotateCcw, ExternalLink, BookOpenCheck } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -12,10 +13,12 @@ import StatusPill from "@/components/shared/StatusPill";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import KeyFacts from "@/components/shared/KeyFacts";
 
 export default function JournalDetail() {
   const { id } = useParams();
@@ -25,14 +28,17 @@ export default function JournalDetail() {
   const [loading, setLoading] = useState(true);
   const [revOpen, setRevOpen] = useState(false);
   const [reason, setReason] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   async function load() {
     setLoading(true);
+    setNotFound(false);
     try {
       const res = await api.get(`/finance/journals/${id}`);
       setJe(unwrap(res));
     } catch (e) {
-      toast.error("Gagal load journal");
+      setNotFound(true);
+      toast.error("Gagal memuat journal");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [id]); // eslint-disable-line
@@ -49,6 +55,14 @@ export default function JournalDetail() {
     }
   }
 
+  if (!loading && (notFound || !je)) return (
+    <div className="glass-card" data-testid="je-detail-not-found">
+      <EmptyState icon={BookOpenCheck} title="Journal tidak ditemukan"
+        description="Journal entry mungkin sudah dihapus atau tautannya salah."
+        action={<Button variant="outline" size="sm" onClick={() => navigate("/finance/journals")} data-testid="je-notfound-back">
+          <ArrowLeft className="h-4 w-4" />Kembali ke Journals</Button>} />
+    </div>
+  );
   if (loading || !je) return <LoadingState rows={6} />;
 
   const canReverse = can("finance.journal_entry.reverse") && je.status === "posted" && je.source_type !== "reversal";
@@ -57,7 +71,7 @@ export default function JournalDetail() {
     { key: "coa", label: "COA", primary: true,
       render: (ln) => (
         <div>
-          <div className="font-mono text-xs text-muted-foreground">{ln.coa_code}</div>
+          <div className="text-xs text-muted-foreground tabular-nums">{ln.coa_code}</div>
           <div className="font-medium">{ln.coa_name || ln.coa_id}</div>
         </div>
       ) },
@@ -66,68 +80,58 @@ export default function JournalDetail() {
       render: (ln) => <span className={cn(ln.dr ? "font-semibold" : "text-muted-foreground")}>{ln.dr ? fmtRp(ln.dr) : "—"}</span> },
     { key: "cr", label: "Kredit", numeric: true,
       render: (ln) => <span className={cn(ln.cr ? "font-semibold" : "text-muted-foreground")}>{ln.cr ? fmtRp(ln.cr) : "—"}</span> },
-    { key: "dim", label: "Dim",
+    { key: "dim", label: "Dimensi",
       render: (ln) => (
         <span className="text-xs text-muted-foreground">
-          {ln.dim_outlet && <span className="mr-2">outlet: {ln.dim_outlet.slice(0, 8)}</span>}
-          {ln.dim_brand && <span className="mr-2">brand: {ln.dim_brand.slice(0, 8)}</span>}
-          {ln.dim_vendor && <span className="mr-2">vendor: {ln.dim_vendor.slice(0, 8)}</span>}
-          {ln.dim_employee && <span>emp: {ln.dim_employee.slice(0, 8)}</span>}
+          {ln.dim_outlet && <span className="mr-2">Outlet: {ln.dim_outlet_name || ln.dim_outlet.slice(0, 8)}</span>}
+          {ln.dim_brand && <span className="mr-2">Brand: {ln.dim_brand_name || ln.dim_brand.slice(0, 8)}</span>}
+          {ln.dim_vendor && <span className="mr-2">Vendor: {ln.dim_vendor_name || ln.dim_vendor.slice(0, 8)}</span>}
+          {ln.dim_employee && <span>Karyawan: {ln.dim_employee_name || ln.dim_employee.slice(0, 8)}</span>}
         </span>
       ) },
   ];
   const lineRows = (je.lines || []).map((ln, i) => ({ ...ln, id: i }));
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto" data-testid="je-detail-page">
-      <div className="flex items-center gap-3 flex-wrap" data-testid="je-detail-header">
-        <Button variant="outline" onClick={() => navigate("/finance/journals")} className="rounded-full gap-2" data-testid="je-detail-back">
-          <ArrowLeft className="h-4 w-4" /> Kembali
-        </Button>
-        <h2 className="text-xl font-bold" data-testid="je-detail-doc-no">JE {je.doc_no || je.id.slice(0, 8)}</h2>
-        <span data-testid="je-detail-status"><StatusPill status={je.status} /></span>
-        <div className="ml-auto">
-          {canReverse && (
-            <Button onClick={() => setRevOpen(true)} variant="outline" className="rounded-full gap-2 text-amber-600 hover:bg-amber-500/10" data-testid="je-reverse">
+    <div className="space-y-3 lg:space-y-4" data-testid="je-detail-page">
+      <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate("/finance/journals")} data-testid="je-detail-back">
+        <ArrowLeft className="h-4 w-4" /> Kembali ke Journals
+      </Button>
+      <div data-testid="je-detail-header">
+        <PageHeader
+          icon={BookOpenCheck}
+          title={<span data-testid="je-detail-doc-no">{je.doc_no || je.id.slice(0, 8)}</span>}
+          subtitle={<span data-testid="je-detail-description">{je.description || "—"}</span>}
+          actions={canReverse ? (
+            <Button onClick={() => setRevOpen(true)} variant="outline" className="text-amber-700 dark:text-amber-400" data-testid="je-reverse">
               <RotateCcw className="h-4 w-4" /> Reverse JE
             </Button>
-          )}
-        </div>
+          ) : null}
+        >
+          {/* Fakta kunci di header, bukan kartu tipis terpisah (DESIGN_SYSTEM §10.10) */}
+          <KeyFacts testId="je-detail-meta" items={[
+            { label: "Status", value: <span data-testid="je-detail-status"><StatusPill status={je.status} /></span> },
+            { label: "Tanggal", value: fmtDate(je.entry_date) },
+            { label: "Periode", value: je.period },
+            { label: "Sumber", value: <span className="capitalize">{(je.source_type || "").replace(/_/g, " ")}</span> },
+            { label: "Diposting", value: je.posted_at ? fmtDateTime(je.posted_at) : "—" },
+            { label: "Dokumen sumber", hidden: !je.source_link, testId: "je-detail-source-card", value: je.source_link && (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="tabular-nums" data-testid="je-detail-source-doc-no">{je.source_link.doc_no || je.source_link.id.slice(0, 8)}</span>
+                {je.source_link.route && (
+                  <Link to={`${je.source_link.route}/${je.source_link.id}`} data-testid="je-drill-source"
+                    className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground">
+                    Buka <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                )}
+              </span>
+            ) },
+          ]} />
+        </PageHeader>
       </div>
 
-      <div className="glass-card p-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm" data-testid="je-detail-meta">
-        <Field label="Entry Date" value={fmtDate(je.entry_date)} />
-        <Field label="Period" value={je.period} />
-        <Field label="Source" value={(je.source_type || "").replace("_", " ")} />
-        <Field label="Posted At" value={je.posted_at ? fmtDateTime(je.posted_at) : "—"} />
-        <div className="md:col-span-4">
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Description</div>
-          <div className="font-medium mt-0.5" data-testid="je-detail-description">{je.description || "—"}</div>
-        </div>
-      </div>
-
-      {je.source_link && (
-        <div className="glass-card p-4" data-testid="je-detail-source-card">
-          <div className="flex items-center gap-3 text-sm">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Source document:</span>
-            <code className="text-xs" data-testid="je-detail-source-doc-no">{je.source_link.doc_no || je.source_link.id.slice(0, 8)}</code>
-            <span className="text-xs text-muted-foreground">({je.source_link.date})</span>
-            {je.source_link.route && (
-              <Link
-                to={`${je.source_link.route}/${je.source_link.id}`}
-                className="ml-auto inline-flex items-center gap-1 text-sm text-foreground/80 hover:text-foreground font-medium"
-                data-testid="je-drill-source"
-              >
-                Buka <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="glass-card p-5">
-        <h3 className="font-semibold mb-3">Lines</h3>
+      <div className="glass-card p-4">
+        <h3 className="text-sm md:text-base font-semibold mb-3">Baris jurnal</h3>
         <DataTable
           rows={lineRows}
           columns={lineColumns}
@@ -161,15 +165,18 @@ export default function JournalDetail() {
       )}
 
       <Dialog open={revOpen} onOpenChange={setRevOpen}>
-        <DialogContent className="glass-card max-w-md" data-testid="je-reverse-dialog">
+        <DialogContent className="max-w-md" data-testid="je-reverse-dialog">
           <DialogHeader>
             <DialogTitle>Reverse Journal Entry?</DialogTitle>
-            <DialogDescription>Counter-JE akan dibuat menggunakan tanggal yang sama. Action ini ter-audit.</DialogDescription>
+            <DialogDescription>Counter-JE akan dibuat dengan tanggal yang sama. Tindakan ini tercatat di audit trail.</DialogDescription>
           </DialogHeader>
-          <Textarea value={reason} onChange={e => setReason(e.target.value)} className="glass-input min-h-[100px]" placeholder="Alasan reversal…" data-testid="je-reverse-reason" />
+          <div className="space-y-1.5">
+            <Label htmlFor="je-reverse-reason">Alasan reversal <span className="text-red-700 dark:text-red-400">*</span></Label>
+            <Textarea id="je-reverse-reason" value={reason} onChange={e => setReason(e.target.value)} className="glass-input min-h-[100px]" placeholder="Alasan reversal…" data-testid="je-reverse-reason" />
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRevOpen(false)} data-testid="je-reverse-cancel">Batal</Button>
-            <Button onClick={reverse} className="pill-active" data-testid="je-reverse-confirm">Reverse</Button>
+            <Button onClick={reverse} variant="destructive" disabled={!reason.trim()} data-testid="je-reverse-confirm">Reverse jurnal</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -177,11 +184,3 @@ export default function JournalDetail() {
   );
 }
 
-function Field({ label, value }) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5 capitalize">{value}</div>
-    </div>
-  );
-}

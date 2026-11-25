@@ -57,7 +57,7 @@ const adminMasterDataHubTour = {
     {
       target: "body",
       title: "CRUD Operations",
-      content: "Setiap tab memiliki:\n\n• **Search & Filter** — cari data cepat\n• **+ Baru** — tambah entri baru\n• **Edit** — klik baris untuk edit\n• **Soft Delete** — tidak permanent, bisa dipulihkan\n• **Import** — bulk upload via CSV/Excel",
+      content: "Setiap tab memiliki:\n\n• **Search & Filter** — cari data cepat\n• **Tambah** — tambah entri baru\n• **Edit** — klik baris untuk edit\n• **Soft Delete** — tidak permanent, bisa dipulihkan\n• **Import** — bulk upload via CSV/Excel",
       placement: "center",
       variant: "tip",
     },
@@ -170,34 +170,34 @@ const adminUsersTour = {
 
 // ─── Roles ────────────────────────────────────────────────────────
 const adminRolesTour = {
-  name: "Roles & Permissions",
-  description: "Kelola peran dan izin akses untuk semua user.",
+  name: "Peran & Hak Akses",
+  description: "Atur peran dan izin akses tiap user secara rinci.",
   steps: [
     {
       target: "[data-testid='roles-page']",
-      title: "Roles & Permissions",
-      content: "Sistem **RBAC (Role-Based Access Control)** FnB ERP. Setiap role memiliki set permissions yang menentukan apa yang bisa dilakukan user.",
+      title: "Peran & Hak Akses",
+      content: "Setiap user punya satu atau beberapa **peran**; izinnya digabung. Peran bawaan bisa diubah dan **dikembalikan ke bawaan** kapan saja, peran kustom bisa dibuat sebanyak perlu.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
       target: "[data-testid='roles-grid']",
-      title: "Daftar Role",
-      content: "Semua role yang ada di sistem. Klik **Edit** pada role untuk ubah permissions-nya. Klik **Hapus** untuk nonaktifkan role (user yang punya role ini akan kehilangan akses).",
-      placement: "top",
+      title: "Daftar Peran",
+      content: "Klik peran untuk membuka editornya. Label **BAWAAN / KUSTOM / DIUBAH** dan jumlah user terlihat di tiap baris. Super Admin selalu akses penuh dan tidak bisa diubah.",
+      placement: "right",
     },
     {
       target: "[data-testid='roles-new']",
-      title: "Buat Role Baru",
-      content: "Klik **+ Role Baru** untuk membuat role custom. Isi kode (unik), nama, dan pilih permissions dari daftar.",
+      title: "Tambah Peran",
+      content: "Buat peran baru dari kosong atau **salin dari peran yang mirip**, lalu sesuaikan izinnya.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='roles-grid']",
-      title: "Format Permission",
-      content: "Format: **modul.aksi** (misal: `finance.journals.read`)\n\n• `finance.*` — semua aksi finance\n• `*` — super admin\n• `outlet.manager` — role khusus outlet",
-      placement: "top",
+      target: "[data-testid='perm-matrix']",
+      title: "Matriks Izin",
+      content: "Izin dikelompokkan per **portal → modul**. Pilih tingkat cepat (**Tidak ada / Lihat / Penuh**) atau klik izin satu per satu. Mengaktifkan aksi otomatis menyalakan izin lihatnya; ikon perisai menandai izin sensitif.",
+      placement: "left",
       variant: "tip",
     },
   ],
@@ -244,35 +244,6 @@ const adminApprovalBuilderTour = {
   ],
 };
 
-// ─── Approval Workflows (Legacy) ──────────────────────────────────
-const adminWorkflowsTour = {
-  name: "Approval Workflows",
-  description: "Kelola aturan approval berbasis teks untuk semua modul.",
-  steps: [
-    {
-      target: "body",
-      title: "Approval Workflows",
-      content: "Atur **aturan approval** untuk setiap jenis dokumen. Workflow menentukan siapa yang harus menyetujui PR, PO, Payment, dan Adjustment.",
-      placement: "center",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='wf-new']",
-      title: "Buat Workflow Baru",
-      content: "Klik **+ Workflow** untuk membuat aturan approval baru. Pilih entitas (PR/PO/dll), set threshold, dan tambah tier approver.",
-      placement: "bottom",
-    },
-    {
-      target: "body",
-      title: "Cara Kerja Tier",
-      content: "Setiap workflow bisa punya **multiple tier**. Contoh:\n\n• Tier 1: Manager (hingga Rp 5 juta)\n• Tier 2: GM (Rp 5–50 juta)\n• Tier 3: Owner (di atas Rp 50 juta)",
-      placement: "center",
-      variant: "tip",
-    },
-  ],
-};
-
 // ─── Bulk Import ──────────────────────────────────────────────────
 const adminBulkImportTour = {
   name: "Bulk Excel Import",
@@ -289,18 +260,18 @@ const adminBulkImportTour = {
     {
       target: "[data-testid='bulk-import-steps']",
       title: "3 Langkah Import",
-      content: "Proses import dalam 3 langkah:\n\n1. **Pilih Entity** — pilih jenis data\n2. **Download Template** — gunakan template Excel yang tersedia\n3. **Upload & Preview** — upload file, validasi, lalu import",
+      content: "Proses import dalam 3 langkah:\n\n1. **Pilih entitas** — pilih jenis data\n2. **Unduh template** — gunakan template Excel yang tersedia\n3. **Unggah & pratinjau** — unggah file, validasi, lalu import",
       placement: "bottom",
     },
     {
       target: "[data-testid='step-select-entity']",
-      title: "Langkah 1: Pilih Entity",
+      title: "Langkah 1: Pilih entitas",
       content: "Pilih entitas data yang akan diimport. Setiap entitas punya template berbeda — **jangan gunakan template yang salah** untuk menghindari error.",
       placement: "bottom",
     },
     {
       target: "[data-testid='step-download-template']",
-      title: "Langkah 2: Download Template",
+      title: "Langkah 2: Unduh template",
       content: "Download template Excel → isi data → upload kembali. Jangan ubah nama kolom karena sistem membaca header secara exact match.",
       placement: "bottom",
     },
@@ -659,12 +630,12 @@ const adminSmartSEOTour = {
 
 // ─── Integrations ─────────────────────────────────────────────────
 const adminIntegrationsTour = {
-  name: "Integrations Hub",
+  name: "Integrations",
   description: "Konfigurasi API key dan layanan eksternal.",
   steps: [
     {
       target: "[data-testid='admin-integrations-page']",
-      title: "Integrations Hub",
+      title: "Integrations",
       content: "Konfigurasi **layanan eksternal**: LLM/AI, Email SMTP, WhatsApp/Twilio, dan lainnya. Semua API key disimpan terenkripsi.",
       placement: "center",
       disableBeacon: true,
@@ -817,7 +788,7 @@ const adminAuditLogTour = {
     {
       target: "[data-testid='audit-refresh']",
       title: "Muat Ulang",
-      content: "Klik **Refresh** untuk memuat event terbaru. Gunakan navigasi halaman untuk menelusuri histori lama.",
+      content: "Klik **Terapkan & muat ulang** untuk memuat event terbaru. Gunakan navigasi halaman untuk menelusuri histori lama.",
       placement: "bottom",
       variant: "tip",
     },
@@ -833,7 +804,6 @@ export {
   adminUsersTour,
   adminRolesTour,
   adminApprovalBuilderTour,
-  adminWorkflowsTour,
   adminBulkImportTour,
   adminNumberSeriesTour,
   adminTaxConfigTour,

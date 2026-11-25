@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api, { unwrap } from "@/lib/api";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import { Input } from "@/components/ui/input";
 import { InlineHelp } from "@/components/shared/InlineHelp";
@@ -10,6 +11,7 @@ import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 const TYPE_OPTIONS = [
   { v: "",            l: "Semua" },
@@ -22,7 +24,7 @@ const TYPE_OPTIONS = [
 ];
 
 export default function Movements() {
-  const { outletId, setOutletId, scopedOutlets, allOutlets } = useOutletScope();
+  const { outletId, setOutletId, scopedOutlets, allOutlets, allLabel } = useOutletScope();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState("");
@@ -39,13 +41,14 @@ export default function Movements() {
     setLoading(true);
     try {
       const params = { page, per_page: 50 };
-      if (outletId) params.outlet_id = outletId;      if (type) params.movement_type = type;
+      if (outletId) params.outlet_id = outletId;
+      if (type) params.movement_type = type;
       if (dateFrom) params.date_from = dateFrom;
       const res = await api.get("/inventory/movements", { params });
       setItems(unwrap(res) || []);
       setMeta(res.data?.meta || {});
     } catch (e) {
-      toast.error("Gagal load movements");
+      toast.error("Gagal memuat riwayat pergerakan stok");
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [page, outletId, type, dateFrom]); // eslint-disable-line
@@ -54,45 +57,49 @@ export default function Movements() {
 
   return (
     <div className="space-y-4" data-testid="inventory-movements-page">
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="movements-filters">
-        <div className="min-w-[180px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet</Label>
-          <SimpleSelect
-            value={outletId}
-            onValueChange={v => { setOutletId(v); setPage(1); }}
-            options={[{ value: "", label: "Semua" }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
-            placeholder="Semua"
-            className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
-            testId="movements-filter-outlet"
-          />
-        </div>
-        <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold inline-flex items-center gap-1.5">
-            Type <InlineHelp id="movement-types" size="xs" placement="top" />
-          </Label>
-          <SimpleSelect
-            value={type}
-            onValueChange={v => { setType(v); setPage(1); }}
-            options={TYPE_OPTIONS.map(t => ({ value: t.v, label: t.l }))}
-            className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
-            testId="movements-filter-type"
-          />
-        </div>
-        <div className="min-w-[160px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Sejak Tanggal</Label>
-          <Input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
-            className="glass-input mt-1 h-9" data-testid="movements-filter-date" />
-        </div>
-      </div>
-
       <div className="glass-card overflow-hidden" data-testid="movements-table-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="movements-filters" className="items-end">
+          {scopedOutlets.length > 1 && (
+            <div className="min-w-[180px]">
+              <Label className="text-xs md:text-sm font-medium">Toko</Label>
+              <SimpleSelect
+              ariaLabel="Toko"
+              value={outletId}
+              onValueChange={v => { setOutletId(v); setPage(1); }}
+              options={[{ value: "", label: allLabel }, ...scopedOutlets.map(o => ({ value: o.id, label: o.name }))]}
+              placeholder={allLabel}
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              testId="movements-filter-outlet"
+            />
+            </div>
+          )}
+          <div className="min-w-[160px]">
+            <Label className="text-xs md:text-sm font-medium inline-flex items-center gap-1.5">
+              Tipe <InlineHelp id="movement-types" size="xs" placement="top" />
+            </Label>
+            <SimpleSelect
+              ariaLabel="Filter tipe movement"
+              value={type}
+              onValueChange={v => { setType(v); setPage(1); }}
+              options={TYPE_OPTIONS.map(t => ({ value: t.v, label: t.l }))}
+              className="glass-input rounded-lg w-full px-3 h-9 text-sm mt-1"
+              testId="movements-filter-type"
+            />
+          </div>
+          <div className="min-w-[160px]">
+            <Label htmlFor="movements-date-from" className="text-xs md:text-sm font-medium">Sejak tanggal</Label>
+            <Input id="movements-date-from" type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
+              className="glass-input mt-1 h-9" data-testid="movements-filter-date" />
+          </div>
+        </ListToolbar>
         <DataTable
           columns={[
             { key: "movement_date", label: "Tanggal", sortable: true, render: m => fmtDate(m.movement_date) },
             { key: "outlet", label: "Outlet", render: m => outletMap[m.outlet_id]?.name || m.outlet_id },
             { key: "item_name", label: "Item", primary: true, sortable: true, sortAccessor: m => m.item_name || m.item_id || "",
               render: m => <span className="font-medium" data-testid={`movement-item-${m.id}`}>{m.item_name || m.item_id}</span> },
-            { key: "movement_type", label: "Type", sortable: true,
+            { key: "movement_type", label: "Tipe", sortable: true,
               render: m => <span className="capitalize" data-testid={`movement-type-${m.id}`}>{(m.movement_type || "").replace("_", " ")}</span> },
             { key: "qty", label: "Qty", numeric: true, sortable: true, sortAccessor: m => m.qty || 0,
               render: m => <span className={m.qty > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"} data-testid={`movement-qty-${m.id}`}>{m.qty > 0 ? "+" : ""}{fmtNumber(m.qty, 2)} {m.unit}</span> },
@@ -105,15 +112,15 @@ export default function Movements() {
           loading={loading}
           rowTestIdPrefix="movement-row"
           defaultSort={{ key: "movement_date", dir: "desc" }}
-          empty={<EmptyState title="Belum ada movement" />}
+          empty={<EmptyState title="Belum ada pergerakan stok" description="Ubah filter outlet, tipe, atau tanggal untuk melihat data lain." />}
         />
         {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground" data-testid="movements-pagination">
+          <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between gap-2 text-xs text-muted-foreground" data-testid="movements-pagination">
             <span data-testid="movements-pagination-total">Total: {meta.total}</span>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="movements-prev">Prev</button>
-              <span className="px-2 py-1" data-testid="movements-page-info">{page}/{totalPages}</span>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 rounded-full glass-input disabled:opacity-50" data-testid="movements-next">Next</button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)} data-testid="movements-prev">Sebelumnya</Button>
+              <span className="tabular-nums" data-testid="movements-page-info">{page}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} data-testid="movements-next">Berikutnya</Button>
             </div>
           </div>
         )}

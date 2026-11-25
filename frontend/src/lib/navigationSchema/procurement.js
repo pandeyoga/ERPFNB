@@ -1,71 +1,18 @@
 /** navigationSchema/procurement.js — Procurement portal navigation. */
 
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  Package,
-  Settings,
-  FileText,
-  ScrollText,
-  CreditCard,
-  Calculator,
-  FileCheck,
-  Calendar,
-  Banknote,
-  Receipt,
-  TrendingUp,
-  Wallet,
-  UserCog,
-  DollarSign,
-  Gift,
-  ClipboardList,
-  ShoppingCart,
-  Truck,
-  Store,
-  BarChart3,
-  Boxes,
-  ArrowLeftRight,
-  ClipboardCheck,
-  WrenchIcon,
-  Crown,
-  Sparkles,
-  Brain,
-  MessageSquare,
-  Shield,
-  Activity,
-  Star,
-  AlertTriangle,
-  Layers,
-  BookOpen,
-  Archive,
-  Target,
-  Workflow,
-  Coffee,
-  ListChecks,
-  History,
-  BellRing,
-  ChevronRight,
-  Landmark,
-  LineChart,
-  PiggyBank,
-  QrCode,
-  FileSpreadsheet,
-  CalendarCheck,
-} from "lucide-react";
+import { LayoutDashboard, ClipboardList, ShoppingCart, Truck, Store, BarChart3 } from "lucide-react";
 
-// eslint-disable-next-line no-unused-vars
 export const procurementNav = {
   id: "procurement",
   name: "Procurement Portal",
+  // Urutan = alur dokumen: PR → RFQ → PO → GR, lalu vendor & analitik harga.
   sections: [
     {
       id: "dashboard",
-      name: "Dashboard",
+      name: "Overview",
       icon: LayoutDashboard,
       items: [
         { id: "overview", name: "Overview", path: "/procurement" },
-        { id: "approval-center-proc", name: "Approval Center", path: "/procurement/approvals" },
       ],
     },
     {
@@ -75,15 +22,17 @@ export const procurementNav = {
       items: [
         { id: "pr", name: "Purchase Requests", path: "/procurement/pr" },
         { id: "consolidation", name: "PR Consolidation", path: "/procurement/consolidation" },
+        { id: "rfq", name: "RFQ", path: "/procurement/rfq" },
       ],
     },
     {
       id: "purchase-orders",
-      name: "Purchase Orders",
+      name: "Orders",
       icon: ShoppingCart,
       items: [
-        { id: "po", name: "All POs", path: "/procurement/po" },
-        { id: "comparison", name: "PO Comparison", path: "/procurement/po-comparison" },
+        { id: "po", name: "Purchase Orders", path: "/procurement/po" },
+        { id: "kanban", name: "Procurement Kanban", path: "/procurement/kanban" },
+        { id: "comparison", name: "Vendor Comparison", path: "/procurement/vendor-comparison" },
       ],
     },
     {
@@ -91,7 +40,7 @@ export const procurementNav = {
       name: "Goods Receipt",
       icon: Truck,
       items: [
-        { id: "gr", name: "All GRs", path: "/procurement/gr" },
+        { id: "gr", name: "Goods Receipt", path: "/procurement/gr" },
       ],
     },
     {
@@ -99,28 +48,19 @@ export const procurementNav = {
       name: "Vendors",
       icon: Store,
       items: [
-        { id: "vendors", name: "All Vendors", path: "/procurement/vendors" },
-        // Vendor Scorecard · Comparison · AI Recommend · Item Catalog are pill-links
-        // inside /procurement/vendors (removed from sidebar to dedupe IA).
+        { id: "vendors", name: "Vendors", path: "/procurement/vendors", matchPaths: ["/procurement/vendor-scorecard", "/procurement/vendor-recommend", "/procurement/vendor-catalog"] },
+        // Vendor Scorecard · AI Recommend · Item Catalog are pill-links inside
+        // /procurement/vendors. Vendor Comparison (per item + per PO) ada di Orders.
       ],
     },
     {
-      id: "workflow",
-      name: "Workflow",
-      icon: Workflow,
-      items: [
-        { id: "kanban", name: "PO Kanban Board", path: "/procurement/kanban" },
-        { id: "rfq", name: "RFQ History", path: "/procurement/rfq" },
-      ],
-    },
-    {
-      id: "smart-procurement",
-      name: "Smart Procurement",
+      id: "sourcing",
+      name: "Sourcing",
       icon: BarChart3,
       items: [
-        { id: "price-intelligence", name: "Price Intelligence", path: "/procurement/price-intelligence" },
-        // Vendor Item Catalog · AI Vendor Recommend are pill-links inside
-        // /procurement/vendors (removed from sidebar to dedupe IA).
+        // Harga acuan per periode & wilayah, penawaran supplier, analisis per item (dulu Price Intelligence +
+        // Market Price List di Inventory).
+        { id: "sourcing", name: "Sourcing", path: "/procurement/sourcing", matchPaths: ["/procurement/sourcing/items"] },
       ],
     },
   ],

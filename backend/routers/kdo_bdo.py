@@ -8,6 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ok_envelope
+from core.scope import narrow_to_brand
 from core.security import require_perm
 from services import kdo_bdo_service
 
@@ -17,9 +18,9 @@ def _scoped(user: dict, outlet_id):
     from core.security import enforce_outlet_scope, scoped_outlet_ids
     enforce_outlet_scope(user, outlet_id)
     if outlet_id:
-        return [outlet_id]
+        return narrow_to_brand([outlet_id])
     scope = scoped_outlet_ids(user)
-    return scope if scope is not None else None
+    return narrow_to_brand(scope if scope is not None else None)  # konteks brand (core/scope.py)
 
 
 router = APIRouter(prefix="/api/outlet", tags=["kdo-bdo"])

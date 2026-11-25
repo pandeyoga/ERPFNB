@@ -160,7 +160,7 @@ export function VirtualTable({
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
                 className={`flex border-b hover:bg-accent/50 cursor-pointer transition-colors ${
-                  isEven ? 'bg-white' : 'bg-muted/20'
+                  isEven ? 'bg-background' : 'bg-muted/20'
                 }`}
                 style={{
                   position: 'absolute',

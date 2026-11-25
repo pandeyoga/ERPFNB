@@ -103,13 +103,13 @@ export default function LoyaltyCard() {
                 {/* Card footer */}
                 <div className="mt-6 flex items-end justify-between">
                   <div>
-                    <p className="text-white/50 text-[10px] uppercase tracking-wider mb-0.5">Card Number</p>
+                    <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">Card Number</p>
                     <p className="text-white font-mono text-sm font-semibold tracking-widest" data-testid="loyalty-card-member-id">
                       {cardData?.card_number || "—"}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/50 text-[10px] uppercase tracking-wider mb-0.5">Member</p>
+                    <p className="text-white/50 text-[11px] uppercase tracking-wider mb-0.5">Member</p>
                     <p className="text-white text-sm font-medium">{cardData?.customer_name || customer?.full_name}</p>
                   </div>
                 </div>

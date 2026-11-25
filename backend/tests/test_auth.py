@@ -6,6 +6,7 @@ refresh, logout, RBAC scoping based on role.
 These tests are READ-ONLY against the user collection except `test_change_password_roundtrip`
 which changes admin password and changes it back immediately.
 """
+import sys
 import pytest
 
 from .conftest import DEMO_USERS, DEMO_PASSWORD, api_get, api_post
@@ -126,7 +127,7 @@ class TestChangePasswordRoundtrip:
         # Restore via DB hash directly (bypass password-history policy)
         import subprocess
         result = subprocess.run(
-            ["python3", "-c", """
+            [sys.executable, "-c", """
 import asyncio, sys, os
 from dotenv import load_dotenv
 sys.path.insert(0, '/app/backend')

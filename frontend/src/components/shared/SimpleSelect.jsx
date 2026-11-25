@@ -14,6 +14,7 @@
  *      placeholder="Semua"
  *      className="w-full"
  *      testId="po-filter-vendor"
+ *      id="po-vendor"            // opsional: agar <Label htmlFor="po-vendor"> terhubung
  *    />
  */
 import {
@@ -35,10 +36,11 @@ export default function SimpleSelect({
   testId,
   "data-testid": dataTestId,
   ariaLabel,
+  id,
 }) {
   return (
     <Select value={toUI(value)} onValueChange={(v) => onValueChange?.(fromUI(v))} disabled={disabled}>
-      <SelectTrigger className={className || triggerClassName} data-testid={testId || dataTestId} aria-label={ariaLabel}>
+      <SelectTrigger id={id} className={className || triggerClassName} data-testid={testId || dataTestId} aria-label={ariaLabel}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

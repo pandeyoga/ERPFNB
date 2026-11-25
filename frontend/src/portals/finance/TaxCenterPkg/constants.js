@@ -1,21 +1,13 @@
 /** TaxCenter/constants.js */
-import { useEffect, useState, useCallback } from "react";
-import { Receipt, ToggleLeft, ToggleRight, Calculator, ChevronDown, ChevronRight,
-         AlertTriangle, CheckCircle2, Info, RefreshCw, TrendingDown, FileDown } from "lucide-react";
-import api, { unwrap } from "@/lib/api";
-import { fmtRp, fmtDate } from "@/lib/format";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { Receipt, Calculator, TrendingDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import LoadingState from "@/components/shared/LoadingState";
 
 // ───── helpers ────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "ppn",   label: "PPN",      icon: Receipt,     color: "blue"   },
+  { id: "ppn",   label: "PPN",      icon: Receipt,      color: "blue"   },
   { id: "pph21", label: "PPh 21",   icon: TrendingDown, color: "purple" },
   { id: "pph23", label: "PPh 23",   icon: Calculator,   color: "amber"  },
   { id: "pph42", label: "PPh 4(2)", icon: Receipt,      color: "rose"   },
@@ -28,18 +20,20 @@ const PPH_LABELS = {
   pph42: { full: "PPh Pasal 4 Ayat 2 (Final)",            law: "UU PPh" },
 };
 
-const colMap = {
-  blue:   "bg-blue-50 border-blue-200 text-blue-700",
-  purple: "bg-purple-50 border-purple-200 text-purple-700",
-  amber:  "bg-amber-50 border-amber-200 text-amber-700",
-  rose:   "bg-rose-50 border-rose-200 text-rose-700",
+/** Warna teks/aksen per jenis pajak (aman untuk light & dark mode). */
+const TONE_TEXT = {
+  blue:   "text-sky-700 dark:text-sky-300",
+  purple: "text-violet-700 dark:text-violet-300",
+  amber:  "text-amber-700 dark:text-amber-300",
+  rose:   "text-rose-700 dark:text-rose-300",
 };
 
-const badgeColor = {
-  blue:   "bg-blue-100 text-blue-700 border-blue-200",
-  purple: "bg-purple-100 text-purple-700 border-purple-200",
-  amber:  "bg-amber-100 text-amber-700 border-amber-200",
-  rose:   "bg-rose-100 text-rose-700 border-rose-200",
+/** Kotak catatan/info bertint per jenis pajak. */
+const NOTE_TONE = {
+  blue:   "border-sky-500/25 bg-sky-500/10 text-sky-800 dark:text-sky-200",
+  purple: "border-violet-500/25 bg-violet-500/10 text-violet-800 dark:text-violet-200",
+  amber:  "border-amber-500/25 bg-amber-500/10 text-amber-800 dark:text-amber-200",
+  rose:   "border-rose-500/25 bg-rose-500/10 text-rose-800 dark:text-rose-200",
 };
 
 function fmtRpShort(n) {
@@ -49,40 +43,19 @@ function fmtRpShort(n) {
   return `Rp ${n.toFixed(0)}`;
 }
 
-// ───── ToggleSwitch ────────────────────────────────────────────────────────
-function ToggleSwitch({ checked, onChange, color = "blue", disabled = false }) {
-  return (
-    <button
-      type="button"
-      onClick={() => !disabled && onChange(!checked)}
-      disabled={disabled}
-      className={cn(
-        "relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none",
-        checked
-          ? (color === "blue" ? "bg-blue-500" : color === "purple" ? "bg-purple-500" : color === "amber" ? "bg-amber-500" : "bg-rose-500")
-          : "bg-gray-200",
-        disabled && "opacity-50 cursor-not-allowed"
-      )}
-    >
-      <span className={cn(
-        "inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-all duration-300",
-        checked ? "translate-x-8" : "translate-x-1"
-      )} />
-    </button>
-  );
-}
-
 // ───── RateInput ────────────────────────────────────────────────────────────
 function RateInput({ label, keyName, value, onChange, pctDisplay, disabled, hint }) {
   const [local, setLocal] = useState(String(value || ""));
+  const id = `rate-${keyName}`;
 
   useEffect(() => { setLocal(String(value || "")); }, [value]);
 
   return (
     <div className="space-y-1">
-      <Label className="text-sm font-medium text-gray-700">{label}</Label>
+      <Label htmlFor={id} className="text-xs md:text-sm font-medium">{label}</Label>
       <div className="flex items-center gap-2">
         <Input
+          id={id}
           type="number" step="0.001" min="0" max="1"
           value={local}
           onChange={e => setLocal(e.target.value)}
@@ -90,15 +63,13 @@ function RateInput({ label, keyName, value, onChange, pctDisplay, disabled, hint
           disabled={disabled}
           className="w-32 tabular-nums"
         />
-        <span className="text-sm font-semibold text-gray-600">
+        <span className="text-sm font-semibold text-muted-foreground">
           = {pctDisplay !== undefined ? pctDisplay : `${(parseFloat(local||0)*100).toFixed(1)}%`}
         </span>
       </div>
-      {hint && <p className="text-xs text-gray-400">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
 
-// ───── PPh21 Calculator Widget ─────────────────────────────────────────────────
-
-export { TABS, PPH_LABELS, fmtRpShort, ToggleSwitch, RateInput, badgeColor, colMap };
+export { TABS, PPH_LABELS, TONE_TEXT, NOTE_TONE, fmtRpShort, RateInput };

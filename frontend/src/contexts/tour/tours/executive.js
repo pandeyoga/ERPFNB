@@ -4,12 +4,12 @@
 
 // ─── Executive Home ──────────────────────────────────────────────────
 const executiveHomeTour = {
-  name: "Executive Dashboard",
+  name: "Sales Analytics",
   description: "Real-time KPI, trends, dan AI insights untuk seluruh group.",
   steps: [
     {
       target: "[data-testid='executive-header']",
-      title: "Executive Dashboard",
+      title: "Sales Analytics",
       content: "**Top-level overview** untuk owner & GM. KPI realtime + AI insights + drilldown ke brand/outlet.",
       placement: "bottom",
       disableBeacon: true,
@@ -35,7 +35,7 @@ const executiveHomeTour = {
     },
     {
       target: "[data-testid='exec-export-pdf']",
-      title: "Export PDF",
+      title: "Ekspor PDF",
       content: "Export snapshot dashboard ke PDF untuk meeting. Includes filter context & timestamp.",
       placement: "left",
     },
@@ -54,12 +54,12 @@ const executiveHomeTour = {
 // now lives at /executive/analytics and keeps the `executive-home` tour.
 const executiveOwnerHomeTour = {
   name: "Dashboard Eksekutif",
-  description: "Ringkasan harian owner/GM: KPI, anomali, approvals, akses cepat.",
+  description: "Ringkasan harian owner/GM: KPI hari ini, pintasan eksekutif, notifikasi.",
   steps: [
     {
       target: "[data-testid='owner-home']",
       title: "Dashboard Eksekutif",
-      content: "**Ringkasan harian owner & GM** dalam satu layar: revenue, AP exposure, anomali, dan approval tertunda. Mulai hari dari sini.",
+      content: "**Ringkasan harian owner & GM** dalam satu layar: revenue hari ini, AP exposure, anomali, dan approval tertunda. Analisis lengkap ada di Sales Analytics.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
@@ -67,26 +67,26 @@ const executiveOwnerHomeTour = {
     {
       target: "[data-testid='owner-kpi-row']",
       title: "KPI Utama",
-      content: "**Revenue Hari Ini / Minggu / Bulan**, **AP Exposure**, **Anomali Aktif**, dan **Pending Approval**. Klik tiap kartu untuk drill-down ke sumbernya.",
+      content: "**Revenue Hari Ini**, **AP Exposure**, **Anomali Aktif**, dan **Pending Approval**. Klik tiap kartu untuk membuka detailnya (WTD/MTD & top outlet ada di Sales Analytics).",
       placement: "bottom",
     },
     {
       target: "[data-testid='owner-home-full-analytics']",
-      title: "Full Analytics",
-      content: "Buka **Executive Dashboard** lengkap: filter periode + brand/outlet multi-select, profit walk, brand mix, dan trend.",
+      title: "Sales Analytics",
+      content: "Buka **Sales Analytics** lengkap: filter periode + brand/outlet multi-select, profit walk, brand mix, dan trend.",
       placement: "bottom",
       variant: "tip",
     },
     {
       target: "[data-testid='owner-shortcuts']",
-      title: "Akses Cepat",
-      content: "Pintasan ke modul yang paling sering dipakai eksekutif — Analytics, Anomali, Approvals, Finance, Procurement, Inventory, dan lainnya.",
+      title: "Pintasan Eksekutif",
+      content: "Pintasan ke halaman eksekutif — Sales & Performance Analytics, Budget, Executive Q&A, dan Reservasi. Portal lain ada di sidebar.",
       placement: "top",
     },
     {
       target: "[data-testid='owner-home-refresh']",
       title: "Segarkan Data",
-      content: "Klik **Refresh** untuk memuat angka terbaru tanpa reload halaman penuh.",
+      content: "Klik **Muat ulang** untuk memuat angka terbaru tanpa reload halaman penuh.",
       placement: "left",
       variant: "tip",
     },
@@ -96,26 +96,26 @@ const executiveOwnerHomeTour = {
 // ─── Executive AI Q&A ─────────────────────────────────────────────────
 const executiveAIQATour = {
   name: "Executive AI Q&A",
-  description: "Tanya AI tentang performa bisnis dalam Bahasa Indonesia.",
+  description: "Satu halaman tanya-jawab AI tentang performa bisnis dalam Bahasa Indonesia.",
   steps: [
     {
       target: "[data-testid='executive-qa-page']",
       title: "AI Business Q&A",
-      content: "Tanya **pertanyaan bisnis** dalam Bahasa Indonesia dan AI akan menjawab berdasarkan data aktual ERP. Tidak perlu tahu cara query database.",
+      content: "Tanya **pertanyaan bisnis** dalam Bahasa Indonesia — lewat teks atau suara — dan AI menjawab dari data aktual ERP. Panel Asisten AI di Sales Analytics memakai percakapan yang sama.",
       placement: "top",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='qa-suggestion']",
+      target: "[data-testid='exec-qa-suggest-0']",
       title: "Contoh Pertanyaan",
-      content: "\u2022 'Sales The Coffeeshop bulan ini berapa?'\n\u2022 'Vendor mana yang paling sering terlambat?'\n\u2022 'Outlet mana yang paling profitable Q1?'\n\u2022 'Item apa yang paling banyak diorder?'",
+      content: "\u2022 'Sales The Coffeeshop bulan ini berapa?'\n\u2022 'Vendor mana yang paling sering terlambat?'\n\u2022 'Cash aman gak?'\n\u2022 'Berapa AP yang jatuh tempo minggu ini?'",
       placement: "bottom",
     },
     {
-      target: "[data-testid='qa-input']",
+      target: "[data-testid='exec-qa-input']",
       title: "AI Tool Calling",
-      content: "AI secara otomatis memilih **tool** yang tepat (sales, inventory, finance, procurement) dan mengambil data real-time dari sistem untuk menjawab.",
+      content: "AI memilih **tool** yang tepat (sales, inventory, finance, procurement) dan mengambil data real-time. Pertanyaan lanjutan memakai konteks jawaban sebelumnya.",
       placement: "top",
       variant: "tip",
     },
@@ -293,12 +293,12 @@ const executiveAnalyticsHubTour = {
 
 // ─── Executive Reservasi Summary ──────────────────────────────────────
 const executiveReservationsTour = {
-  name: "Ringkasan Reservasi",
+  name: "Reservations",
   description: "Pantau reservasi & deposit lintas outlet dari sudut pandang eksekutif.",
   steps: [
     {
       target: "[data-testid='reservation-summary-page']",
-      title: "Ringkasan Reservasi",
+      title: "Reservations",
       content: "Rekap reservasi semua outlet: jumlah booking, pax, dan nilai deposit dalam satu layar.",
       placement: "center",
       disableBeacon: true,
@@ -336,7 +336,7 @@ const executiveBudgetApprovalsTour = {
     {
       target: "[data-testid='budget-approval-list']",
       title: "Daftar Pengajuan",
-      content: "Tiap baris menampilkan outlet, periode, dan jumlah. **Approve** untuk mengaktifkan budget, atau **Reject** dengan alasan.",
+      content: "Tiap baris menampilkan outlet, periode, dan jumlah. **Setujui** untuk mengaktifkan budget, atau **Tolak** dengan alasan.",
       placement: "top",
     },
     {
@@ -349,9 +349,9 @@ const executiveBudgetApprovalsTour = {
   ],
 };
 
-// ─── Set Budget Outlet (Allocation) ───────────────────────────────────
+// ─── Budget Allocation ───────────────────────────────────
 const executiveOutletBudgetsTour = {
-  name: "Set Budget Outlet",
+  name: "Budget Allocation",
   description: "Alokasikan budget operasional per outlet & periode (mingguan/bulanan).",
   steps: [
     {
@@ -415,12 +415,12 @@ const executiveBudgetMonitorTour = {
 
 // ─── Budget Increase Requests ─────────────────────────────────────────
 const executiveBudgetIncreaseTour = {
-  name: "Request Penambahan Budget",
+  name: "Increase Requests",
   description: "Tinjau & putuskan permintaan penambahan budget dari outlet.",
   steps: [
     {
       target: "[data-testid='budget-increase-requests']",
-      title: "Request Penambahan Budget",
+      title: "Increase Requests",
       content: "Outlet yang budget-nya menipis dapat mengajukan penambahan — keputusan ada di sini.",
       placement: "center",
       disableBeacon: true,
@@ -429,7 +429,7 @@ const executiveBudgetIncreaseTour = {
     {
       target: "[data-testid='tab-pending']",
       title: "Menunggu Keputusan",
-      content: "Tab **Pending** berisi pengajuan baru. Tetapkan jumlah disetujui + catatan, lalu submit.",
+      content: "Tab **Menunggu** berisi pengajuan baru. Tetapkan jumlah disetujui + catatan, lalu submit.",
       placement: "bottom",
     },
     {
@@ -470,7 +470,7 @@ const executiveOutletDrilldownTour = {
     {
       target: "[data-testid='outlet-back']",
       title: "Kembali ke Dashboard",
-      content: "Klik untuk kembali ke Executive Dashboard dan pilih outlet/brand lain.",
+      content: "Klik **Kembali** untuk kembali ke halaman sebelumnya dan pilih outlet/brand lain.",
       placement: "right",
       variant: "tip",
     },
@@ -505,7 +505,7 @@ const executiveBrandDrilldownTour = {
     {
       target: "[data-testid='brand-back']",
       title: "Kembali ke Dashboard",
-      content: "Klik untuk kembali ke Executive Dashboard dan pilih brand/outlet lain.",
+      content: "Klik **Kembali** untuk kembali ke halaman sebelumnya dan pilih brand/outlet lain.",
       placement: "right",
       variant: "tip",
     },

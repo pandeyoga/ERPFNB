@@ -82,7 +82,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
             <line x1={M.left} x2={w - M.right} y1={yScale(t)} y2={yScale(t)}
               stroke="hsl(var(--border))" strokeDasharray="3 3" opacity={0.4} />
             <text x={M.left - 8} y={yScale(t)} dy="0.32em" textAnchor="end"
-              fontSize="10" fill="hsl(var(--muted-foreground))">{fmtCompact(t)}</text>
+              fontSize="12" fill="hsl(var(--muted-foreground))">{fmtCompact(t)}</text>
           </g>
         ))}
         {/* zero baseline */}
@@ -117,12 +117,12 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
                 style={{ transition: "opacity 150ms ease" }}
                 data-testid={`waterfall-bar-${i}`} />
               {/* value label */}
-              <text x={cx(i)} y={y - 7} textAnchor="middle" fontSize="11" fontWeight="600"
+              <text x={cx(i)} y={y - 7} textAnchor="middle" fontSize="12" fontWeight="600"
                 fill="hsl(var(--foreground))" opacity={dim ? 0.4 : 0.92}>
                 {fmtCompact(b.value)}
               </text>
               {/* x-axis label (rotated) */}
-              <text x={cx(i)} y={height - M.bottom + 16} textAnchor="end" fontSize="10.5"
+              <text x={cx(i)} y={height - M.bottom + 16} textAnchor="end" fontSize="12"
                 fill="hsl(var(--muted-foreground))"
                 transform={`rotate(-22 ${cx(i)} ${height - M.bottom + 16})`}>
                 {b.label}
@@ -157,7 +157,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
             <span className="font-mono tabular-nums">{valueFormatter(hovered.running ?? 0)}</span>
           </div>
           {hovered.delta_pct != null && (
-            <div className={cn("flex items-center gap-1 pt-0.5", hovered.delta_pct >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+            <div className={cn("flex items-center gap-1 pt-0.5", hovered.delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
               {hovered.delta_pct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
               <span className="font-mono font-semibold">{hovered.delta_pct >= 0 ? "+" : ""}{hovered.delta_pct}% vs compare</span>
             </div>
@@ -166,7 +166,7 @@ export default function WaterfallChart({ stages = [], height = 380, valueFormatt
       )}
 
       {/* legend */}
-      <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
+      <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         <Legend color={SEMANTIC.positive} label="Naik" />
         <Legend color={SEMANTIC.negative} label="Turun" />
         <Legend color={SEMANTIC.subtotal} label="Subtotal" />

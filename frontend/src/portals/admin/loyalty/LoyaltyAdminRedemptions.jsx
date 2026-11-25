@@ -4,14 +4,14 @@
  */
 import { useEffect, useState, useCallback } from "react";
 import {
-  CheckCircle, Clock, XCircle, Search, Download, RefreshCw, Loader2, ChevronLeft, ChevronRight,
+  CheckCircle, Clock, XCircle, Search, Download, RefreshCw, Loader2, ChevronLeft, ChevronRight, Ticket,
 } from "lucide-react";
 import api from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import {
   Select,
   SelectContent,
@@ -37,22 +37,22 @@ const STATUS_CONFIG = {
   pending: {
     label: "Menunggu",
     icon: Clock,
-    badge: "bg-amber-100 text-amber-700 border-amber-200",
+    badge: "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
   },
   claimed: {
     label: "Diklaim",
     icon: CheckCircle,
-    badge: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    badge: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
   },
   expired: {
     label: "Kedaluwarsa",
     icon: XCircle,
-    badge: "bg-red-100 text-red-600 border-red-200",
+    badge: "bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30",
   },
 };
 
 function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || { label: status, badge: "bg-gray-100 text-gray-600" };
+  const cfg = STATUS_CONFIG[status] || { label: status, badge: "bg-muted/40 text-muted-foreground" };
   const Icon = cfg.icon;
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.badge}`}>
@@ -72,7 +72,7 @@ function fmtDate(dateStr) {
   }
 }
 
-export default function LoyaltyAdminRedemptions() {
+export default function LoyaltyAdminRedemptions({ embedded = false }) {
   const [data, setData] = useState({ items: [], total: 0, limit: PAGE_SIZE, skip: 0 });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -81,15 +81,18 @@ export default function LoyaltyAdminRedemptions() {
   const [confirmAction, setConfirmAction] = useState(null); // { redemption, newStatus }
   const [statusUpdating, setStatusUpdating] = useState(false);
 
-  const load = useCallback(async (pg = page, sf = statusFilter, sq = search) => {
+  // Satu sumber pemuatan: efek di bawah bereaksi pada page/status/pencarian (debounce).
+  // Dulu handler juga memanggil load() manual sehingga setiap klik memuat data dua kali.
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
         limit: PAGE_SIZE,
-        skip: pg * PAGE_SIZE,
+        skip: page * PAGE_SIZE,
       };
-      if (sf && sf !== "all") params.status = sf;
-      if (sq.trim()) params.search = sq.trim();
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       const res = await api.get("/admin/loyalty/redemptions", { params });
       setData(res.data || { items: [], total: 0, limit: PAGE_SIZE, skip: 0 });
     } catch {
@@ -97,7 +100,7 @@ export default function LoyaltyAdminRedemptions() {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, debouncedSearch]);
 
   useEffect(() => {
     load();
@@ -106,17 +109,15 @@ export default function LoyaltyAdminRedemptions() {
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => {
+      setDebouncedSearch(search);
       setPage(0);
-      load(0, statusFilter, search);
     }, 400);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   function handleStatusChange(val) {
     setStatusFilter(val);
     setPage(0);
-    load(0, val, search);
   }
 
   async function doStatusUpdate() {
@@ -130,7 +131,7 @@ export default function LoyaltyAdminRedemptions() {
       setConfirmAction(null);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal mengubah status");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal mengubah status");
     } finally {
       setStatusUpdating(false);
     }
@@ -164,25 +165,24 @@ export default function LoyaltyAdminRedemptions() {
 
   const totalPages = Math.ceil((data.total || 0) / PAGE_SIZE);
 
+  const subtitle = (
+    <>Semua redemption reward oleh customer. Total: <strong>{(data.total || 0).toLocaleString()}</strong></>
+  );
+  const headerActions = (
+    <>
+      <Button variant="outline" onClick={() => load()} data-testid="redemptions-refresh">
+        <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
+      </Button>
+      <Button variant="outline" onClick={exportCSV} disabled={!data.items?.length} data-testid="export-csv">
+        <Download className="h-3.5 w-3.5" /> Ekspor CSV
+      </Button>
+    </>
+  );
+
   return (
-    <div className="space-y-4" data-testid="admin-loyalty-redemptions">
+    <div className="space-y-3" data-testid="admin-loyalty-redemptions">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h3 className="text-base font-semibold">Redemption History</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Semua redemption reward oleh customer. Total: <strong>{(data.total || 0).toLocaleString()}</strong>
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => load()} className="h-8">
-            <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
-          </Button>
-          <Button variant="outline" size="sm" onClick={exportCSV} className="h-8" data-testid="export-csv">
-            <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
-          </Button>
-        </div>
-      </div>
+      <PageHeader icon={Ticket} title="Redemptions" subtitle={subtitle} actions={headerActions} />
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
@@ -192,12 +192,13 @@ export default function LoyaltyAdminRedemptions() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari customer, voucher, reward…"
-            className="pl-9 h-9"
+            className="pl-9"
+            aria-label="Cari redemption"
             data-testid="redemptions-search"
           />
         </div>
         <Select value={statusFilter} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[160px] h-9" data-testid="status-filter">
+          <SelectTrigger className="w-[160px]" aria-label="Filter status" data-testid="status-filter">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -225,7 +226,7 @@ export default function LoyaltyAdminRedemptions() {
             { key: "points_used", label: "Poin", numeric: true, sortable: true, render: (item) => (item.points_used || 0).toLocaleString() },
             { key: "voucher_code", label: "Voucher Code", render: (item) => (
               item.voucher_code ? (
-                <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono">{item.voucher_code}</code>
+                <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium tabular-nums">{item.voucher_code}</span>
               ) : (
                 <span className="text-muted-foreground text-xs">-</span>
               )
@@ -237,14 +238,14 @@ export default function LoyaltyAdminRedemptions() {
           rows={data.items}
           loading={loading}
           defaultSort={{ key: "created_at", dir: "desc" }}
-          empty={<div className="px-4 py-10 text-center text-sm text-muted-foreground" data-testid="redemptions-empty">Tidak ada redemption ditemukan.</div>}
+          empty={<div className="px-4 py-8 text-center text-sm text-muted-foreground" data-testid="redemptions-empty">Tidak ada redemption ditemukan.</div>}
           rowAction={(item) => (
             item.status === "pending" ? (
               <div className="flex items-center justify-end gap-1 whitespace-nowrap">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs px-2 text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "claimed" })}
                   data-testid={`claim-btn-${item.id}`}
                 >
@@ -253,11 +254,11 @@ export default function LoyaltyAdminRedemptions() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs px-2 text-red-600 border-red-300 hover:bg-red-50"
+                  className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10"
                   onClick={() => setConfirmAction({ redemption: item, newStatus: "expired" })}
                   data-testid={`expire-btn-${item.id}`}
                 >
-                  Expired
+                  Kedaluwarsa
                 </Button>
               </div>
             ) : (
@@ -275,19 +276,19 @@ export default function LoyaltyAdminRedemptions() {
             </div>
             <div className="flex gap-1">
               <Button
-                size="sm"
+                size="icon-sm"
                 variant="outline"
-                className="h-7 px-2"
-                onClick={() => { setPage(p => p - 1); load(page - 1, statusFilter, search); }}
+                aria-label="Halaman sebelumnya"
+                onClick={() => setPage(p => p - 1)}
                 disabled={page === 0}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
               <Button
-                size="sm"
+                size="icon-sm"
                 variant="outline"
-                className="h-7 px-2"
-                onClick={() => { setPage(p => p + 1); load(page + 1, statusFilter, search); }}
+                aria-label="Halaman berikutnya"
+                onClick={() => setPage(p => p + 1)}
                 disabled={page >= totalPages - 1}
               >
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -302,7 +303,7 @@ export default function LoyaltyAdminRedemptions() {
         <AlertDialogContent data-testid="confirm-status-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction?.newStatus === "claimed" ? "Konfirmasi Klaim" : "Konfirmasi Expired"}
+              {confirmAction?.newStatus === "claimed" ? "Konfirmasi Klaim" : "Tandai Kedaluwarsa"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.newStatus === "claimed"
@@ -315,10 +316,10 @@ export default function LoyaltyAdminRedemptions() {
             <AlertDialogAction
               onClick={doStatusUpdate}
               disabled={statusUpdating}
-              className={confirmAction?.newStatus === "claimed" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}
+              className={buttonVariants({ variant: confirmAction?.newStatus === "claimed" ? "success" : "destructive" })}
               data-testid="confirm-status-action"
             >
-              {statusUpdating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Memproses…</> : "Ya, Lanjutkan"}
+              {statusUpdating ? <><Loader2 className="h-4 w-4 animate-spin" />Memproses…</> : "Ya, Lanjutkan"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

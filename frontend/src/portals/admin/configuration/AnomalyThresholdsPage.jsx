@@ -21,7 +21,7 @@ export default function AnomalyThresholdsPage() {
   return (
     <RuleListPage
       ruleType="anomaly_threshold_policy"
-      title="Threshold Deteksi Anomali"
+      title="Anomaly Thresholds"
       description="Atur threshold per-tipe anomali (sales / vendor / kas) per scope dengan versi dan periode berlaku."
       emptyTitle="Belum ada threshold policy"
       emptyDescription="Gunakan default group atau buat kebijakan khusus outlet/brand."

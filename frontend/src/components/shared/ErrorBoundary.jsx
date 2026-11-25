@@ -94,7 +94,7 @@ class ErrorBoundary extends React.Component {
     if (compact) {
       return (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-muted/30 p-6 text-center">
-          <AlertTriangle className="h-8 w-8 text-amber-500" />
+          <AlertTriangle className="h-8 w-8 text-amber-800 dark:text-amber-400" />
           <div>
             <p className="text-sm font-medium text-foreground">Komponen gagal dimuat</p>
             <p className="mt-1 text-xs text-muted-foreground">Ref: {errorRef}</p>
@@ -117,7 +117,7 @@ class ErrorBoundary extends React.Component {
         <div className="relative flex items-center justify-center">
           <div className="absolute h-24 w-24 rounded-full bg-red-500/10 animate-ping" style={{ animationDuration: "2s" }} />
           <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-red-500/15 ring-2 ring-red-500/20">
-            <AlertTriangle className="h-9 w-9 text-red-500" />
+            <AlertTriangle className="h-9 w-9 text-red-700 dark:text-red-400" />
           </div>
         </div>
 
@@ -130,7 +130,7 @@ class ErrorBoundary extends React.Component {
             <strong>{scope}</strong> mengalami error yang tidak terduga. Anda bisa mencoba reload
             halaman atau kembali ke beranda.
           </p>
-          <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/70">
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
             <Bug className="h-3.5 w-3.5" />
             Kode referensi untuk pelaporan:{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-medium">
@@ -166,7 +166,7 @@ class ErrorBoundary extends React.Component {
             <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
               Detail error (hanya tampil di development)
             </summary>
-            <pre className="mt-2 overflow-auto text-xs text-red-600 dark:text-red-400">
+            <pre className="mt-2 overflow-auto text-xs text-red-700 dark:text-red-400">
               {this.state.error.toString()}
               {"\n\n"}
               {this.state.errorInfo?.componentStack}

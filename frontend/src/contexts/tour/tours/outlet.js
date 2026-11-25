@@ -92,7 +92,7 @@ const outletEndOfDayWorkflowTour = {
     {
       target: "[data-testid='eod-step-daily-sales']",
       title: "Langkah 1: Tutup Sales",
-      content: "Pastikan semua transaksi penjualan hari ini sudah diinput. Daily sales harus dalam status **Submitted** sebelum bisa lanjut.",
+      content: "Pastikan semua transaksi penjualan hari ini sudah diinput. Daily sales harus dalam status **Diajukan** sebelum bisa lanjut.",
       placement: "bottom",
     },
     {
@@ -209,7 +209,7 @@ const outletReservationFormTour = {
     {
       target: "[data-testid='reservation-form-actions']",
       title: "Submit Reservasi",
-      content: "Klik **Simpan** untuk menyimpan. Status default adalah **Confirmed** kecuali slot penuh (otomatis jadi Waitlist).",
+      content: "Klik **Simpan** untuk menyimpan. Status default adalah **Dikonfirmasi** kecuali slot penuh (otomatis jadi Waitlist).",
       placement: "top",
       variant: "tip",
     },
@@ -301,7 +301,7 @@ const outletPettyCashTour = {
     {
       target: "body",
       title: "Kategori & Bukti",
-      content: "Kategori yang tersedia:\n\n• **Operasional** — sabun, tisu, dll\n• **Darurat** — pembelian mendadak\n• **Transport** — ongkir\n• **Lain-lain** — wajib ada keterangan\n\n📸 Selalu upload foto nota!",
+      content: "Kategori yang tersedia:\n\n• **Operasional** — sabun, tisu, dll\n• **Darurat** — pembelian mendadak\n• **Transport** — ongkir\n• **Lain-lain** — wajib ada keterangan\n\nSelalu upload foto nota!",
       placement: "center",
       variant: "tip",
     },

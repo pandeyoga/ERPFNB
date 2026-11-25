@@ -23,8 +23,9 @@
  *
  * SUPER_ADMIN (`*` in perms) always passes.
  */
-import React from "react";
+import React, { useMemo } from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
 
 export function permitted(user, need) {
   const perms = (user && user.permissions) || [];
@@ -52,4 +53,14 @@ export function makeGate(user) {
       </Gate>
     );
   };
+}
+
+/**
+ * Tab hub yang menggantikan beberapa route lama: tiap tab membawa `perm` (izin route lamanya)
+ * dan hanya ditampilkan bila user memilikinya — gate route hub = gabungan izin semua tab,
+ * sehingga user yang dulu hanya bisa membuka satu halaman tetap bisa membukanya di hub.
+ */
+export function useVisibleTabs(tabs) {
+  const { user } = useAuth();
+  return useMemo(() => tabs.filter((t) => !t.perm || permitted(user, t.perm)), [tabs, user]);
 }

@@ -13,6 +13,8 @@ import { Search, X, AlertTriangle, ArrowUpRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -23,14 +25,15 @@ import useOutletScope from "@/hooks/useOutletScope";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import ListToolbar from "@/components/shared/ListToolbar";
 
 function cellClasses(cell) {
-  if (cell.negative) return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
+  if (cell.negative) return "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30";
   if (cell.below_par && cell.par_level > 0) return "bg-rose-500/12 text-rose-700 dark:text-rose-300 border-rose-500/30";
   if (cell.zero) return "bg-amber-500/12 text-amber-700 dark:text-amber-300 border-amber-500/30";
-  if (cell.par_level > 0 && cell.qty >= cell.par_level * 1.5) return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
+  if (cell.par_level > 0 && cell.qty >= cell.par_level * 1.5) return "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30";
   if (cell.par_level > 0) return "bg-emerald-500/8 text-emerald-700 dark:text-emerald-300 border-emerald-500/20";
-  return "bg-foreground/5 text-foreground/60 border-border/40";
+  return "bg-foreground/5 text-muted-foreground border-border/40";
 }
 
 /* ----------------------- Cell movements dialog ----------------------- */
@@ -45,7 +48,7 @@ function CellMovementsDialog({ open, onClose, itemName, outletName, itemId, outl
       params: { item_id: itemId, outlet_id: outletId, limit: 30 },
     })
       .then(r => setMoves(unwrap(r) || []))
-      .catch(() => toast.error("Gagal load movements"))
+      .catch(() => toast.error("Gagal memuat riwayat pergerakan"))
       .finally(() => setLoading(false));
   }, [open, itemId, outletId]);
 
@@ -75,7 +78,7 @@ function CellMovementsDialog({ open, onClose, itemName, outletName, itemId, outl
                   render: (m) => <span className="text-xs">{m.movement_date || "—"}</span> },
                 { key: "movement_type", label: "Tipe",
                   render: (m) => (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-foreground/10">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-foreground/10">
                       {m.movement_type || "—"}
                     </span>
                   ) },
@@ -109,13 +112,13 @@ const MatrixCell = memo(function MatrixCell({ rowId, cell, onClick }) {
     <button
       type="button"
       onClick={handleClick}
-      className={`w-full inline-flex flex-col items-center gap-0.5 px-2 py-1.5 rounded border text-[11px] tabular-nums font-semibold hover:scale-[1.02] transition-transform ${cellClasses(cell)}`}
+      className={`w-full inline-flex flex-col items-center gap-0.5 px-2 py-1.5 rounded border text-xs tabular-nums font-semibold hover:scale-[1.02] transition-transform ${cellClasses(cell)}`}
       title={`Par: ${cell.par_level || 0} (${cell.par_source}) · klik untuk lihat riwayat`}
       data-testid={`matrix-cell-${rowId}-${cell.outlet_id}`}
     >
       <span>{fmtNumber(cell.qty, cell.qty % 1 === 0 ? 0 : 1)}</span>
       {cell.par_level > 0 && (
-        <span className="text-[9px] font-normal opacity-70">par {fmtNumber(cell.par_level, 0)}</span>
+        <span className="text-xs font-normal">par {fmtNumber(cell.par_level, 0)}</span>
       )}
     </button>
   );
@@ -150,7 +153,7 @@ export default function StockBalanceMatrix() {
       const res = await api.get("/inventory/balance-matrix", { params });
       setMatrix(unwrap(res) || { outlets: [], rows: [] });
     } catch (e) {
-      toast.error("Gagal load matrix");
+      toast.error("Gagal memuat matrix stok");
     } finally { setLoading(false); }
   }, [selectedOutlets, includeZero]);
 
@@ -194,7 +197,7 @@ export default function StockBalanceMatrix() {
       render: (row) => (
         <div data-testid={`matrix-row-${row.item_id}`}>
           <div className="font-medium text-sm">{row.item_name}</div>
-          <div className="text-[10px] text-muted-foreground">{row.item_code} · {row.unit}</div>
+          <div className="text-xs text-muted-foreground">{row.item_code} · {row.unit}</div>
         </div>
       ) },
     ...matrix.outlets.map((o) => ({
@@ -206,71 +209,68 @@ export default function StockBalanceMatrix() {
           : <span className="text-muted-foreground">—</span>;
       },
     })),
-    { key: "total_value", label: "Total Value", numeric: true,
+    { key: "total_value", label: "Nilai Total", numeric: true,
       render: (row) => <span className="font-semibold text-xs">{fmtRp(row.totals.value)}</span> },
   ], [matrix.outlets, openCell]);
 
   return (
-    <div className="space-y-4">
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end" data-testid="matrix-toolbar">
-        <div className="min-w-[260px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Outlet (multi-pilih)</Label>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {outletList.map(o => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => toggleOutlet(o.id)}
-                className={`text-xs px-2.5 py-1 rounded-full border ${
-                  selectedOutlets.includes(o.id)
-                    ? "bg-foreground text-background border-foreground"
-                    : "bg-background hover:bg-foreground/5 border-border/60"
-                }`}
-                data-testid={`matrix-outlet-${o.id}`}
-              >
-                {o.name}
-              </button>
-            ))}
-            {selectedOutlets.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setSelectedOutlets([])}
-                className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-              >
-                <X className="h-3 w-3" /> Reset
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="flex-1 min-w-[220px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Cari Item</Label>
-          <div className="relative mt-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cari nama / kode…" className="glass-input pl-9 h-9"
-              data-testid="matrix-search" />
-          </div>
-        </div>
-        <div>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer">
-            <input type="checkbox" checked={includeZero}
-              onChange={e => setIncludeZero(e.target.checked)}
-              data-testid="matrix-include-zero" />
-            <span>Tampilkan item qty=0</span>
-          </label>
-        </div>
-        {belowParCount > 0 && (
-          <Link to="/inventory/low-stock"
-            className="text-xs px-2.5 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 inline-flex items-center gap-1.5"
-            data-testid="matrix-low-link">
-            <AlertTriangle className="h-3 w-3" />
-            {belowParCount} cell di bawah par
-            <ArrowUpRight className="h-3 w-3" />
-          </Link>
-        )}
-      </div>
-
+    <div className="space-y-3 lg:space-y-4">
       <div className="glass-card overflow-hidden" data-testid="matrix-card">
+        {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}
+        <ListToolbar testId="matrix-toolbar">
+          <div className="min-w-[260px]" role="group" aria-labelledby="matrix-outlet-label">
+            <span id="matrix-outlet-label" className="text-xs md:text-sm font-medium">
+              Outlet <span className="font-normal text-muted-foreground">· {selectedOutlets.length > 0 ? `${selectedOutlets.length} dipilih` : "semua"}</span>
+            </span>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {outletList.map(o => {
+                const active = selectedOutlets.includes(o.id);
+                return (
+                  <Button
+                    key={o.id}
+                    type="button"
+                    size="sm"
+                    variant={active ? "default" : "outline"}
+                    aria-pressed={active}
+                    onClick={() => toggleOutlet(o.id)}
+                    data-testid={`matrix-outlet-${o.id}`}
+                  >
+                    {o.name}
+                  </Button>
+                );
+              })}
+              {selectedOutlets.length > 0 && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOutlets([])} data-testid="matrix-outlet-reset">
+                  <X /> Reset
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 min-w-[220px]">
+            <Label htmlFor="matrix-search-input" className="text-xs md:text-sm font-medium">Cari item</Label>
+            <div className="relative mt-1">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input id="matrix-search-input" value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Cari nama / kode…" className="glass-input pl-9"
+                data-testid="matrix-search" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 h-9">
+            <Checkbox id="matrix-include-zero-cb" checked={includeZero}
+              onCheckedChange={(v) => setIncludeZero(v === true)}
+              data-testid="matrix-include-zero" />
+            <Label htmlFor="matrix-include-zero-cb" className="text-xs md:text-sm font-medium cursor-pointer">Tampilkan item qty = 0</Label>
+          </div>
+          {belowParCount > 0 && (
+            <Button asChild variant="outline" size="sm" className="text-rose-700 dark:text-rose-300 border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/15">
+              <Link to="/inventory/low-stock" data-testid="matrix-low-link">
+                <AlertTriangle />
+                {belowParCount} sel di bawah par
+                <ArrowUpRight />
+              </Link>
+            </Button>
+          )}
+        </ListToolbar>
         <DataTable
           rows={matrix.rows}
           keyField="item_id"
@@ -284,9 +284,9 @@ export default function StockBalanceMatrix() {
               {matrix.outlets.map(o => {
                 const t = matrix.totals.by_outlet[o.id] || {};
                 return (
-                  <td key={o.id} className="px-2 py-2 text-center text-[11px] tabular-nums">
+                  <td key={o.id} className="px-2 py-2 text-center text-xs tabular-nums">
                     <div className="text-xs">{fmtNumber(t.qty || 0, 0)}</div>
-                    <div className="text-[10px] text-muted-foreground">{fmtRp(t.value || 0)}</div>
+                    <div className="text-xs text-muted-foreground">{fmtRp(t.value || 0)}</div>
                   </td>
                 );
               })}
@@ -298,7 +298,7 @@ export default function StockBalanceMatrix() {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 px-1 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 px-1 text-xs text-muted-foreground">
         <span className="font-semibold">Legend:</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-rose-500/30 border border-rose-500/40" /> Di bawah par / negatif

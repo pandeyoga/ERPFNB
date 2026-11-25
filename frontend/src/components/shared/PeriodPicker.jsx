@@ -152,7 +152,7 @@ export default function PeriodPicker({ value = "month", onChange, className }) {
                 data-testid="period-to"
               />
             </div>
-            <Button onClick={applyCustom} size="sm" className="w-full pill-active rounded-full" data-testid="period-apply">
+            <Button onClick={applyCustom} size="sm" className="w-full" data-testid="period-apply">
               Terapkan
             </Button>
           </div>

@@ -29,7 +29,7 @@ export default function CMSSEOFields({ form, onChange }) {
             data-testid="seo-slug-input"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            URL publik: /brands/<span className="font-mono">{form.seo_slug || "slug-halaman"}</span>
+            URL publik: /brands/<span className="font-medium tabular-nums">{form.seo_slug || "slug-halaman"}</span>
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function CMSSEOFields({ form, onChange }) {
             value={form.seo_og_image || ""}
             onChange={(e) => onChange("seo_og_image", e.target.value)}
             placeholder="https://...  (1200×630px recommended)"
-            className="mt-1 font-mono text-xs"
+            className="mt-1 text-xs"
             data-testid="seo-og-image-input"
           />
         </div>

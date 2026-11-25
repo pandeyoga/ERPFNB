@@ -40,7 +40,7 @@ export default function useOutletScopeGuard({
       const fallbackName = fallback?.name || "outlet Anda";
 
       toast.warning(
-        `⚠️ Anda tidak memiliki akses ke outlet yang diminta. Menampilkan data ${fallbackName}.`,
+        `Anda tidak memiliki akses ke outlet yang diminta. Menampilkan data ${fallbackName}.`,
         {
           id: "outlet-scope-guard",
           duration: 5000,

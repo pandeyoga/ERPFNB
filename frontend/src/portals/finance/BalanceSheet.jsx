@@ -10,22 +10,29 @@ import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
+import useOutletScope from "@/hooks/useOutletScope";
+import { StoreFilter } from "@/components/shared/ScopeControls";
+import { useScopeTag, withScopeTag } from "@/contexts/ScopeContext";
+import PageHeader from "@/components/shared/PageHeader";
 
 export default function BalanceSheet() {
   const [asOf, setAsOf] = useState(todayJakartaISO());
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Neraca milik Group; di bawah Group hanya parsial (DESIGN_SYSTEM §10.7).
+  const { outletId, params: scopeParams, storeFilter } = useOutletScope();
+  const fileTag = useScopeTag(outletId); // nama file ekspor membawa konteks
 
   async function load() {
     setLoading(true);
     try {
-      const res = await api.get("/finance/balance-sheet", { params: { as_of: asOf } });
+      const res = await api.get("/finance/balance-sheet", { params: { as_of: asOf, ...scopeParams } });
       setData(unwrap(res));
     } catch (e) {
       toast.error("Gagal memuat Balance Sheet");
     } finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, [asOf]);
+  useEffect(() => { load(); }, [asOf, outletId]); // eslint-disable-line
 
   function exportCsv() {
     if (!data) return;
@@ -41,52 +48,65 @@ export default function BalanceSheet() {
     const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = `Balance-Sheet-${data.as_of}.csv`;
+    a.href = url; a.download = withScopeTag(`Balance-Sheet-${data.as_of}.csv`, fileTag);
     a.click(); URL.revokeObjectURL(url);
   }
 
   return (
-    <div data-testid="balance-sheet-page" className="space-y-4">
-      <div data-testid="bs-filter-card" className="glass-card p-4 flex flex-wrap items-end gap-3">
+    <div data-testid="balance-sheet-page" className="space-y-3 lg:space-y-4">
+      {/* Di dalam hub Reports: subtitle & aksi layar mengisi header hub (DESIGN_SYSTEM §10.1) */}
+      <PageHeader title="Balance Sheet" subtitle="Posisi aset, liabilitas, dan ekuitas per tanggal." actions={<Button onClick={exportCsv} variant="outline" disabled={!data} data-testid="bs-export"><Download /> Ekspor CSV</Button>} />
+      <div data-testid="bs-filter-card" className="flex flex-wrap items-end gap-3">
         <div className="min-w-[180px]">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">As of</Label>
-          <Input type="date" value={asOf} onChange={e => setAsOf(e.target.value)}
+          <Label htmlFor="bs-asof" className="text-xs font-medium text-muted-foreground">Per tanggal</Label>
+          <Input id="bs-asof" type="date" value={asOf} onChange={e => setAsOf(e.target.value)}
             className="glass-input mt-1 h-9" data-testid="bs-asof" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="ml-auto rounded-full gap-2 h-10" data-testid="bs-export">
-          <Download className="h-4 w-4" /> CSV
-        </Button>
+        <StoreFilter filter={storeFilter} testId="bs-outlet" />
       </div>
 
       {loading && <LoadingState rows={8} />}
       {!loading && data && (
         <>
-          <div data-testid="bs-balance-status" className={`glass-card p-4 flex items-center gap-3 ${data.totals.is_balanced ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/30"}`}>
+          {data.partial ? (
+            <div data-testid="bs-partial" className="glass-card p-3 flex items-start gap-3 bg-amber-500/5 border-amber-500/30">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-800 dark:text-amber-400" />
+              <div className="text-sm">
+                <div className="font-semibold">Neraca parsial</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Hanya baris jurnal brand/toko yang dipilih. Rekening bank, utang dan ekuitas sebagian besar milik pusat,
+                  jadi Aset tidak harus sama dengan Liabilitas + Ekuitas. Pilih "Semua brand" di bagian atas untuk neraca Group.
+                </div>
+              </div>
+            </div>
+          ) : (
+          <div data-testid="bs-balance-status" className={`glass-card p-3 flex flex-wrap items-center gap-3 ${data.totals.is_balanced ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/30"}`}>
             {data.totals.is_balanced
-              ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-              : <AlertTriangle className="h-5 w-5 text-amber-600" />}
+              ? <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+              : <AlertTriangle className="h-5 w-5 text-amber-800 dark:text-amber-400" />}
             <div className="flex-1">
               <div className="font-semibold text-sm">
-                {data.totals.is_balanced ? "Balanced — Asset = Liability + Equity" : `Tidak balance: diff Rp ${fmtRp(data.totals.diff)}`}
+                {data.totals.is_balanced ? "Seimbang — Aset = Liabilitas + Ekuitas" : `Tidak seimbang: selisih ${fmtRp(data.totals.diff)}`}
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Net Income (current period): <span className="font-semibold">{fmtRp(data.totals.net_income)}</span>
+                Net Income (periode berjalan): <span className="font-semibold">{fmtRp(data.totals.net_income)}</span>
               </div>
             </div>
             <div className="text-right text-xs tabular-nums">
-              <div>Assets: <span className="font-bold">{fmtRp(data.totals.assets)}</span></div>
-              <div>Liab+Equity: <span className="font-bold">{fmtRp(data.totals.liabilities_plus_equity)}</span></div>
+              <div>Aset: <span className="font-semibold">{fmtRp(data.totals.assets)}</span></div>
+              <div>Liabilitas + Ekuitas: <span className="font-semibold">{fmtRp(data.totals.liabilities_plus_equity)}</span></div>
             </div>
           </div>
+          )}
 
-          <div data-testid="bs-sections" className="grid lg:grid-cols-3 gap-4">
+          <div data-testid="bs-sections" className="grid lg:grid-cols-3 gap-3 lg:gap-4">
             <Section title="ASET" rows={data.sections.asset} total={data.totals.assets} accent="emerald" sectionId="asset" />
             <Section title="LIABILITAS" rows={data.sections.liability} total={data.totals.liabilities} accent="amber" sectionId="liability" />
             <Section title="EKUITAS" rows={data.sections.equity} total={data.totals.equity} accent="sky" sectionId="equity" />
           </div>
 
           {(!data.sections.asset.length && !data.sections.liability.length && !data.sections.equity.length) && (
-            <EmptyState icon={Scale} title="Belum ada data balance sheet" description="Post journal entries dulu." />
+            <EmptyState icon={Scale} title="Belum ada data balance sheet" description="Posting jurnal terlebih dahulu untuk melihat posisi keuangan." />
           )}
         </>
       )}
@@ -96,32 +116,32 @@ export default function BalanceSheet() {
 
 function Section({ title, rows, total, accent, sectionId }) {
   const toneBg = {
-    emerald: "bg-emerald-500/5 text-emerald-700 dark:text-emerald-400",
-    amber: "bg-amber-500/5 text-amber-700 dark:text-amber-400",
-    sky: "bg-sky-500/5 text-sky-700 dark:text-sky-400",
+    emerald: "bg-emerald-500/5 text-emerald-800 dark:text-emerald-400",
+    amber: "bg-amber-500/5 text-amber-800 dark:text-amber-400",
+    sky: "bg-sky-500/5 text-sky-800 dark:text-sky-400",
   }[accent] || "";
   return (
     <div data-testid={`bs-section-${sectionId}`} className="glass-card overflow-hidden">
-      <div className={`px-4 py-2 border-b border-border/40 ${toneBg} font-semibold text-xs uppercase tracking-wide`}>
+      <h3 className={`px-4 py-2 border-b border-border/40 ${toneBg} font-semibold text-xs uppercase tracking-wide`}>
         {title}
-      </div>
+      </h3>
       <DataTable
         rows={rows || []}
         keyField="coa_id"
         rowTestIdPrefix={`bs-${sectionId}-row`}
         empty={<div className="px-4 py-6 text-xs text-muted-foreground text-center">Kosong</div>}
         columns={[
-          { key: "code", label: "Code", primary: true,
-            render: (r) => <span className={r.pseudo ? "font-mono text-xs italic text-muted-foreground" : "font-mono text-xs"}>{r.code}</span> },
+          { key: "code", label: "Kode", primary: true,
+            render: (r) => <span className={r.pseudo ? "text-xs font-medium tabular-nums italic text-muted-foreground" : "text-xs font-medium tabular-nums"}>{r.code}</span> },
           { key: "name", label: "Akun",
             render: (r) => <span className={r.pseudo ? "italic text-muted-foreground" : ""}>{r.name}</span> },
           { key: "amount", label: "Jumlah", numeric: true, sortable: true,
-            render: (r) => fmtRp(r.amount) },
+            render: (r) => <span className="whitespace-nowrap">{fmtRp(r.amount)}</span> },
         ]}
         footer={(
           <tr className="font-bold border-t-2 border-border/70">
             <td colSpan={2} className="px-4 py-3">Total</td>
-            <td className={`px-4 py-3 text-right tabular-nums text-${accent}-700 dark:text-${accent}-400`}>{fmtRp(total || 0)}</td>
+            <td className={`px-4 py-3 text-right tabular-nums whitespace-nowrap text-${accent}-700 dark:text-${accent}-400`}>{fmtRp(total || 0)}</td>
           </tr>
         )}
       />

@@ -13,7 +13,7 @@ export default function PettyCashPoliciesPage() {
   return (
     <RuleListPage
       ruleType="petty_cash_policy"
-      title="Kebijakan Kas Kecil"
+      title="Petty Cash Policies"
       description="Limit, threshold approval, frekuensi replenish, dan kewajiban lampiran struk."
       emptyTitle="Belum ada kebijakan kas kecil"
       emptyDescription="Atur limit dan threshold approval agar transaksi kas kecil konsisten."

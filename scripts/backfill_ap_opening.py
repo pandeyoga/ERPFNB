@@ -9,18 +9,21 @@ This one-off, idempotent script posts a single opening-balance JE:
     Cr Accounts Payable    (total outstanding)
 so GL AP control == AP subledger and the Balance Sheet reflects the liability.
 
-Run: python /app/scripts/backfill_ap_opening.py
+Run: python scripts/backfill_ap_opening.py   (dari root repo; /app di deployment)
 """
 import asyncio
+import os
 import sys
 
-sys.path.insert(0, "/app/backend")
+# <root repo>/backend — bukan /app/backend tetap, agar jalan juga di komputer lokal.
+BACKEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend")
+sys.path.insert(0, BACKEND_DIR)
 
 # Load backend env BEFORE core.config is imported, otherwise settings.db_name
 # falls back to the default and this script silently targets an empty database.
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv(os.path.join(BACKEND_DIR, ".env"))
 except Exception:
     pass
 

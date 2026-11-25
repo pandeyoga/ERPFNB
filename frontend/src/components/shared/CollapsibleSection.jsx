@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 
 // Module-level singleton — fetched once per app lifecycle, shared across sections
@@ -98,21 +99,24 @@ export default function CollapsibleSection({ id, title, icon: Icon, children, cl
     >
       {(title || Icon) && (
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-            {Icon && <Icon className="h-3.5 w-3.5" />}
+          {/* Skala tipografi: judul bagian = text-sm md:text-base semibold (bukan uppercase 14px). */}
+          <h3 className="text-sm md:text-base font-semibold flex items-center gap-2">
+            {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
             <span>{title}</span>
           </h3>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={toggle}
-            className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground hover:text-foreground rounded-full px-2 py-1 hover:bg-foreground/5 transition-colors"
-            aria-label={open ? `Collapse ${title || id}` : `Expand ${title || id}`}
+            className="text-muted-foreground"
+            aria-label={open ? `Ciutkan ${title || id}` : `Buka ${title || id}`}
             aria-expanded={open}
             data-testid={`section-${id}-toggle`}
           >
-            {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            {open ? "Tutup" : "Buka"}
-          </button>
+            {open ? <ChevronUp /> : <ChevronDown />}
+            {open ? "Ciutkan" : "Buka"}
+          </Button>
         </div>
       )}
       <div

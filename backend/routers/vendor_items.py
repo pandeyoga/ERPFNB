@@ -1,8 +1,8 @@
 """Vendor Items router — vendor item catalog management."""
 from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
-from core.exceptions import ok_envelope
-from core.security import require_perm
+from core.exceptions import ok_envelope, require_fields
+from core.security import require_any_perm, require_perm
 from services import vendor_item_service
 
 router = APIRouter(prefix="/api/vendor-items", tags=["vendor-items"])
@@ -57,7 +57,7 @@ async def get_price_history(
 async def mark_unavailable(
     vendor_id: str,
     item_id: str,
-    user: dict = Depends(require_perm("procurement.view")),
+    user: dict = Depends(require_any_perm("procurement.price_list.manage", "procurement.po.create")),
 ):
     """Mark item as unavailable from this vendor."""
     return ok_envelope(await vendor_item_service.mark_unavailable(vendor_id, item_id, user=user))
@@ -67,7 +67,7 @@ async def mark_unavailable(
 async def mark_available(
     vendor_id: str,
     item_id: str,
-    user: dict = Depends(require_perm("procurement.view")),
+    user: dict = Depends(require_any_perm("procurement.price_list.manage", "procurement.po.create")),
 ):
     """Mark item as available again from this vendor."""
     return ok_envelope(await vendor_item_service.mark_available(vendor_id, item_id, user=user))
@@ -79,6 +79,7 @@ async def manual_upsert(
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
     """Manually add/update a vendor-item with price."""
+    require_fields(payload, "vendor_id", "item_id")
     result = await vendor_item_service.upsert_vendor_item(
         vendor_id=payload["vendor_id"],
         item_id=payload["item_id"],

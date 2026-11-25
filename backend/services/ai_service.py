@@ -1,4 +1,4 @@
-"""AI services for Phase 3+ — autocomplete & GL categorization (using Emergent LLM key).
+"""AI services for Phase 3+ — autocomplete & GL categorization (Claude via services/ai/client.py).
 Do NOT block users on AI; if LLM fails, fall back to local fuzzy.
 """
 import json
@@ -6,8 +6,6 @@ import logging
 import re
 from typing import Optional
 
-from core.config import settings
-from core.runtime_config import get_setting
 from core.db import get_db
 
 logger = logging.getLogger("aurora.ai")
@@ -227,9 +225,9 @@ async def categorize_expense(description: str, amount: float = 0,
         except re.error:
             continue
 
-    # LLM fallback (Phase 9D — switched to Gemini 2.5 Flash)
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+    # LLM fallback (Claude — services/ai/client.py)
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return {}
     try:
         coas_cursor = db.chart_of_accounts.find(
@@ -253,7 +251,6 @@ async def categorize_expense(description: str, amount: float = 0,
                 f"- {o.get('code') or o['id'][:6]}: {o.get('name', '')}" for o in outlets_list
             )
 
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
         sys = f"""You classify Indonesian F&B expense descriptions into GL accounts.
 Available GL accounts (only use these codes):
 {coa_str}
@@ -263,14 +260,9 @@ Available outlets (cost centers, optional — include outlet_code if mentioned i
 
 Output STRICT JSON ONLY (no prose, no markdown fences):
 {{"gl_code":"...","confidence":0.0-1.0,"reason":"<short Indonesian, max 12 words>","outlet_code":"<one of the outlet codes or null>"}}"""
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"categ-{description[:20]}",
-            system_message=sys,
-        ).with_model("gemini", "gemini-2.5-flash")
-        resp = await chat.send_message(UserMessage(
-            text=f'Description: "{description}"\nAmount: Rp {amount}\n\nOutput JSON.'
-        ))
+        resp = await ai_client.ask(
+            system=sys, user=f'Description: "{description}"\nAmount: Rp {amount}\n\nOutput JSON.',
+            feature="gl_categorize", max_tokens=400)
         m = re.search(r"\{.*\}", resp, re.DOTALL)
         if not m:
             return {}

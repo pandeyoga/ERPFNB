@@ -22,6 +22,7 @@ import {
   X,
   Inbox,
   RotateCw,
+  Compass,
 } from "lucide-react";
 import {
   Popover,
@@ -44,7 +45,7 @@ export default function HelpTourButton() {
   const searchInputRef = useRef(null);
 
   const currentPath = location.pathname;
-  const availableTourIds = getToursForPath(currentPath);
+  const availableTourIds = getToursForPath(currentPath, location.search);
 
   // Determine if this is a public page (hide tour button)
   const isPublicPage =
@@ -219,7 +220,7 @@ export default function HelpTourButton() {
           aria-label="Bantuan & Tour"
           data-testid="help-tour-button"
         >
-          <HelpCircle className="h-5 w-5" />
+          <HelpCircle className="h-4 w-4" />
           {pageSpecificIds.length > 0 && (
             <span className="help-tour-btn-badge" data-testid="help-tour-badge">
               {pageSpecificIds.length}
@@ -350,7 +351,7 @@ export default function HelpTourButton() {
 
         {/* Footer */}
         <div className="help-tour-popover-footer">
-          💡 <strong>Tips:</strong> Gunakan <kbd>↑</kbd> <kbd>↓</kbd>{" "}
+          <strong>Tips:</strong> Gunakan <kbd>↑</kbd> <kbd>↓</kbd>{" "}
           <kbd>Enter</kbd> untuk navigasi cepat.
         </div>
       </PopoverContent>
@@ -374,10 +375,10 @@ function TourOption({ tourId, isCompleted, isOutdated, isFocused, onStart }) {
   let statusIcon;
   let statusLabel;
   if (isOutdated) {
-    statusIcon = <RotateCw className="h-4 w-4 text-amber-600" />;
+    statusIcon = <RotateCw className="h-4 w-4 text-amber-800 dark:text-amber-400" />;
     statusLabel = "Tour diperbarui — coba lagi";
   } else if (isCompleted) {
-    statusIcon = <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+    statusIcon = <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />;
     statusLabel = "Pernah selesai";
   } else {
     statusIcon = <PlayCircle className="h-4 w-4" />;
@@ -395,7 +396,7 @@ function TourOption({ tourId, isCompleted, isOutdated, isFocused, onStart }) {
       data-testid={`tour-option-${tourId}`}
       aria-label={`${meta.title} — ${statusLabel}`}
     >
-      <span className="help-tour-option-icon">{meta.icon}</span>
+      <span className="help-tour-option-icon" aria-hidden="true"><Compass className="h-4 w-4" /></span>
       <div className="help-tour-option-text">
         <p className="help-tour-option-title">{meta.title}</p>
         <p className="help-tour-option-desc">{meta.description}</p>

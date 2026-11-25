@@ -170,6 +170,16 @@ PERMISSIONS_CATALOG: list[dict] = [
     # Phase 9D
     {"code": "ai.exec_qa.use", "category": "AI", "label": "Executive Q&A (tool-calling)"},
     {"code": "ai.vendor_recommend.use", "category": "AI", "label": "AI vendor recommendation"},
+    # Asisten AI agentic (docs/ai/AGENTIC_AI_PLAN_2026-11-25.md)
+    {"code": "ai.agent.use", "category": "AI", "label": "Pakai Asisten AI"},
+    {"code": "ai.agent.automate", "category": "AI", "label": "Buat monitor & otomasi AI"},
+    {"code": "ai.agent.admin", "category": "AI", "label": "Kelola AI (kebijakan, biaya, log)"},
+    {"code": "ai.wa.use", "category": "AI", "label": "Bot WhatsApp Asisten AI"},
+    {"code": "ai.knowledge.manage", "category": "AI", "label": "Kelola memori perusahaan & basis pengetahuan AI"},
+    # Impor Cerdas & master menu (R2)
+    {"code": "import.smart.use", "category": "Import", "label": "Impor Cerdas (penjualan, mutasi bank)"},
+    {"code": "menu.item.read", "category": "Menu", "label": "Lihat master menu"},
+    {"code": "menu.item.manage", "category": "Menu", "label": "Kelola master menu & alias"},
 
     # Anomaly (Phase 7D)
     {"code": "anomaly.feed.read", "category": "Anomaly", "label": "Read anomaly feed"},
@@ -208,6 +218,11 @@ PERMISSIONS_CATALOG: list[dict] = [
     # ── Missing Procurement permissions ──
     {"code": "procurement.view",               "category": "Procurement", "label": "View procurement portal"},
     {"code": "procurement.market_list.manage", "category": "Procurement", "label": "Manage market list"},
+    # Sourcing (harga acuan per periode/wilayah, penawaran supplier, analisis)
+    {"code": "procurement.sourcing.read", "category": "Procurement", "label": "View sourcing analysis, benchmarks and supplier offers"},
+    {"code": "procurement.price_list.manage", "category": "Procurement", "label": "Manage supplier offers / price list"},
+    {"code": "procurement.sourcing.settings", "category": "Procurement", "label": "Configure sourcing periods and alert thresholds"},
+    {"code": "procurement.rfq.approve", "category": "Procurement", "label": "Accept RFQ quote"},
 
     # ── Missing Inventory permissions ──
     {"code": "inventory.view", "category": "Inventory", "label": "View inventory portal"},

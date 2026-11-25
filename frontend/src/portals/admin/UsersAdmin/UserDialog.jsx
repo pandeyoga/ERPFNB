@@ -146,7 +146,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
 
   return (
     <Dialog open={!!editing} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="glass-card max-w-2xl max-h-[92vh] overflow-y-auto" data-testid="user-dialog">
+      <DialogContent className="glass-card max-w-2xl" data-testid="user-dialog">
         <DialogHeader>
           <DialogTitle>{isNew ? "User Baru" : "Edit User"}</DialogTitle>
           <DialogDescription>
@@ -158,22 +158,22 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
           {/* Basic Info */}
           <Section title="Informasi Dasar">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Nama Lengkap *" className="col-span-2 sm:col-span-1">
-                <Input value={form.full_name || ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              <Field label="Nama Lengkap *" htmlFor="user-form-name" className="col-span-2 sm:col-span-1">
+                <Input id="user-form-name" value={form.full_name || ""} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                        className="glass-input" data-testid="user-form-name" />
               </Field>
-              <Field label="Phone" className="col-span-2 sm:col-span-1">
-                <Input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                       className="glass-input" />
+              <Field label="Telepon" htmlFor="user-form-phone" className="col-span-2 sm:col-span-1">
+                <Input id="user-form-phone" value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                       className="glass-input" data-testid="user-form-phone" />
               </Field>
-              <Field label="Email *" className="col-span-2">
-                <Input type="email" disabled={!isNew} value={form.email || ""}
+              <Field label="Email *" htmlFor="user-form-email" className="col-span-2">
+                <Input id="user-form-email" type="email" disabled={!isNew} value={form.email || ""}
                        onChange={(e) => setForm({ ...form, email: e.target.value })}
                        className="glass-input" data-testid="user-form-email" />
               </Field>
               {isNew && (
-                <Field label="Password (min 8) *" className="col-span-2">
-                  <Input type="password" value={form.password || ""}
+                <Field label="Password (min 8) *" htmlFor="user-form-password" className="col-span-2">
+                  <Input id="user-form-password" type="password" value={form.password || ""}
                          onChange={(e) => setForm({ ...form, password: e.target.value })}
                          className="glass-input" data-testid="user-form-password" />
                 </Field>
@@ -196,7 +196,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   />
                   <span className="leading-tight">
                     <span className="block">{r.name}</span>
-                    <span className="text-[10px] text-muted-foreground">{r.code}</span>
+                    <span className="text-xs font-medium tabular-nums text-muted-foreground">{r.code}</span>
                   </span>
                 </label>
               ))}
@@ -208,10 +208,10 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
             title="Level Akses"
             badge={
               isAllOutlets && isAllBrands
-                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 font-medium flex items-center gap-1"><Globe2 className="h-3 w-3" /> Full Access</span>
+                ? <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-800 dark:text-green-400 font-medium flex items-center gap-1"><Globe2 className="h-3 w-3" /> Full Access</span>
                 : selectedOutletCount > 0
-                ? <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium flex items-center gap-1"><Store className="h-3 w-3" /> {selectedOutletCount} outlet dipilih</span>
-                : <span className="text-[11px] px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium">Tidak ada akses</span>
+                ? <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-400 font-medium flex items-center gap-1"><Store className="h-3 w-3" /> {selectedOutletCount} outlet dipilih</span>
+                : <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive font-medium">Tidak ada akses</span>
             }
           >
             {/* Quick access level buttons */}
@@ -222,15 +222,16 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all",
                   isAllOutlets && isAllBrands
-                    ? "border-green-500/50 bg-green-500/10 text-green-600"
+                    ? "border-green-500/50 bg-green-500/10 text-green-800 dark:text-green-400"
                     : "border-border hover:border-green-500/50 hover:bg-green-500/5 text-muted-foreground"
                 )}
+                aria-pressed={isAllOutlets && isAllBrands}
                 data-testid="access-full"
               >
                 <Globe2 className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Full Access</span>
-                  <span className="block text-[10px] opacity-70">Owner, Executive, Finance, Procurement</span>
+                  <span className="block text-xs">Owner, Executive, Finance, Procurement</span>
                 </span>
               </button>
               <button
@@ -239,17 +240,18 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all",
                   !isAllOutlets && selectedOutletCount > 0
-                    ? "border-amber-500/50 bg-amber-500/10 text-amber-600"
+                    ? "border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-400"
                     : selectedOutletCount === 0
                     ? "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
                     : "border-border hover:border-amber-500/50 hover:bg-amber-500/5 text-muted-foreground"
                 )}
+                aria-pressed={!isAllOutlets && selectedOutletCount > 0}
                 data-testid="access-clear"
               >
                 <Store className="h-4 w-4" />
                 <span>
                   <span className="block text-sm font-semibold">Outlet Staff</span>
-                  <span className="block text-[10px] opacity-70">Pilih outlet spesifik di bawah</span>
+                  <span className="block text-xs">Pilih outlet spesifik di bawah</span>
                 </span>
               </button>
             </div>
@@ -277,7 +279,7 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                         style={{ background: brand.color || "#888" }}
                       />
                       {(form.brand_ids || []).includes(brand.id) && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 ml-auto">Brand ✓</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-800 dark:text-blue-400 ml-auto">Brand ✓</span>
                       )}
                     </label>
                     {/* Outlet rows */}
@@ -342,7 +344,8 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                     { value: "owner", label: "Owner" },
                   ]}
                   placeholder="— Otomatis —"
-                  className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel="Portal default"
                   testId="user-default-portal"
                 />
               </Field>
@@ -353,10 +356,11 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   disabled={(form.outlet_ids || []).length === 0}
                   options={[{ value: "", label: "— Tidak ada / pilih manual —" }, ...outlets.filter((o) => (form.outlet_ids || []).includes(o.id)).map((o) => ({ value: o.id, label: o.name }))]}
                   placeholder="— Tidak ada / pilih manual —"
-                  className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                  className="glass-input w-full"
+                  ariaLabel="Outlet default"
                   testId="user-default-outlet"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Outlet yang otomatis dipilih saat user membuka halaman baru
                 </p>
               </Field>
@@ -373,16 +377,18 @@ function UserDialog({ editing, roles, outlets, brands, onClose, onSaved }) {
                   { value: "active", label: "Aktif" },
                   { value: "disabled", label: "Nonaktif" },
                 ]}
-                className="glass-input rounded-lg w-full px-3 h-10 text-sm"
+                className="glass-input w-full"
+                ariaLabel="Status akun"
                 testId="user-status"
               />
             </Section>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={submit} disabled={saving} className="pill-active" data-testid="user-form-save">
+        {/* Footer sticky: dialog panjang tetap bisa disimpan tanpa scroll ke bawah */}
+        <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 px-5 py-3 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+          <Button variant="outline" onClick={onClose} data-testid="user-form-cancel">Batal</Button>
+          <Button onClick={submit} disabled={saving} data-testid="user-form-save">
             {saving ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>

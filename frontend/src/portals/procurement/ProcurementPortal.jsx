@@ -1,10 +1,10 @@
-/** Procurement Portal shell — Navigation Restructuring + ApprovalCenter (Sprint B).
+/** Procurement Portal shell. Approval PR/PO ada di Pusat Persetujuan (/my-approvals).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`. */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ClipboardList, ShoppingCart, Store, Award } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import ProcurementHome from "./ProcurementHome";
 import KanbanWorkboard from "./KanbanWorkboard";
 import VendorComparison from "./VendorComparison";
@@ -19,17 +19,12 @@ import GRForm from "./GRForm";
 import VendorRecommendPage from "./VendorRecommendPage";
 import RFQList from "./RFQList";
 import RFQDetail, { RFQForm } from "./RFQDetail";
-import PriceIntelligence from "./PriceIntelligence";
+import SourcingHub from "./sourcing/SourcingHub";
+import SourcingItemPage from "./sourcing/SourcingItemPage";
 import VendorCatalog from "./VendorCatalog";
 import PRConsolidation from "./PRConsolidation";
-import POComparison from "./POComparison";
 import AllVendors from "./AllVendors";
 import VendorScorecardList from "./VendorScorecardList";
-import ApprovalCenter from "../shared/ApprovalCenter";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
-
-// Procurement portal hanya melihat approval tipe PR & PO
-const PROC_TYPES = ["purchase_request", "purchase_order"];
 
 export default function ProcurementPortal() {
   const { user } = useAuth();
@@ -40,9 +35,13 @@ export default function ProcurementPortal() {
       <Routes>
         <Route index element={<ProcurementHome />} />
       <Route path="kanban" element={g(["procurement.view", "procurement.pr", "procurement.po"], <KanbanWorkboard />)} />
-      <Route path="vendor-comparison" element={g(["procurement.view", "procurement.vendor.read"], <VendorComparison />)} />
+      {/* Gate = gabungan izin tab (Per item / Per PO). */}
+      <Route path="vendor-comparison" element={g(["procurement.view", "procurement.vendor.read", "procurement.po"], <VendorComparison />)} />
       <Route path="vendor-recommend" element={g(["procurement.view", "procurement.vendor.read"], <VendorRecommendPage />)} />
-      <Route path="price-intelligence" element={g(["procurement.view", "procurement.vendor.read"], <PriceIntelligence />)} />
+      {/* Sourcing: harga acuan, penawaran supplier, analisis per item (menggantikan Price Intelligence) */}
+      <Route path="sourcing" element={g("procurement.sourcing.read", <SourcingHub />)} />
+      <Route path="sourcing/items/:id" element={g("procurement.sourcing.read", <SourcingItemPage />)} />
+      <Route path="price-intelligence" element={<Navigate to="/procurement/sourcing" replace />} />
       <Route path="vendor-catalog" element={g(["procurement.view", "procurement.vendor.read"], <VendorCatalog />)} />
       <Route path="rfq" element={g("procurement.rfq", <RFQList />)} />
       <Route path="rfq/new" element={g("procurement.rfq.create", <RFQForm />)} />
@@ -58,20 +57,10 @@ export default function ProcurementPortal() {
 
       {/* Real pages: Consolidation, PO Comparison, Vendors, Scorecard */}
       <Route path="consolidation" element={g("procurement.pr", <PRConsolidation />)} />
-      <Route path="po-comparison" element={g("procurement.po", <POComparison />)} />
+      <Route path="po-comparison" element={<LegacyRedirect to="/procurement/vendor-comparison?tab=po" />} />
       <Route path="vendors" element={g(["procurement.view", "procurement.vendor.read"], <AllVendors />)} />
       <Route path="vendor-scorecard" element={g(["procurement.view", "procurement.vendor.read"], <VendorScorecardList />)} />
 
-      <Route
-        path="approvals"
-        element={
-          <ApprovalCenter
-            restrictedTypes={PROC_TYPES}
-            title="Procurement Approval Center"
-            subtitle="Antrian persetujuan PR dan PO"
-          />
-        }
-      />
       <Route path="*" element={<Navigate to="/procurement" replace />} />
       </Routes>
     </div>

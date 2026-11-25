@@ -18,14 +18,10 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-from core.config import settings
-from core.runtime_config import get_setting
 from core.db import get_db
 
 logger = logging.getLogger("aurora.daily_briefing")
 
-PROVIDER = "gemini"
-MODEL = "gemini-2.5-flash"
 
 
 def _now() -> str:
@@ -317,7 +313,7 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": an["title"],
             "description": an.get("description", ""),
             "action_label": "Review Anomali",
-            "action_link": "/finance/anomalies",
+            "action_link": "/finance/period-closing?phase=1",
         })
     if data.get("ap_due_count", 0) > 0:
         urgent_actions.append({
@@ -326,7 +322,7 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": f"{data['ap_due_count']} invoice jatuh tempo 7 hari",
             "description": f"Total {_format_idr(data['ap_due_total'])} — utama: {(data['top_ap_due'][0].get('vendor_name') or '-') if data['top_ap_due'] else '-'}",
             "action_label": "Buat Payment Request",
-            "action_link": "/finance/payment-requests",
+            "action_link": "/finance/payments-hub?tab=payments",
         })
     if data.get("pending_approvals", 0) > 0:
         urgent_actions.append({
@@ -335,25 +331,20 @@ async def generate_daily_briefing(user: dict | None = None) -> dict:
             "title": f"{data['pending_approvals']} approval menunggu Anda",
             "description": "Review & approve untuk mempercepat workflow",
             "action_label": "Buka Approvals",
-            "action_link": "/approvals",
+            "action_link": "/my-approvals",
         })
 
     # ---- Try LLM-narrated briefing, fallback to deterministic ----
     briefing_text = ""
     voice_text = ""
     llm_used = False
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if llm_key:
+    from services.ai import client as ai_client
+    if await ai_client.is_available():
         try:
-            from emergentintegrations.llm.chat import LlmChat, UserMessage
-            prompt = _build_briefing_prompt(data, owner_name, time_of_day)
-            chat = LlmChat(
-                api_key=llm_key,
-                session_id=f"daily-briefing-{(user or {}).get('id', 'guest')}-{now.strftime('%Y%m%d%H')}",
-                system_message="Anda adalah asisten cerdas untuk pemilik bisnis F&B di Indonesia. Bahasa Anda ramah, ringkas, dan profesional.",
-            ).with_model(PROVIDER, MODEL)
-            briefing_text = await chat.send_message(UserMessage(text=prompt)) or ""
-            briefing_text = briefing_text.strip()
+            prompt = _build_briefing_prompt(data, owner_name, time_of_day, greeting)
+            briefing_text = (await ai_client.ask(
+                system="Anda adalah asisten cerdas untuk pemilik bisnis F&B di Indonesia. Bahasa Anda ramah, ringkas, dan profesional.",
+                user=prompt, feature="daily_briefing", user_id=(user or {}).get("id"), max_tokens=1500) or "").strip()
             llm_used = bool(briefing_text)
         except Exception as e:  # noqa: BLE001
             logger.warning(f"daily_briefing_llm_failed: {e}")

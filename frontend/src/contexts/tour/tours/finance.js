@@ -136,7 +136,7 @@ const financeAPTour = {
       placement: "bottom",
     },
     {
-      target: "[data-testid='ap-aging-table']",
+      target: "[data-testid='ap-table-card']",
       title: "Detail per Vendor",
       content: "Setiap baris = satu vendor. Klik baris untuk lihat **GR/PO detail** yang belum dibayar. Siapkan Payment Request dari sini.",
       placement: "top",
@@ -194,33 +194,33 @@ const financeJournalsTour = {
 
 // ─── Payment Request List ────────────────────────────────────────
 const financePaymentRequestsTour = {
-  name: "Payment Requests — Tagihan ke Finance",
-  description: "Daftar semua payment request yang diajukan ke Finance.",
+  name: "Payments — Pembayaran ke Vendor",
+  description: "Daftar pembayaran (PAY) dari pengajuan sampai dibayar.",
   steps: [
     {
-      target: "[data-testid='payment-request-list-page']",
-      title: "Payment Requests",
-      content: "Daftar semua **payment request** dari outlet dan procurement. Finance memproses pembayaran setelah request diapprove.",
+      target: "[data-testid='payment-list-page']",
+      title: "Payments",
+      content: "Daftar semua **payment (PAY)** ke vendor/karyawan. Finance memproses pembayaran setelah PAY disetujui.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
     },
     {
-      target: "[data-testid='pr-stats-cards']",
-      title: "Stats Overview",
-      content: "Ringkasan: **Total Pending** (menunggu approval), **Approved** (siap bayar), **Paid MTD**, dan **Total Outstanding**.",
+      target: "[data-testid='pay-kpi-strip']",
+      title: "Ringkasan",
+      content: "Ringkasan jumlah PAY per status: menunggu approval, siap bayar, dan nominal yang sudah dibayar.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='pr-filter-card']",
-      title: "Filter Requests",
-      content: "Filter berdasarkan **status** (Pending/Approved/Paid/Rejected), tanggal, dan outlet. Berguna untuk daily reconciliation.",
+      target: "[data-testid='pay-toolbar']",
+      title: "Filter",
+      content: "Filter berdasarkan **status** dan cari nomor dokumen/payee. Berguna untuk rekonsiliasi harian.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='pr-create']",
-      title: "Buat Payment Request",
-      content: "Klik **+ Buat** untuk request pembayaran baru. Link ke AP/GR untuk full traceability. Request masuk approval workflow sebelum diproses.",
+      target: "[data-testid='pay-new-btn']",
+      title: "Buat Payment",
+      content: "Klik **Buat Payment** untuk pembayaran baru. Tautkan ke GR/AP untuk traceability penuh; PAY masuk approval sebelum dibayar.",
       placement: "bottom",
       variant: "tip",
     },
@@ -249,7 +249,7 @@ const financePaymentsTour = {
     {
       target: "[data-testid='pay-status-tabs']",
       title: "Filter by Status",
-      content: "Tab status:\n\n• **Pending** — menunggu approval\n• **Approved** — siap dibayarkan\n• **Paid** — sudah dibayar\n• **Rejected** — ditolak, perlu revisi",
+      content: "Tab status:\n\n• **Menunggu** — menunggu approval\n• **Disetujui** — siap dibayarkan\n• **Dibayar** — sudah dibayar\n• **Ditolak** — ditolak, perlu revisi",
       placement: "bottom",
     },
     {
@@ -261,7 +261,7 @@ const financePaymentsTour = {
     {
       target: "[data-testid='pay-table-card']",
       title: "Aksi per Payment",
-      content: "Di tabel: klik **Approve** (jika punya izin) atau **View** untuk lihat detail. Setelah paid, **JE otomatis ter-post** di accounts payable.",
+      content: "Di tabel: klik **Setujui** (jika punya izin) atau **Lihat detail**. Setelah paid, **JE otomatis ter-post** di accounts payable.",
       placement: "top",
       variant: "tip",
     },
@@ -319,7 +319,7 @@ const financeARInvoicesTour = {
     {
       target: "[data-testid='ar-kpi-strip']",
       title: "KPI AR",
-      content: "• **Total Invoices** — jumlah invoice aktif\n• **Outstanding** — total piutang belum dibayar\n• **Overdue** — piutang lewat jatuh tempo\n• **Paid MTD** — pembayaran diterima bulan ini",
+      content: "• **Total Invoices** — jumlah invoice aktif\n• **Outstanding** — total piutang belum dibayar\n• **Terlambat** — piutang lewat jatuh tempo\n• **Paid MTD** — pembayaran diterima bulan ini",
       placement: "bottom",
     },
     {
@@ -581,13 +581,13 @@ const financePeriodsLockingTour = {
     {
       target: "[data-testid='periods-table']",
       title: "Status Periode",
-      content: "Status periode:\n\n• **Open** — bisa posting transaksi\n• **Locked** — tidak bisa posting (kecuali override permission)\n• **Closed** — full lock untuk audit trail",
+      content: "Status periode:\n\n• **Terbuka** — bisa posting transaksi\n• **Dikunci** — tidak bisa posting (kecuali override permission)\n• **Ditutup** — full lock untuk audit trail",
       placement: "top",
     },
     {
       target: "[data-testid='period-refresh']",
       title: "Muat Ulang Periode",
-      content: "Klik **Refresh** untuk memuat status terbaru. Tombol **Lock** pada tiap baris periode mencegah backdated journal entries — enforcement aktif di seluruh sistem.",
+      content: "Klik **Muat ulang** untuk memuat status terbaru. Tombol **Lock** pada tiap baris periode mencegah backdated journal entries — enforcement aktif di seluruh sistem.",
       placement: "left",
       variant: "tip",
     },
@@ -610,7 +610,7 @@ const financePeriodClosingHubTour = {
     {
       target: "[data-testid='pc-phase-validation']",
       title: "Fase 1: Validasi",
-      content: "Validasi semua daily sales outlet belum ada yang pending/rejected. Semua harus **Approved** sebelum close.",
+      content: "Validasi semua daily sales outlet belum ada yang pending/rejected. Semua harus **Disetujui** sebelum close.",
       placement: "bottom",
     },
     {
@@ -638,7 +638,7 @@ const financePeriodClosingHubTour = {
 // ─── Finance Payments Hub (consolidated) ──────────────────────────────
 const financePaymentsHubTour = {
   name: "Payments Hub",
-  description: "Payment Requests, AP, Payments, Runs, Bank Recon & AR kini satu workspace bertab.",
+  description: "Hutang (AP), Kas & Bank, dan Piutang (AR) dalam satu workspace berkelompok.",
   steps: [
     {
       target: "[data-testid='finance-payments-hub']",
@@ -649,21 +649,21 @@ const financePaymentsHubTour = {
       variant: "hero",
     },
     {
-      target: "[data-testid='payments-tab-payment-requests']",
-      title: "Payment Requests",
+      target: "[data-testid='payments-tab-payments']",
+      title: "Payments",
       content: "Mulai dari **pengajuan pembayaran** → approve → bayar. Titik awal workflow kas keluar.",
       placement: "bottom",
     },
     {
       target: "[data-testid='payments-tab-ap-aging']",
-      title: "Accounts Payable",
+      title: "AP aging",
       content: "Pantau **aging hutang** ke vendor — yang jatuh tempo & overdue.",
       placement: "bottom",
     },
     {
-      target: "[data-testid='payments-tab-bank-recon']",
-      title: "Bank Reconciliation",
-      content: "Cocokkan mutasi rekening dengan jurnal. Tab **AR Invoices** untuk piutang customer.",
+      target: "[data-testid='payments-group-cash']",
+      title: "Kas & Bank",
+      content: "**Cash position** dan **Bank reconciliation** (cocokkan mutasi rekening dengan jurnal). Kelompok **Piutang (AR)** untuk invoice customer & deposit reservasi.",
       placement: "bottom",
       variant: "tip",
     },
@@ -720,8 +720,8 @@ const financeTaxHubTour = {
     },
     {
       target: "[data-testid='tax-tab-tax']",
-      title: "Tax Center",
-      content: "Ringkasan PPN keluaran/masukan & PPh — basis perhitungan setoran pajak.",
+      title: "PPN & PPh",
+      content: "Tab PPN, PPh 21, PPh 23 dan PPh 4(2): aktifkan pajak, atur tarif dan hitung setoran per masa pajak.",
       placement: "bottom",
     },
     {
@@ -859,7 +859,7 @@ const financeForecastingTour = {
   description: "Proyeksi keuangan berbasis tren historis.",
   steps: [
     { target: "[data-testid='forecasting-page']", title: "Forecasting", content: "Proyeksi **arus & performa** ke depan berdasarkan tren data historis.", placement: "center", disableBeacon: true, variant: "hero" },
-    { target: "[data-testid='forecast-history-days']", title: "Basis Historis", content: "Atur jumlah hari historis yang dipakai sebagai dasar proyeksi.", placement: "bottom" },
+    { target: "[data-testid='forecast-model-settings']", title: "Pengaturan model", content: "Pilih **metode** proyeksi dan jumlah **hari historis** yang dipakai sebagai dasar. Angka di tombol = pengaturan yang diubah dari default.", placement: "bottom" },
     { target: "[data-testid='forecast-chart']", title: "Kurva Proyeksi", content: "Grafik aktual vs proyeksi — bantu antisipasi kebutuhan kas/pembelian.", placement: "top", variant: "tip" },
   ],
 };
@@ -870,7 +870,7 @@ const financeBudgetVsActualTour = {
   description: "Bandingkan anggaran vs realisasi per akun/periode.",
   steps: [
     { target: "[data-testid='budget-vs-actual']", title: "Budget vs Actual", content: "Bandingkan **anggaran vs realisasi** — deteksi varians signifikan lebih awal.", placement: "center", disableBeacon: true, variant: "hero" },
-    { target: "[data-testid='scope-select']", title: "Scope & Filter", content: "Pilih scope (group/brand/outlet), periode, dan level untuk fokus analisis.", placement: "bottom" },
+    { target: "[data-testid='scope-select']", title: "Periode & Filter", content: "Cakupan (Group/brand/toko) mengikuti pilihan **di bagian atas layar**. Di sini pilih periode, level, dan toko bila brand punya beberapa toko.", placement: "bottom" },
     { target: "[data-testid='category-summary']", title: "Ringkasan per Kategori", content: "Lihat varians per kategori; klik untuk drill ke detail COA.", placement: "top", variant: "tip" },
   ],
 };

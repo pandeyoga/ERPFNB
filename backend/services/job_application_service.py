@@ -103,7 +103,7 @@ async def _notify_hr_new_application(application: dict):
             "type": "job_application",
             "title": "New Job Application",
             "body": f"{application['name']} applied for {application['job_title']}",
-            "link": f"/hr/applications/{application['id']}",
+            "link": f"/hr/job-applications?id={application['id']}",
             "read_at": None,
             "created_at": _now(),
         })
@@ -126,7 +126,7 @@ async def _notify_hr_new_application(application: dict):
                 <p><strong>Phone:</strong> {application.get('phone', 'N/A')}</p>
                 <p><strong>Applied:</strong> {application['applied_at']}</p>
                 {f"<p><strong>Message:</strong><br>{application.get('message', 'N/A')}</p>" if application.get('message') else ""}
-                <p><a href="https://app.fnbgroup.id/hr/applications/{application['id']}">View Application</a></p>
+                <p><a href="https://app.fnbgroup.id/hr/job-applications?id={application['id']}">View Application</a></p>
             </body>
             </html>
             """,

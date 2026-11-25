@@ -202,7 +202,13 @@ class TestPeriodTransitions:
 
         open_period = {"period": "2024-05", "status": "open", "id": "period-001"}
 
-        mock_db.accounting_periods.find_one = AsyncMock(return_value=open_period)
+        async def _find_one(q, *a, **k):
+            # CTL-08 close-order check asks for an OLDER open period → none in this scenario
+            if isinstance(q.get("period"), dict):
+                return None
+            return open_period
+
+        mock_db.accounting_periods.find_one = AsyncMock(side_effect=_find_one)
         mock_db.accounting_periods.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
 
         user = {"id": "admin-001", "email": "admin@fnbgroup.id", "name": "Admin"}

@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ok_envelope
-from core.security import current_user, require_perm
+from core.security import current_user, enforce_outlet_scope, require_perm, resolve_outlet_filter
 from services import daily_close_service
 
 router = APIRouter(prefix="/api/outlet/daily-close", tags=["daily-close"])
@@ -32,7 +32,9 @@ async def list_records(
     per_page: int = Query(30, ge=1, le=100),
     user: dict = Depends(require_perm("outlet.daily_close.execute")),
 ):
-    outlet_ids = [outlet_id] if outlet_id else (user.get("outlet_ids") or [])
+    outlet_ids = resolve_outlet_filter(user, outlet_id)  # POS-11: requested outlet must be in scope
+    if outlet_ids == []:
+        return ok_envelope([], {"page": page, "per_page": per_page, "total": 0})
     items, meta = await daily_close_service.list_records(
         outlet_ids=outlet_ids, date_from=date_from, date_to=date_to,
         page=page, per_page=per_page,
@@ -57,7 +59,9 @@ async def submit(
 @router.get("/{record_id}")
 async def detail(record_id: str,
                  user: dict = Depends(require_perm("outlet.daily_close.execute"))):
-    return ok_envelope(await daily_close_service.get_record(record_id))
+    rec = await daily_close_service.get_record(record_id)
+    enforce_outlet_scope(user, rec.get("outlet_id") or "__missing__")
+    return ok_envelope(rec)
 
 
 @router.post("/{record_id}/reopen")

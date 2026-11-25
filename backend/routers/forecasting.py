@@ -45,6 +45,7 @@ async def forecast_sales(
 @router.get("/expense")
 async def forecast_expense(
     outlet_id: Optional[str] = None,
+    brand_id: Optional[str] = None,
     coa_ids: Optional[str] = None,
     months: int = Query(3, ge=1, le=12),
     method: str = Query("hybrid"),
@@ -52,8 +53,10 @@ async def forecast_expense(
     user: dict = Depends(require_any_perm(*_FORECAST_PERMS)),
 ):
     coa_list = [c for c in coa_ids.split(",") if c] if coa_ids else None
+    from services._finance.scope import ledger_scope
+    scope = await ledger_scope(user, outlet_id=outlet_id, brand_id=brand_id)
     return ok_envelope(await forecasting_service.forecast_series(
-        target="expense", outlet_id=outlet_id, coa_ids=coa_list,
+        target="expense", outlet_id=outlet_id, coa_ids=coa_list, scope=scope,
         months=months, method=method, history_days=history_days,
     ))
 

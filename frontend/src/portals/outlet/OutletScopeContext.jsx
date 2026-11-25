@@ -1,134 +1,75 @@
 /**
- * OutletScopeContext — provides the actively-selected outlet across the entire
- * Outlet Portal. The selection is persisted in localStorage so it survives
- * reloads and tab restores.
+ * OutletScopeContext — toko aktif di Outlet Portal, di DALAM konteks global TopNav (contexts/ScopeContext).
  *
- * Behavior:
- * - For full-access (super-admin) users: defaults to "" meaning "Semua Outlet".
- *   They can pick any outlet from the scoped list.
- * - For restricted outlet staff: defaults to user.default_outlet_id, or the
- *   single outlet in their scope if they only have one. They can ONLY switch
- *   between outlets in their scope.
+ * - Konteks global = 1 toko → toko itu, terkunci (pemilih tidak ditampilkan; TopNav sudah menyebut tokonya).
+ * - Konteks global = brand / Semua → pilih di antara toko dalam konteks itu (kanan atas halaman), atau
+ *   "Semua toko" untuk daftar & ringkasan. Halaman operasional 1 toko meminta pilih toko dulu.
+ * - Pilihan toko di portal berlaku selama sesi browser untuk konteks yang sama; tidak mengubah konteks global.
  *
- * Usage:
- *   import { OutletScopeProvider, useOutletScopeCtx } from "./OutletScopeContext";
- *
- *   // In OutletPortal.jsx (root):
- *   <OutletScopeProvider>{children}</OutletScopeProvider>
- *
- *   // In any nested Outlet page:
+ * Usage (tetap sama untuk halaman portal):
  *   const { outletId, currentOutlet, scopedOutlets, isFullAccess } = useOutletScopeCtx();
  */
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import api, { unwrap } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useScope } from "@/contexts/ScopeContext";
 
-const LS_KEY = "aurora_outlet_scope_selected";
+const SS_KEY = "outlet_portal_store";
 
 const OutletScopeContext = createContext(null);
 
+function read(key) {
+  try {
+    return sessionStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
 export function OutletScopeProvider({ children }) {
   const { user } = useAuth();
-  const [allOutlets, setAllOutlets] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const [outletId, _setOutletId] = useState(() => localStorage.getItem(LS_KEY) || "");
+  const g = useScope();
+  const key = `${SS_KEY}:${g.scope.level}:${g.scope.brandId || ""}:${g.scope.outletId || ""}`;
+  const [picked, setPicked] = useState(() => read(key));
+  useEffect(() => setPicked(read(key)), [key]);
 
-  const isFullAccess = useMemo(
-    () => (user?.permissions || []).includes("*"),
-    [user?.permissions],
+  const scopedOutlets = useMemo(
+    () => g.contextOutlets.map((o) => ({ ...o, brand_name: g.brandName(o.brand_id) })),
+    [g.contextOutlets, g.brandName],
   );
-  const userOutletIds = useMemo(() => user?.outlet_ids || [], [user?.outlet_ids]);
-  const defaultOutletId = user?.default_outlet_id || "";
+  const locked = scopedOutlets.length === 1;
+  const outletId = locked ? scopedOutlets[0].id : scopedOutlets.some((o) => o.id === picked) ? picked : "";
 
-  // Load all outlets from master once
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .get("/master/outlets", { params: { per_page: 100 } })
-      .then((r) => {
-        if (!cancelled) setAllOutlets(unwrap(r) || []);
-      })
-      .catch(() => {
-        if (!cancelled) setAllOutlets([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoaded(true);
-      });
-    return () => {
-      cancelled = true;
+  const value = useMemo(() => {
+    const setOutletId = (id) => {
+      const safe = id || "";
+      setPicked(safe);
+      try {
+        if (safe) sessionStorage.setItem(key, safe);
+        else sessionStorage.removeItem(key);
+      } catch {
+        /* private mode */
+      }
     };
-  }, []);
-
-  // Derive scoped outlets: full-access = all, restricted = intersection
-  const scopedOutlets = useMemo(() => {
-    if (!loaded) return [];
-    if (isFullAccess || userOutletIds.length === 0) return allOutlets;
-    return allOutlets.filter((o) => userOutletIds.includes(o.id));
-  }, [allOutlets, isFullAccess, userOutletIds, loaded]);
-
-  // Persist + validate selection
-  const setOutletId = (id) => {
-    const safe = id || "";
-    _setOutletId(safe);
-    if (safe) localStorage.setItem(LS_KEY, safe);
-    else localStorage.removeItem(LS_KEY);
-  };
-
-  // Initial smart-default once outlets loaded:
-  // - If user has a saved selection that is still valid → keep it
-  // - Else if user has default_outlet_id and it is in scope → use it
-  // - Else if restricted user with only 1 outlet → auto-pick it
-  // - Else (full-access multi-outlet) → leave blank = "Semua Outlet"
-  useEffect(() => {
-    if (!loaded) return;
-    const validIds = new Set(scopedOutlets.map((o) => o.id));
-    if (outletId && validIds.has(outletId)) return; // already valid
-    if (outletId && !validIds.has(outletId)) {
-      // Selection no longer valid (e.g. user changed) — reset
-      setOutletId("");
-    }
-    if (defaultOutletId && validIds.has(defaultOutletId)) {
-      setOutletId(defaultOutletId);
-      return;
-    }
-    if (!isFullAccess && scopedOutlets.length === 1) {
-      setOutletId(scopedOutlets[0].id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, scopedOutlets, defaultOutletId, isFullAccess]);
-
-  const currentOutlet = outletId
-    ? allOutlets.find((o) => o.id === outletId) || null
-    : null;
-
-  const value = useMemo(
-    () => ({
+    const currentOutlet = outletId ? scopedOutlets.find((o) => o.id === outletId) || null : null;
+    return {
       outletId,
       setOutletId,
       currentOutlet,
       scopedOutlets,
-      allOutlets,
-      isFullAccess,
-      userOutletIds,
-      loaded,
-      // Helper: whether picker should offer "Semua Outlet" option
-      allowAllOption: isFullAccess || userOutletIds.length > 1,
-      // Display label for header
+      allOutlets: g.allOutlets,
+      isFullAccess: g.isFullAccess,
+      userOutletIds: user?.outlet_ids || [],
+      loaded: g.loaded,
+      locked,
+      // "Semua toko" hanya bila konteks berisi lebih dari satu toko
+      allowAllOption: scopedOutlets.length > 1,
       displayLabel: currentOutlet
         ? currentOutlet.name
-        : isFullAccess
-          ? "Semua Outlet"
-          : userOutletIds.length === 0
-            ? "Tidak ada akses outlet"
-            : "Semua Outlet (akses Anda)",
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [outletId, currentOutlet, scopedOutlets, allOutlets, isFullAccess, userOutletIds, loaded],
-  );
+        : scopedOutlets.length === 0 ? "Tidak ada akses outlet" : `Semua toko (${scopedOutlets.length})`,
+    };
+  }, [outletId, scopedOutlets, g.allOutlets, g.isFullAccess, g.loaded, locked, key, user?.outlet_ids]);
 
-  return (
-    <OutletScopeContext.Provider value={value}>{children}</OutletScopeContext.Provider>
-  );
+  return <OutletScopeContext.Provider value={value}>{children}</OutletScopeContext.Provider>;
 }
 
 export function useOutletScopeCtx() {

@@ -69,7 +69,7 @@ export default function VoiceInputButton({ onTranscript, lang = "id-ID", disable
       disabled={disabled}
       onClick={listening ? stop : start}
       className={cn(
-        "rounded-full h-10 w-10",
+        "rounded-full", // size="icon" = h-9 w-9, sejajar dengan input chat
         listening && "bg-rose-500 text-white hover:bg-rose-600 ring-4 ring-rose-200 dark:ring-rose-950 animate-pulse",
         className,
       )}

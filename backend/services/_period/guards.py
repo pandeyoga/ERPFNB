@@ -33,7 +33,8 @@ async def is_period_locked(period: str) -> dict:
 async def assert_period_unlocked(period: str, *, allow_closed: bool = False, action: str = "posting") -> None:
     """Raise ValidationError early if the target period is locked/closed."""
     if not _valid_period(period):
-        return
+        # FIN-10: an unparsable period must never be treated as "unlocked"
+        raise ValidationError(f"Periode tidak valid: {period!r} (format YYYY-MM)", code="PERIOD_INVALID")
     # CTL-08: reject implausible dates (typo 2062 would open a new period)
     from core.clock import today_local
     y = int(period[:4])

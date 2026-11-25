@@ -116,7 +116,7 @@ async def _load_daily_sales(
 
 async def _load_daily_expense(
     outlet_id: Optional[str], coa_ids: Optional[list[str]],
-    date_from: str, date_to: str,
+    date_from: str, date_to: str, scope=None,
 ) -> dict[str, float]:
     """Sum expense (Dr - Cr on expense/cogs accounts) per day."""
     db = get_db()
@@ -139,7 +139,10 @@ async def _load_daily_expense(
         for ln in je.get("lines", []):
             if ln.get("coa_id") not in coa_ids:
                 continue
-            if outlet_id and ln.get("dim_outlet") != outlet_id:
+            if scope is not None:  # LedgerScope: brand/toko/akses user (services/_finance/scope.py)
+                if not scope.has_line(je, ln):
+                    continue
+            elif outlet_id and ln.get("dim_outlet") != outlet_id:
                 continue
             amt = float(ln.get("dr", 0) or 0) - float(ln.get("cr", 0) or 0)
             if amt == 0:
@@ -183,6 +186,7 @@ async def forecast_series(
     outlet_id: Optional[str] = None,
     brand_id: Optional[str] = None,
     coa_ids: Optional[list[str]] = None,
+    scope=None,
     months: int = 3,
     method: str = "hybrid",  # linear | ewma | hybrid
     history_days: int = 90,
@@ -206,7 +210,7 @@ async def forecast_series(
     if target == "sales":
         raw = await _load_daily_sales(outlet_id, brand_id, start, end)
     else:
-        raw = await _load_daily_expense(outlet_id, coa_ids, start, end)
+        raw = await _load_daily_expense(outlet_id, coa_ids, start, end, scope=scope)
 
     daily = _fill_missing_dates(raw, start, end)
     values = [v for _, v in daily]

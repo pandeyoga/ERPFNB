@@ -3,21 +3,29 @@ import { Outlet, useNavigate, useLocation, useSearchParams } from "react-router-
 
 import { useAuth } from "@/lib/auth";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { ScopeProvider, useScope } from "@/contexts/ScopeContext";
 import TopNav from "./TopNav";
 import Sidebar from "./Sidebar";
 import MobileSidebar from "./MobileSidebar";
 import GlobalSearch from "@/components/shared/GlobalSearch";
-import NotificationDrawer from "@/components/shared/NotificationDrawer";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
 export default function AppShell() {
   const { user, loading } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Asisten AI (/ai) = halaman chat layar penuh: tanpa padding/max-width, scroll diatur halaman itu sendiri.
+  // Mode "Layar penuh" di halaman itu menyembunyikan TopNav & sidebar (event "aurora-ai-focus").
+  const aiImmersive = /^\/ai\/?$/.test(location.pathname);
+  const [aiFocus, setAiFocus] = useState(false);
+  useEffect(() => {
+    const on = (e) => setAiFocus(!!e.detail);
+    window.addEventListener("aurora-ai-focus", on);
+    return () => window.removeEventListener("aurora-ai-focus", on);
+  }, []);
+  const hideChrome = aiImmersive && aiFocus;
 
   // Global outlet guard — warn when outlet staff hits a URL with out-of-scope outlet_id
   useEffect(() => {
@@ -38,7 +46,7 @@ export default function AppShell() {
     }
   }, [location.pathname, location.search, user, loading]); // eslint-disable-line
 
-  // ⌘K / Ctrl+K opens global search; sidebar "Cari menu…" juga memicu event ini
+  // ⌘K / Ctrl+K opens global search; komponen lain bisa memicu event "aurora-open-search"
   useEffect(() => {
     const handler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -74,6 +82,7 @@ export default function AppShell() {
   }
 
   return (
+    <ScopeProvider>
     <NavigationProvider>
       <div className="h-screen flex flex-col overflow-hidden">
         {/* Skip to content — a11y */}
@@ -85,10 +94,7 @@ export default function AppShell() {
         </a>
 
         {/* Level 1: Top Navigation */}
-        <TopNav
-          onSearchOpen={() => setSearchOpen(true)}
-          onNotifOpen={() => setNotifOpen(true)}
-        />
+        {!hideChrome && <TopNav onSearchOpen={() => setSearchOpen(true)} />}
 
         {/* Mobile Sidebar (Sheet) — navigasi terpadu */}
         <MobileSidebar />
@@ -96,7 +102,7 @@ export default function AppShell() {
         {/* Level 2 & 3: Sidebar + Content */}
         <div className="flex-1 flex w-full min-h-0 overflow-hidden">
           {/* Level 2: Left Sidebar terpadu (Desktop only) */}
-          <Sidebar />
+          {!hideChrome && <Sidebar />}
           
           {/* Content area */}
           <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
@@ -104,9 +110,10 @@ export default function AppShell() {
             <main
               id="main-content"
               tabIndex={-1}
-              className="flex-1 overflow-y-auto px-4 sm:px-5 lg:px-8 py-5 lg:py-8 pb-20 lg:pb-8"
+              className={aiImmersive ? "flex-1 min-h-0 flex flex-col overflow-hidden"
+                : "flex-1 overflow-y-auto px-3 sm:px-4 lg:px-5 py-3 lg:py-4 pb-20 lg:pb-6"}
             >
-              <div className="max-w-[1600px] mx-auto w-full">
+              <div className={aiImmersive ? "flex-1 min-h-0 flex flex-col w-full" : "max-w-[1600px] mx-auto w-full"}>
                 {/* Fix 2026-05-27: Removed AnimatePresence + motion.div wrapper.
                    framer-motion v11 + React 19 + mode="wait" has a known bug
                    where the new motion.div gets stuck at exit state (opacity: 0,
@@ -115,16 +122,30 @@ export default function AppShell() {
                    :entity, ConfigurationLayout nested Outlet). Result: 30 sub-pages
                    showed blank content despite DOM being fully populated.
                    See /app/memory_docs/blank_page_investigation/ for full analysis. */}
-                <Outlet />
+                <ScopeReady><Outlet /></ScopeReady>
               </div>
             </main>
           </div>
         </div>
         
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
-        <NotificationDrawer open={notifOpen} onClose={() => setNotifOpen(false)} />
-        <Toaster position="top-right" />
       </div>
     </NavigationProvider>
+    </ScopeProvider>
   );
+}
+
+/** Halaman baru dirender setelah konteks brand/toko siap, agar fetch pertama sudah memakai konteks yang benar. */
+function ScopeReady({ children }) {
+  const { loaded, scopeKey } = useScope();
+  if (!loaded) {
+    return (
+      <div className="space-y-3" role="status" aria-label="Memuat konteks">
+        <div className="skeleton h-8 w-64 rounded-md" />
+        <div className="skeleton h-40 w-full rounded-lg" />
+      </div>
+    );
+  }
+  // Ganti konteks = halaman dimuat ulang dengan konteks baru (filter lokal kembali ke "Semua toko").
+  return <div key={scopeKey} className="contents">{children}</div>;
 }

@@ -46,17 +46,19 @@ async def brand_drilldown(*, brand_id: str, period: Optional[str] = None) -> dic
 
     outlets_list = [{**r, "total": round(r["total"], 2), "share_pct": round((r["total"] / revenue_mtd) * 100, 2) if revenue_mtd else 0.0} for r in sorted(by_outlet.values(), key=lambda x: x["total"], reverse=True)]
 
-    cogs_total = opex_total = 0.0
-    async for gr in db.goods_receipts.find({"deleted_at": None, "outlet_id": {"$in": outlet_ids}, "receive_date": {"$gte": period_start, "$lt": next_start}}):
-        cogs_total += float(gr.get("grand_total", 0) or 0)
-    async for pc in db.petty_cash_transactions.find({"deleted_at": None, "outlet_id": {"$in": outlet_ids}, "txn_date": {"$gte": period_start, "$lt": next_start}, "status": {"$in": ["approved", "posted", "submitted"]}}):
-        if pc.get("type") in ("purchase", "expense") or pc.get("type") is None:
-            opex_total += float(pc.get("amount", 0) or 0)
-    async for up in db.urgent_purchases.find({"deleted_at": None, "outlet_id": {"$in": outlet_ids}, "purchase_date": {"$gte": period_start, "$lt": next_start}, "status": {"$in": ["approved", "posted"]}}):
-        opex_total += float(up.get("total", 0) or 0)
-
-    net = revenue_mtd - cogs_total - opex_total
-    gp_pct = ((revenue_mtd - cogs_total) / revenue_mtd * 100) if revenue_mtd else 0
+    # FIN-17/RPT-08 parity: brand P&L = Σ outlet GL P&L (net revenue, COGS = usage) — the same
+    # source as the outlet drilldown. Previously COGS = goods receipts (purchases) and revenue =
+    # gross daily sales, so a brand showed GP 95.9% while its only outlet showed 65.1%.
+    from services._finance.reports import profit_loss as _gl_pl
+    gl_revenue = cogs_total = opex_total = 0.0
+    for oid in outlet_ids:
+        gl = await _gl_pl(period=period_start[:7], compare_prev=False, outlet_id=oid)
+        gl_revenue += gl["revenue"]["total"]
+        cogs_total += gl["cogs"]["total"]
+        opex_total += gl["expense"]["total"]
+    gross_profit = gl_revenue - cogs_total
+    net = gross_profit - opex_total
+    gp_pct = (gross_profit / gl_revenue * 100) if gl_revenue else 0
 
     today = datetime.now(timezone.utc).date()
     start_30 = today - timedelta(days=29)
@@ -74,6 +76,6 @@ async def brand_drilldown(*, brand_id: str, period: Optional[str] = None) -> dic
     return {
         "brand": brand_info, "period": period,
         "kpis": {"revenue_mtd": round(revenue_mtd, 2), "trx": trx_total, "outlet_count": len(outlet_docs), "active_outlets": len([o for o in by_outlet.values() if o["total"] > 0]), "cogs": round(cogs_total, 2), "gp_pct": round(gp_pct, 2), "net": round(net, 2)},
-        "outlets": outlets_list, "cost_structure": {"revenue": round(revenue_mtd, 2), "cogs": round(cogs_total, 2), "opex": round(opex_total, 2), "service": round(service_total, 2), "tax": round(tax_total, 2), "net": round(net, 2)},
+        "outlets": outlets_list, "cost_structure": {"revenue": round(gl_revenue, 2), "cogs": round(cogs_total, 2), "opex": round(opex_total, 2), "service": round(service_total, 2), "tax": round(tax_total, 2), "net": round(net, 2)},
         "trends": {"dates": dates, "series": trend_series},
     }

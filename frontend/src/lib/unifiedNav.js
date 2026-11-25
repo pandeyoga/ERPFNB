@@ -11,6 +11,7 @@
 import { Home, Inbox, Settings } from "lucide-react";
 import { PORTALS, visiblePortalsFor } from "@/lib/portals";
 import { getPortalSections } from "@/lib/navigationSchema";
+import { ROUTE_PERMS } from "@/lib/routePerms.generated";
 
 /** Zona sidebar — urutan tetap. */
 export const NAV_ZONES = [
@@ -53,6 +54,35 @@ export function defaultHomePath(user) {
 
 export const lastPortalKey = (user) => `aurora_last_portal_${user?.email || "anon"}`;
 
+/** Izin guard route untuk sebuah path menu (lib/routePerms.generated.js; "/x/*" = prefix). null = tanpa guard. */
+export function routeNeed(path) {
+  const clean = String(path || "").split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  if (ROUTE_PERMS[clean]) return ROUTE_PERMS[clean];
+  // pola ":param" (mis. /admin/master/:entity) dulu, lalu prefix "/x/*" terpanjang
+  const param = Object.keys(ROUTE_PERMS).find((k) => k.includes(":") && !k.endsWith("/*")
+    && new RegExp(`^${k.replace(/:[^/]+/g, "[^/]+")}$`).test(clean));
+  if (param) return ROUTE_PERMS[param];
+  let best = null;
+  Object.keys(ROUTE_PERMS).forEach((k) => {
+    if (!k.endsWith("/*")) return;
+    const base = k.slice(0, -2);
+    if ((clean === base || clean.startsWith(base + "/")) && (!best || k.length > best.length)) best = k;
+  });
+  return best ? ROUTE_PERMS[best] : null;
+}
+
+/** True bila guard route `path` meloloskan user — untuk tautan/kartu di halaman (sama dengan aturan menu). */
+export function canOpenPath(user, path) {
+  const need = routeNeed(path);
+  return !need || need.some((n) => hasPerm((user && user.permissions) || [], n));
+}
+
+/** Item menu hanya tampil bila guard route-nya akan meloloskan user (tidak ada menu yang berujung /no-access). */
+export function itemVisible(perms, item) {
+  const need = routeNeed(item.path);
+  return !need || need.some((n) => hasPerm(perms, n));
+}
+
 /**
  * Bangun pohon navigasi terpadu.
  * Output: array entri bertipe `zone` | `link` | `group`.
@@ -70,24 +100,34 @@ export function buildUnifiedNav(user) {
   out.push({ type: "link", id: "approval-inbox", name: "Pusat Persetujuan", icon: Inbox, path: "/my-approvals" });
 
   // ── Zona: Modul ──────────────────────────────────────────────────────────
-  const modulePortals = portals.filter((p) => !TOOL_PORTALS.has(p.id));
-  if (modulePortals.length) {
+  const moduleGroups = portals.filter((p) => !TOOL_PORTALS.has(p.id)).map((p) => portalGroup(p, perms)).filter(Boolean);
+  if (moduleGroups.length) {
     out.push({ type: "zone", id: "zone-modul", label: "Modul" });
-    modulePortals.forEach((p) => out.push(portalGroup(p, perms)));
+    out.push(...moduleGroups);
   }
 
   // ── Zona: Alat ───────────────────────────────────────────────────────────
-  const toolPortals = portals.filter((p) => TOOL_PORTALS.has(p.id));
-  if (toolPortals.length) {
+  const toolGroups = portals.filter((p) => TOOL_PORTALS.has(p.id)).map((p) => portalGroup(p, perms, { icon: Settings })).filter(Boolean);
+  if (toolGroups.length) {
     out.push({ type: "zone", id: "zone-alat", label: "Alat" });
-    toolPortals.forEach((p) => out.push(portalGroup(p, perms, { icon: Settings })));
+    out.push(...toolGroups);
   }
 
   return out;
 }
 
 function portalGroup(portal, perms, overrides = {}) {
-  const sections = getPortalSections(portal.id).filter((s) => hasPerm(perms, s.reqPerm));
+  const sections = getPortalSections(portal.id)
+    .filter((s) => hasPerm(perms, s.reqPerm))
+    .map((s) => ({ ...s, items: s.items.filter((i) => itemVisible(perms, i)) }))
+    .filter((s) => s.items.length > 0);
+  const items = sections.flatMap((s) => s.items);
+  if (!items.length) return null;
+  // Modul dengan satu halaman (mis. Report Center) → link langsung, bukan grup yang
+  // berisi satu item bernama sama.
+  if (items.length === 1) {
+    return { type: "link", id: portal.id, portalId: portal.id, name: portal.name, icon: overrides.icon || portal.icon, path: items[0].path };
+  }
   return {
     type: "group",
     id: portal.id,
@@ -114,28 +154,37 @@ export function flattenNavItems(user) {
 }
 
 /**
- * Konteks lokasi untuk breadcrumb TopNav:
- * { portal, section, item } — mencocokkan path persis, lalu prefix terpanjang.
+ * Konteks lokasi untuk breadcrumb TopNav & item aktif sidebar:
+ * { portal, section, item, match } — `match` = "exact" | "alias" | "prefix".
+ *  - exact : path sama persis dengan item
+ *  - alias : path termasuk `matchPaths` item (sub-halaman/tab sebuah hub)
+ *  - prefix: halaman detail di bawah path item (mis. /procurement/pr/123)
+ * Dipilih kecocokan terpanjang sehingga hanya SATU item yang aktif.
  */
 export function resolveNavContext(pathname) {
-  const portal = PORTALS.find((p) => pathname === p.path || pathname.startsWith(p.path + "/"));
+  const under = (p) => pathname === p || pathname.startsWith(p + "/");
+  const portal = PORTALS.find((p) => under(p.path));
   if (!portal) {
     if (pathname === "/my-approvals" || pathname === "/approvals") {
-      return { portal: null, section: null, item: { name: "Pusat Persetujuan", path: pathname } };
+      return { portal: null, section: null, item: { name: "Pusat Persetujuan", path: pathname }, match: "exact" };
     }
-    return { portal: null, section: null, item: null };
+    return { portal: null, section: null, item: null, match: null };
   }
   const sections = getPortalSections(portal.id);
   let best = null;
+  const offer = (section, item, score, match) => {
+    if (!best || score > best.score) best = { section, item, score, match };
+  };
   sections.forEach((section) => {
     section.items.forEach((item) => {
-      if (pathname === item.path) {
-        if (!best || best.score < 1000) best = { section, item, score: 1000 };
-      } else if (pathname.startsWith(item.path + "/") && item.path !== portal.path) {
-        const score = item.path.length;
-        if (!best || best.score < score) best = { section, item, score };
+      if (pathname === item.path) offer(section, item, 10000, "exact");
+      (item.matchPaths || []).forEach((mp) => {
+        if (under(mp)) offer(section, item, 5000 + mp.length, "alias");
+      });
+      if (item.path !== portal.path && pathname.startsWith(item.path + "/")) {
+        offer(section, item, item.path.length, "prefix");
       }
     });
   });
-  return { portal, section: best?.section || null, item: best?.item || null };
+  return { portal, section: best?.section || null, item: best?.item || null, match: best?.match || null };
 }

@@ -17,6 +17,8 @@ async def generate_trial_balance_excel(
     *,
     period: str,
     dim_outlet: Optional[str] = None,
+    scope=None,
+    brand_name: str = "",
 ):
     """Generate Trial Balance Excel report for a given period (YYYY-MM).
     
@@ -37,7 +39,7 @@ async def generate_trial_balance_excel(
     from services import finance_service
     
     # Use existing trial_balance service
-    tb_data = await finance_service.trial_balance(period=period, dim_outlet=dim_outlet)
+    tb_data = await finance_service.trial_balance(period=period, dim_outlet=dim_outlet, scope=scope)
     
     db = get_db()
     
@@ -56,6 +58,8 @@ async def generate_trial_balance_excel(
     subtitle_parts = [f"Period: {period}"]
     if outlet_name:
         subtitle_parts.append(f"Outlet: {outlet_name}")
+    elif brand_name:
+        subtitle_parts.append(f"Brand: {brand_name} (semua toko)")
     
     totals = tb_data.get("totals", {})
     is_balanced = totals.get("is_balanced_period", False)

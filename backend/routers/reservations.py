@@ -20,12 +20,13 @@ Admin settings:
   GET  /api/reservations/settings            — get outlet reservation settings
   PUT  /api/reservations/settings/{outlet_id}— update outlet settings
 """
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
 from core.exceptions import ok_envelope, AuroraException
-from core.security import current_user, require_any_perm
+from core.security import current_user, enforce_outlet_scope, require_any_perm, resolve_outlet_filter
 from services import _reservation as reservation_service
 
 router = APIRouter(tags=["reservations"])
@@ -47,6 +48,16 @@ async def create_public_reservation(payload: dict):
         raise AuroraException("Jumlah tamu minimal 1", code="VALIDATION_ERROR", field="pax")
 
     payload["source"] = payload.get("source", "website")
+    # POS-08: the website lists CMS `public_outlets`; reservations live on ERP `outlets`.
+    from core.db import get_db
+    db = get_db()
+    if not await db.outlets.find_one({"id": payload["outlet_id"], "deleted_at": None}, {"_id": 1}):
+        pub = await db.public_outlets.find_one({"id": payload["outlet_id"]}, {"_id": 0, "erp_outlet_id": 1, "name": 1})
+        if not pub or not pub.get("erp_outlet_id"):
+            raise AuroraException("Outlet ini belum menerima reservasi online (belum terhubung ke ERP)",
+                                  code="OUTLET_NOT_LINKED", field="outlet_id")
+        payload["public_outlet_id"] = payload["outlet_id"]
+        payload["outlet_id"] = pub["erp_outlet_id"]
     result = await reservation_service.create_reservation(payload, created_by=None, auto_link_member=False)  # INV-04: public form must not create CRM members
     return ok_envelope({
         "reservation_id": result["id"],
@@ -73,8 +84,11 @@ async def list_reservations(
     per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_any_perm("reservations.read", "outlet.manager", "reservations.manage")),
 ):
+    scope = resolve_outlet_filter(user, outlet_id)  # POS-07: managers only see their outlets
+    if scope == []:
+        return ok_envelope({"items": [], "meta": {"page": page, "per_page": per_page, "total": 0}})
     items, meta = await reservation_service.list_reservations(
-        outlet_id=outlet_id,
+        outlet_id=scope,
         status=status,
         date_from=date_from,
         date_to=date_to,
@@ -92,6 +106,7 @@ async def create_reservation(
     user: dict = Depends(require_any_perm("reservations.create", "outlet.manager", "reservations.manage")),
 ):
     payload["source"] = payload.get("source", "phone")
+    enforce_outlet_scope(user, payload.get("outlet_id") or "__missing__")
     result = await reservation_service.create_reservation(payload, created_by=user["id"], auto_link_member=True)
     return ok_envelope(result)
 
@@ -106,7 +121,7 @@ async def reservation_executive_summary(
     result = await reservation_service.executive_summary(
         date_from=date_from,
         date_to=date_to,
-        outlet_id=outlet_id,
+        outlet_id=resolve_outlet_filter(user, outlet_id),
     )
     return ok_envelope(result)
 
@@ -119,7 +134,7 @@ async def reservation_deposit_summary(
 ):
     result = await reservation_service.finance_deposit_summary(
         period=period,
-        outlet_id=outlet_id,
+        outlet_id=resolve_outlet_filter(user, outlet_id),
     )
     return ok_envelope(result)
 
@@ -150,8 +165,9 @@ async def update_reservation_settings(
     user: dict = Depends(require_any_perm("admin.settings", "reservations.manage")),
 ):
     from core.db import get_db, serialize
+    enforce_outlet_scope(user, outlet_id)
     db = get_db()
-    now = reservation_service._now()
+    now = datetime.now(timezone.utc).isoformat()
     await db.system_configs.update_one(
         {"type": "reservation_settings", "outlet_id": outlet_id},
         {"$set": {
@@ -173,14 +189,21 @@ async def update_reservation_settings(
     return ok_envelope(serialize(doc) if doc else {})
 
 
+async def _scoped_reservation(reservation_id: str, user: dict) -> dict:
+    """Load a reservation and enforce the caller's outlet scope (POS-07: no cross-outlet edits)."""
+    result = await reservation_service.get_reservation(reservation_id)
+    if not result:
+        raise AuroraException("Reservasi tidak ditemukan", code="NOT_FOUND", field="reservation_id")
+    enforce_outlet_scope(user, result.get("outlet_id") or "__missing__")
+    return result
+
+
 @router.get("/api/reservations/{reservation_id}")
 async def get_reservation(
     reservation_id: str,
     user: dict = Depends(require_any_perm("reservations.read", "outlet.manager", "reservations.manage")),
 ):
-    result = await reservation_service.get_reservation(reservation_id)
-    if not result:
-        raise AuroraException("Reservasi tidak ditemukan", code="NOT_FOUND", field="reservation_id")
+    result = await _scoped_reservation(reservation_id, user)
     return ok_envelope(result)
 
 
@@ -190,6 +213,7 @@ async def update_reservation(
     payload: dict,
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
+    await _scoped_reservation(reservation_id, user)
     result = await reservation_service.update_reservation(reservation_id, payload, user_id=user["id"])
     if not result:
         raise AuroraException("Reservasi tidak ditemukan", code="NOT_FOUND", field="reservation_id")
@@ -201,6 +225,7 @@ async def delete_reservation(
     reservation_id: str,
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
+    await _scoped_reservation(reservation_id, user)
     await reservation_service.delete_reservation(reservation_id, user_id=user["id"])
     return ok_envelope({"message": "Reservasi berhasil dihapus"})
 
@@ -211,6 +236,7 @@ async def update_reservation_status(
     payload: dict,
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
+    await _scoped_reservation(reservation_id, user)
     new_status = payload.get("status")
     reason = payload.get("reason")
     if not new_status:
@@ -233,6 +259,7 @@ async def send_notification(
     payload: dict,
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
+    await _scoped_reservation(reservation_id, user)
     channel = payload.get("channel", "whatsapp")
     result = await reservation_service.send_confirmation(reservation_id, channel=channel)
     return ok_envelope(result)
@@ -245,6 +272,7 @@ async def reschedule_reservation(
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
     """Reschedule reservation to a new date/time."""
+    await _scoped_reservation(reservation_id, user)
     new_date = payload.get("new_date")
     new_time = payload.get("new_time")
     reason = payload.get("reason")
@@ -269,6 +297,7 @@ async def update_deposit(
     user: dict = Depends(require_any_perm("reservations.manage", "outlet.manager")),
 ):
     """Update deposit / DP status and payment details."""
+    await _scoped_reservation(reservation_id, user)
     deposit_status = payload.get("deposit_status")
     if not deposit_status:
         raise AuroraException("Field 'deposit_status' diperlukan", code="VALIDATION_ERROR", field="deposit_status")

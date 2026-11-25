@@ -15,7 +15,7 @@ import LoadingState from "@/components/shared/LoadingState";
 import { fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { confirmDialog } from "@/components/shared/confirmDialog";
+import { confirmDialog, promptDialog } from "@/components/shared/confirmDialog";
 
 const CATEGORY_LABEL = {
   telegram: "Telegram",
@@ -103,10 +103,15 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
 
   async function setupWebhook() {
     const baseHint = window.location.origin.replace(window.location.host, "").replace("//:", "//");
-    const url = window.prompt(
-      "Masukkan public backend URL (mis. https://app.example.com). Path '/api/telegram/webhook' akan otomatis ditambahkan.",
-      baseHint || "",
-    );
+    const url = await promptDialog({
+      title: "Daftarkan Webhook Telegram",
+      description: "Path '/api/telegram/webhook' akan otomatis ditambahkan ke URL ini.",
+      label: "Public backend URL",
+      placeholder: "https://app.example.com",
+      defaultValue: baseHint || "",
+      confirmText: "Daftarkan",
+      testId: "telegram-webhook-dialog",
+    });
     if (!url) return;
     setBusyKey("setup_webhook");
     try {
@@ -133,7 +138,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
   }, {});
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="h-9 w-9 rounded-xl bg-aurora-3/15 text-aurora-3 flex items-center justify-center">
@@ -147,7 +152,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={load} className="gap-1">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          <RefreshCw className="h-3.5 w-3.5" /> Muat ulang
         </Button>
       </div>
 
@@ -167,15 +172,15 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-sm">{item.label}</span>
-                        <span className="font-mono text-[10px] text-muted-foreground">{item.key}</span>
-                        {item.is_secret && <Badge variant="outline" className="text-[10px]">secret</Badge>}
+                        <span className="font-mono text-xs text-muted-foreground">{item.key}</span>
+                        {item.is_secret && <Badge variant="outline" className="text-xs">secret</Badge>}
                         {item.is_set ? (
-                          <Badge variant="default" className="text-[10px] gap-1">
+                          <Badge variant="default" className="text-xs gap-1">
                             {item.source === "database" ? <Database className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
                             {item.source}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px] text-amber-700 border-amber-300">
+                          <Badge variant="outline" className="text-xs text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30">
                             <FileWarning className="h-3 w-3 mr-1" /> belum diset
                           </Badge>
                         )}
@@ -194,7 +199,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                       )}
                       {isTelegram && tgRes && (
                         <div className={cn("text-xs mt-2 inline-flex items-center gap-1 px-2 py-1 rounded",
-                          tgRes.ok ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700")}>
+                          tgRes.ok ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" : "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400")}>
                           {tgRes.ok
                             ? <><CheckCircle2 className="h-3 w-3" /> Connected: @{tgRes.bot?.username || "bot"}</>
                             : <><XCircle className="h-3 w-3" /> {tgRes.reason || "failed"}</>}
@@ -257,7 +262,7 @@ export default function SystemSettingsCard({ filterCategory = null, title = "Sys
                       {item.is_set && item.source === "database" && (
                         <Button size="sm" variant="ghost" onClick={() => remove(item)}
                                 disabled={busyKey === item.key}
-                                className="text-rose-600 hover:text-rose-700 gap-1">
+                                className="text-rose-700 dark:text-rose-400 hover:text-rose-700 gap-1">
                           <Trash2 className="h-3.5 w-3.5" /> Reset
                         </Button>
                       )}

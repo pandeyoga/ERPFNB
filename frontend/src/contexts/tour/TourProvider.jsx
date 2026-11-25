@@ -327,7 +327,7 @@ export function TourProvider({ children }) {
   // ============================================================
 
   // Compute current page's primary tour
-  const currentTours = getToursForPath(location.pathname);
+  const currentTours = getToursForPath(location.pathname, location.search);
   const primaryTourId = currentTours.find((t) => t !== "general-navigation") || null;
 
   // Show suggestion?

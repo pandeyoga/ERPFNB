@@ -97,6 +97,54 @@ def evaluate(rel: str, s: dict) -> list[tuple[str, str, str]]:
         out.append(("WARN", "form.select", "Pakai <select> native — gunakan shadcn Select"))
     return out
 
+
+# ---- design-system rules (docs/DESIGN_SYSTEM.md) ----------------------------
+# Mencegah drift ukuran/warna yang biasa muncul saat vibe coding. Dicek per string class.
+_HUES = "emerald|green|red|rose|amber|yellow|orange|sky|blue|teal|violet|purple|indigo|cyan|lime|pink|fuchsia"
+_NEUTRAL = "gray|slate|zinc|neutral|stone"
+_DS_EXEMPT = (  # halaman sistem (hero kosong) & mimik tampilan eksternal yang sengaja berbeda
+    "NoAccess", "NotFound", "ComingSoonPage", "ForbiddenPage", "SmartSEOAdmin/PreviewComponents",
+    "components/loyalty/",  # aplikasi member loyalty: gaya brand publik (di luar design system ERP)
+)
+
+
+def _class_strings(text: str):
+    """Yield (line_no, class_string) for every quoted string that looks like Tailwind classes."""
+    for m in re.finditer(r'(["\'`])((?:(?!\1)[^<>{}\n]){3,400})\1', text):
+        s = m.group(2)
+        if re.search(r"\b(?:text|bg|p[xy]?|h|w|rounded|border|flex|grid|gap)-", s):
+            yield text.count("\n", 0, m.start()) + 1, s
+
+
+def design_rules(rel: str, text: str) -> list[tuple[str, str, str]]:
+    out = []
+    if any(x in rel for x in _DS_EXEMPT):
+        return out
+    seen = set()
+
+    def add(sev, rule, msg):
+        if (rule, msg) not in seen:
+            seen.add((rule, msg)); out.append((sev, rule, msg))
+
+    for ln, s in _class_strings(text):
+        if re.search(r"\btext-\[(?:[0-9]|10)(?:\.\d+)?px\]", s):
+            add("ERROR", "ds.font-min", f"L{ln}: teks < 11px — minimum 12px (11px hanya label uppercase)")
+        if "text-[11px]" in s and "uppercase" not in s and not re.search(r"\bmin-w-[45]\b|\bh-[45]\b", s):
+            add("ERROR", "ds.font-11px", f"L{ln}: text-[11px] tanpa uppercase — pakai text-xs (12px)")
+        if re.search(r"(?<![\w:/\-\[])text-(?:" + _HUES + r")-(?:400|500|600)\b", s):
+            add("ERROR", "ds.contrast", f"L{ln}: teks berwarna -400/-600 di mode terang < 4.5:1 — pakai -700 (amber/orange -800) + dark:-400")
+        if re.search(r"(?<![\w:/\-])(?:text|bg|border)-(?:" + _NEUTRAL + r")-\d{2,3}\b(?!/)|(?<![\w:/\-])bg-white\b(?!/)", s):
+            add("WARN", "ds.token-color", f"L{ln}: warna netral hard-coded — pakai token (text-muted-foreground, bg-muted, border-border)")
+        if re.search(r"\bglass-card(?:-hover)?\b", s) and re.search(r"(?<![\w:-])p-(?:5|6|8|10|12)\b", s):
+            add("WARN", "ds.card-padding", f"L{ln}: padding kartu di luar p-3/p-4")
+    for m in re.finditer(r"<Button\b[^>]*?className=\"([^\"]*)\"", text):
+        if "ds-ok" in text[max(0, m.start() - 160):m.start()]:
+            continue  # pengecualian yang didokumentasikan di kode (komentar "ds-ok: alasan")
+        if re.search(r"(?<![\w:-])h-(?:6|7|10|11|12)\b|(?<![\w:-])rounded-full\b|\bpill-active\b", m.group(1)):
+            ln = text.count("\n", 0, m.start()) + 1
+            add("ERROR", "ds.button-size", f"L{ln}: ukuran/bentuk Button di-override — pakai size (default/sm/icon/icon-sm)")
+    return out
+
 # ---- runner ---------------------------------------------------------------
 def collect_files(explicit):
     if explicit:
@@ -127,7 +175,7 @@ def main():
             continue
         n_files += 1
         rel = str(f.relative_to(ROOT))
-        for sev, rule, msg in evaluate(rel, detect(text)):
+        for sev, rule, msg in evaluate(rel, detect(text)) + design_rules(rel, text):
             findings.append((sev, rel, rule, msg))
             counters[rule] = counters.get(rule, 0) + 1
 

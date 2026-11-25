@@ -1,185 +1,149 @@
-/** Daily Sales Summary Report — Excel export dengan filters */
+/** Daily Sales Summary Report — pratinjau di layar + ekspor Excel penjualan harian per outlet/brand.
+ *  Pratinjau memakai /reports/sales/daily-sales (baris & filter sama dengan file Excel). */
 import { useState, useEffect } from "react";
-import { Download, Calendar, Store, Tag } from "lucide-react";
-import api from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Store, Tag, Eye } from "lucide-react";
+import api, { fetchAll, unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { todayJakartaISO } from "@/lib/format";
+import { fmtRp, fmtNumber, fmtDate, todayJakartaISO } from "@/lib/format";
 import useOutletScope from "@/hooks/useOutletScope";
+import { useDebounce } from "@/hooks/useDebounce";
+import DataTable from "@/components/shared/DataTable";
+import EmptyState from "@/components/shared/EmptyState";
+import StatusPill from "@/components/shared/StatusPill";
+import { useScope } from "@/contexts/ScopeContext";
+import {
+  ReportPage, FilterGrid, ReportField, ChipMultiSelect, useExcelExport, daysAgoISO, validRange, toOptions,
+} from "./reportKit";
 
-import { fetchAll } from "@/lib/api";
 export default function DailySalesReport() {
-  const { allOutlets } = useOutletScope(); // FIX: Get outlets from hook
-  const outlets = allOutlets; // FIX: Create alias for component usage
-  const [dateFrom, setDateFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().slice(0, 10);
-  });
+  const { scopedOutlets } = useOutletScope(); // pilihan = toko dalam konteks TopNav
+  const { scope } = useScope();
+  const [dateFrom, setDateFrom] = useState(() => daysAgoISO(30));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [brands, setBrands] = useState([]);
   const [selectedOutlets, setSelectedOutlets] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [downloading, setDownloading] = useState(false);
+  const [exporting, exportExcel] = useExcelExport();
+  const [preview, setPreview] = useState({ rows: [], meta: null, loading: true, error: null });
+
+  // Pratinjau mengikuti filter (di-debounce agar memilih beberapa chip tidak memicu banyak request).
+  const previewKey = useDebounce(JSON.stringify([dateFrom, dateTo, selectedOutlets, selectedBrands]), 400);
+  useEffect(() => {
+    const [from, to, outletIds, brandIds] = JSON.parse(previewKey);
+    if (from && to && from > to) {
+      setPreview({ rows: [], meta: null, loading: false, error: "Tanggal awal setelah tanggal akhir." });
+      return;
+    }
+    let cancelled = false;
+    setPreview(p => ({ ...p, loading: true, error: null }));
+    const params = { limit: 100 };
+    if (from) params.date_from = from;
+    if (to) params.date_to = to;
+    if (outletIds.length) params.outlet_ids = outletIds.join(",");
+    if (brandIds.length) params.brand_ids = brandIds.join(",");
+    api.get("/reports/sales/daily-sales", { params })
+      .then(res => { if (!cancelled) setPreview({ rows: unwrap(res) || [], meta: res.data?.meta, loading: false, error: null }); })
+      .catch(e => { if (!cancelled) setPreview({ rows: [], meta: null, loading: false, error: e.response?.data?.errors?.[0]?.message || "Gagal memuat pratinjau" }); });
+    return () => { cancelled = true; };
+  }, [previewKey]);
 
   useEffect(() => {
-    // FIX: Removed outlets fetch - already from hook
     fetchAll("/master/brands")
       .then(r => setBrands(r.data?.data || []))
       .catch(() => {});
   }, []);
 
-  async function downloadExcel() {
-    setDownloading(true);
-    try {
-      const params = new URLSearchParams();
-      if (dateFrom) params.append("date_from", dateFrom);
-      if (dateTo) params.append("date_to", dateTo);
-      if (selectedOutlets.length > 0) params.append("outlet_ids", selectedOutlets.join(","));
-      if (selectedBrands.length > 0) params.append("brand_ids", selectedBrands.join(","));
-
-      const response = await api.get(`/reports/sales/daily-sales.xlsx?${params.toString()}`, {
-        responseType: "blob",
-      });
-
-      // Download file
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `daily_sales_${dateFrom}_${dateTo}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Excel report downloaded successfully!");
-    } catch (e) {
-      toast.error("Gagal download report: " + (e.response?.data?.message || e.message));
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  function toggleSelection(arr, setArr, id) {
-    if (arr.includes(id)) {
-      setArr(arr.filter(x => x !== id));
-    } else {
-      setArr([...arr, id]);
-    }
+  function downloadExcel() {
+    if (!validRange(dateFrom, dateTo)) return;
+    const params = new URLSearchParams();
+    if (dateFrom) params.append("date_from", dateFrom);
+    if (dateTo) params.append("date_to", dateTo);
+    if (selectedOutlets.length > 0) params.append("outlet_ids", selectedOutlets.join(","));
+    if (selectedBrands.length > 0) params.append("brand_ids", selectedBrands.join(","));
+    exportExcel({
+      path: "/reports/sales/daily-sales.xlsx",
+      params,
+      filename: `daily_sales_${dateFrom}_${dateTo}.xlsx`,
+    });
   }
 
   return (
-    <div className="space-y-4" data-testid="daily-sales-report-page">
-      {/* Header */}
-      <Card className="p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 border border-emerald-500/30 flex items-center justify-center">
-            <Calendar className="h-5 w-5 text-emerald-600" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold" data-testid="daily-sales-title">Daily Sales Summary Report</h1>
-            <p className="text-xs text-muted-foreground">Export laporan penjualan harian per outlet dalam format Excel</p>
-          </div>
-        </div>
-      </Card>
+    <ReportPage
+      reportId="daily-sales"
+      testId="daily-sales-report-page"
+      titleTestId="daily-sales-title"
+      filterTestId="daily-sales-filter-card"
+      exportTestId="daily-sales-download-btn"
+      onExport={downloadExcel}
+      exporting={exporting}
+      after={<DailySalesPreview {...preview} />}
+    >
+      <FilterGrid>
+        <ReportField id="ds-date-from" label="Dari tanggal">
+          <Input id="ds-date-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} data-testid="daily-sales-date-from" />
+        </ReportField>
+        <ReportField id="ds-date-to" label="Hingga tanggal">
+          <Input id="ds-date-to" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} data-testid="daily-sales-date-to" />
+        </ReportField>
+      </FilterGrid>
+      <ChipMultiSelect
+        id="ds-outlets" label="Toko" icon={Store}
+        options={toOptions(scopedOutlets)} value={selectedOutlets} onChange={setSelectedOutlets}
+        testIdFor={o => `outlet-filter-${o.code || o.value}`}
+      />
+      {/* Brand dipilih di TopNav; pembanding antar-brand hanya bermakna di konteks Semua brand. */}
+      {scope.level === "group" && brands.length > 1 && (
+        <ChipMultiSelect
+          id="ds-brands" label="Brand" icon={Tag}
+          options={toOptions(brands)} value={selectedBrands} onChange={setSelectedBrands}
+          testIdFor={o => `brand-filter-${o.code || o.value}`}
+        />
+      )}
+    </ReportPage>
+  );
+}
 
-      {/* Filters */}
-      <Card className="p-5">
-        <h3 className="font-semibold mb-4 text-sm">Filters</h3>
-        
-        {/* Date Range */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dari Tanggal</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              className="mt-1 h-9"
-              data-testid="daily-sales-date-from"
-            />
-          </div>
-          <div>
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Hingga Tanggal</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              className="mt-1 h-9"
-              data-testid="daily-sales-date-to"
-            />
-          </div>
-        </div>
-
-        {/* Outlet Filter */}
-        {outlets.length > 0 && (
-          <div className="mb-4">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
-              <Store className="h-3 w-3 inline mr-1" />
-              Outlet {selectedOutlets.length > 0 && `(${selectedOutlets.length})`}
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {outlets.map(o => (
-                <button
-                  key={o.id}
-                  onClick={() => toggleSelection(selectedOutlets, setSelectedOutlets, o.id)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedOutlets.includes(o.id)
-                      ? "bg-foreground text-background border-foreground"
-                      : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                  data-testid={`outlet-filter-${o.code || o.id}`}
-                >
-                  {o.name}
-                </button>
-              ))}
-            </div>
+/** Pratinjau baris laporan (maks. 100) + total atas seluruh baris. */
+function DailySalesPreview({ rows, meta, loading, error }) {
+  const total = meta?.total ?? 0;
+  return (
+    <section className="glass-card overflow-hidden" data-testid="daily-sales-preview">
+      <div className="px-4 pt-4 pb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1 border-b border-border/50">
+        <h2 className="text-sm md:text-base font-semibold inline-flex items-center gap-2 mr-auto">
+          <Eye className="h-4 w-4 text-muted-foreground" /> Pratinjau
+        </h2>
+        {meta && (
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground" data-testid="daily-sales-preview-totals">
+            <span>Baris <b className="text-foreground tabular-nums">{fmtNumber(total)}</b></span>
+            <span>Transaksi <b className="text-foreground tabular-nums">{fmtNumber(meta.transaction_count || 0)}</b></span>
+            <span>Grand total <b className="text-foreground tabular-nums">{fmtRp(meta.grand_total || 0)}</b></span>
           </div>
         )}
-
-        {/* Brand Filter */}
-        {brands.length > 0 && (
-          <div className="mb-4">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
-              <Tag className="h-3 w-3 inline mr-1" />
-              Brand {selectedBrands.length > 0 && `(${selectedBrands.length})`}
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {brands.map(b => (
-                <button
-                  key={b.id}
-                  onClick={() => toggleSelection(selectedBrands, setSelectedBrands, b.id)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedBrands.includes(b.id)
-                      ? "bg-foreground text-background border-foreground"
-                      : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                  data-testid={`brand-filter-${b.code || b.id}`}
-                >
-                  {b.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Download Button */}
-        <Button
-          onClick={downloadExcel}
-          disabled={downloading}
-          className="w-full rounded-full gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white"
-          data-testid="daily-sales-download-btn"
-        >
-          <Download className="h-4 w-4" />
-          {downloading ? "Downloading..." : "Download Excel Report"}
-        </Button>
-      </Card>
-    </div>
+      </div>
+      {error ? (
+        <EmptyState title="Pratinjau tidak tersedia" description={error} />
+      ) : (
+        <DataTable
+          rows={rows}
+          keyField="id"
+          loading={loading}
+          rowTestIdPrefix="daily-sales-preview-row"
+          columns={[
+            { key: "sales_date", label: "Tanggal", primary: true, render: r => fmtDate(r.sales_date) },
+            { key: "outlet_name", label: "Outlet" },
+            { key: "brand_name", label: "Brand", render: r => r.brand_name || "—" },
+            { key: "transaction_count", label: "Transaksi", numeric: true, render: r => fmtNumber(r.transaction_count) },
+            { key: "grand_total", label: "Grand total", numeric: true, render: r => fmtRp(r.grand_total) },
+            { key: "status", label: "Status", render: r => <StatusPill status={r.status} /> },
+          ]}
+          empty={<EmptyState title="Tidak ada sales tervalidasi" description="Ubah rentang tanggal atau filter outlet/brand." />}
+        />
+      )}
+      {!error && total > rows.length && (
+        <p className="px-4 py-2.5 border-t border-border/50 text-xs text-muted-foreground" data-testid="daily-sales-preview-more">
+          Menampilkan {rows.length} dari {fmtNumber(total)} baris — ekspor Excel untuk seluruh baris.
+        </p>
+      )}
+    </section>
   );
 }

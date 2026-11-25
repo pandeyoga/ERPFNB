@@ -7,13 +7,14 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Wallet, Banknote, CreditCard, Smartphone, Building2,
   TrendingUp, TrendingDown, RefreshCw, FileSpreadsheet, Plus, History,
-  AlertTriangle, CheckCircle2, AlertCircle, Edit3, ArchiveRestore,
+  AlertTriangle, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid,
 } from "recharts";
 import api, { unwrap } from "@/lib/api";
-import KpiCard from "@/components/shared/KpiCard";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import LoadingState from "@/components/shared/LoadingState";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
@@ -21,6 +22,7 @@ import { GlassTooltip } from "@/components/shared/charts/chartKit";
 import UpdateBalanceModal from "@/components/shared/UpdateBalanceModal";
 import CashCsvUploader from "@/components/shared/CashCsvUploader";
 import { Button } from "@/components/ui/button";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -31,21 +33,25 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
 const TYPE_META = {
-  bank:        { label: "Bank",       icon: Building2,  tone: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 dark:text-indigo-300" },
+  bank:        { label: "Bank",       icon: Building2,  tone: "text-indigo-700 bg-indigo-50 dark:bg-indigo-950/40 dark:text-indigo-300" },
   petty_cash:  { label: "Petty Cash", icon: Banknote,   tone: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300" },
   ewallet:     { label: "E-Wallet",   icon: Smartphone, tone: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300" },
-  other:       { label: "Lainnya",    icon: CreditCard, tone: "text-slate-700 bg-slate-50 dark:bg-slate-900/40 dark:text-slate-300" },
+  other:       { label: "Lainnya",    icon: CreditCard, tone: "text-foreground bg-muted/40 dark:bg-slate-900/40 dark:text-slate-300" },
 };
 
 const HEALTH_TONE = {
-  green: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300",
-  amber: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300",
-  red:   "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300",
+  green: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300",
+  amber: "bg-amber-100 text-amber-800 border-amber-200 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300",
+  red:   "bg-rose-100 text-rose-800 border-rose-200 dark:border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-300",
 };
 
 const HEALTH_ICON = { green: CheckCircle2, amber: AlertCircle, red: AlertTriangle };
 
-export default function CashPosition() {
+/**
+ * Dipakai di /finance/cash-position, /owner/cash, dan tab "Cash position" Payments hub.
+ * `embedded` → tanpa PageHeader (hub sudah punya <h1>), aksi pindah ke toolbar ringkas.
+ */
+export default function CashPosition({ embedded = false }) {
   const { can } = useAuth();
   const canUpdate = can("finance.cash.update");
   const [accounts, setAccounts] = useState([]);
@@ -71,7 +77,7 @@ export default function CashPosition() {
       setPosition(unwrap(posRes));
       setProjection(unwrap(projRes));
     } catch (e) {
-      toast.error("Gagal load Cash Position");
+      toast.error("Gagal memuat Cash Position");
     } finally {
       setLoading(false);
     }
@@ -102,50 +108,77 @@ export default function CashPosition() {
 
   const HealthIcon = position?.health ? HEALTH_ICON[position.health] : CheckCircle2;
 
+  const subtitle = "Saldo kas & bank real-time, eksposur AP, runway, dan proyeksi kas 30/60/90 hari.";
+  const actions = (
+    <>
+      <Button variant="outline" onClick={load} data-testid="cash-refresh-btn">
+        <RefreshCw className="h-4 w-4" /> Muat ulang
+      </Button>
+      {canUpdate && (
+        <>
+          <Button variant="outline" onClick={() => setShowCsv(true)} data-testid="cash-csv-btn">
+            <FileSpreadsheet className="h-4 w-4" /> Unggah CSV
+          </Button>
+          <Button onClick={() => setShowCreate(true)} data-testid="cash-create-btn">
+            <Plus className="h-4 w-4" /> Tambah Akun
+          </Button>
+        </>
+      )}
+    </>
+  );
+  const header = <PageHeader icon={Wallet} title="Cash Position" subtitle={subtitle} actions={actions} />;
+
   if (loading && !position) return (
-    <div className="space-y-6" data-testid="cash-position-page">
-      <LoadingState message="Loading Cash Position…" />
+    <div className="space-y-3 lg:space-y-4" data-testid="cash-position-page">
+      {header}
+      <LoadingState variant="kpi" />
     </div>
   );
 
+  const runwayTone = position?.health === "red" ? "danger" : position?.health === "amber" ? "warning" : "success";
+
   return (
-    <div className="space-y-6" data-testid="cash-position-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="cash-position-page">
+      {header}
+
       {/* Top KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="cash-kpi-strip">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-testid="cash-kpi-strip">
         <div data-testid="cash-kpi-net">
-          <KpiCard
-            label="Net Liquid Cash"
+          <CompactStatCard
+            label="Net liquid cash"
             value={fmtRp(position?.net_liquid_cash || 0)}
             icon={Wallet}
             color="aurora-1"
-            hint={`${position?.account_count || 0} akun aktif`}
+            sub={`${position?.account_count || 0} akun aktif`}
           />
         </div>
         <div data-testid="cash-kpi-ap">
-          <KpiCard
-            label="AP Exposure"
+          <CompactStatCard
+            label="AP exposure"
             value={fmtRp(position?.ap_exposure || 0)}
             icon={CreditCard}
             color="aurora-2"
-            hint="Outstanding invoice"
+            sub="Invoice outstanding"
           />
         </div>
         <div data-testid="cash-kpi-after-ap">
-          <KpiCard
-            label="Net After AP"
+          <CompactStatCard
+            label="Net after AP"
             value={fmtRp(position?.net_after_ap || 0)}
-            icon={TrendingUp}
-            color={position?.net_after_ap >= 0 ? "success" : "danger"}
-            hint={position?.net_after_ap >= 0 ? "Sehat" : "Defisit"}
+            icon={position?.net_after_ap >= 0 ? TrendingUp : TrendingDown}
+            color={position?.net_after_ap >= 0 ? "aurora-4" : "aurora-6"}
+            tone={position?.net_after_ap >= 0 ? "success" : "danger"}
+            sub={position?.net_after_ap >= 0 ? "Sehat" : "Defisit"}
           />
         </div>
         <div data-testid="cash-kpi-runway">
-          <KpiCard
-            label="Days Runway"
+          <CompactStatCard
+            label="Runway (hari)"
             value={position?.days_runway ? `${position.days_runway} hari` : "—"}
             icon={HealthIcon}
-            color={position?.health === "red" ? "danger" : position?.health === "amber" ? "warning" : "success"}
-            hint={`Burn rate Rp ${fmtNumber(position?.daily_burn || 0)}/hari`}
+            color={runwayTone === "danger" ? "aurora-6" : runwayTone === "warning" ? "aurora-5" : "aurora-4"}
+            tone={position?.days_runway ? runwayTone : "default"}
+            sub={`Burn rate Rp ${fmtNumber(position?.daily_burn || 0)}/hari`}
           />
         </div>
       </div>
@@ -170,26 +203,12 @@ export default function CashPosition() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3" data-testid="cash-toolbar">
-        <h2 className="text-lg font-semibold">Akun Likuid</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={load} className="gap-1" data-testid="cash-refresh-btn">
-            <RefreshCw className="h-4 w-4" /> Refresh
-          </Button>
-          {canUpdate && (
-            <>
-              <Button variant="outline" size="sm" onClick={() => setShowCsv(true)} className="gap-1" data-testid="cash-csv-btn">
-                <FileSpreadsheet className="h-4 w-4" /> Upload CSV
-              </Button>
-              <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1" data-testid="cash-create-btn">
-                <Plus className="h-4 w-4" /> Akun Baru
-              </Button>
-            </>
-          )}
-        </div>
+        <h2 className="text-base md:text-lg font-semibold">Akun likuid</h2>
+        <span className="text-xs text-muted-foreground">Klik ikon riwayat untuk melihat mutasi saldo 60 hari.</span>
       </div>
 
       {/* By type breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-testid="cash-by-type">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4" data-testid="cash-by-type">
         {["bank", "petty_cash", "ewallet"].map((type) => {
           const meta = TYPE_META[type];
           const Icon = meta.icon;
@@ -199,7 +218,7 @@ export default function CashPosition() {
             <div key={type} className="glass-card p-4" data-testid={`cash-type-${type}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={cn("h-9 w-9 rounded-xl flex items-center justify-center", meta.tone)}>
+                  <span className={cn("h-9 w-9 rounded-[calc(var(--radius)-2px)] flex items-center justify-center", meta.tone)}>
                     <Icon className="h-4 w-4" />
                   </span>
                   <div>
@@ -208,7 +227,7 @@ export default function CashPosition() {
                   </div>
                 </div>
                 <div className="text-right tabular-nums">
-                  <div className="text-base font-bold" data-testid={`cash-type-total-${type}`}>{fmtRp(total)}</div>
+                  <div className="text-base font-semibold" data-testid={`cash-type-total-${type}`}>{fmtRp(total)}</div>
                 </div>
               </div>
               <ul className="space-y-1.5" data-testid={`cash-accounts-${type}`}>
@@ -217,26 +236,30 @@ export default function CashPosition() {
                 )}
                 {list.map((a) => (
                   <li key={a.id}
-                      className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-muted/50 group cursor-pointer"
-                      onClick={() => loadHistory(a)}
+                      className="flex items-center justify-between gap-2 text-sm py-1.5 px-2 rounded hover:bg-muted/50"
                       data-testid={`cash-account-${a.code}`}>
-                    <div className="flex flex-col">
-                      <span className="font-medium truncate">{a.name}</span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {a.outlet_name || a.bank_name || a.code}
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium line-clamp-2 break-words" title={a.name}>{a.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {a.outlet_name || a.brand_name || `Pusat${a.bank_name ? ` · ${a.bank_name}` : ""}`}
                       </span>
                     </div>
-                    <div className="text-right tabular-nums">
-                      <div className="font-mono font-semibold" data-testid={`cash-balance-${a.code}`}>{fmtRp(a.current_balance)}</div>
-                      {canUpdate && (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setSelected(a); }}
-                          className="text-[11px] text-primary hover:underline opacity-0 group-hover:opacity-100"
-                          data-testid={`cash-update-${a.code}`}
-                        >
-                          Update saldo
-                        </button>
-                      )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <div className="text-right tabular-nums">
+                        <div className="font-semibold whitespace-nowrap" data-testid={`cash-balance-${a.code}`}>{fmtRp(a.current_balance)}</div>
+                        {canUpdate && (
+                          <Button variant="link" size="sm" onClick={() => setSelected(a)}
+                            className="h-auto p-0 text-xs"
+                            data-testid={`cash-update-${a.code}`}>
+                            Update saldo
+                          </Button>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="icon-sm" onClick={() => loadHistory(a)}
+                        aria-label={`Riwayat saldo ${a.name}`} title="Riwayat saldo"
+                        data-testid={`cash-history-${a.code}`}>
+                        <History className="h-4 w-4" />
+                      </Button>
                     </div>
                   </li>
                 ))}
@@ -247,38 +270,39 @@ export default function CashPosition() {
       </div>
 
       {/* Projection chart */}
-      <div className="glass-card p-5" data-testid="cash-projection-card">
-        <div className="flex items-center justify-between mb-3">
+      <div className="glass-card p-4" data-testid="cash-projection-card">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
-            <h3 className="font-semibold">Proyeksi {days} Hari</h3>
+            <h3 className="text-sm md:text-base font-semibold">Proyeksi {days} hari</h3>
             <p className="text-xs text-muted-foreground">
               Asumsi: AP outflow per due-date + flat daily burn dari rata-rata 30 hari.
             </p>
           </div>
-          <div className="flex items-center gap-1" data-testid="cash-projection-days">
-            {[30, 60, 90].map((d) => (
-              <Button key={d} variant={d === days ? "default" : "outline"} size="sm"
-                      onClick={() => setDays(d)} data-testid={`cash-days-${d}`}>{d}d</Button>
-            ))}
-          </div>
+          <SegmentedFilter
+            value={days}
+            onChange={(v) => setDays(Number(v))}
+            ariaLabel="Horizon proyeksi"
+            testId="cash-projection-days"
+            options={[30, 60, 90].map((d) => ({ value: d, label: `${d} hari`, testId: `cash-days-${d}` }))}
+          />
         </div>
         {projection?.series?.length ? (
           <div style={{ height: 260 }} data-testid="cash-projection-chart">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={projection.series}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }}
+                <XAxis dataKey="date" tick={{ fontSize: 12 }}
                        tickFormatter={(d) => d.slice(5)}
                        interval={Math.max(1, Math.floor((projection.series.length - 1) / 8))} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
                 <Tooltip content={<GlassTooltip valueFormatter={fmtRp} labelFormatter={(d) => `Tanggal: ${d}`} />} />
-                <ReferenceLine y={0} stroke="hsl(var(--danger))" strokeDasharray="3 3" />
+                <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
                 <Line type="monotone" dataKey="balance" name="Saldo" stroke="hsl(var(--aurora-1))" strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
-          <EmptyState title="Belum ada projection" />
+          <EmptyState title="Belum ada proyeksi" description="Proyeksi muncul setelah ada saldo akun dan histori pengeluaran." />
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4" data-testid="cash-projection-summary">
           <div className="text-xs space-y-0.5">
@@ -291,7 +315,7 @@ export default function CashPosition() {
           </div>
           <div className="text-xs space-y-0.5">
             <div className="text-muted-foreground">Net change</div>
-            <div className={cn("font-semibold", (projection?.end_change || 0) < 0 ? "text-rose-600" : "text-emerald-600")} data-testid="cash-proj-change">
+            <div className={cn("font-semibold", (projection?.end_change || 0) < 0 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400")} data-testid="cash-proj-change">
               {(projection?.end_change || 0) >= 0 ? "+" : ""}{fmtRp(projection?.end_change || 0)}
             </div>
           </div>
@@ -328,11 +352,11 @@ export default function CashPosition() {
         <DialogContent className="max-w-2xl" data-testid="cash-history-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <History className="h-4 w-4" /> History — {historyAcc?.name}
+              <History className="h-4 w-4" /> Riwayat saldo — {historyAcc?.name}
             </DialogTitle>
           </DialogHeader>
           {historyRows.length === 0 ? (
-            <EmptyState title="Belum ada riwayat" />
+            <EmptyState title="Belum ada riwayat" description="Belum ada perubahan saldo dalam 60 hari terakhir." />
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <DataTable
@@ -343,12 +367,12 @@ export default function CashPosition() {
                   { key: "recorded_at", label: "Tanggal", sortable: true, primary: true,
                     render: (h) => <span className="text-xs">{fmtDateTime(h.recorded_at)}</span> },
                   { key: "source", label: "Source",
-                    render: (h) => <Badge variant="outline" className="text-[10px]">{h.source}</Badge> },
+                    render: (h) => <Badge variant="outline" className="text-xs">{h.source}</Badge> },
                   { key: "balance", label: "Saldo", numeric: true, sortable: true,
-                    render: (h) => <span className="font-mono">{fmtRp(h.balance)}</span> },
+                    render: (h) => <span className="font-medium">{fmtRp(h.balance)}</span> },
                   { key: "delta", label: "Delta", numeric: true,
                     render: (h) => (
-                      <span className={cn("font-mono text-xs", (h.delta || 0) > 0 ? "text-emerald-600" : (h.delta || 0) < 0 ? "text-rose-600" : "text-muted-foreground")}>
+                      <span className={cn("text-xs", (h.delta || 0) > 0 ? "text-emerald-700 dark:text-emerald-400" : (h.delta || 0) < 0 ? "text-rose-700 dark:text-rose-400" : "text-muted-foreground")}>
                         {h.delta > 0 ? "+" : ""}{fmtRp(h.delta || 0)}
                       </span>
                     ) },

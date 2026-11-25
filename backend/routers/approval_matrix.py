@@ -186,7 +186,7 @@ async def upsert_workflow(
               any_of_role_ids: [str]?,
               any_of_user_ids: [str]?,
               deadline_hours: int?,
-              escalation_to_perms: [str]?,
+              escalate_to_perms: [str]?,   # dibaca checker SLA (_approval/escalation.py)
             }
           ]
         }
@@ -351,7 +351,8 @@ async def preview_workflow(
         "outlet_id": sample.get("outlet_id"),
         "brand_id": sample.get("brand_id"),
     }
-    tier = approval_service._tier_for_amount(wf, amount, entity=fake_entity)
+    from services._approval.evaluator import _tier_for_amount  # DUP-01: not re-exported by the facade
+    tier = _tier_for_amount(wf, amount, entity=fake_entity)
     if not tier:
         return ok_envelope({"has_workflow": True, "tier": None, "amount": amount})
 

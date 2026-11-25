@@ -28,7 +28,6 @@ import {
   adminUsersTour,
   adminRolesTour,
   adminApprovalBuilderTour,
-  adminWorkflowsTour,
   adminBulkImportTour,
   adminNumberSeriesTour,
   adminTaxConfigTour,
@@ -61,7 +60,7 @@ import {
   procurementRFQTour,
   procurementConsolidationTour,
   procurementPOComparisonTour,
-  procurementPriceIntelligenceTour,
+  procurementSourcingTour,
   procurementVendorCatalogTour,
 } from './procurement';
 import {
@@ -107,7 +106,6 @@ import {
   inventoryAdjustmentTour,
   inventoryMovementsHubTour,
   inventoryLowStockTour,
-  inventoryMarketListTour,
   inventoryValuationTour,
 } from './inventory';
 import {
@@ -132,7 +130,6 @@ import {
   ownerCashPositionTour,
   ownerApprovalsTour,
   ownerBriefingTour,
-  ownerAIAssistantTour,
   ownerDigestSettingsTour,
 } from './owner';
 import {
@@ -149,7 +146,7 @@ import {
   hrFOCTour,
   hrLBFundTour,
 } from './hr';
-import { generalNavigationTour, approvalCenterTour, myApprovalsTour } from './shared';
+import { generalNavigationTour, approvalCenterTour, myApprovalsTour, aiAssistantTour } from './shared';
 
 export const tourRegistry = {
   // ==== Outlet ====
@@ -182,7 +179,6 @@ export const tourRegistry = {
   "admin-users": adminUsersTour,
   "admin-roles": adminRolesTour,
   "admin-approval-builder": adminApprovalBuilderTour,
-  "admin-workflows": adminWorkflowsTour,
   "admin-bulk-import": adminBulkImportTour,
   "admin-number-series": adminNumberSeriesTour,
   "admin-tax-config": adminTaxConfigTour,
@@ -216,7 +212,7 @@ export const tourRegistry = {
   "procurement-rfq": procurementRFQTour,
   "procurement-consolidation": procurementConsolidationTour,
   "procurement-po-comparison": procurementPOComparisonTour,
-  "procurement-price-intelligence": procurementPriceIntelligenceTour,
+  "procurement-sourcing": procurementSourcingTour,
   "procurement-vendor-catalog": procurementVendorCatalogTour,
 
   // ==== Finance ====
@@ -262,7 +258,6 @@ export const tourRegistry = {
   "inventory-adjustment": inventoryAdjustmentTour,
   "inventory-movements-hub": inventoryMovementsHubTour,
   "inventory-low-stock": inventoryLowStockTour,
-  "inventory-market-list": inventoryMarketListTour,
   "inventory-valuation": inventoryValuationTour,
 
   // ==== Executive ====
@@ -287,7 +282,6 @@ export const tourRegistry = {
   "owner-cash": ownerCashPositionTour,
   "owner-approvals": ownerApprovalsTour,
   "owner-briefing": ownerBriefingTour,
-  "owner-ai-assistant": ownerAIAssistantTour,
   "owner-digest-settings": ownerDigestSettingsTour,
 
   // ==== HR ====
@@ -308,6 +302,7 @@ export const tourRegistry = {
   "general-navigation": generalNavigationTour,
   "approval-center": approvalCenterTour,
   "my-approvals": myApprovalsTour,
+  "ai-assistant": aiAssistantTour,
 };
 
 
@@ -345,7 +340,6 @@ export const TOUR_VERSIONS = {
   "admin-users": 1,
   "admin-roles": 1,
   "admin-approval-builder": 1,
-  "admin-workflows": 1,
   "admin-bulk-import": 1,
   "admin-number-series": 1,
   "admin-tax-config": 1,
@@ -372,14 +366,14 @@ export const TOUR_VERSIONS = {
   "procurement-pr-list": 2,
   "procurement-po-list": 2,
   "procurement-gr": 2,
-  "procurement-vendor-compare": 1,
+  "procurement-vendor-compare": 2,
   "procurement-vendors": 1,
   "procurement-vendor-scorecard": 1,
   "procurement-vendor-recommend": 1,
   "procurement-rfq": 1,
   "procurement-consolidation": 1,
-  "procurement-po-comparison": 1,
-  "procurement-price-intelligence": 1,
+  "procurement-po-comparison": 2,
+  "procurement-sourcing": 1,
   "procurement-vendor-catalog": 1,
 
   // Finance
@@ -425,15 +419,14 @@ export const TOUR_VERSIONS = {
   "inventory-adjustment": 1,
   "inventory-movements-hub": 1,
   "inventory-low-stock": 1,
-  "inventory-market-list": 1,
   "inventory-valuation": 1,
 
   // Executive
   "executive-home": 1,
-  "executive-owner-home": 1,
+  "executive-owner-home": 2,
   "executive-outlet-drilldown": 1,
   "executive-brand-drilldown": 1,
-  "executive-ai-qa": 1,
+  "executive-ai-qa": 2,
   "executive-anomaly": 1,
   "executive-brand-mix": 1,
   "executive-profit-walk": 1,
@@ -450,12 +443,11 @@ export const TOUR_VERSIONS = {
   "owner-cash": 1,
   "owner-approvals": 1,
   "owner-briefing": 1,
-  "owner-ai-assistant": 1,
   "owner-digest-settings": 1,
 
   // HR
   "hr-home": 1,
-  "hr-payroll": 1,
+  "hr-payroll": 2,
   "hr-advances": 1,
   "hr-leaves": 1,
   "hr-job-applications": 1,
@@ -469,8 +461,8 @@ export const TOUR_VERSIONS = {
 
   // General
   "general-navigation": 1,
-  "approval-center": 1,
-  "my-approvals": 1,
+  "approval-center": 2,
+  "my-approvals": 2,
 };
 
 export function getTourVersion(tourId) {

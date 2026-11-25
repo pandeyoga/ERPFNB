@@ -30,7 +30,7 @@ export default function CMSNewsPreview({ open, onClose, form, brandName }) {
         {/* Preview banner */}
         <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-2 bg-amber-500 text-white text-sm font-medium">
           <span>👁 Preview — Tampilan publik (belum disimpan/dipublikasi)</span>
-          <Button variant="ghost" size="icon" aria-label="Tutup preview" className="h-7 w-7 text-white hover:bg-amber-600" onClick={onClose}>
+          <Button variant="ghost" size="icon-sm" aria-label="Tutup preview" className="text-white hover:bg-amber-600" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -56,9 +56,9 @@ export default function CMSNewsPreview({ open, onClose, form, brandName }) {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl md:text-3xl font-bold leading-snug">
+          <h2 className="text-2xl md:text-3xl font-bold leading-snug">
             {form.title || "Judul Artikel"}
-          </h1>
+          </h2>
 
           {/* Excerpt */}
           {form.excerpt && (
@@ -75,7 +75,7 @@ export default function CMSNewsPreview({ open, onClose, form, brandName }) {
           )}
 
           {/* Status note */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <div className="rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 p-3 text-sm text-amber-800 dark:text-amber-400">
             <strong>Status:</strong> {form.status === "published" ? "Published ✅" : `Draft — ${form.publish_at ? `Scheduled: ${new Date(form.publish_at).toLocaleString("id-ID")}` : "belum dijadwalkan"}`}
           </div>
         </div>

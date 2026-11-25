@@ -6,6 +6,8 @@ Provider-switched WhatsApp send. Supported providers (selected via
 - **fonnte** (default, easiest for Indonesia, single token)
 - **twilio** (Sandbox or paid, requires TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM)
 - **meta**  (Cloud API, requires META_WHATSAPP_TOKEN + META_PHONE_NUMBER_ID)
+- **evolution** (Evolution API self-hosted, gateway tidak resmi — juga dipakai bot Asisten AI dua arah;
+  requires EVOLUTION_API_URL + EVOLUTION_API_KEY + EVOLUTION_INSTANCE)
 - **disabled** (explicit no-op)
 
 If `WHATSAPP_PROVIDER` is unset OR the active provider's required keys are
@@ -75,6 +77,9 @@ async def is_configured() -> bool:
             await get_setting("META_WHATSAPP_TOKEN")
             and await get_setting("META_PHONE_NUMBER_ID")
         )
+    if provider == "evolution":
+        return bool(await get_setting("EVOLUTION_API_URL") and await get_setting("EVOLUTION_API_KEY")
+                    and await get_setting("EVOLUTION_INSTANCE"))
     return False
 
 
@@ -109,9 +114,11 @@ async def send_message(
     if not provider or provider == "disabled":
         return {"sent": False, "status": "not_configured", "provider": provider or "unset", "to": to}
 
-    normalized = _normalize_phone(to)
+    normalized = to if "@" in to else _normalize_phone(to)   # JID WhatsApp (…@s.whatsapp.net / …@lid) dikirim apa adanya
 
     try:
+        if provider == "evolution":
+            return await _send_evolution(normalized, text)
         if provider == "fonnte":
             return await _send_fonnte(normalized, text, media_url=media_url)
         if provider == "twilio":
@@ -239,3 +246,89 @@ async def _send_meta(to: str, text: str, *, media_url: Optional[str] = None) -> 
     except Exception as e:  # noqa: BLE001
         logger.exception("meta send failed")
         return {"sent": False, "status": "error", "provider": "meta", "error": str(e)[:300], "to": to}
+
+
+# ---------------------------------------------------------------------------
+# Evolution API v2 (https://doc.evolution-api.com/v2) — self-hosted, dipakai bot Asisten AI
+# ---------------------------------------------------------------------------
+async def _evo() -> tuple[str, str, str]:
+    url = ((await get_setting("EVOLUTION_API_URL")) or "").rstrip("/")
+    return url, (await get_setting("EVOLUTION_API_KEY")) or "", (await get_setting("EVOLUTION_INSTANCE")) or ""
+
+
+def _evo_number(to: str) -> str:
+    return to if "@" in to else to.lstrip("+")
+
+
+async def _evo_post(path: str, payload: dict, *, timeout: int = 30) -> tuple[int, Any]:
+    url, key, inst = await _evo()
+    if not (url and key and inst):
+        return 0, {"error": "not_configured"}
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as session:
+        async with session.post(f"{url}{path.format(instance=inst)}", json=payload, headers={"apikey": key}) as resp:
+            return resp.status, await resp.json(content_type=None)
+
+
+async def _send_evolution(to: str, text: str) -> dict:
+    try:
+        status, body = await _evo_post("/message/sendText/{instance}", {"number": _evo_number(to), "text": text})
+    except Exception as e:  # noqa: BLE001 — gateway mati/tidak terjangkau: cukup peringatan, bukan traceback
+        logger.warning("evolution send failed: %s", e)
+        return {"sent": False, "status": "error", "provider": "evolution", "error": str(e)[:300], "to": to}
+    if status == 0:
+        return {"sent": False, "status": "not_configured", "provider": "evolution", "to": to}
+    ok = status in (200, 201)
+    return {"sent": ok, "status": "ok" if ok else "evolution_error", "provider": "evolution",
+            "provider_message_id": ((body or {}).get("key") or {}).get("id") if ok and isinstance(body, dict) else None,
+            "error": None if ok else str(body)[:300], "to": to}
+
+
+async def send_media(to: str, data: bytes, *, filename: str, mimetype: str, caption: str = "") -> dict:
+    """Kirim file/gambar (laporan PDF/Excel, grafik PNG). Saat ini hanya provider evolution; lainnya → not_supported.
+    Tidak pernah melempar galat."""
+    import base64
+    provider = ((await get_setting("WHATSAPP_PROVIDER")) or "").strip().lower()
+    if provider != "evolution":
+        return {"sent": False, "status": "not_supported", "provider": provider or "unset", "to": to}
+    mediatype = "image" if mimetype.startswith("image/") else "document"
+    payload = {"number": _evo_number(to), "mediatype": mediatype, "mimetype": mimetype, "caption": caption[:1000],
+               "media": base64.b64encode(data).decode(), "fileName": filename}
+    try:
+        status, body = await _evo_post("/message/sendMedia/{instance}", payload, timeout=90)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("evolution sendMedia failed: %s", e)
+        return {"sent": False, "status": "error", "provider": "evolution", "error": str(e)[:300], "to": to}
+    ok = status in (200, 201)
+    return {"sent": ok, "status": "ok" if ok else "evolution_error", "provider": "evolution",
+            "error": None if ok else str(body)[:300], "to": to}
+
+
+async def fetch_media(message: dict) -> Optional[tuple[bytes, str]]:
+    """Ambil isi media pesan masuk (foto/dokumen) dari Evolution → (bytes, mimetype). None bila gagal."""
+    import base64
+    inner = message.get("message") or {}
+    b64 = inner.get("base64") or message.get("base64")        # bila webhook_base64 aktif di Evolution
+    mime = None
+    for k in ("imageMessage", "documentMessage", "documentWithCaptionMessage", "videoMessage", "audioMessage"):
+        node = inner.get(k) or {}
+        node = (node.get("message") or {}).get("documentMessage") or node if k == "documentWithCaptionMessage" else node
+        if node:
+            mime = node.get("mimetype")
+            break
+    if not b64:
+        try:
+            status, body = await _evo_post("/chat/getBase64FromMediaMessage/{instance}",
+                                           {"message": {"key": message.get("key") or {}}, "convertToMp4": False}, timeout=60)
+        except Exception:  # noqa: BLE001
+            logger.exception("evolution getBase64 failed")
+            return None
+        if status not in (200, 201) or not isinstance(body, dict):
+            return None
+        b64 = body.get("base64")
+        mime = body.get("mimetype") or mime
+    if not b64:
+        return None
+    try:
+        return base64.b64decode(b64.split(",", 1)[-1]), (mime or "application/octet-stream").split(";")[0]
+    except Exception:  # noqa: BLE001
+        return None

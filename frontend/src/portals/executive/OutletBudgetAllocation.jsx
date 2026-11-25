@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Calendar, ChevronLeft, ChevronRight, Save, Wallet,
+  ChevronLeft, ChevronRight, Save, Wallet,
   Building2, RefreshCw, Info, BarChart3, Bell, Layers, Combine,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -23,8 +23,13 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import { fmtRp } from "@/lib/format";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
+import { FormActionBar, useDirtyState, confirmDiscard } from "@/components/shared/UnsavedChanges";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import { cn } from "@/lib/utils";
+import { useScope } from "@/contexts/ScopeContext";
 import {
-  BUCKETS, BUCKET_COLORS,
+  BUCKETS,
   isoWeekKey, monthKey, isoDate,
   prevPeriod, nextPeriod, rangeForKey,
   fetchBudgets, saveBulkBudgets,
@@ -35,6 +40,7 @@ export default function OutletBudgetAllocation() {
   const [periodType, setPeriodType] = useState("monthly");
   const [periodKey, setPeriodKey] = useState(monthKey(new Date()));
   const [outlets, setOutlets] = useState([]);
+  const { contextOutlets } = useScope();
   // budgets[outletId] = { id?, outlet_id, brand_id, budget_mode, kdo_budget, fdo_budget, bdo_budget, combined_budget }
   const [budgets, setBudgets] = useState({});
   const [loading, setLoading] = useState(true);
@@ -49,14 +55,8 @@ export default function OutletBudgetAllocation() {
 
   // Load outlets master once
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get("/master/outlets");
-        setOutlets(res.data.data || []);
-      } catch (e) {
-        toast.error("Gagal memuat data outlet");
-      }
-    })();
+    // Baris matriks = toko dalam konteks TopNav (DESIGN_SYSTEM §10.7)
+    setOutlets(contextOutlets);
     (async () => {
       try {
         const res = await api.get("/outlet-budget/increase-requests", { params: { status: "pending" } });
@@ -193,6 +193,10 @@ export default function OutletBudgetAllocation() {
     }
   };
 
+  const { dirty } = useDirtyState(budgets, !loading);
+  // Ganti periode memuat ulang matriks → tanya dulu bila ada perubahan belum disimpan.
+  const guarded = (fn) => async (...args) => { if (await confirmDiscard()) fn(...args); };
+
   // Grand totals — combine per_bucket + combined contributions
   const totals = useMemo(() => {
     let kdo = 0, fdo = 0, bdo = 0, combined = 0, total = 0;
@@ -221,143 +225,115 @@ export default function OutletBudgetAllocation() {
   const [pStart, pEnd] = rangeForKey(periodType, periodKey) || [null, null];
 
   return (
-    <div className="space-y-6" data-testid="outlet-budget-allocation">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-aurora" />
-            Outlet Operational Budget
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Set budget per outlet — pilih mode <strong>Per-Bucket</strong> (KDO/FDO/BDO terpisah) atau{" "}
-            <strong>Gabungan</strong> (1 pool). Tidak ada carryover.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {pendingCount > 0 && (
+    <div className="space-y-3 lg:space-y-4" data-testid="outlet-budget-allocation">
+      <PageHeader
+        icon={Wallet}
+        title="Budget Allocation"
+        subtitle="Set budget operasional per outlet — mode Per-Bucket (KDO/FDO/BDO terpisah) atau Gabungan (1 pool). Tidak ada carryover."
+        className="mb-0 md:mb-0"
+        actions={
+          <>
+            {pendingCount > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/executive/budget-increase-requests")}
+                data-testid="btn-pending-requests"
+              >
+                <Bell className="text-amber-800 dark:text-amber-400" />
+                {pendingCount} permintaan menunggu
+              </Button>
+            )}
             <Button
-              variant="outline" size="sm"
-              onClick={() => navigate("/executive/budget-increase-requests")}
-              className="gap-2 relative"
-              data-testid="btn-pending-requests"
+              variant="outline"
+              onClick={() => navigate("/executive/budget-monitor")}
+              data-testid="btn-go-monitor"
             >
-              <Bell className="h-4 w-4 text-amber-500" />
-              {pendingCount} permintaan menunggu
+              <BarChart3 /> Budget Monitor
             </Button>
-          )}
+          </>
+        }
+      />
+
+      {/* Filter periode = baris polos tanpa kartu; simpan ada di bar bawah (DESIGN_SYSTEM §10.3–10.4). */}
+      <div className="flex flex-wrap items-center gap-2" data-testid="allocation-period-bar">
+        <Tabs value={periodType} onValueChange={guarded(setPeriodType)}>
+          <TabsList aria-label="Tipe periode">
+            <TabsTrigger value="weekly" data-testid="tab-weekly">Mingguan</TabsTrigger>
+            <TabsTrigger value="monthly" data-testid="tab-monthly">Bulanan</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-1">
           <Button
-            variant="outline" size="sm"
-            onClick={() => navigate("/executive/budget-monitor")}
-            className="gap-2"
-            data-testid="btn-go-monitor"
+            variant="ghost" size="icon"
+            onClick={guarded(() => setPeriodKey(prevPeriod(periodType, periodKey)))}
+            aria-label="Periode sebelumnya"
+            data-testid="btn-period-prev"
           >
-            <BarChart3 className="h-4 w-4" /> Monitor Budget
+            <ChevronLeft />
+          </Button>
+          <div className="min-w-[120px] text-center font-mono font-semibold text-sm" data-testid="current-period-key">
+            {periodKey}
+          </div>
+          <Button
+            variant="ghost" size="icon"
+            onClick={guarded(() => setPeriodKey(nextPeriod(periodType, periodKey)))}
+            aria-label="Periode berikutnya"
+            data-testid="btn-period-next"
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+        {pStart && pEnd && (
+          <Badge variant="outline" className="font-mono">
+            {isoDate(pStart)} → {isoDate(pEnd)}
+          </Badge>
+        )}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={copyFromPrev} data-testid="btn-copy-prev">
+            <RefreshCw /> Salin dari periode lalu
           </Button>
         </div>
       </div>
 
-      {/* Period control card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-4 w-4" /> Periode Budget
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center gap-3">
-          <Tabs value={periodType} onValueChange={setPeriodType}>
-            <TabsList>
-              <TabsTrigger value="weekly" data-testid="tab-weekly">Mingguan</TabsTrigger>
-              <TabsTrigger value="monthly" data-testid="tab-monthly">Bulanan</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost" size="icon"
-              onClick={() => setPeriodKey(prevPeriod(periodType, periodKey))}
-              aria-label="Periode sebelumnya"
-              data-testid="btn-period-prev"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="min-w-[180px] text-center font-mono font-semibold text-base" data-testid="current-period-key">
-              {periodKey}
-            </div>
-            <Button
-              variant="ghost" size="icon"
-              onClick={() => setPeriodKey(nextPeriod(periodType, periodKey))}
-              aria-label="Periode berikutnya"
-              data-testid="btn-period-next"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          {pStart && pEnd && (
-            <Badge variant="outline" className="font-mono">
-              {isoDate(pStart)} → {isoDate(pEnd)}
-            </Badge>
-          )}
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={copyFromPrev} className="gap-2" data-testid="btn-copy-prev">
-              <RefreshCw className="h-4 w-4" /> Salin dari periode lalu
-            </Button>
-            <Button onClick={save} disabled={saving} className="gap-2 pill-active" data-testid="btn-save">
-              <Save className="h-4 w-4" /> {saving ? "Menyimpan…" : "Simpan Budget"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Totals strip */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-testid="allocation-totals">
+        <CompactStatCard size="sm" label="Total KDO" value={fmtRp(totals.kdo)} icon={Layers} color="aurora-4" />
+        <CompactStatCard size="sm" label="Total FDO" value={fmtRp(totals.fdo)} icon={Layers} color="aurora-3" />
+        <CompactStatCard size="sm" label="Total BDO" value={fmtRp(totals.bdo)} icon={Layers} color="aurora-2" />
+        <CompactStatCard size="sm" label="Total Gabungan" value={fmtRp(totals.combined)} icon={Combine} color="aurora-1" />
+        <CompactStatCard size="sm" label="Grand Total" value={fmtRp(totals.total)} icon={Wallet} color="aurora-5"
+          sub={`${totals.perBucketCount} Per-Bucket · ${totals.combinedCount} Gabungan`} className="col-span-2 md:col-span-1" />
+      </div>
 
-      {/* Mode bulk-switch + Totals strip */}
+      {/* Matrix */}
       <Card>
-        <CardContent className="pt-5 pb-5 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div className="text-sm">
-              <div className="font-medium">Mode Budget</div>
-              <div className="text-xs text-muted-foreground">
-                Setiap outlet bisa pakai mode berbeda. Tombol di bawah ini untuk set semua sekaligus.
-              </div>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-muted-foreground" /> Matrix Allocation per Outlet
+              </CardTitle>
+              <CardDescription>
+                Pilih mode per baris. Pada mode Gabungan, semua KDO/FDO/BDO memakai satu pool yang sama.
+              </CardDescription>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 shrink-0">
               <Button
                 variant="outline" size="sm"
                 onClick={() => bulkSetMode("per_bucket")}
-                className="gap-1.5"
                 data-testid="btn-bulk-per-bucket"
               >
-                <Layers className="h-3.5 w-3.5" /> Set Semua → Per-Bucket
+                <Layers /> Semua → Per-Bucket
               </Button>
               <Button
                 variant="outline" size="sm"
                 onClick={() => bulkSetMode("combined")}
-                className="gap-1.5"
                 data-testid="btn-bulk-combined"
               >
-                <Combine className="h-3.5 w-3.5" /> Set Semua → Gabungan
+                <Combine /> Semua → Gabungan
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <SummaryCard label="Total KDO" value={totals.kdo} color={BUCKET_COLORS.kdo} />
-            <SummaryCard label="Total FDO" value={totals.fdo} color={BUCKET_COLORS.fdo} />
-            <SummaryCard label="Total BDO" value={totals.bdo} color={BUCKET_COLORS.bdo} />
-            <SummaryCard label="Total Gabungan" value={totals.combined} color="#0ea5e9" />
-            <SummaryCard label="Grand Total" value={totals.total} color="#f59e0b" emphasize />
-          </div>
-          <div className="text-[11px] text-muted-foreground">
-            {totals.perBucketCount} outlet pakai Per-Bucket · {totals.combinedCount} outlet pakai Gabungan
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Matrix */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" /> Matrix Allocation per Outlet
-          </CardTitle>
-          <CardDescription>
-            Pilih mode per baris. Pada mode Gabungan, semua KDO/FDO/BDO consume dari satu pool yang sama.
-          </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <div data-testid="budget-matrix">
@@ -377,33 +353,37 @@ export default function OutletBudgetAllocation() {
                   const b = budgets[ol.id] || {};
                   const isCombined = (b.budget_mode || "per_bucket") === "combined";
                   return (
-                    <div className="inline-flex rounded-lg border border-border overflow-hidden" data-testid={`mode-toggle-${ol.code}`}>
+                    <div className="inline-flex items-center gap-1 rounded-[calc(var(--radius)-2px)] border border-border/60 p-1" role="group" aria-label={`Mode budget ${ol.name}`} data-testid={`mode-toggle-${ol.code}`}>
                       <button
                         type="button"
                         onClick={() => setRowMode(ol.id, "per_bucket")}
-                        className={`px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          !isCombined ? "bg-foreground text-background" : "bg-transparent text-muted-foreground hover:bg-foreground/5"
-                        }`}
+                        aria-pressed={!isCombined}
+                        className={cn(
+                          "h-8 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
+                          !isCombined ? "pill-active" : "text-muted-foreground hover:bg-foreground/5"
+                        )}
                         data-testid={`mode-per-${ol.code}`}
                       >
-                        <Layers className="h-3 w-3 inline mr-1" />Per-Bucket
+                        Per-Bucket
                       </button>
                       <button
                         type="button"
                         onClick={() => setRowMode(ol.id, "combined")}
-                        className={`px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          isCombined ? "bg-foreground text-background" : "bg-transparent text-muted-foreground hover:bg-foreground/5"
-                        }`}
+                        aria-pressed={isCombined}
+                        className={cn(
+                          "h-8 px-2.5 rounded-[calc(var(--radius)-4px)] text-[13px] font-medium whitespace-nowrap transition-colors",
+                          isCombined ? "pill-active" : "text-muted-foreground hover:bg-foreground/5"
+                        )}
                         data-testid={`mode-combined-${ol.code}`}
                       >
-                        <Combine className="h-3 w-3 inline mr-1" />Gabungan
+                        Gabungan
                       </button>
                     </div>
                   );
                 } },
                 ...BUCKETS.map((bk) => ({
                   key: `bucket_${bk}`,
-                  label: <span className={bk === "kdo" ? "text-emerald-600" : bk === "fdo" ? "text-blue-600" : "text-purple-600"}>{bk.toUpperCase()}</span>,
+                  label: <span className={bk === "kdo" ? "text-emerald-700 dark:text-emerald-400" : bk === "fdo" ? "text-blue-700 dark:text-blue-400" : "text-purple-700 dark:text-purple-400"}>{bk.toUpperCase()}</span>,
                   render: (ol) => {
                     const b = budgets[ol.id] || {};
                     const isCombined = (b.budget_mode || "per_bucket") === "combined";
@@ -413,15 +393,16 @@ export default function OutletBudgetAllocation() {
                         value={isCombined ? "" : (b[`${bk}_budget`] ?? "")}
                         onChange={(e) => setCell(ol.id, `${bk}_budget`, e.target.value)}
                         placeholder={isCombined ? "—" : "0"}
-                        className={`h-9 text-right tabular-nums ${isCombined ? "opacity-40" : ""}`}
+                        className={cn("w-[132px] text-right tabular-nums", isCombined && "opacity-40")}
                         disabled={isCombined}
+                        aria-label={`Budget ${bk.toUpperCase()} ${ol.name}`}
                         data-testid={`cell-${ol.code}-${bk}`}
                         title={isCombined ? "Mode Gabungan — gunakan kolom Gabungan" : ""}
                       />
                     );
                   },
                 })),
-                { key: "combined", label: <span className="text-sky-600">Gabungan</span>, render: (ol) => {
+                { key: "combined", label: <span className="text-sky-700 dark:text-sky-400">Gabungan</span>, render: (ol) => {
                   const b = budgets[ol.id] || {};
                   const isCombined = (b.budget_mode || "per_bucket") === "combined";
                   return (
@@ -430,8 +411,9 @@ export default function OutletBudgetAllocation() {
                       value={isCombined ? (b.combined_budget ?? "") : ""}
                       onChange={(e) => setCell(ol.id, "combined_budget", e.target.value)}
                       placeholder={isCombined ? "0" : "—"}
-                      className={`h-9 text-right tabular-nums ${!isCombined ? "opacity-40" : ""}`}
+                      className={cn("w-[132px] text-right tabular-nums", !isCombined && "opacity-40")}
                       disabled={!isCombined}
+                      aria-label={`Budget gabungan ${ol.name}`}
                       data-testid={`cell-${ol.code}-combined`}
                       title={!isCombined ? "Mode Per-Bucket — gunakan kolom KDO/FDO/BDO" : ""}
                     />
@@ -443,12 +425,12 @@ export default function OutletBudgetAllocation() {
                   const rowTotal = isCombined
                     ? Number(b.combined_budget || 0)
                     : Number(b.kdo_budget || 0) + Number(b.fdo_budget || 0) + Number(b.bdo_budget || 0);
-                  return <span className="font-mono font-semibold">{fmtRp(rowTotal)}</span>;
+                  return <span className="font-semibold tabular-nums whitespace-nowrap">{fmtRp(rowTotal)}</span>;
                 } },
                 { key: "source", label: "Source", render: (ol) => {
                   const b = budgets[ol.id] || {};
                   return b.id ? (
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">Aktif</Badge>
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30">Aktif</Badge>
                   ) : (
                     <Badge variant="outline" className="bg-muted text-muted-foreground">Belum diset</Badge>
                   );
@@ -459,8 +441,14 @@ export default function OutletBudgetAllocation() {
         </CardContent>
       </Card>
 
+      <FormActionBar dirty={dirty} hint={`Periode ${periodKey} — budget berlaku langsung setelah disimpan.`}>
+        <Button onClick={save} disabled={saving} data-testid="btn-save">
+          <Save /> {saving ? "Menyimpan…" : "Simpan Budget"}
+        </Button>
+      </FormActionBar>
+
       <Card className="bg-aurora/5 border-aurora/20">
-        <CardContent className="pt-4 pb-4 flex items-start gap-3 text-sm">
+        <CardContent className="pt-4 flex items-start gap-3 text-sm">
           <Info className="h-4 w-4 text-aurora mt-0.5 shrink-0" />
           <div>
             <div className="font-medium">Catatan</div>
@@ -483,15 +471,4 @@ export default function OutletBudgetAllocation() {
   );
 }
 
-function SummaryCard({ label, value, color, emphasize }) {
-  return (
-    <Card className={emphasize ? "border-aurora/30 bg-aurora/5" : ""}>
-      <CardContent className="pt-4 pb-4">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-        <div className="text-xl font-bold tabular-nums mt-1" style={{ color }}>
-          {fmtRp(value)}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+

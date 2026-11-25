@@ -1,4 +1,9 @@
 {
+  "_status": "Blueprint historis (densitas & IA, Jun 2026). ACUAN TUNGGAL komponen/ukuran/warna: docs/DESIGN_SYSTEM.md — jika bertentangan, DESIGN_SYSTEM.md yang berlaku.",
+  "_superseded": [
+    "general_ui_ux_design_guidelines_appendix: anjuran generik (spasi 2–3x lebih lega, micro-animation di setiap interaksi, larangan ungu untuk chat AI, gradien 2–4 warna) TIDAK berlaku untuk ERP padat ini.",
+    "Ukuran final per komponen (button, input, tab, chip, pill, kartu, tabel) ada di docs/DESIGN_SYSTEM.md §5."
+  ],
   "meta": {
     "product": "Torado ERP",
     "goal": "Compact-density + information-architecture redesign blueprint (theme preserved)",
@@ -11,7 +16,6 @@
       "React + Tailwind + shadcn/ui (.jsx files)."
     ]
   },
-
   "design_personality": {
     "keywords": [
       "dense",
@@ -23,7 +27,6 @@
     ],
     "north_star": "More relevant information above-the-fold with fewer clicks and less scrolling, without sacrificing clarity or a11y."
   },
-
   "typography_scale": {
     "notes": [
       "Keep Inter everywhere. Do not introduce new font families.",
@@ -87,7 +90,6 @@
       }
     }
   },
-
   "spacing_density_scale": {
     "principles": [
       "Adopt a strict 4px grid (Tailwind spacing already maps well).",
@@ -135,7 +137,6 @@
       }
     }
   },
-
   "component_sizing_specs": {
     "unify_stat_card": {
       "goal": "Replace 5 inconsistent KPI/stat card variants with one unified CompactStatCard (sm/md).",
@@ -174,7 +175,6 @@
         "delta": "kpi-card-delta"
       }
     },
-
     "sidebar_compact": {
       "goals": [
         "Usable without collapsing.",
@@ -215,7 +215,6 @@
         "nav_section": "sidebar-nav-section"
       }
     },
-
     "search_bars": {
       "global_search": {
         "pattern": "Command palette (shadcn Command) triggered by Ctrl/⌘K; also a small search input in header for discoverability.",
@@ -246,7 +245,6 @@
         }
       }
     },
-
     "buttons": {
       "density": "Use shadcn Button with compact heights; avoid oversized CTAs in ERP.",
       "classes": {
@@ -258,9 +256,10 @@
         "primary": "primary-action-button",
         "secondary": "secondary-action-button"
       },
-      "components": ["/app/frontend/src/components/ui/button.jsx"]
+      "components": [
+        "/app/frontend/src/components/ui/button.jsx"
+      ]
     },
-
     "tabs_unification": {
       "goal": "Reduce 4 inconsistent tab styles to ONE: compact pill tabs (PortalSubNav style).",
       "classes": {
@@ -268,13 +267,14 @@
         "trigger": "h-8 px-2.5 text-[13px] rounded-[calc(var(--radius)-4px)] data-[state=active]:pill-active",
         "content": "mt-3"
       },
-      "components": ["/app/frontend/src/components/ui/tabs.jsx"],
+      "components": [
+        "/app/frontend/src/components/ui/tabs.jsx"
+      ],
       "data_testids": {
         "tabs": "page-tabs",
         "tab": "page-tab-trigger"
       }
     },
-
     "tables": {
       "goal": "Dense tables with predictable toolbars, sticky headers, and inline row actions.",
       "classes": {
@@ -300,7 +300,6 @@
       }
     }
   },
-
   "navigation_and_ia": {
     "ordering_principle": {
       "rule": "Order by frequency-of-use × criticality × workflow sequence (not org chart).",
@@ -343,10 +342,40 @@
         "Admin"
       ],
       "within_portal_sections": {
-        "Outlets": ["Daily Sales", "Daily Orders", "End-of-Day", "Petty Cash", "Budgets", "CRM/Reservations", "Outlet Inventory"],
-        "Procurement": ["PR", "PO", "GR", "Vendors", "Workboard", "Price Intelligence"],
-        "Finance": ["Payments Hub", "AP/AR", "Journals", "Bank Reconciliation", "Reports Hub", "Tax", "Period Closing", "Chart of Accounts"],
-        "Admin": ["Users & Roles", "Master Data Hub", "Configuration Hub", "Monitoring", "CMS"]
+        "Outlets": [
+          "Daily Sales",
+          "Daily Orders",
+          "End-of-Day",
+          "Petty Cash",
+          "Budgets",
+          "CRM/Reservations",
+          "Outlet Inventory"
+        ],
+        "Procurement": [
+          "PR",
+          "PO",
+          "GR",
+          "Vendors",
+          "Workboard",
+          "Price Intelligence"
+        ],
+        "Finance": [
+          "Payments Hub",
+          "AP/AR",
+          "Journals",
+          "Bank Reconciliation",
+          "Reports Hub",
+          "Tax",
+          "Period Closing",
+          "Chart of Accounts"
+        ],
+        "Admin": [
+          "Users & Roles",
+          "Master Data Hub",
+          "Configuration Hub",
+          "Monitoring",
+          "CMS"
+        ]
       }
     },
     "route_safety": {
@@ -358,7 +387,6 @@
       ]
     }
   },
-
   "discoverability": {
     "global_search": {
       "pattern": "Ctrl/⌘K command palette with grouped results by portal/module; show portal badge on each result.",
@@ -379,7 +407,10 @@
     "quick_actions": {
       "pattern": "Compact Quick Actions row (3–6) under KPI strip; actions are explicit buttons, not whole-card navigation.",
       "classes": "flex flex-wrap gap-2",
-      "components": ["/app/frontend/src/components/ui/button.jsx", "/app/frontend/src/components/ui/tooltip.jsx"],
+      "components": [
+        "/app/frontend/src/components/ui/button.jsx",
+        "/app/frontend/src/components/ui/tooltip.jsx"
+      ],
       "data_testids": {
         "quick_actions": "quick-actions",
         "quick_action": "quick-action"
@@ -392,14 +423,19 @@
         "Provide 'Clear filters' and 'Create new' actions.",
         "Keep empty state height compact; avoid large illustrations in ERP."
       ],
-      "components": ["/app/frontend/src/components/ui/button.jsx", "/app/frontend/src/components/ui/badge.jsx"]
+      "components": [
+        "/app/frontend/src/components/ui/button.jsx",
+        "/app/frontend/src/components/ui/badge.jsx"
+      ]
     },
     "nested_tab_discovery": {
       "pattern": "When consolidating pages into tabs: show tab count badges + remember last active tab per user.",
-      "components": ["/app/frontend/src/components/ui/tabs.jsx", "/app/frontend/src/components/ui/badge.jsx"]
+      "components": [
+        "/app/frontend/src/components/ui/tabs.jsx",
+        "/app/frontend/src/components/ui/badge.jsx"
+      ]
     }
   },
-
   "user_flow_guidance": {
     "above_the_fold_rules_1280x800": [
       "Always show: PageHeader (compact) + primary filters/date + primary table/KPI strip without scroll.",
@@ -413,10 +449,13 @@
         "collapsed": "h-11",
         "expanded_max": "max-h-[320px]"
       },
-      "components": ["/app/frontend/src/components/ui/collapsible.jsx", "/app/frontend/src/components/ui/drawer.jsx", "/app/frontend/src/components/ui/textarea.jsx"]
+      "components": [
+        "/app/frontend/src/components/ui/collapsible.jsx",
+        "/app/frontend/src/components/ui/drawer.jsx",
+        "/app/frontend/src/components/ui/textarea.jsx"
+      ]
     }
   },
-
   "archetype_wireframes_1280": {
     "1_kpi_dashboard": {
       "layout": [
@@ -433,7 +472,6 @@
         "right": "lg:col-span-4"
       }
     },
-
     "2_data_table_list": {
       "layout": [
         "[PageHeader: title + primary CTA + secondary actions]",
@@ -451,7 +489,6 @@
         "/app/frontend/src/components/ui/pagination.jsx"
       ]
     },
-
     "3_hub_with_tabs": {
       "layout": [
         "[PageHeader: hub title + global actions]",
@@ -460,7 +497,6 @@
       ],
       "rule": "This is the consolidation target: remove redundant sidebar items that are just tabs of this hub."
     },
-
     "4_kanban_workboard": {
       "layout": [
         "[PageHeader: board title + filters + view switch (Kanban/Table)]",
@@ -474,7 +510,6 @@
         "/app/frontend/src/components/ui/dropdown-menu.jsx"
       ]
     },
-
     "5_multi_step_workflow_wizard": {
       "layout": [
         "[PageHeader: workflow name + outlet/date context]",
@@ -489,7 +524,6 @@
       ],
       "sticky_footer_classes": "sticky bottom-0 glass-panel backdrop-blur border-t px-3 py-2 flex items-center justify-between"
     },
-
     "6_master_data_crud_config": {
       "layout": [
         "[PageHeader: entity name + Create button]",
@@ -502,7 +536,6 @@
         "/app/frontend/src/components/ui/dialog.jsx"
       ]
     },
-
     "7_ai_assistant_page": {
       "layout": [
         "[PageHeader: AI Q&A + context selector (portal/module/date)]",
@@ -515,7 +548,6 @@
         "/app/frontend/src/components/ui/scroll-area.jsx"
       ]
     },
-
     "8_detail_record_pages": {
       "layout": [
         "[Breadcrumbs]",
@@ -531,7 +563,6 @@
       ]
     }
   },
-
   "density_before_after": {
     "before": [
       "Oversized PageHeader (text-3xl, large icon, mb-6) consumes vertical space.",
@@ -546,7 +577,6 @@
       "Predictable archetype layouts: toolbar + tabs + dense table; AI assistant constrained to a panel/drawer."
     ]
   },
-
   "prioritized_action_list": {
     "p0_this_week": [
       "Unify typography scale + apply to PageHeader, Sidebar, Tabs.",
@@ -566,7 +596,6 @@
       "Add keyboard shortcuts cheat sheet in command palette."
     ]
   },
-
   "component_path": {
     "shadcn_ui": {
       "button": "/app/frontend/src/components/ui/button.jsx",
@@ -593,11 +622,9 @@
       "glass_utilities": "glass-card, glass-panel, glass-input, pill-active"
     }
   },
-
   "image_urls": {
     "note": "No new imagery required for ERP density redesign. Keep existing brand visuals."
   },
-
   "instructions_to_main_agent": [
     "Do NOT change colors, gradients, or font family. Only adjust sizing/spacing/IA.",
     "Implement typography + spacing tokens by updating shared components (PageHeader, Sidebar, KpiCard/StatCard, Tabs wrappers).",
@@ -608,6 +635,5 @@
     "Avoid making whole cards clickable when they contain other controls; use explicit primary action buttons/links.",
     "AI assistant on dashboards must be collapsed by default and constrained (<=320px height when expanded)."
   ],
-
   "general_ui_ux_design_guidelines_appendix": "<General UI UX Design Guidelines>  \n    - You must **not** apply universal transition. Eg: `transition: all`. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms\n    - You must **not** center align the app container, ie do not add `.App { text-align: center; }` in the css file. This disrupts the human natural reading flow of text\n   - NEVER: use AI assistant Emoji characters like`🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons. Always use **FontAwesome cdn** or **lucid-react** library already installed in the package.json\n\n **GRADIENT RESTRICTION RULE**\nNEVER use dark/saturated gradient combos (e.g., purple/pink) on any UI element.  Prohibited gradients: blue-500 to purple 600, purple 500 to pink-500, green-500 to blue-500, red to pink etc\nNEVER use dark gradients for logo, testimonial, footer etc\nNEVER let gradients cover more than 20% of the viewport.\nNEVER apply gradients to text-heavy content or reading areas.\nNEVER use gradients on small UI elements (<100px width).\nNEVER stack multiple gradient layers in the same viewport.\n\n**ENFORCEMENT RULE:**\n    • Id gradient area exceeds 20% of viewport OR affects readability, **THEN** use solid colors\n\n**How and where to use:**\n   • Section backgrounds (not content backgrounds)\n   • Hero section header content. Eg: dark to light to dark color\n   • Decorative overlays and accent elements only\n   • Hero section with 2-3 mild color\n   • Gradients creation can be done for any angle say horizontal, vertical or diagonal\n\n- For AI chat, voice application, **do not use purple color. Use color like light green, ocean blue, peach orange etc**\n\n</Font Guidelines>\n\n- Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead. \n   \n- Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.\n\n- Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.\n   \n- Before generating UI, infer the visual style from the problem statement (palette, contrast, mood, motion) and immediately instantiate it by setting global design tokens (primary, secondary/accent, background, foreground, ring, state colors), rather than relying on any library defaults. Don't make the background dark as a default step, always understand problem first and define colors accordingly\n    Eg: - if it implies playful/energetic, choose a colorful scheme\n           - if it implies monochrome/minimal, choose a black–white/neutral scheme\n\n**Component Reuse:**\n\t- Prioritize using pre-existing components from src/components/ui when applicable\n\t- Create new components that match the style and conventions of existing components when needed\n\t- Examine existing components to understand the project's component patterns before creating new ones\n\n**IMPORTANT**: Do not use HTML based component like dropdown, calendar, toast etc. You **MUST** always use `/app/frontend/src/components/ui/ ` only as a primary components as these are modern and stylish component\n\n**Best Practices:**\n\t- Use Shadcn/UI as the primary component library for consistency and accessibility\n\t- Import path: ./components/[component-name]\n\n**Export Conventions:**\n\t- Components MUST use named exports (export const ComponentName = ...)\n\t- Pages MUST use default exports (export default function PageName() {...})\n\n**Toasts:**\n  - Use `sonner` for toasts\"\n  - Sonner component are located in `/app/src/components/ui/sonner.tsx`\n\nUse 2–4 color gradients, subtle textures/noise overlays, or CSS-based noise to avoid flat visuals.\n</General UI UX Design Guidelines>"
 }

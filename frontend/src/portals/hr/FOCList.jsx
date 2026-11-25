@@ -15,6 +15,7 @@ import {
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import DataTable from "@/components/shared/DataTable";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { toast } from "sonner";
 import useOutletScope from "@/hooks/useOutletScope";
@@ -26,14 +27,15 @@ const FOC_LABELS = {
   other: "Other",
 };
 
-export default function FOCList() {
+/** @param {{ embedded?: boolean }} props — embedded=true saat dirender sebagai tab di CompensationHub (tanpa PageHeader). */
+export default function FOCList({ embedded = false }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [typeFilter, setTypeFilter] = useState("");
   const [outletFilter, setOutletFilter] = useState("");
   // Bug fix 2026-05-26: useOutletScope was imported but never invoked.
-  const { scopedOutlets: outlets } = useOutletScope();
+  const { scopedOutlets: outlets, allLabel } = useOutletScope();
 
   const outletMap = useMemo(
     () => Object.fromEntries((outlets || []).map(o => [o.id, o])),
@@ -58,46 +60,55 @@ export default function FOCList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [typeFilter, outletFilter]);
 
+  const createBtn = (
+    <Button onClick={() => setShowForm(true)} data-testid="hr-foc-create">
+      <Plus /> Catat FOC
+    </Button>
+  );
+
   return (
-    <div className="space-y-4" data-testid="hr-foc-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="hr-foc-page">
+      <PageHeader icon={Coffee} title="FOC"
+          subtitle="Pencatatan Free of Charge — staff meal, marketing & kompensasi pelanggan"
+          actions={createBtn} />
       <div className="flex items-center justify-between flex-wrap gap-3" data-testid="hr-foc-toolbar">
         <div className="flex items-center gap-2 flex-wrap" data-testid="hr-foc-filters">
           <Select value={typeFilter || "all"} onValueChange={(v) => setTypeFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="w-44" data-testid="hr-foc-filter-type"><SelectValue placeholder="Semua tipe" /></SelectTrigger>
+            <SelectTrigger className="w-44" aria-label="Filter tipe FOC" data-testid="hr-foc-filter-type"><SelectValue placeholder="Semua tipe" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua tipe</SelectItem>
               {Object.entries(FOC_LABELS).map(([k, l]) => (<SelectItem key={k} value={k}>{l}</SelectItem>))}
             </SelectContent>
           </Select>
+          {outlets.length > 1 && (
           <Select value={outletFilter || "all"} onValueChange={(v) => setOutletFilter(v === "all" ? "" : v)}>
-            <SelectTrigger className="w-48" data-testid="hr-foc-filter-outlet"><SelectValue placeholder="Semua outlet" /></SelectTrigger>
+            <SelectTrigger className="w-48" aria-label="Toko" data-testid="hr-foc-filter-outlet"><SelectValue placeholder={allLabel} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua outlet</SelectItem>
+              <SelectItem value="all">{allLabel}</SelectItem>
               {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
             </SelectContent>
           </Select>
+          )}
         </div>
-        <Button onClick={() => setShowForm(true)} className="rounded-full" data-testid="hr-foc-create">
-          <Plus className="h-4 w-4 mr-2" /> Catat FOC
-        </Button>
       </div>
 
       <div className="glass-card" data-testid="hr-foc-table-card">
         <DataTable
           columns={[
             { key: "doc_no", label: "Doc No", primary: true, sortable: true, render: it => <span className="font-mono text-xs" data-testid={`hr-foc-docno-${it.id}`}>{it.doc_no}</span> },
-            { key: "foc_date", label: "Date", sortable: true, render: it => fmtDate(it.foc_date) },
+            { key: "foc_date", label: "Tanggal", sortable: true, render: it => fmtDate(it.foc_date) },
             { key: "outlet", label: "Outlet", render: it => outletMap[it.outlet_id]?.name || it.outlet_id?.slice(0, 8) },
-            { key: "foc_type", label: "Type", sortable: true, render: it => <span className="text-xs" data-testid={`hr-foc-type-${it.id}`}>{FOC_LABELS[it.foc_type] || it.foc_type}</span> },
+            { key: "foc_type", label: "Tipe", sortable: true, render: it => <span className="text-xs" data-testid={`hr-foc-type-${it.id}`}>{FOC_LABELS[it.foc_type] || it.foc_type}</span> },
             { key: "beneficiary", label: "Beneficiary", render: it => <span className="text-xs text-muted-foreground">{it.beneficiary || "—"}</span> },
-            { key: "amount", label: "Amount", numeric: true, sortable: true, render: it => <span data-testid={`hr-foc-amount-${it.id}`}>{fmtRp(it.amount)}</span> },
+            { key: "amount", label: "Nominal", numeric: true, sortable: true, render: it => <span className="whitespace-nowrap" data-testid={`hr-foc-amount-${it.id}`}>{fmtRp(it.amount)}</span> },
             { key: "status", label: "Status", align: "center", sortable: true, render: it => <StatusPill status={it.status} /> },
           ]}
           rows={items}
           loading={loading}
           defaultSort={{ key: "foc_date", dir: "desc" }}
           empty={<EmptyState icon={Coffee} title="Belum ada FOC"
-            description="Catat staff meal, marketing, customer compensation, atau FOC lainnya." />}
+            description="Catat staff meal, marketing, customer compensation, atau FOC lainnya."
+            action={<Button size="sm" onClick={() => setShowForm(true)}><Plus /> Catat FOC</Button>} />}
           rowTestIdPrefix="hr-foc-row"
         />
       </div>
@@ -118,7 +129,7 @@ function FOCFormDialog({ open, onOpenChange, outlets, onCreated }) {
 
   const handleSubmit = async () => {
     if (!form.outlet_id || !Number(form.amount)) {
-      return toast.error("Pilih outlet & isi amount");
+      return toast.error("Pilih outlet & isi nominal");
     }
     setSubmitting(true);
     try {
@@ -151,15 +162,15 @@ function FOCFormDialog({ open, onOpenChange, outlets, onCreated }) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Tanggal</Label>
-              <Input type="date" value={form.foc_date}
+              <Label htmlFor="hr-foc-date">Tanggal *</Label>
+              <Input id="hr-foc-date" type="date" value={form.foc_date}
                       onChange={(e) => setForm(f => ({ ...f, foc_date: e.target.value }))}
                       data-testid="hr-foc-date" />
             </div>
             <div className="space-y-1">
-              <Label>Type</Label>
+              <Label htmlFor="hr-foc-type">Tipe *</Label>
               <Select value={form.foc_type} onValueChange={(v) => setForm(f => ({ ...f, foc_type: v }))}>
-                <SelectTrigger data-testid="hr-foc-type"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="hr-foc-type" data-testid="hr-foc-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(FOC_LABELS).map(([k, l]) => (<SelectItem key={k} value={k}>{l}</SelectItem>))}
                 </SelectContent>
@@ -167,9 +178,9 @@ function FOCFormDialog({ open, onOpenChange, outlets, onCreated }) {
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Outlet *</Label>
+            <Label htmlFor="hr-foc-outlet">Outlet *</Label>
             <Select value={form.outlet_id} onValueChange={(v) => setForm(f => ({ ...f, outlet_id: v }))}>
-              <SelectTrigger data-testid="hr-foc-outlet"><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
+              <SelectTrigger id="hr-foc-outlet" data-testid="hr-foc-outlet"><SelectValue placeholder="Pilih outlet" /></SelectTrigger>
               <SelectContent>
                 {outlets.map(o => (<SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>))}
               </SelectContent>
@@ -177,29 +188,29 @@ function FOCFormDialog({ open, onOpenChange, outlets, onCreated }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Amount (Rp) *</Label>
-              <Input type="number" min="0" step="1000" value={form.amount}
+              <Label htmlFor="hr-foc-amount">Nominal (Rp) *</Label>
+              <Input id="hr-foc-amount" type="number" min="0" step="1000" value={form.amount}
                       onChange={(e) => setForm(f => ({ ...f, amount: e.target.value }))}
                       data-testid="hr-foc-amount" />
             </div>
             <div className="space-y-1">
-              <Label>Beneficiary</Label>
-              <Input value={form.beneficiary}
+              <Label htmlFor="hr-foc-beneficiary">Penerima</Label>
+              <Input id="hr-foc-beneficiary" value={form.beneficiary}
                       onChange={(e) => setForm(f => ({ ...f, beneficiary: e.target.value }))}
                       placeholder="Karyawan / event / customer"
                       data-testid="hr-foc-beneficiary" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Notes</Label>
-            <Textarea rows={2} value={form.notes}
+            <Label htmlFor="hr-foc-notes">Catatan</Label>
+            <Textarea id="hr-foc-notes" rows={2} value={form.notes}
                        onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
                        data-testid="hr-foc-notes" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} data-testid="hr-foc-cancel">Batal</Button>
-          <Button onClick={handleSubmit} disabled={submitting} className="rounded-full"
+          <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="hr-foc-cancel">Batal</Button>
+          <Button onClick={handleSubmit} disabled={submitting}
                   data-testid="hr-foc-submit">
             {submitting ? "Menyimpan…" : "Simpan & Post"}
           </Button>

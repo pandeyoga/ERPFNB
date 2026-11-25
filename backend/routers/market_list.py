@@ -2,7 +2,7 @@
 from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
-from core.exceptions import ok_envelope, ValidationError as AuroraException
+from core.exceptions import ok_envelope, ValidationError as AuroraException, require_fields
 from core.security import require_perm
 from services import market_list_service, vendor_item_service
 
@@ -29,6 +29,7 @@ async def create_quarter(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "year", "quarter")
     return ok_envelope(await market_list_service.create_quarter(
         year=int(payload["year"]),
         quarter=int(payload["quarter"]),
@@ -82,9 +83,12 @@ async def get_item_prices(
 async def get_item_ref_price(
     item_id: str,
     quarter_id: Optional[str] = None,
+    unit: Optional[str] = None,
+    outlet_id: Optional[str] = None,
     user: dict = Depends(require_perm("inventory.view")),
 ):
-    return ok_envelope(await market_list_service.get_ref_price(item_id, quarter_id=quarter_id))
+    return ok_envelope(await market_list_service.get_ref_price(item_id, quarter_id=quarter_id, unit=unit,
+                                                               outlet_id=outlet_id))
 
 
 @router.get("/items/{item_id}/vendors")
@@ -107,6 +111,7 @@ async def approve_pending_item(
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
     """Approve a pending_review item: assign category + optionally set ref price."""
+    require_fields(payload, "category_id")
     return ok_envelope(await market_list_service.approve_pending_item(
         item_id=item_id,
         category_id=payload["category_id"],
@@ -164,6 +169,7 @@ async def set_ref_price(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "quarter_id", "item_id", "ref_price")
     return ok_envelope(await market_list_service.set_ref_price(
         quarter_id=payload["quarter_id"],
         item_id=payload["item_id"],
@@ -179,6 +185,7 @@ async def bulk_set_ref_prices(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "quarter_id")
     return ok_envelope(await market_list_service.bulk_set_ref_prices(
         quarter_id=payload["quarter_id"],
         prices=payload.get("prices", []),
@@ -190,10 +197,11 @@ async def bulk_set_ref_prices(
 async def get_ref_prices_bulk(
     item_ids: str = Query(..., description="Comma-separated item IDs"),
     quarter_id: Optional[str] = None,
+    outlet_id: Optional[str] = None,
     user: dict = Depends(require_perm("inventory.view")),
 ):
     ids = [i.strip() for i in item_ids.split(",") if i.strip()]
-    return ok_envelope(await market_list_service.get_ref_prices_bulk(ids, quarter_id=quarter_id))
+    return ok_envelope(await market_list_service.get_ref_prices_bulk(ids, quarter_id=quarter_id, outlet_id=outlet_id))
 
 
 # =================== EXPORT ===================
@@ -209,19 +217,3 @@ async def export_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename=market_list_{year}.xlsx"},
     )
-
-
-# =================== PRICE INTELLIGENCE ===================
-
-@router.get("/intelligence")
-async def price_intelligence(
-    quarter_id: Optional[str] = None,
-    category_id: Optional[str] = None,
-    top_n: int = Query(20, ge=5, le=100),
-    user: dict = Depends(require_perm("inventory.view")),
-):
-    return ok_envelope(await vendor_item_service.get_price_intelligence(
-        quarter_id=quarter_id,
-        category_id=category_id,
-        top_n=top_n,
-    ))

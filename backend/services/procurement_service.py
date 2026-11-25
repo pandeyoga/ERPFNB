@@ -1,4 +1,5 @@
 """Procurement portal services: PR, PO, GR."""
+import re
 import uuid
 from core.clock import period_now as _biz_period, today_str as _biz_today  # SSOT-11: WIB business date
 from datetime import datetime, timezone
@@ -9,6 +10,18 @@ from core.db import get_db, serialize
 from core.exceptions import NotFoundError, ValidationError, AuroraException
 from services import approval_service, journal_service, outlet_budget_service
 from utils.number_series import next_doc_no
+
+# Alasan barang ditolak saat GR (Tahap 2 sourcing: kualitas terukur). Label tampil di UI (GRForm / GRList).
+GR_REJECT_REASONS: dict[str, str] = {
+    "busuk": "Busuk / tidak segar",
+    "rusak": "Rusak / cacat",
+    "spesifikasi": "Tidak sesuai spesifikasi",
+    "kedaluwarsa": "Kedaluwarsa / tanggal pendek",
+    "suhu": "Suhu tidak sesuai",
+    "kemasan": "Kemasan rusak",
+    "salah_item": "Salah item",
+    "lainnya": "Lainnya",
+}
 
 
 def _now() -> str:
@@ -171,11 +184,22 @@ async def create_po(payload: dict, *, user: dict) -> dict:
     lines = []
     subtotal = 0.0
     tax_total = 0.0
-    for ln in payload["lines"]:
+    for i, ln in enumerate(payload["lines"]):
         qty = float(ln.get("qty", 0) or 0)
         unit_cost = float(ln.get("unit_cost", 0) or 0)
         discount = float(ln.get("discount", 0) or 0)
         tax_rate = float(ln.get("tax_rate", 0) or 0)
+        # FIN-14: PO lines must be economically valid (qty>0, no negative price/discount, sane tax)
+        if qty <= 0:
+            raise ValidationError(f"Baris {i + 1}: qty harus > 0", field=f"lines[{i}].qty")
+        if unit_cost < 0 or discount < 0:
+            raise ValidationError(f"Baris {i + 1}: harga/diskon tidak boleh negatif", field=f"lines[{i}]")
+        if discount > qty * unit_cost:
+            raise ValidationError(f"Baris {i + 1}: diskon melebihi nilai baris", field=f"lines[{i}].discount")
+        if tax_rate > 1:
+            tax_rate = tax_rate / 100  # "11" (percent) → 0.11 fraction, like payments do
+        if not 0 <= tax_rate <= 0.5:
+            raise ValidationError(f"Baris {i + 1}: tarif pajak tidak wajar", field=f"lines[{i}].tax_rate")
         line_subtotal = qty * unit_cost - discount
         line_tax = line_subtotal * tax_rate
         total = line_subtotal + line_tax
@@ -313,7 +337,8 @@ async def cancel_po(id_: str, *, user: dict, reason: str) -> dict:
 
 async def list_grs(
     *, status: Optional[str] = None, outlet_id: Optional[str] = None,
-    outlet_ids: Optional[list[str]] = None,
+    outlet_ids: Optional[list[str]] = None, vendor_id: Optional[str] = None,
+    date_from: Optional[str] = None, date_to: Optional[str] = None, search: Optional[str] = None,
     page: int = 1, per_page: int = 20,
 ):
     db = get_db()
@@ -324,6 +349,13 @@ async def list_grs(
         q["outlet_id"] = outlet_id
     elif outlet_ids is not None:
         q["outlet_id"] = {"$in": outlet_ids}
+    if vendor_id:
+        q["vendor_id"] = vendor_id
+    if date_from or date_to:
+        q["receive_date"] = {**({"$gte": date_from} if date_from else {}), **({"$lte": date_to} if date_to else {})}
+    if search:
+        rx = {"$regex": re.escape(search), "$options": "i"}
+        q["$or"] = [{"doc_no": rx}, {"invoice_no": rx}]
     skip = (page - 1) * per_page
     items = await db.goods_receipts.find(q).sort([("created_at", -1)]).skip(skip).limit(per_page).to_list(per_page)
     total = await db.goods_receipts.count_documents(q)
@@ -331,6 +363,16 @@ async def list_grs(
 
 
 async def post_gr(payload: dict, *, user: dict) -> dict:
+    """FIN-02: serialise receipts against the same PO — the remaining-qty check below is a
+    read-then-insert, so parallel GRs for one PO used to receive the full quantity N times."""
+    if payload.get("po_id"):
+        from services.inventory_service import stock_lock
+        async with stock_lock(get_db(), "po", [payload["po_id"]]):
+            return await _post_gr_unlocked(payload, user=user)
+    return await _post_gr_unlocked(payload, user=user)
+
+
+async def _post_gr_unlocked(payload: dict, *, user: dict) -> dict:
     """Post goods receipt:
     - Create GR doc with status=posted
     - Create inventory_movements (receipt) per line
@@ -348,6 +390,13 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
     receive_date = payload.get("receive_date") or _biz_today()
     outlet_id = payload["outlet_id"]
     vendor_id = payload["vendor_id"]
+    # FIN-14: vendor must exist; one vendor invoice can only be received once (duplicate AP)
+    if not await db.vendors.find_one({"id": vendor_id, "deleted_at": None}, {"_id": 1}):
+        raise ValidationError("Vendor tidak ditemukan", field="vendor_id")
+    inv_no = (payload.get("invoice_no") or "").strip()
+    if inv_no and await db.goods_receipts.find_one(
+            {"vendor_id": vendor_id, "invoice_no": inv_no, "status": "posted", "deleted_at": None}, {"_id": 1}):
+        raise ValidationError(f"Invoice vendor {inv_no} sudah pernah diterima (GR lain)", field="invoice_no")
 
     # Phase 3 hardening — block if target period locked
     from services._period import derive_period_from_date, assert_period_unlocked
@@ -393,8 +442,15 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
     header_tax_rate = float(payload.get("tax_rate", 0) or 0)
     for ln in payload["lines"]:
         qty = float(ln.get("qty_received", 0) or 0)
-        if qty <= 0:
+        rejected = float(ln.get("qty_rejected", 0) or 0)
+        if qty < 0 or rejected < 0:
+            raise ValidationError("Qty tidak boleh negatif", field="qty_received")
+        if qty <= 0 and rejected <= 0:
             raise ValidationError("qty_received harus > 0", field="qty_received")
+        reject_reason = (ln.get("reject_reason") or "").strip() or None
+        if rejected > 0 and reject_reason not in GR_REJECT_REASONS:
+            raise ValidationError(f"Pilih alasan barang ditolak untuk {ln.get('item_name') or 'item'}",
+                                  field="reject_reason")
         idx, pl = _po_line_for(ln)
         if pl is not None:
             ordered = float(pl.get("qty", 0) or 0)
@@ -433,6 +489,12 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
             "tax_amount": round(line_tax, 2),
             "total_cost": round(line_net, 2),
             "condition_note": ln.get("condition_note"),
+            # Kualitas: qty ditolak di tempat (tidak masuk stok/AP, tidak mengurangi sisa PO) + alasan + foto bukti.
+            # `inspected` = form mengirim data kualitas → baris ini dihitung di skor kualitas supplier.
+            "inspected": "qty_rejected" in ln,
+            "qty_rejected": rejected,
+            "reject_reason": reject_reason if rejected > 0 else None,
+            "photo_id": (ln.get("photo_id") or None) if rejected > 0 else None,
         })
         subtotal += line_net
         tax_total += line_tax
@@ -468,6 +530,13 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
         "created_by": user["id"],
     }
 
+    if not any(ln["qty_received"] > 0 for ln in lines):
+        # Seluruh kiriman ditolak: dicatat untuk skor kualitas, tanpa stok, jurnal, maupun hutang; sisa PO tetap terbuka.
+        gr_doc.update({"status": "rejected", "posted_at": None})
+        await db.goods_receipts.insert_one(gr_doc)
+        await audit_log(user_id=user["id"], entity_type="goods_receipt", entity_id=gr_id, action="reject")
+        return serialize(await db.goods_receipts.find_one({"id": gr_id}))
+
     # A5: JE first (fails → nothing written); subsequent writes are compensated on failure
     je = await journal_service.post_for_gr(gr_doc, user_id=user["id"])
     ap_id = str(uuid.uuid4())
@@ -475,6 +544,8 @@ async def post_gr(payload: dict, *, user: dict) -> dict:
     try:
         movements = []
         for ln in lines:
+            if ln["qty_received"] <= 0:
+                continue  # baris ditolak seluruhnya: tidak ada pergerakan stok
             mov_id = str(uuid.uuid4())
             movements.append({
                 "id": mov_id,

@@ -2,22 +2,23 @@
  * BrandInstagramPosts.jsx — Manage Instagram posts per brand
  * Used as a sub-tab inside CMSBrands.jsx
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Instagram, Plus, Trash2, Pin, PinOff, Eye, EyeOff,
   ExternalLink, Heart, MessageCircle, Loader2, AlertTriangle,
-  CheckCircle, X, Image as ImageIcon, RefreshCw,
+  X, RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import api from "@/lib/api";
 
 const POST_TYPE_OPTIONS = [
-  { value: "photo", label: "📷 Photo" },
-  { value: "video", label: "🎥 Video" },
-  { value: "reel", label: "🎬 Reel" },
-  { value: "carousel", label: "🖼️ Carousel" },
+  { value: "photo", label: "Photo" },
+  { value: "video", label: "Video" },
+  { value: "reel", label: "Reel" },
+  { value: "carousel", label: "Carousel" },
 ];
 
 const EMPTY_FORM = {
@@ -75,7 +76,7 @@ export default function BrandInstagramPosts({ brand }) {
       setImgPreview("");
       load();
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Gagal menyimpan");
+      toast.error((e.response?.data?.errors?.[0]?.message || e.response?.data?.detail) || "Gagal menyimpan");
     } finally {
       setSaving(false);
     }
@@ -124,37 +125,30 @@ export default function BrandInstagramPosts({ brand }) {
   return (
     <div className="space-y-4" data-testid="brand-instagram-mgmt">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Instagram className="w-5 h-5 text-pink-500" />
-          <div>
-            <h3 className="font-semibold text-sm text-gray-900">
-              Instagram Posts — {brand.instagram || `@${brand.code}`}
-            </h3>
-            <p className="text-xs text-gray-500">{posts.length} posts terdaftar</p>
-          </div>
-        </div>
+      {/* Toolbar (judul panel sudah di header slide-over CMSBrands) */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">{posts.length} posts terdaftar</p>
         <div className="flex gap-2">
-          <button onClick={load} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+          <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="ig-posts-refresh">
             <RefreshCw className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => { setForm(EMPTY_FORM); setImgPreview(""); setFormOpen(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            data-testid="ig-posts-add"
           >
             <Plus className="w-4 h-4" /> Tambah Post
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Instagram branding hint */}
       <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-pink-100 rounded-xl">
-        <Instagram className="w-4 h-4 text-pink-500 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-gray-600">
+        <Instagram className="w-4 h-4 text-pink-700 dark:text-pink-400 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-muted-foreground">
           Tambahkan post Instagram brand ini secara manual dengan URL gambar dan caption. Posts akan tampil di halaman brand publik sebagai Instagram Feed section.
           {brand.instagram && (
             <a href={`https://instagram.com/${brand.instagram?.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
-               className="ml-1 text-pink-500 hover:underline inline-flex items-center gap-1">
+               className="ml-1 text-pink-700 dark:text-pink-400 hover:underline inline-flex items-center gap-1">
               Lihat profil {brand.instagram} <ExternalLink className="w-3 h-3" />
             </a>
           )}
@@ -164,16 +158,16 @@ export default function BrandInstagramPosts({ brand }) {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && posts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-200 rounded-xl">
-          <Instagram className="w-10 h-10 text-gray-300 mb-3" />
-          <p className="text-sm font-medium text-gray-500">Belum ada IG posts untuk {brand.name}</p>
-          <p className="text-xs text-gray-400 mt-1">Klik "Tambah Post" untuk menambahkan</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-xl">
+          <Instagram className="w-10 h-10 text-muted-foreground mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">Belum ada IG posts untuk {brand.name}</p>
+          <p className="text-xs text-muted-foreground mt-1">Klik "Tambah Post" untuk menambahkan</p>
         </div>
       )}
 
@@ -186,11 +180,11 @@ export default function BrandInstagramPosts({ brand }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className={`relative rounded-xl overflow-hidden border-2 group ${
-                post.active !== false ? "border-transparent" : "border-gray-200 opacity-50"
+                post.active !== false ? "border-transparent" : "border-border opacity-50"
               }`}
             >
               {/* Image */}
-              <div className="relative aspect-square bg-gray-100">
+              <div className="relative aspect-square bg-muted/40">
                 <img
                   src={post.thumbnail_url || post.image_url}
                   alt={post.caption?.slice(0, 30)}
@@ -203,12 +197,12 @@ export default function BrandInstagramPosts({ brand }) {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1">
                   {post.is_pinned && (
-                    <span className="bg-yellow-400 text-yellow-900 text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                    <span className="bg-yellow-400 text-yellow-900 dark:text-yellow-400 text-xs px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
                       <Pin className="w-2.5 h-2.5" /> PIN
                     </span>
                   )}
                   {post.active === false && (
-                    <span className="bg-gray-800/80 text-white text-[9px] px-1.5 py-0.5 rounded-full">Hidden</span>
+                    <span className="bg-gray-800/80 text-white text-xs px-1.5 py-0.5 rounded-full">Hidden</span>
                   )}
                 </div>
 
@@ -217,9 +211,10 @@ export default function BrandInstagramPosts({ brand }) {
                   <button
                     onClick={() => handlePin(post.id)}
                     className={`p-2 rounded-full transition-colors ${
-                      post.is_pinned ? "bg-yellow-400 text-yellow-900" : "bg-white/20 text-white hover:bg-white/40"
+                      post.is_pinned ? "bg-yellow-400 text-yellow-900 dark:text-yellow-400" : "bg-white/20 text-white hover:bg-white/40"
                     }`}
                     title={post.is_pinned ? "Unpin" : "Pin post"}
+                    aria-label={post.is_pinned ? "Lepas pin post" : "Pin post"}
                   >
                     {post.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
                   </button>
@@ -227,6 +222,7 @@ export default function BrandInstagramPosts({ brand }) {
                     onClick={() => handleToggleActive(post)}
                     className="p-2 bg-white/20 text-white hover:bg-white/40 rounded-full transition-colors"
                     title={post.active !== false ? "Sembunyikan" : "Tampilkan"}
+                    aria-label={post.active !== false ? "Sembunyikan post" : "Tampilkan post"}
                   >
                     {post.active !== false ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
@@ -234,6 +230,7 @@ export default function BrandInstagramPosts({ brand }) {
                     onClick={() => setDeleteId(post.id)}
                     className="p-2 bg-red-500/80 text-white hover:bg-red-600 rounded-full transition-colors"
                     title="Hapus"
+                    aria-label="Hapus post"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -241,16 +238,16 @@ export default function BrandInstagramPosts({ brand }) {
               </div>
 
               {/* Caption + stats */}
-              <div className="p-2 bg-white">
-                <p className="text-xs text-gray-700 line-clamp-2 leading-relaxed">{post.caption}</p>
+              <div className="p-2 bg-background">
+                <p className="text-xs text-foreground line-clamp-2 leading-relaxed">{post.caption}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Heart className="w-3 h-3" /> {post.likes?.toLocaleString("id-ID")}
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <MessageCircle className="w-3 h-3" /> {post.comments?.toLocaleString("id-ID")}
                   </span>
-                  <span className="text-[10px] text-gray-300 ml-auto">{fmtDate(post.posted_at)}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{fmtDate(post.posted_at)}</span>
                 </div>
               </div>
             </motion.div>
@@ -272,25 +269,26 @@ export default function BrandInstagramPosts({ brand }) {
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 10 }}
-              className="w-full max-w-2xl bg-white rounded-2xl overflow-hidden shadow-2xl"
+              className="w-full max-w-2xl bg-background rounded-2xl overflow-hidden shadow-2xl"
+              role="dialog" aria-modal="true"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-purple-50 to-pink-50">
+              <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10">
                 <div className="flex items-center gap-2">
-                  <Instagram className="w-5 h-5 text-pink-500" />
-                  <h3 className="font-semibold text-gray-900">Tambah Instagram Post — {brand.name}</h3>
+                  <Instagram className="w-5 h-5 text-pink-700 dark:text-pink-400" />
+                  <h3 className="font-semibold text-foreground">Tambah Instagram Post — {brand.name}</h3>
                 </div>
-                <button onClick={() => setFormOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                <Button variant="ghost" size="icon-sm" onClick={() => setFormOpen(false)} aria-label="Tutup">
                   <X className="w-5 h-5" />
-                </button>
+                </Button>
               </div>
 
-              <div className="p-5 grid sm:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+              <div className="p-4 grid sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto">
                 {/* Image preview */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">URL Gambar Utama *</label>
+                  <label htmlFor="ig-post-url-gambar-utama" className="block text-xs font-medium text-foreground mb-1.5">URL Gambar Utama *</label>
                   <div className="flex gap-2">
-                    <input
+                    <input id="ig-post-url-gambar-utama"
                       type="url"
                       value={form.image_url}
                       onChange={(e) => setForm(f => ({ ...f, image_url: e.target.value }))}
@@ -308,8 +306,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">URL Thumbnail (opsional)</label>
-                  <input
+                  <label htmlFor="ig-post-url-thumbnail" className="block text-xs font-medium text-foreground mb-1.5">URL Thumbnail (opsional)</label>
+                  <input id="ig-post-url-thumbnail"
                     type="url"
                     value={form.thumbnail_url}
                     onChange={(e) => setForm(f => ({ ...f, thumbnail_url: e.target.value }))}
@@ -319,8 +317,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">URL Post Instagram (opsional)</label>
-                  <input
+                  <label htmlFor="ig-post-url-post-instagram" className="block text-xs font-medium text-foreground mb-1.5">URL Post Instagram (opsional)</label>
+                  <input id="ig-post-url-post-instagram"
                     type="url"
                     value={form.post_url}
                     onChange={(e) => setForm(f => ({ ...f, post_url: e.target.value }))}
@@ -330,8 +328,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Caption *</label>
-                  <textarea
+                  <label htmlFor="ig-post-caption" className="block text-xs font-medium text-foreground mb-1.5">Caption *</label>
+                  <textarea id="ig-post-caption"
                     value={form.caption}
                     onChange={(e) => setForm(f => ({ ...f, caption: e.target.value }))}
                     rows={4}
@@ -341,8 +339,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Jumlah Likes</label>
-                  <input
+                  <label htmlFor="ig-post-jumlah-likes" className="block text-xs font-medium text-foreground mb-1.5">Jumlah Likes</label>
+                  <input id="ig-post-jumlah-likes"
                     type="number"
                     value={form.likes}
                     onChange={(e) => setForm(f => ({ ...f, likes: e.target.value }))}
@@ -352,8 +350,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Jumlah Komentar</label>
-                  <input
+                  <label htmlFor="ig-post-jumlah-komentar" className="block text-xs font-medium text-foreground mb-1.5">Jumlah Komentar</label>
+                  <input id="ig-post-jumlah-komentar"
                     type="number"
                     value={form.comments}
                     onChange={(e) => setForm(f => ({ ...f, comments: e.target.value }))}
@@ -363,7 +361,7 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Tipe Post</label>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">Tipe Post</label>
                   <SimpleSelect
                     value={form.post_type}
                     onValueChange={(v) => setForm(f => ({ ...f, post_type: v }))}
@@ -374,8 +372,8 @@ export default function BrandInstagramPosts({ brand }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Tanggal Post</label>
-                  <input
+                  <label htmlFor="ig-post-tanggal-post" className="block text-xs font-medium text-foreground mb-1.5">Tanggal Post</label>
+                  <input id="ig-post-tanggal-post"
                     type="date"
                     value={form.posted_at ? form.posted_at.slice(0, 10) : ""}
                     onChange={(e) => setForm(f => ({ ...f, posted_at: e.target.value ? new Date(e.target.value).toISOString() : "" }))}
@@ -391,22 +389,18 @@ export default function BrandInstagramPosts({ brand }) {
                       onChange={(e) => setForm(f => ({ ...f, is_pinned: e.target.checked }))}
                       className="rounded"
                     />
-                    <span className="text-sm text-gray-700">📌 Pin post ini (tampil di urutan teratas)</span>
+                    <span className="text-sm text-foreground">Pin post ini (tampil di urutan teratas)</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex gap-3 p-5 border-t bg-gray-50">
-                <button onClick={() => setFormOpen(false)} className="flex-1 py-2.5 border rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+              <div className="flex justify-end gap-2 p-4 border-t">
+                <Button variant="outline" onClick={() => setFormOpen(false)}>
                   Batal
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
-                >
+                </Button>
+                <Button onClick={handleSave} disabled={saving} data-testid="ig-post-save">
                   {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Menyimpan...</> : <><Plus className="w-4 h-4" /> Tambah Post</>}
-                </button>
+                </Button>
               </div>
             </motion.div>
           </motion.div>
@@ -425,27 +419,29 @@ export default function BrandInstagramPosts({ brand }) {
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              className="bg-background rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+              role="alertdialog" aria-modal="true"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Hapus Post?</h3>
-                  <p className="text-xs text-gray-500">Post akan disembunyikan dari website</p>
+                  <h3 className="font-semibold text-foreground">Hapus Post?</h3>
+                  <p className="text-xs text-muted-foreground">Post akan disembunyikan dari website</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <button onClick={() => setDeleteId(null)} className="flex-1 py-2 border rounded-lg text-sm hover:bg-gray-50 transition-colors">Batal</button>
-                <button
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDeleteId(null)}>Batal</Button>
+                <Button
+                  variant="destructive"
                   onClick={() => handleDelete(deleteId)}
                   disabled={deleting}
-                  className="flex-1 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-1"
+                  data-testid="ig-post-delete-confirm"
                 >
                   {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   Hapus
-                </button>
+                </Button>
               </div>
             </motion.div>
           </motion.div>

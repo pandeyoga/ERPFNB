@@ -29,8 +29,8 @@ const ownerHomeTour = {
     },
     {
       target: "[data-testid='owner-bottom-row']",
-      title: "Full Analytics",
-      content: "Klik **Full Analytics** untuk masuk ke Executive Dashboard dengan view lebih lengkap dan filter yang lebih detail.",
+      title: "Sales Analytics",
+      content: "Klik **Sales Analytics** untuk analisis lengkap dengan filter periode, brand, dan outlet.",
       placement: "top",
       variant: "tip",
     },
@@ -88,7 +88,7 @@ const ownerApprovalsTour = {
     {
       target: "[data-testid='owner-mid-row']",
       title: "Approve & Reject",
-      content: "Klik **Approve** atau **Reject** langsung dari daftar. Bisa tambah catatan jika reject. Owner mendapat notifikasi Telegram otomatis untuk item urgent.",
+      content: "Klik **Setujui** atau **Tolak** langsung dari daftar. Bisa tambah catatan jika reject. Owner mendapat notifikasi Telegram otomatis untuk item urgent.",
       placement: "top",
       variant: "tip",
     },
@@ -97,7 +97,7 @@ const ownerApprovalsTour = {
 
 // ─── Owner Daily Briefing ─────────────────────────────────────────────────
 const ownerBriefingTour = {
-  name: "Daily Briefing AI",
+  name: "AI Daily Briefing",
   description: "Ringkasan bisnis harian otomatis dengan AI analysis.",
   steps: [
     {
@@ -124,34 +124,6 @@ const ownerBriefingTour = {
   ],
 };
 
-// ─── Owner AI Assistant ───────────────────────────────────────────────────
-const ownerAIAssistantTour = {
-  name: "Business Q&A — AI Assistant",
-  description: "Tanya apapun tentang bisnis dalam Bahasa Indonesia.",
-  steps: [
-    {
-      target: "[data-testid='exec-qa']",
-      title: "Business Q&A",
-      content: "Tanya apapun tentang bisnis dalam **Bahasa Indonesia**. AI akan menjawab berdasarkan data real-time ERP.",
-      placement: "top",
-      disableBeacon: true,
-      variant: "hero",
-    },
-    {
-      target: "[data-testid='exec-qa-suggest-0']",
-      title: "Contoh Pertanyaan",
-      content: "\u2022 'Kemarin sales The Coffeeshop berapa?'\n\u2022 'Siapa karyawan dengan kasbon terbanyak?'\n\u2022 'Stok bahan baku mana yang kritis?'\n\u2022 'Profit bulan ini vs bulan lalu?'\n\u2022 'Berapa AP yang jatuh tempo minggu ini?'",
-      placement: "bottom",
-    },
-    {
-      target: "[data-testid='exec-qa-input']",
-      title: "Mulai Bertanya",
-      content: "Ketik pertanyaan bisnis Anda. AI mendukung pertanyaan kontekstual (follow-up dari jawaban sebelumnya).",
-      placement: "top",
-      variant: "tip",
-    },
-  ],
-};
 
 // ─── Owner Digest Settings ────────────────────────────────────────────
 const ownerDigestSettingsTour = {
@@ -161,7 +133,7 @@ const ownerDigestSettingsTour = {
     {
       target: "[data-testid='digest-settings-page']",
       title: "Pengaturan Briefing",
-      content: "Konfigurasi **Daily Briefing AI** — ringkasan bisnis harian dikirim otomatis ke Anda.",
+      content: "Konfigurasi **AI Daily Briefing** — ringkasan bisnis harian dikirim otomatis ke Anda.",
       placement: "center",
       disableBeacon: true,
       variant: "hero",
@@ -193,6 +165,5 @@ export {
   ownerCashPositionTour,
   ownerApprovalsTour,
   ownerBriefingTour,
-  ownerAIAssistantTour,
   ownerDigestSettingsTour,
 };

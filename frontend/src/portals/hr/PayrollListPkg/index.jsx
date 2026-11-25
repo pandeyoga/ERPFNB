@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Plus, CalendarClock, ArrowUpCircle, Upload, Users, CheckCircle2, Edit3, X, Download,
+  Plus, CalendarClock, ArrowUpCircle, Upload, Users, CheckCircle2, Edit3, X, Download, DollarSign,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { InlineHelp } from "@/components/shared/InlineHelp";
+import PageHeader from "@/components/shared/PageHeader";
 import { fmtRp } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
@@ -26,19 +27,18 @@ import useOutletScope from "@/hooks/useOutletScope";
 
 
 
-// ── Payslip PDF generator ──────────────────────────────────────────────────────
-import { generatePayslipPDF } from "./pdfHelper";
 import PayrollFormDialog from "./PayrollFormDialog";
 import PayrollDetailDialog from "./PayrollDetailDialog";
 import { SalaryMasterDialog, SalaryImportDialog } from "./SalaryDialogs";
 import useExcelExport from "@/hooks/useExcelExport";
 
-import { PTKP_OPTIONS, STD_COMPONENTS } from "@/lib/payroll";
-export default function PayrollList() {
+/** @param {{ embedded?: boolean }} props — embedded=true saat dirender sebagai tab di CompensationHub (tanpa PageHeader). */
+export default function PayrollList({ embedded = false }) {
   const { user } = useAuth();
   const { allOutlets: outlets } = useOutletScope();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get("tab") === "salary" ? "salary" : "cycles");
+  // ?view=salary membuka Salary Master (?tab dipakai hub Compensation untuk memilih tab Payroll)
+  const [tab, setTab] = useState(searchParams.get("view") === "salary" ? "salary" : "cycles");
   const [showForm, setShowForm] = useState(false);
   const [detailId, setDetailId] = useState(null);
   const [editSm, setEditSm] = useState(null); // employee data being edited
@@ -82,92 +82,96 @@ export default function PayrollList() {
     staleTime: 30 * 1000,
   });
 
+  const actions = (
+    <>
+      {tab === "cycles" && (
+        <Button
+          variant="outline"
+          onClick={() => exportXlsx("/hr/payroll/export/xlsx", "payroll_cycles.xlsx")}
+          disabled={downloading}
+          data-testid="hr-payroll-export-xlsx"
+        >
+          <Download />
+          {downloading ? "Mengunduh…" : "Ekspor Excel"}
+        </Button>
+      )}
+      {tab === "cycles" && canApprove && (
+        <Button onClick={() => setShowForm(true)} data-testid="hr-payroll-create">
+          <Plus /> Buat Payroll
+        </Button>
+      )}
+      {tab === "salary" && canApprove && (
+        <Button variant="outline" onClick={() => setImportOpen(true)} data-testid="salary-import-btn">
+          <Upload /> Impor Excel/CSV
+        </Button>
+      )}
+    </>
+  );
+
   return (
-    <div className="space-y-4" data-testid="hr-payroll-page">
+    <div className="space-y-3 lg:space-y-4" data-testid="hr-payroll-page">
+      <PageHeader icon={DollarSign} title="Payroll"
+          subtitle="Siklus penggajian bulanan & salary master — gaji + service share + incentive − kasbon − BPJS − PPh21."
+          actions={actions} />
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <TabsList>
-              <TabsTrigger value="cycles" className="gap-2">
-                <CalendarClock className="h-4 w-4" /> Siklus Payroll
+              <TabsTrigger value="cycles" data-testid="hr-payroll-tab-cycles">
+                <CalendarClock /> Siklus Payroll
               </TabsTrigger>
-              <TabsTrigger value="salary" className="gap-2">
-                <Users className="h-4 w-4" /> Salary Master
+              <TabsTrigger value="salary" data-testid="hr-payroll-tab-salary">
+                <Users /> Salary Master
               </TabsTrigger>
             </TabsList>
             {tab === "cycles" && <InlineHelp id="hr-payroll-cycles" size="sm" />}
             {tab === "salary" && <InlineHelp id="hr-salary-master" size="sm" />}
           </div>
-          <div className="flex gap-2">
-            {tab === "cycles" && canApprove && (
-              <Button onClick={() => setShowForm(true)} className="rounded-full" data-testid="hr-payroll-create">
-                <Plus className="h-4 w-4 mr-2" /> Generate Payroll
-              </Button>
-            )}
-            {tab === "cycles" && (
-              <Button
-                variant="outline"
-                onClick={() => exportXlsx("/hr/payroll/export/xlsx", "payroll_cycles.xlsx")}
-                disabled={downloading}
-                className="rounded-full gap-2"
-                data-testid="hr-payroll-export-xlsx"
-              >
-                <Download className="h-4 w-4" />
-                {downloading ? "Mengunduh..." : "Export Excel"}
-              </Button>
-            )}
-            {tab === "salary" && canApprove && (
-              <Button variant="outline" onClick={() => setImportOpen(true)} className="rounded-full" data-testid="salary-import-btn">
-                <Upload className="h-4 w-4 mr-2" /> Import Excel/CSV
-              </Button>
-            )}
-          </div>
         </div>
 
         {/* ─── Cycles Tab ─── */}
-        <TabsContent value="cycles" className="mt-4">
-          <div className="text-sm text-muted-foreground mb-3">
-            Payroll cycle bulanan — gaji + service share + incentive − kasbon − BPJS − PPh21.
-          </div>
+        <TabsContent value="cycles">
           {loading ? (
             <LoadingState rows={5} />
           ) : items.length === 0 ? (
             <EmptyState icon={CalendarClock} title="Belum ada payroll cycle"
-              description="Generate payroll bulanan untuk membuat draft, lalu post ke jurnal." />
+              description="Generate payroll bulanan untuk membuat draft, lalu posting ke jurnal."
+              action={canApprove ? <Button size="sm" onClick={() => setShowForm(true)}><Plus /> Buat Payroll</Button> : null} />
           ) : (
-            <div className="glass-card overflow-hidden">
+            <div className="glass-card overflow-hidden" data-testid="payroll-cycles-table">
               <DataTable
                 rows={items}
                 keyField="id"
                 rowTestIdPrefix="hr-payroll-row"
                 onRowClick={(it) => setDetailId(it.id)}
                 columns={[
-                  { key: "doc_no", label: "Doc No", primary: true, render: (it) => <span className="font-mono text-xs">{it.doc_no}</span> },
-                  { key: "period", label: "Period", render: (it) => <span className="font-mono">{it.period}</span> },
-                  { key: "outlet", label: "Outlet", render: (it) => <span className="text-sm">{outlets.find(o => o.id === it.outlet_id)?.name || "Group-wide"}</span> },
-                  { key: "total_gross", label: "Gross", numeric: true, sortable: true, render: (it) => <span className="text-sm">{fmtRp(it.total_gross)}</span> },
-                  { key: "total_bpjs_employee", label: "BPJS", numeric: true, render: (it) => <span className="text-xs text-amber-600">{it.total_bpjs_employee ? fmtRp(it.total_bpjs_employee) : "-"}</span> },
-                  { key: "total_pph21", label: "PPh21", numeric: true, render: (it) => <span className="text-xs text-red-500">{it.total_pph21 ? fmtRp(it.total_pph21) : "-"}</span> },
-                  { key: "total_take_home", label: "Take Home", numeric: true, sortable: true, render: (it) => <span className="font-semibold">{fmtRp(it.total_take_home)}</span> },
+                  { key: "doc_no", label: "Doc No", primary: true, render: (it) => <span className="font-mono text-xs whitespace-nowrap">{it.doc_no}</span> },
+                  { key: "period", label: "Period", render: (it) => <span className="font-mono whitespace-nowrap">{it.period}</span> },
+                  { key: "outlet", label: "Outlet", render: (it) => <span className="text-sm whitespace-nowrap">{outlets.find(o => o.id === it.outlet_id)?.name || "Group-wide"}</span> },
+                  { key: "total_gross", label: "Gross", numeric: true, sortable: true, render: (it) => <span className="text-sm whitespace-nowrap">{fmtRp(it.total_gross)}</span> },
+                  { key: "total_bpjs_employee", label: "BPJS", numeric: true, render: (it) => <span className="text-xs text-amber-800 dark:text-amber-400 whitespace-nowrap">{it.total_bpjs_employee ? fmtRp(it.total_bpjs_employee) : "-"}</span> },
+                  { key: "total_pph21", label: "PPh21", numeric: true, render: (it) => <span className="text-xs text-red-700 dark:text-red-400 whitespace-nowrap">{it.total_pph21 ? fmtRp(it.total_pph21) : "-"}</span> },
+                  { key: "total_take_home", label: "Take Home", numeric: true, sortable: true, render: (it) => <span className="font-semibold whitespace-nowrap">{fmtRp(it.total_take_home)}</span> },
                   { key: "status", label: "Status", align: "center", render: (it) => <StatusPill status={it.status} /> },
                 ]}
                 rowAction={(it) => {
                   const action = canApprove && ({ draft: "approve", approved: "post" })[it.status];
                   if (!action) return null;
+                  const label = action === "post" ? "Posting payroll ke jurnal" : "Setujui payroll";
                   return (
-                    <Button size="sm" variant={action === "post" ? "default" : "outline"} className="rounded-full"
+                    // aksi per baris = tombol ikon outline (9 kolom harus muat di 1280px);
+                    // aksi primer halaman hanya "Buat Payroll"
+                    <Button size="icon-sm" variant="outline" aria-label={label} title={label}
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {
                           await api.post(`/hr/payroll/${it.id}/${action}`);
-                          toast.success(action === "post" ? "Payroll di-post ke jurnal" : "Payroll di-approve");
+                          toast.success(action === "post" ? "Payroll di-posting ke jurnal" : "Payroll disetujui");
                           await refetchCycles();
                         } catch (err) { toast.error(unwrapError(err)); }
                       }}
                       data-testid={`hr-payroll-${action}-${it.id}`}>
-                      {action === "post"
-                        ? <><ArrowUpCircle className="h-3.5 w-3.5 mr-1" /> Post</>
-                        : <><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Approve</>}
+                      {action === "post" ? <ArrowUpCircle /> : <CheckCircle2 />}
                     </Button>
                   );
                 }}
@@ -177,15 +181,15 @@ export default function PayrollList() {
         </TabsContent>
 
         {/* ─── Salary Master Tab ─── */}
-        <TabsContent value="salary" className="mt-4">
-          <div className="text-sm text-muted-foreground mb-3">
+        <TabsContent value="salary">
+          <p className="text-xs md:text-sm text-muted-foreground mb-3">
             Satu-satunya sumber data gaji: gaji pokok, tunjangan, BPJS, dan status PTKP untuk PPh21. Karyawan aktif &amp; cuti ikut payroll; yang belum diatur akan memblokir generate payroll.
-          </div>
+          </p>
           {smLoading ? (
             <LoadingState rows={5} />
           ) : salaryMasters.length === 0 ? (
             <EmptyState icon={Users} title="Belum ada salary master"
-              description="Klik karyawan untuk mengatur gaji pokok, tunjangan, dan BPJS." />
+              description="Impor file Excel/CSV atau atur gaji pokok, tunjangan, dan BPJS per karyawan." />
           ) : (
             <div className="glass-card overflow-hidden">
               <DataTable
@@ -197,26 +201,28 @@ export default function PayrollList() {
                     <div>
                       <div className="font-medium text-sm flex items-center gap-1.5">
                         {sm.employee_name}
-                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
-                        {!sm.has_master && <Badge variant="outline" className="text-[10px] border-red-400 text-red-500" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
+                        {sm.employee_status === "leave" && <Badge variant="outline" className="text-xs border-amber-500 text-amber-800 dark:text-amber-400" data-testid={`sm-leave-${sm.employee_id}`}>Cuti</Badge>}
+                        {!sm.has_master && <Badge variant="outline" className="text-xs border-red-400 text-red-700 dark:text-red-400" data-testid={`sm-missing-${sm.employee_id}`}>Belum diatur</Badge>}
                       </div>
                       <div className="text-xs text-muted-foreground">{sm.employee_code}</div>
                     </div>
                   ) },
                   { key: "outlet", label: "Outlet", render: (sm) => <span className="text-sm">{outlets.find(o => o.id === sm.outlet_id)?.name || "-"}</span> },
-                  { key: "basic_salary", label: "Gaji Pokok", numeric: true, sortable: true, render: (sm) => fmtRp(sm.basic_salary) },
-                  { key: "allowances_total", label: "Tunjangan", numeric: true, render: (sm) => <span className="text-sm">{fmtRp(sm.allowances_total)}</span> },
-                  { key: "bpjs_employee", label: "BPJS (EE)", numeric: true, render: (sm) => <span className="text-xs text-amber-600">{fmtRp(sm.bpjs_employee)}</span> },
-                  { key: "pph21_monthly", label: "PPh21/bln", numeric: true, render: (sm) => <span className="text-xs text-red-500">{fmtRp(sm.pph21_monthly)}</span> },
+                  { key: "basic_salary", label: "Gaji Pokok", numeric: true, sortable: true, render: (sm) => <span className="whitespace-nowrap">{fmtRp(sm.basic_salary)}</span> },
+                  { key: "allowances_total", label: "Tunjangan", numeric: true, render: (sm) => <span className="text-sm whitespace-nowrap">{fmtRp(sm.allowances_total)}</span> },
+                  { key: "bpjs_employee", label: "BPJS (EE)", numeric: true, render: (sm) => <span className="text-xs text-amber-800 dark:text-amber-400 whitespace-nowrap">{fmtRp(sm.bpjs_employee)}</span> },
+                  { key: "pph21_monthly", label: "PPh21/bln", numeric: true, render: (sm) => <span className="text-xs text-red-700 dark:text-red-400 whitespace-nowrap">{fmtRp(sm.pph21_monthly)}</span> },
                   { key: "ptkp_status", label: "PTKP", align: "center", render: (sm) => <Badge variant="outline" className="text-xs">{sm.ptkp_status}</Badge> },
                   { key: "bpjs_enrolled", label: "BPJS", align: "center", render: (sm) => sm.bpjs_enrolled
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 mx-auto" />
-                    : <X className="h-4 w-4 text-muted-foreground mx-auto" /> },
+                    ? <CheckCircle2 className="h-4 w-4 text-green-700 dark:text-green-400 mx-auto" aria-label="Terdaftar BPJS" />
+                    : <X className="h-4 w-4 text-muted-foreground mx-auto" aria-label="Tidak terdaftar BPJS" /> },
                 ]}
                 rowAction={(sm) => (
                   canApprove ? (
-                    <Button size="sm" variant="ghost" onClick={() => setEditSm(sm)} data-testid={`edit-sm-${sm.employee_id}`}>
-                      <Edit3 className="h-3.5 w-3.5" />
+                    <Button size="icon-sm" variant="ghost" onClick={() => setEditSm(sm)}
+                            aria-label={`Ubah salary master ${sm.employee_name}`} title="Ubah salary master"
+                            data-testid={`edit-sm-${sm.employee_id}`}>
+                      <Edit3 />
                     </Button>
                   ) : null
                 )}

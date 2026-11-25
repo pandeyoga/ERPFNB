@@ -6,6 +6,7 @@ import uuid
 from typing import Optional
 
 from core.audit import log as audit_log
+from core.scope import outlet_condition
 from core.db import get_db, serialize
 from core.exceptions import (
     ConflictError, NotFoundError, ValidationError,
@@ -24,8 +25,8 @@ async def list_service_charge(
     q: dict = {"deleted_at": None}
     if period:
         q["period"] = period
-    if outlet_id:
-        q["outlet_id"] = outlet_id
+    if outlet_condition(outlet_id) is not None:  # konteks brand/toko (core/scope.py)
+        q["outlet_id"] = outlet_condition(outlet_id)
     if status:
         q["status"] = status
     skip = (page - 1) * per_page

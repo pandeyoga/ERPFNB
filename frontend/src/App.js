@@ -30,6 +30,9 @@ import HomeRedirect from "@/pages/HomeRedirect";
 import NoAccess from "@/pages/NoAccess";
 import NotFound from "@/pages/NotFound";
 import MyApprovals from "@/pages/MyApprovals";
+import { REPORT_CENTER_PERMS } from "@/lib/portals";
+import { ConfirmDialogHost } from "@/components/shared/confirmDialog";
+import { UnsavedChangesGuard } from "@/components/shared/UnsavedChanges";
 
 // Loyalty Pages (eagerly loaded — lightweight)
 import LoyaltyRegister from "@/pages/loyalty/LoyaltyRegister";
@@ -54,6 +57,7 @@ const OwnerPortal = lazyWithRetry(() => import("@/portals/OwnerPortal"), "OwnerP
 const ProcurementPortal = lazyWithRetry(() => import("@/portals/ProcurementPortal"), "ProcurementPortal");
 const AdminPortal = lazyWithRetry(() => import("@/portals/admin/AdminPortal"), "AdminPortal");
 const ReportsPortal = lazyWithRetry(() => import("@/portals/ReportsPortal"), "ReportsPortal");
+const AIPortal = lazyWithRetry(() => import("@/portals/AIPortal"), "AIPortal");
 
 // Public Compro Pages — lazy loaded (heavy, not critical path)
 const PublicLayout = lazyWithRetry(() => import("@/pages/public/PublicLayout"), "PublicLayout");
@@ -109,7 +113,7 @@ function RequireAuth({ children }) {
  * Access is granted if user.permissions includes "*" OR any perm starting with permPrefix + "."
  * or equal to permPrefix.
  */
-function RequirePortal({ permPrefix, children }) {
+function RequirePortal({ permPrefix, anyPerms = [], children }) {
   const { user, loading } = useAuth();
   if (loading) return <FullPageLoader />;
   if (!user) return <Navigate to="/login" replace />;
@@ -119,9 +123,12 @@ function RequirePortal({ permPrefix, children }) {
   // Wildcard (super admin)
   if (perms.includes("*")) return children;
 
-  // Check if user has any permission in this portal's namespace
+  // Check if user has any permission in this portal's namespace — or one of the
+  // explicit permissions (portal lintas modul seperti Report Center tidak punya
+  // namespace "reports.*"; aksesnya mengikuti permission baca laporan di backend).
   const hasAccess = perms.some(
-    (p) => p === permPrefix || p.startsWith(permPrefix + ".")
+    (p) => p === permPrefix || p.startsWith(permPrefix + ".") ||
+      anyPerms.some((a) => p === a || p.startsWith(a + "."))
   );
 
   if (!hasAccess) return <Navigate to="/no-access" replace />;
@@ -133,6 +140,8 @@ export default function App() {
     <ThemeProvider defaultTheme="light" storageKey="aurora-theme">
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
+          {/* Menahan klik menu/link saat ada perubahan form yang belum disimpan (DESIGN_SYSTEM §10.4). */}
+          <UnsavedChangesGuard />
           <AuthProvider>
             <TourProvider>
               {/* Global top-level error boundary — catches anything that slips through */}
@@ -239,15 +248,17 @@ export default function App() {
                     {/* IA v3 (2026-07): halaman "Pilih Portal" dihapus — semua modul ada di
                         sidebar terpadu. Alias dipertahankan untuk bookmark lama. */}
                     <Route path="/portal-select" element={<Navigate to="/erp" replace />} />
-                    <Route path="/approvals" element={<MyApprovals />} />
-                    {/* Approval aliases — semua portal approval paths mengarah ke MyApprovals */}
+                    {/* Satu halaman persetujuan kanonik: /my-approvals ("Pusat Persetujuan").
+                        Path lama per portal di-redirect agar tidak ada 8 URL untuk halaman
+                        yang sama (bookmark & link lama tetap jalan). */}
                     <Route path="/my-approvals" element={<MyApprovals />} />
-                    <Route path="/hr/approvals" element={<MyApprovals />} />
-                    <Route path="/finance/approvals" element={<MyApprovals />} />
-                    <Route path="/procurement/approvals" element={<MyApprovals />} />
-                    <Route path="/outlet/approvals" element={<MyApprovals />} />
-                    <Route path="/owner/approvals" element={<MyApprovals />} />
-                    <Route path="/executive/approvals" element={<MyApprovals />} />
+                    <Route path="/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/hr/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/finance/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/procurement/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/outlet/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/owner/approvals" element={<Navigate to="/my-approvals" replace />} />
+                    <Route path="/executive/approvals" element={<Navigate to="/my-approvals" replace />} />
                     {/* NOTE: `/admin/approvals` intentionally NOT aliased here — it
                         resolves to the Approval Matrix Builder inside AdminPortal.
                         Admins reach their personal queue via `/my-approvals`. */}
@@ -281,10 +292,22 @@ export default function App() {
                     <Route
                       path="/reports/*"
                       element={
-                        <RequirePortal permPrefix="reports">
+                        <RequirePortal permPrefix="reports" anyPerms={REPORT_CENTER_PERMS}>
                           <ErrorBoundary scope="Reports Portal">
                             <Suspense fallback={<PageLoader />}>
                               <ReportsPortal />
+                            </Suspense>
+                          </ErrorBoundary>
+                        </RequirePortal>
+                      }
+                    />
+                    <Route
+                      path="/ai/*"
+                      element={
+                        <RequirePortal permPrefix="ai.agent">
+                          <ErrorBoundary scope="Asisten AI">
+                            <Suspense fallback={<PageLoader />}>
+                              <AIPortal />
                             </Suspense>
                           </ErrorBoundary>
                         </RequirePortal>
@@ -373,6 +396,7 @@ export default function App() {
           </AuthProvider>
         </BrowserRouter>
         <Toaster position="top-right" />
+        <ConfirmDialogHost />
         <PWAInstallBanner />
       </QueryClientProvider>
     </ThemeProvider>

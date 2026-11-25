@@ -135,7 +135,12 @@ def flow1_approval_pr(tokens: dict[str, str]) -> int:
         failmsg(f"missing master data (vendor={bool(vendors)} item={bool(items)} outlet={bool(outlets)})")
         return fails + 1
 
-    vendor_id, item_id, outlet_id = vendors[0]["id"], items[0]["id"], outlets[0]["id"]
+    vendor_id, item_id = vendors[0]["id"], items[0]["id"]
+    # The PR is created by the OUTLET manager → use an outlet inside that manager's scope
+    # (master list order is by name, so outlets[0] was often another outlet → OUTLET_OUT_OF_SCOPE).
+    me = api("GET", "/api/auth/me", tokens["outlet"])
+    mine = (me or {}).get("outlet_ids") or []  # api() already unwraps the envelope
+    outlet_id = next((o["id"] for o in outlets if o["id"] in mine), outlets[0]["id"])
     okmsg(f"vendor={vendor_id[:8]}… item={item_id[:8]}… outlet={outlet_id[:8]}…")
 
     # Create PR as OUTLET manager (has procurement.pr.create for urgent purchase);

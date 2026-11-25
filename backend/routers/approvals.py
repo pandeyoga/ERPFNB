@@ -18,7 +18,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Total Estimasi",
         "describe": lambda d: d.get("doc_no") or (d.get("id", "")[:8]),
-        "link": lambda d: f"/procurement/prs/{d.get('id')}",
+        "link": lambda d: f"/procurement/pr/{d.get('id')}",
         "secondary": "outlet_id",
     },
     "purchase_order": {
@@ -27,7 +27,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Grand Total",
         "describe": lambda d: d.get("doc_no") or (d.get("id", "")[:8]),
-        "link": lambda d: f"/procurement/pos/{d.get('id')}",
+        "link": lambda d: f"/procurement/po/{d.get('id')}",
         "secondary": "vendor_id",
     },
     "stock_adjustment": {
@@ -36,7 +36,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Total Value",
         "describe": lambda d: d.get("doc_no") or (d.get("id", "")[:8]),
-        "link": lambda d: f"/inventory/adjustments/{d.get('id')}",
+        "link": lambda d: "/inventory/movements-hub?type=adjustments",
         "secondary": "outlet_id",
     },
     "employee_advance": {
@@ -45,7 +45,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Principal",
         "describe": lambda d: d.get("doc_no") or f"Kasbon {d.get('employee_name','?')}",
-        "link": lambda d: f"/hr/advances/{d.get('id')}",
+        "link": lambda d: "/hr/compensation?tab=advances",
         "secondary": "employee_id",
     },
     "payment_request": {
@@ -54,7 +54,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Amount",
         "describe": lambda d: d.get("doc_no") or d.get("title") or (d.get("id", "")[:8]),
-        "link": lambda d: f"/finance/payment-requests/{d.get('id')}",
+        "link": lambda d: f"/finance/payments/{d.get('id')}",
         "secondary": "outlet_id",
     },
     "budget": {
@@ -63,7 +63,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "approval_status",
         "amount_label": "Total Anggaran",
         "describe": lambda d: d.get("name") or (d.get("id", "")[:8]),
-        "link": lambda _d: "/finance/budget/manage",
+        "link": lambda _d: "/finance/budget-hub?tab=manage",
         "secondary": "outlet_id",
     },
     "leave_request": {
@@ -72,7 +72,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Hari",
         "describe": lambda d: d.get("doc_no") or f"Cuti {d.get('employee_name', d.get('employee_id','?'))[:16]} ({d.get('leave_type','')})",
-        "link": lambda d: f"/hr/leaves/{d.get('id')}",
+        "link": lambda d: "/hr/leaves",
         "secondary": "employee_id",
     },
     "stock_transfer": {
@@ -90,7 +90,7 @@ ENTITY_QUERY_PROFILES = {
         "status_field": "status",
         "amount_label": "Total Invoice",
         "describe": lambda d: d.get("invoice_no") or (d.get("id", "")[:8]),
-        "link": lambda d: f"/finance/ar-invoices/{d.get('id')}",
+        "link": lambda d: "/finance/payments-hub?tab=ar-invoices",
         "secondary": "customer_name",
     },
 }

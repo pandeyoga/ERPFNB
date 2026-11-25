@@ -175,11 +175,34 @@ def _pick_leave_and_active_employees():
     return leave_emp, active_emp, restore
 
 
+def _free_payroll_period(skip: tuple = ()) -> str:
+    """A PAST period with no active payroll cycle and an open accounting period.
+
+    Far-future periods (the old hard-coded 2027-02) are now rejected by the journal date guard
+    (audit 2026-10 FIN-22/FIN-30: payroll/JEs cannot be posted far in the future)."""
+    from datetime import date
+    from pymongo import MongoClient
+    from tests.conftest import _load_backend_env
+    env = _load_backend_env()
+    db = MongoClient(env.get("MONGO_URL", "mongodb://127.0.0.1:27017"))[env.get("DB_NAME", "test_database")]
+    busy = {c["period"] for c in db.payroll_cycles.find(
+        {"deleted_at": None, "status": {"$in": ["draft", "approved", "posted"]}}, {"period": 1})}
+    locked = {p["period"] for p in db.accounting_periods.find({"status": {"$in": ["locked", "closed"]}})}
+    y, m = date.today().year, date.today().month
+    for _ in range(60):
+        m -= 1
+        if m == 0:
+            y, m = y - 1, 12
+        per = f"{y:04d}-{m:02d}"
+        if per not in busy and per not in locked and per not in skip:
+            return per
+    pytest.skip("no free past payroll period")
+
+
 @pytest.fixture(scope="module")
 def payroll_leave_setup():
     leave_emp, active_emp, restore = _pick_leave_and_active_employees()
-    period = "2027-02"
-    # ensure clean: no active cycle for 2027-02
+    period = _free_payroll_period()
     yield {"period": period, "leave_emp": leave_emp, "active_emp": active_emp}
     restore()
 
@@ -241,7 +264,7 @@ def test_payroll_leave_employee_included_and_workflow(payroll_leave_setup):
 
 
 def test_payroll_cancel_requires_reason_and_allows_regenerate():
-    period = "2027-03"
+    period = _free_payroll_period()
     r = requests.post(f"{BASE}/api/hr/payroll", json={"period": period}, headers=H(), timeout=60)
     assert r.status_code == 200, r.text
     pid = r.json()["data"]["id"]

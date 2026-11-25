@@ -1,27 +1,21 @@
-/** PO Summary Report — Excel export dengan PO status & vendor */
+/** PO Summary Report — ekspor Excel ringkasan Purchase Order per vendor & status. */
 import { useState, useEffect } from "react";
-import { Download, ShoppingCart, Store } from "lucide-react";
-import api from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Store } from "lucide-react";
+import { fetchAll } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
 import { todayJakartaISO } from "@/lib/format";
+import {
+  ReportPage, FilterGrid, ReportField, ChipMultiSelect, useExcelExport, daysAgoISO, validRange, toOptions,
+} from "./reportKit";
 
-import { fetchAll } from "@/lib/api";
 export default function POSummaryReport() {
-  const [dateFrom, setDateFrom] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 90);
-    return d.toISOString().slice(0, 10);
-  });
+  const [dateFrom, setDateFrom] = useState(() => daysAgoISO(90));
   const [dateTo, setDateTo] = useState(todayJakartaISO());
   const [vendors, setVendors] = useState([]);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [status, setStatus] = useState("all");
-  const [downloading, setDownloading] = useState(false);
+  const [exporting, exportExcel] = useExcelExport();
 
   useEffect(() => {
     fetchAll("/master/vendors")
@@ -29,139 +23,58 @@ export default function POSummaryReport() {
       .catch(() => {});
   }, []);
 
-  async function downloadExcel() {
-    setDownloading(true);
-    try {
-      const params = new URLSearchParams();
-      if (dateFrom) params.append("date_from", dateFrom);
-      if (dateTo) params.append("date_to", dateTo);
-      if (selectedVendors.length > 0) params.append("vendor_ids", selectedVendors.join(","));
-      if (status && status !== "all") params.append("status", status);
-
-      const response = await api.get(`/reports/procurement/po-summary.xlsx?${params.toString()}`, {
-        responseType: "blob",
-      });
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `po_summary_${dateFrom}_${dateTo}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Excel report downloaded successfully!");
-    } catch (e) {
-      toast.error("Gagal download report: " + (e.response?.data?.message || e.message));
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  function toggleSelection(arr, setArr, id) {
-    if (arr.includes(id)) {
-      setArr(arr.filter(x => x !== id));
-    } else {
-      setArr([...arr, id]);
-    }
+  function downloadExcel() {
+    if (!validRange(dateFrom, dateTo)) return;
+    const params = new URLSearchParams();
+    if (dateFrom) params.append("date_from", dateFrom);
+    if (dateTo) params.append("date_to", dateTo);
+    if (selectedVendors.length > 0) params.append("vendor_ids", selectedVendors.join(","));
+    if (status && status !== "all") params.append("status", status);
+    exportExcel({
+      path: "/reports/procurement/po-summary.xlsx",
+      params,
+      filename: `po_summary_${dateFrom}_${dateTo}.xlsx`,
+    });
   }
 
   return (
-    <div className="space-y-4" data-testid="po-summary-report-page">
-      <Card className="p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/5 border border-purple-500/30 flex items-center justify-center">
-            <ShoppingCart className="h-5 w-5 text-purple-600" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold" data-testid="po-summary-title">PO Summary Report</h1>
-            <p className="text-xs text-muted-foreground">Purchase Order summary per vendor dengan status dan amount</p>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-5">
-        <h3 className="font-semibold mb-4 text-sm">Filters</h3>
-        
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dari Tanggal</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={e => setDateFrom(e.target.value)}
-              className="mt-1 h-9"
-              data-testid="po-summary-date-from"
-            />
-          </div>
-          <div>
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Hingga Tanggal</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              className="mt-1 h-9"
-              data-testid="po-summary-date-to"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</Label>
+    <ReportPage
+      reportId="po-summary"
+      testId="po-summary-report-page"
+      titleTestId="po-summary-title"
+      filterTestId="po-summary-filter-card"
+      exportTestId="po-summary-download-btn"
+      onExport={downloadExcel}
+      exporting={exporting}
+    >
+      <FilterGrid>
+        <ReportField id="po-date-from" label="Dari tanggal">
+          <Input id="po-date-from" type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} data-testid="po-summary-date-from" />
+        </ReportField>
+        <ReportField id="po-date-to" label="Hingga tanggal">
+          <Input id="po-date-to" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} data-testid="po-summary-date-to" />
+        </ReportField>
+        <ReportField id="po-status" label="Status">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="mt-1 h-9" data-testid="po-status-select">
+            <SelectTrigger id="po-status" data-testid="po-status-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="all">Semua status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="pending">Pending Approval</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="pending">Menunggu approval</SelectItem>
+              <SelectItem value="approved">Disetujui</SelectItem>
+              <SelectItem value="rejected">Ditolak</SelectItem>
+              <SelectItem value="completed">Selesai</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-
-        {vendors.length > 0 && (
-          <div className="mb-4">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
-              <Store className="h-3 w-3 inline mr-1" />
-              Vendor {selectedVendors.length > 0 && `(${selectedVendors.length})`}
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {vendors.map(v => (
-                <button
-                  key={v.id}
-                  onClick={() => toggleSelection(selectedVendors, setSelectedVendors, v.id)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedVendors.includes(v.id)
-                      ? "bg-foreground text-background border-foreground"
-                      : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                  data-testid={`vendor-filter-${v.code || v.id}`}
-                >
-                  {v.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <Button
-          onClick={downloadExcel}
-          disabled={downloading}
-          className="w-full rounded-full gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white"
-          data-testid="po-summary-download-btn"
-        >
-          <Download className="h-4 w-4" />
-          {downloading ? "Downloading..." : "Download Excel Report"}
-        </Button>
-      </Card>
-    </div>
+        </ReportField>
+      </FilterGrid>
+      <ChipMultiSelect
+        id="po-vendors" label="Vendor" icon={Store}
+        options={toOptions(vendors)} value={selectedVendors} onChange={setSelectedVendors}
+        testIdFor={o => `vendor-filter-${o.code || o.value}`}
+      />
+    </ReportPage>
   );
 }

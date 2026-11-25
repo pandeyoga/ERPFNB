@@ -2,13 +2,14 @@
  * Phase 4B: Sales Heatmap Widget
  * Displays day-of-week × week matrix for F&B peak pattern analysis
  */
-import { useState, useEffect, useMemo } from "react";
-import { Calendar, TrendingUp, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Activity } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import { fmtRp, fmtNumber, fmtDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { toast } from "sonner";
 
 export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
@@ -43,15 +44,16 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
   const getHeatColor = (value, min, max) => {
     if (!value || value === 0) return "bg-muted/20";
     const normalized = (value - min) / (max - min || 1);
-    if (normalized > 0.75) return "bg-gradient-to-br from-rose-500/80 to-rose-600/90 text-white";
-    if (normalized > 0.5) return "bg-gradient-to-br from-orange-500/70 to-orange-600/80 text-white";
-    if (normalized > 0.25) return "bg-gradient-to-br from-amber-500/60 to-amber-600/70";
-    return "bg-gradient-to-br from-emerald-500/40 to-emerald-600/50";
+    // Warna isi solid + teks gelap (bukan gradien + teks putih, < 3:1); intensitas lewat hue hijau → merah.
+    if (normalized > 0.75) return "bg-rose-500/30 text-rose-900 dark:text-rose-100";
+    if (normalized > 0.5) return "bg-orange-500/25 text-orange-900 dark:text-orange-100";
+    if (normalized > 0.25) return "bg-amber-500/20 text-amber-900 dark:text-amber-100";
+    return "bg-emerald-500/15 text-emerald-900 dark:text-emerald-100";
   };
 
   if (loading || !data) {
     return (
-      <div className="glass-card p-5">
+      <div className="glass-card p-4">
         <div className="flex items-center gap-2 mb-3">
           <Activity className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">Sales Heatmap</h3>
@@ -65,41 +67,28 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
 
   if (!matrix?.length) {
     return (
-      <div className="glass-card p-5" data-testid="sales-heatmap-widget">
+      <div className="glass-card p-4" data-testid="sales-heatmap-widget">
         <p className="py-8 text-center text-sm text-muted-foreground">Belum ada data sales untuk periode ini.</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card p-5" data-testid="sales-heatmap-widget">
+    <div className="glass-card p-4" data-testid="sales-heatmap-widget">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">Sales Pattern — {data.period}</h3>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setMetric("revenue")}
-            className={cn(
-              "px-2.5 py-1 rounded-full text-xs transition-colors",
-              metric === "revenue" ? "bg-foreground/10 font-semibold" : "hover:bg-foreground/5"
-            )}
-            data-testid="heatmap-metric-revenue"
-          >
-            Revenue
-          </button>
-          <button
-            onClick={() => setMetric("trx")}
-            className={cn(
-              "px-2.5 py-1 rounded-full text-xs transition-colors",
-              metric === "trx" ? "bg-foreground/10 font-semibold" : "hover:bg-foreground/5"
-            )}
-            data-testid="heatmap-metric-trx"
-          >
-            Trx
-          </button>
-        </div>
+        <SegmentedFilter
+          value={metric}
+          onChange={setMetric}
+          ariaLabel="Metrik heatmap"
+          options={[
+            { value: "revenue", label: "Revenue", testId: "heatmap-metric-revenue" },
+            { value: "trx", label: "Transaksi", testId: "heatmap-metric-trx" },
+          ]}
+        />
       </div>
 
       <div className="overflow-x-auto">
@@ -109,7 +98,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
           rowTestIdPrefix="heatmap-day"
           className="text-xs"
           columns={[
-            { key: "day", label: "Day", primary: true,
+            { key: "day", label: "Hari", primary: true,
               render: (row) => <span className="font-medium text-muted-foreground">{row.day}</span> },
             ...weeks.map((w, i) => ({
               key: `w${i}`, label: w, align: "center",
@@ -128,7 +117,7 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
                       metric === "revenue" ? fmtRp(cell.revenue) : `${fmtNumber(cell.trx)} trx`
                     }`}
                   >
-                    <span className="font-semibold text-[10px] tabular-nums">
+                    <span className="font-semibold text-xs tabular-nums">
                       {metric === "revenue"
                         ? value >= 1_000_000
                           ? `${(value / 1_000_000).toFixed(1)}M`
@@ -146,9 +135,9 @@ export default function SalesHeatmapWidget({ period, brandIds, outletIds }) {
       </div>
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-        <span>🟢 Low</span>
-        <span>Peak activity pattern across weeks</span>
-        <span>🔴 High</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" /> Rendah</span>
+        <span>Pola aktivitas puncak lintas minggu</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden="true" /> Tinggi</span>
       </div>
     </div>
   );

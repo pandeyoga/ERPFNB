@@ -1,6 +1,6 @@
 """AI Variance Explainer Service — Phase 9C+ enhancement.
 
-Uses emergentintegrations.LlmChat with Gemini 2.5 Flash (text) to explain
+Uses Claude (services/ai/client.py) to explain
 opname variance results in Bahasa Indonesia. Non-blocking: callers should
 handle empty/error responses gracefully (the variance numbers themselves
 are still always shown without the AI explanation).
@@ -29,11 +29,8 @@ Or {"error": "..."} on any failure (caller falls back to silent UI).
 import json
 import logging
 import re
-import uuid
 from typing import Optional
 
-from core.config import settings
-from core.runtime_config import get_setting
 
 logger = logging.getLogger("aurora.ai_variance")
 
@@ -141,9 +138,8 @@ async def explain_opname_variance(
     On any failure → returns dict with 'error' key. UI never blocks on this.
     On success returns: { summary, top_drivers[], recommended_actions[], confidence }
     """
-    if not settings.feature_ai_enabled or not (
-        await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    ):
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return {"error": "AI tidak diaktifkan. Anda dapat menganalisis variance secara manual."}
 
     if not session or not isinstance(session, dict):
@@ -170,16 +166,8 @@ async def explain_opname_variance(
     user_prompt = _build_user_prompt(session, lines, top_n=top_n)
 
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-        model = await get_setting("LLM_MODEL_VARIANCE", default="gemini-2.5-flash")
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"variance-{uuid.uuid4().hex[:12]}",
-            system_message=SYSTEM_PROMPT,
-        ).with_model("gemini", model or "gemini-2.5-flash")
-        msg = UserMessage(text=user_prompt)
-        resp = await chat.send_message(msg)
+        resp = await ai_client.ask(system=SYSTEM_PROMPT, user=user_prompt, feature="opname_variance",
+                                   max_tokens=3000, effort="medium")
     except Exception as e:  # noqa: BLE001
         logger.exception(f"LLM variance call failed: {e}")
         return {"error": f"AI gagal menganalisis: {str(e)[:200]}"}

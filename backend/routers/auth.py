@@ -12,15 +12,15 @@ REFRESH_COOKIE_PATH = "/api/auth"
 
 def _set_session_cookies(response: Response, data: dict) -> None:
     """FE-06: tokens live in httpOnly cookies (not readable by JS)."""
-    response.set_cookie(ACCESS_COOKIE, data["access_token"], httponly=True, secure=True, samesite="lax",
+    response.set_cookie(ACCESS_COOKIE, data["access_token"], httponly=True, secure=settings.cookie_secure, samesite="lax",
                         max_age=settings.access_token_minutes * 60, path="/")
-    response.set_cookie(REFRESH_COOKIE, data["refresh_token"], httponly=True, secure=True, samesite="lax",
+    response.set_cookie(REFRESH_COOKIE, data["refresh_token"], httponly=True, secure=settings.cookie_secure, samesite="lax",
                         max_age=settings.refresh_token_days * 86400, path=REFRESH_COOKIE_PATH)
 
 
 def _clear_session_cookies(response: Response) -> None:
-    response.delete_cookie(ACCESS_COOKIE, path="/", secure=True, httponly=True, samesite="lax")
-    response.delete_cookie(REFRESH_COOKIE, path=REFRESH_COOKIE_PATH, secure=True, httponly=True, samesite="lax")
+    response.delete_cookie(ACCESS_COOKIE, path="/", secure=settings.cookie_secure, httponly=True, samesite="lax")
+    response.delete_cookie(REFRESH_COOKIE, path=REFRESH_COOKIE_PATH, secure=settings.cookie_secure, httponly=True, samesite="lax")
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 

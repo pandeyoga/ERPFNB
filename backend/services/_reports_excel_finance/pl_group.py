@@ -19,6 +19,8 @@ async def generate_pl_group_excel(
     period_from: str,  # YYYY-MM
     period_to: str,    # YYYY-MM
     dim_outlet: Optional[str] = None,
+    scope=None,
+    brand_name: str = "",
 ):
     """Generate Profit & Loss in FnB Group custom format.
     
@@ -78,7 +80,7 @@ async def generate_pl_group_excel(
     pl_per_month: dict[str, dict] = {}
     for p in months:
         pl_per_month[p] = await finance_service.profit_loss(
-            period=p, dim_outlet=dim_outlet, compare_prev=False,
+            period=p, dim_outlet=dim_outlet, compare_prev=False, scope=scope,
         )
     
     # Outlet name for header
@@ -117,6 +119,8 @@ async def generate_pl_group_excel(
     subtitle_parts = [f"Period: {period_from} — {period_to}"]
     if outlet_name:
         subtitle_parts.append(f"Outlet: {outlet_name}")
+    elif brand_name:
+        subtitle_parts.append(f"Brand: {brand_name} (semua toko)")
     else:
         subtitle_parts.append("Outlet: Konsolidasi")
     

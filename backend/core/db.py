@@ -58,6 +58,44 @@ async def db_ping() -> bool:
         return False
 
 
+async def _unique_or_warn(col, keys: list, name: str, partial: dict | None = None) -> None:
+    """Create a unique index; when legacy duplicate data blocks it, log loudly instead of crashing startup."""
+    try:
+        kw = {"partialFilterExpression": partial} if partial else {}
+        await col.create_index(keys, unique=True, name=name, **kw)
+    except Exception as e:  # noqa: BLE001 — duplicates must be cleaned before the guard can exist
+        logger.error("unique index %s on %s NOT created (clean duplicates first): %s", name, col.name, e)
+
+
+_DS_RANK = {"validated": 3, "validating": 3, "submitted": 2, "draft": 1, "rejected": 1}
+
+
+async def _dedupe_daily_sales(db) -> None:
+    """Soft-delete duplicate *draft/rejected* daily_sales per outlet+date, keeping the most advanced
+    record. Duplicates that are both submitted/validated need a finance decision → only logged."""
+    from datetime import datetime, timezone
+    pipeline = [
+        {"$match": {"deleted_at": None}},
+        {"$group": {"_id": {"o": "$outlet_id", "d": "$sales_date"}, "n": {"$sum": 1},
+                    "docs": {"$push": {"id": "$id", "status": "$status", "u": "$updated_at"}}}},
+        {"$match": {"n": {"$gt": 1}}},
+    ]
+    now = datetime.now(timezone.utc).isoformat()
+    async for g in db.daily_sales.aggregate(pipeline):
+        docs = sorted(g["docs"], key=lambda d: (_DS_RANK.get(d.get("status"), 0), str(d.get("u") or "")),
+                      reverse=True)
+        keep, rest = docs[0], docs[1:]
+        locked = [d for d in rest if _DS_RANK.get(d.get("status"), 0) >= 2]
+        if locked:
+            logger.error("daily_sales duplicates need manual review outlet=%s date=%s ids=%s",
+                         g["_id"]["o"], g["_id"]["d"], [keep["id"]] + [d["id"] for d in locked])
+        drop = [d["id"] for d in rest if _DS_RANK.get(d.get("status"), 0) < 2]
+        if drop:
+            await db.daily_sales.update_many(
+                {"id": {"$in": drop}},
+                {"$set": {"deleted_at": now, "deleted_reason": f"duplicate of {keep['id']}"}})
+
+
 async def ensure_indexes() -> None:
     db = get_db()
     # Partial filter so soft-deleted docs don't trigger unique violation
@@ -120,6 +158,17 @@ async def ensure_indexes() -> None:
         [("outlet_id", 1), ("status", 1), ("sales_date", -1)],
         name="ds_outlet_status_date",
     )
+    # POS-01: exactly one live daily_sales per outlet+date (concurrent draft saves used to duplicate revenue)
+    await _dedupe_daily_sales(db)
+    await _unique_or_warn(db.daily_sales, [("outlet_id", 1), ("sales_date", 1)], "ds_outlet_date_unique",
+                          {"deleted_at": None})
+    # POS-04/DB-01: a loyalty award/redeem is recorded once per business reference (receipt, redemption)
+    await _unique_or_warn(db.loyalty_transactions, [("reference_type", 1), ("reference_id", 1)],
+                          "loyalty_ref_unique", {"reference_id": {"$type": "string"}})
+    await db.loyalty_transactions.create_index([("customer_id", 1), ("created_at", -1)])
+    # POS-10: one live (non-reopened) daily close per outlet+day
+    await _unique_or_warn(db.daily_close_records, [("outlet_id", 1), ("close_date", 1)],
+                          "dc_outlet_date_closed_unique", {"status": "closed", "deleted_at": None})
     await db.petty_cash_transactions.create_index([("outlet_id", 1), ("txn_date", -1)])
     await db.urgent_purchases.create_index([("outlet_id", 1), ("purchase_date", -1)])
     await db.urgent_purchases.create_index([("status", 1), ("purchase_date", -1)])

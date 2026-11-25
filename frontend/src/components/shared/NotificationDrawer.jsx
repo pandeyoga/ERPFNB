@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Bell, AlertTriangle, Info, CheckCircle, Mail } from "lucide-react";
@@ -13,10 +13,10 @@ const TYPE_ICONS = {
   done: CheckCircle,
 };
 const TYPE_COLORS = {
-  urgent: "text-red-600 bg-red-100 dark:bg-red-950/30",
-  warn:   "text-amber-600 bg-amber-100 dark:bg-amber-950/30",
-  info:   "text-blue-600 bg-blue-100 dark:bg-blue-950/30",
-  done:   "text-emerald-600 bg-emerald-100 dark:bg-emerald-950/30",
+  urgent: "text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/30",
+  warn:   "text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/30",
+  info:   "text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/30",
+  done:   "text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/30",
 };
 
 export default function NotificationDrawer({ open, onClose }) {
@@ -24,6 +24,16 @@ export default function NotificationDrawer({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
+  const closeRef = useRef(null);
+
+  // Drawer modal: Escape menutup, fokus awal di tombol tutup (setara Sheet/Dialog lain).
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
+    window.addEventListener("keydown", onKey);
+    const t = setTimeout(() => closeRef.current?.focus(), 50);
+    return () => { window.removeEventListener("keydown", onKey); clearTimeout(t); };
+  }, [open, onClose]);
 
   async function load() {
     setLoading(true);
@@ -72,6 +82,10 @@ export default function NotificationDrawer({ open, onClose }) {
             onClick={onClose}
           />
           <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="notification-drawer-title"
+            data-testid="notification-drawer"
             className="fixed right-0 top-0 h-full w-full sm:w-[420px] glass-card z-50 flex flex-col"
             style={{ borderRadius: 0, borderLeft: "1px solid rgb(var(--glass-border))" }}
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
@@ -80,9 +94,9 @@ export default function NotificationDrawer({ open, onClose }) {
             <div className="px-5 py-4 flex items-center justify-between border-b border-border/50">
               <div className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                <h2 className="font-semibold">Notifications</h2>
+                <h2 id="notification-drawer-title" className="text-base font-semibold">Notifikasi</h2>
               </div>
-              <button onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center" aria-label="Close">
+              <button ref={closeRef} onClick={onClose} className="h-8 w-8 rounded-full hover:bg-foreground/5 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Tutup" data-testid="notifications-close">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -91,8 +105,10 @@ export default function NotificationDrawer({ open, onClose }) {
                 <button
                   key={f.k}
                   onClick={() => setFilter(f.k)}
+                  data-testid={`notifications-filter-${f.k}`}
+                  aria-pressed={filter === f.k}
                   className={cn(
-                    "px-3 py-1.5 text-xs rounded-full font-medium transition-colors",
+                    "h-8 px-2.5 text-[13px] rounded-[calc(var(--radius)-4px)] font-medium transition-colors",
                     filter === f.k ? "pill-active" : "hover:bg-foreground/5",
                   )}
                 >
@@ -102,19 +118,20 @@ export default function NotificationDrawer({ open, onClose }) {
               <button
                 onClick={markAllRead}
                 className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                data-testid="notifications-mark-all-read"
               >
-                Mark all read
+                Tandai semua dibaca
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {loading && (
                 <div className="px-5 py-12 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Memuat…
                 </div>
               )}
               {!loading && items.length === 0 && (
-                <div className="px-5 py-16 flex flex-col items-center text-center text-muted-foreground">
-                  <Mail className="h-12 w-12 mb-3 opacity-30" />
+                <div className="px-5 py-10 flex flex-col items-center text-center text-muted-foreground">
+                  <Mail className="h-8 w-8 mb-2 opacity-30" />
                   <p className="text-sm">Belum ada notifikasi</p>
                 </div>
               )}
@@ -142,7 +159,7 @@ export default function NotificationDrawer({ open, onClose }) {
                         {!n.read_at && <span className="h-2 w-2 mt-1.5 rounded-full bg-aurora-1 shrink-0" style={{ background: "hsl(var(--aurora-1))" }} />}
                       </div>
                       {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
-                      <p className="text-[11px] text-muted-foreground mt-1">{fmtRelative(n.created_at)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{fmtRelative(n.created_at)}</p>
                     </div>
                   </button>
                 );

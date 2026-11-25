@@ -14,6 +14,11 @@ from services._scheduler.jobs import (
     job_flush_logs,
     job_owner_digest,
     job_report_schedules,
+    job_cms_schedule_publish,
+    job_ai_auditor,
+    job_ai_automations,
+    job_ai_inbox,
+    job_ai_retention,
 )
 
 
@@ -43,3 +48,14 @@ def _ensure_registered() -> None:
                description="Kirim digest harian pemilik (Telegram) jam 06:00 WIB.")
     _register("report_schedules", "Report Schedules", "* * * * *", job_report_schedules,
                description="Jalankan laporan terjadwal yang jatuh tempo (cek tiap menit, WIB).")
+    _register("cms_schedule_publish", "CMS Scheduled Publish", "*/15 * * * *", job_cms_schedule_publish,
+               description="Publish/unpublish konten CMS terjadwal (publish_at / unpublish_at).")
+    _register("ai_auditor", "AI Auditor", "30 */3 * * *", job_ai_auditor,
+               description="Tiap 3 jam: pemeriksaan pengendalian internal (invoice/bukti ganda, pecah pembelian, pembuat=penyetuju, "
+                           "jurnal tidak wajar, Benford, harga PO > acuan) → feed Anomali.")
+    _register("ai_automations", "Monitor & Otomasi AI", "* * * * *", job_ai_automations,
+              description="Jalankan monitor kondisi & instruksi terjadwal Asisten AI yang sudah waktunya.")
+    _register("ai_inbox", "Kotak Masuk Email AI", "*/10 * * * *", job_ai_inbox,
+              description="Baca email dokumen (IMAP) → lampiran ke Kotak Masuk Asisten AI. Nonaktif bila INBOX_IMAP_HOST kosong.")
+    _register("ai_retention", "Retensi Data AI", "15 2 * * *", job_ai_retention,
+              description="Hapus percakapan/run/file AI & log WA lebih tua dari retention_days (kebijakan AI, UU PDP).")

@@ -1,6 +1,7 @@
 /** Vendor Performance Scorecard — ranked vendors by composite score with detail drilldown. */
 import { useEffect, useState } from "react";
-import { ChevronRight, Award, Clock, TrendingDown, BadgeCheck, Download, AlertCircle } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { ChevronRight, Award, Clock, BadgeCheck, Download, Users, Trophy } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import LoadingState from "@/components/shared/LoadingState";
 import DataTable from "@/components/shared/DataTable";
 import EmptyState from "@/components/shared/EmptyState";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
 import { fmtRp, fmtNumber } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -64,11 +67,15 @@ export default function VendorScorecard() {
         summary: raw.summary || synthSummary,
       });
     } catch (e) {
-      toast.error("Gagal load vendor scorecard");
+      toast.error("Gagal memuat vendor scorecard");
       setData(null);
     } finally { setLoading(false); }
   }
   useEffect(() => { load(); }, [from, to]); // eslint-disable-line
+  // Deep link dari Procurement › Vendor Scorecard ("Detail di Finance"): ?vendor_id=<id>
+  const [searchParams] = useSearchParams();
+  const deepVendorId = searchParams.get("vendor_id");
+  useEffect(() => { if (deepVendorId) loadDetail(deepVendorId); }, [deepVendorId]); // eslint-disable-line
 
   async function loadDetail(vendorId) {
     setSelectedVendor(vendorId);
@@ -80,19 +87,19 @@ export default function VendorScorecard() {
       const d = unwrap(res);
       setDetail(d?.vendors?.[0] || null);
     } catch (e) {
-      toast.error("Gagal load detail vendor");
+      toast.error("Gagal memuat detail vendor");
     } finally { setDetailLoading(false); }
   }
 
   function exportCsv() {
     if (!data?.vendors?.length) return;
-    const headers = ["Vendor", "Code", "Spend", "PO", "GR", "OnTime%", "AvgLead(d)", "PriceStability%", "Defect%", "Score"];
+    const headers = ["Vendor", "Code", "Spend", "PO", "GR", "OnTime%", "AvgLead(d)", "PriceStability%", "KurangKirim%", "Ditolak%", "Score"];
     const lines = [headers.join(",")];
     data.vendors.forEach(v => {
       lines.push([
         `"${v.vendor_name}"`, v.vendor_code, v.total_spend, v.po_count, v.gr_count,
         v.on_time_pct ?? "", v.avg_lead_time_days ?? "",
-        v.price_stability_pct ?? "", v.defect_rate_pct ?? "",
+        v.price_stability_pct ?? "", v.defect_rate_pct ?? "", v.reject_rate_pct ?? "",
         v.composite_score ?? "",
       ].join(","));
     });
@@ -104,24 +111,30 @@ export default function VendorScorecard() {
     URL.revokeObjectURL(url);
   }
 
-  const scoreRows = (data?.vendors || []).map((v, i) => ({ ...v, _rowid: v.vendor_code || v.vendor_id, _rank: i + 1 }));
+  // Peringkat (#) dihitung dari composite score (desc) — sebelumnya memakai urutan API
+  // sehingga kolom # tidak cocok dengan urutan default tabel (sort by score).
+  const scoreRows = [...(data?.vendors || [])]
+    .sort((a, b) => (b.composite_score ?? -1) - (a.composite_score ?? -1))
+    .map((v, i) => ({ ...v, _rowid: v.vendor_code || v.vendor_id, _rank: i + 1 }));
   const scoreColumns = [
     { key: "_rank", label: "#", numeric: true, render: (r) => <span className="text-muted-foreground">{r._rank}</span> },
     { key: "vendor_name", label: "Vendor", primary: true, sortable: true,
       render: (r) => (
         <div>
           <div className="font-medium">{r.vendor_name}</div>
-          <div className="text-[11px] text-muted-foreground font-mono">{r.vendor_code}</div>
+          <div className="text-xs text-muted-foreground">{r.vendor_code}</div>
         </div>
       ) },
     { key: "total_spend", label: "Spend", numeric: true, sortable: true,
-      render: (r) => <span className="font-medium">{fmtRp(r.total_spend)}</span> },
+      render: (r) => <span className="font-medium whitespace-nowrap">{fmtRp(r.total_spend)}</span> },
     { key: "on_time_pct", label: "On-Time", numeric: true, sortable: true,
       render: (r) => `${r.on_time_pct ?? "-"}%` },
     { key: "avg_lead_time_days", label: "Lead (d)", numeric: true, sortable: true,
       render: (r) => r.avg_lead_time_days ?? "-" },
-    { key: "defect_rate_pct", label: "Defect", numeric: true, sortable: true,
-      render: (r) => `${r.defect_rate_pct ?? "-"}%` },
+    { key: "defect_rate_pct", label: "Kurang kirim", numeric: true, sortable: true,
+      render: (r) => r.defect_rate_pct != null ? `${r.defect_rate_pct}%` : "-" },
+    { key: "reject_rate_pct", label: "Ditolak", numeric: true, sortable: true,
+      render: (r) => r.reject_rate_pct != null ? `${r.reject_rate_pct}%` : "-" },
     { key: "composite_score", label: "Score", numeric: true, sortable: true,
       render: (r) => (
         <div className="flex items-center justify-end gap-2">
@@ -135,22 +148,30 @@ export default function VendorScorecard() {
   ];
 
   return (
-    <div className="space-y-4" data-testid="vendor-scorecard-page">
-      <div className="glass-card p-4 flex flex-wrap gap-3 items-end">
+    <div className="space-y-3 lg:space-y-4" data-testid="vendor-scorecard-page">
+      <PageHeader
+        icon={Trophy}
+        title="Vendor Scorecard"
+        subtitle="Peringkat performa vendor dari histori PO, GR, dan pembayaran (on-time, lead time, defect)."
+        actions={
+          <Button onClick={exportCsv} variant="outline" disabled={!data?.vendors?.length}
+            data-testid="scorecard-export">
+            <Download className="h-4 w-4" /> Ekspor CSV
+          </Button>
+        }
+      />
+
+      <div className="flex flex-wrap gap-3 items-end" data-testid="scorecard-filter">
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Dari</Label>
-          <Input type="date" value={from} onChange={e => setFrom(e.target.value)}
-            className="glass-input mt-1 h-9 w-[160px]" data-testid="scorecard-from" />
+          <Label htmlFor="scorecard-from" className="text-xs md:text-sm font-medium">Dari</Label>
+          <Input id="scorecard-from" type="date" value={from} onChange={e => setFrom(e.target.value)}
+            className="glass-input mt-1 w-[160px]" data-testid="scorecard-from" />
         </div>
         <div>
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Hingga</Label>
-          <Input type="date" value={to} onChange={e => setTo(e.target.value)}
-            className="glass-input mt-1 h-9 w-[160px]" data-testid="scorecard-to" />
+          <Label htmlFor="scorecard-to" className="text-xs md:text-sm font-medium">Hingga</Label>
+          <Input id="scorecard-to" type="date" value={to} onChange={e => setTo(e.target.value)}
+            className="glass-input mt-1 w-[160px]" data-testid="scorecard-to" />
         </div>
-        <Button onClick={exportCsv} variant="outline" className="ml-auto rounded-full gap-2 h-10"
-          data-testid="scorecard-export">
-          <Download className="h-4 w-4" /> CSV
-        </Button>
       </div>
 
       {loading && <LoadingState rows={5} />}
@@ -158,18 +179,18 @@ export default function VendorScorecard() {
       {!loading && data && (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <SummaryCard icon={Award} label="Vendors" value={fmtNumber(data.summary.vendor_count)} sub="dievaluasi" />
-            <SummaryCard icon={BadgeCheck} label="Total Spend" value={fmtRp(data.summary.total_spend)} sub="periode terpilih" />
-            <SummaryCard icon={Clock} label="Avg On-Time" value={`${data.summary.avg_on_time_pct ?? "-"}%`} sub="rata-rata pengiriman" />
-            <SummaryCard icon={AlertCircle} label="Vendor Grade A" value={fmtNumber(data.vendors.filter(v => (v.composite_score ?? 0) >= 85).length)} sub="≥ 85 score" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <CompactStatCard icon={Users} color="aurora-1" label="Vendors" value={fmtNumber(data.summary.vendor_count)} sub="dievaluasi" />
+            <CompactStatCard icon={BadgeCheck} color="aurora-2" label="Total spend" value={fmtRp(data.summary.total_spend)} sub="periode terpilih" />
+            <CompactStatCard icon={Clock} color="aurora-3" label="Avg on-time" value={`${data.summary.avg_on_time_pct ?? "-"}%`} sub="rata-rata pengiriman" />
+            <CompactStatCard icon={Award} color="aurora-4" tone="success" label="Vendor grade A" value={fmtNumber(data.vendors.filter(v => (v.composite_score ?? 0) >= 85).length)} sub="score ≥ 85" />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
             {/* Vendor list */}
             <div className="lg:col-span-2 glass-card p-0 overflow-hidden">
-              <div className="px-5 py-3 border-b border-border/30 flex items-center justify-between">
-                <h3 className="font-semibold">Vendor Ranking</h3>
+              <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
+                <h3 className="text-sm md:text-base font-semibold">Vendor ranking</h3>
                 <span className="text-xs text-muted-foreground">{data.vendors.length} vendor</span>
               </div>
               <DataTable
@@ -185,13 +206,13 @@ export default function VendorScorecard() {
             </div>
 
             {/* Detail panel */}
-            <div className="glass-card p-5 sticky top-4 self-start">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <div className="glass-card p-4 sticky top-4 self-start">
+              <h3 className="text-sm md:text-base font-semibold mb-3 flex items-center gap-2">
                 <Award className="h-4 w-4" /> Detail Vendor
               </h3>
               {!detail && !detailLoading && (
-                <div className="text-sm text-muted-foreground italic">
-                  Klik vendor di tabel untuk melihat detail PO breakdown.
+                <div className="text-sm text-muted-foreground">
+                  Klik vendor di tabel untuk melihat skor detail dan PO terakhir.
                 </div>
               )}
               {detailLoading && <LoadingState rows={3} />}
@@ -199,15 +220,17 @@ export default function VendorScorecard() {
                 <div className="space-y-3" data-testid="scorecard-detail">
                   <div>
                     <div className="text-xs text-muted-foreground">{detail.vendor_code}</div>
-                    <div className="font-bold">{detail.vendor_name}</div>
+                    <div className="font-semibold">{detail.vendor_name}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Metric label="Composite" value={detail.composite_score} suffix="/100" big highlight={scoreColor(detail.composite_score)} />
-                    <Metric label="Spend" value={fmtRp(detail.total_spend)} big />
+                    <Metric label="Composite" value={detail.composite_score} suffix="/100" highlight={scoreColor(detail.composite_score)} />
+                    <Metric label="Spend" value={fmtRp(detail.total_spend)} />
                     <Metric label="On-Time %" value={detail.on_time_pct ?? "-"} suffix={detail.on_time_pct != null ? "%" : ""} />
                     <Metric label="Lead Time" value={detail.avg_lead_time_days ?? "-"} suffix={detail.avg_lead_time_days != null ? " hari" : ""} />
                     <Metric label="Price Stab." value={detail.price_stability_pct ?? "-"} suffix={detail.price_stability_pct != null ? "%" : ""} />
-                    <Metric label="Defect Rate" value={detail.defect_rate_pct ?? "-"} suffix={detail.defect_rate_pct != null ? "%" : ""} />
+                    <Metric label="Kurang kirim" value={detail.defect_rate_pct ?? "-"} suffix={detail.defect_rate_pct != null ? "%" : ""} />
+                    <Metric label="Ditolak saat GR" value={detail.reject_rate_pct ?? "-"} suffix={detail.reject_rate_pct != null ? "%" : ""} />
+                    <Metric label="Lengkap dikirim" value={detail.fill_rate_pct ?? "-"} suffix={detail.fill_rate_pct != null ? "%" : ""} />
                   </div>
                   {detail.po_breakdown?.length > 0 && (
                     <div data-testid="po-breakdown">
@@ -219,14 +242,14 @@ export default function VendorScorecard() {
                           <div key={po.po_id} className="text-xs px-2 py-1.5 rounded bg-muted/30 flex items-center justify-between">
                             <div>
                               <div className="font-mono">{po.doc_no}</div>
-                              <div className="text-[10px] text-muted-foreground">{po.order_date}</div>
+                              <div className="text-xs text-muted-foreground">{po.order_date}</div>
                             </div>
                             <div className="text-right">
                               <div className="tabular-nums font-medium">{fmtRp(po.grand_total)}</div>
-                              <div className="text-[10px]">
-                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 h-4 text-[9px] px-1.5">on-time</Badge>}
-                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-700 dark:text-red-300 border-0 h-4 text-[9px] px-1.5">late</Badge>}
-                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-[9px] px-1.5">no GR</Badge>}
+                              <div className="text-xs">
+                                {po.on_time === true && <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-0 h-4 text-xs px-1.5">on-time</Badge>}
+                                {po.on_time === false && <Badge className="bg-red-500/15 text-red-800 dark:text-red-300 border-0 h-4 text-xs px-1.5">late</Badge>}
+                                {po.on_time === null && <Badge className="bg-muted text-muted-foreground border-0 h-4 text-xs px-1.5">no GR</Badge>}
                               </div>
                             </div>
                           </div>
@@ -244,25 +267,14 @@ export default function VendorScorecard() {
   );
 }
 
-function SummaryCard({ icon: Icon, label, value, sub }) {
+// Metrik ringkas di panel detail — memakai CompactStatCard (size sm) agar satu gaya tile.
+function Metric({ label, value, suffix = "", highlight }) {
   return (
-    <div className="glass-card p-4">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground mb-1">
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </div>
-      <div className="text-2xl font-bold tabular-nums">{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
-    </div>
-  );
-}
-
-function Metric({ label, value, suffix = "", big, highlight }) {
-  return (
-    <div className="rounded-lg bg-muted/20 px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={cn(big ? "text-base font-bold" : "text-sm font-semibold", "tabular-nums", highlight)}>
-        {value}{suffix}
-      </div>
-    </div>
+    <CompactStatCard
+      size="sm"
+      label={label}
+      value={<span className={cn("text-base", highlight)}>{value}{suffix}</span>}
+      className="min-h-0 bg-muted/20"
+    />
   );
 }

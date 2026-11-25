@@ -22,7 +22,7 @@ const ENTITY_LABELS = {
   ar_invoice:        "Invoice",
 };
 
-export default function ApprovalWidget({ approvalCenterPath = "/approvals" }) {
+export default function ApprovalWidget({ approvalCenterPath = "/my-approvals" }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -57,14 +57,14 @@ export default function ApprovalWidget({ approvalCenterPath = "/approvals" }) {
         <CardTitle className="text-sm font-semibold flex items-center justify-between">
           <span className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-primary" />
-            Pending Approval
+            Menunggu Persetujuan
             {total > 0 && (
               <Badge variant={urgent.length > 0 ? "destructive" : "default"} className="text-xs">
                 {total}
               </Badge>
             )}
           </span>
-          <Button variant="ghost" size="sm" className="text-xs h-7"
+          <Button variant="ghost" size="sm"
             onClick={() => navigate(approvalCenterPath)}
             data-testid="approval-widget-view-all">
             Lihat Semua <ChevronRight className="h-3 w-3 ml-1" />
@@ -74,7 +74,7 @@ export default function ApprovalWidget({ approvalCenterPath = "/approvals" }) {
       <CardContent className="pt-0">
         {total === 0 ? (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            <CheckCircle className="h-8 w-8 mx-auto mb-1 text-green-500" />
+            <CheckCircle className="h-6 w-6 mx-auto mb-1 text-emerald-700 dark:text-emerald-400" />
             Semua sudah ditangani
           </div>
         ) : (
@@ -101,9 +101,9 @@ export default function ApprovalWidget({ approvalCenterPath = "/approvals" }) {
                   )}
                 </div>
                 {item.is_overdue ? (
-                  <AlertTriangle className="h-4 w-4 text-red-500 shrink-0 ml-2" />
+                  <AlertTriangle className="h-4 w-4 text-red-700 dark:text-red-400 shrink-0 ml-2" />
                 ) : item.hours_until_deadline != null && item.hours_until_deadline < 4 ? (
-                  <Clock className="h-4 w-4 text-amber-500 shrink-0 ml-2" />
+                  <Clock className="h-4 w-4 text-amber-800 dark:text-amber-400 shrink-0 ml-2" />
                 ) : null}
               </div>
             ))}

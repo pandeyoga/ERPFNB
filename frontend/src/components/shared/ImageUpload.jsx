@@ -128,7 +128,7 @@ export default function ImageUpload({ label, value, onChange, required = false }
             </div>
           ) : value ? (
             <div className="flex flex-col items-center gap-2">
-              <ImageIcon className="h-8 w-8 text-green-600" />
+              <ImageIcon className="h-8 w-8 text-green-700 dark:text-green-400" />
               <p className="text-sm font-medium">Gambar diupload</p>
               <p className="text-xs text-muted-foreground">Klik untuk ganti</p>
             </div>

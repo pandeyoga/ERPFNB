@@ -8,11 +8,15 @@
  *
  * Old routes (/hr/payroll, /hr/service-charge, /hr/incentive, /hr/voucher,
  * /hr/foc, /hr/advances, /hr/lb-fund) remain working for backwards compat.
+ *
+ * UI pass 2026-10: hub owns the ONLY <h1> (PageHeader "Compensation") and uses the
+ * unified Tabs primitive. Every tab page is rendered with `embedded` so it does not
+ * render its own PageHeader inside the hub.
  */
 import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { DollarSign, Receipt, Gift, Ticket, Coffee, Wallet, PiggyBank } from "lucide-react";
-import { cn } from "@/lib/utils";
+import HubTabs, { groupTabs } from "@/components/shared/HubTabs";
+import PageHeader, { HubHeaderProvider } from "@/components/shared/PageHeader";
 import { InlineHelp } from "@/components/shared/InlineHelp";
 import PayrollList from "./PayrollList";
 import ServiceChargeList from "./ServiceChargeList";
@@ -21,77 +25,56 @@ import VoucherList from "./VoucherList";
 import FOCList from "./FOCList";
 import AdvancesList from "./AdvancesList";
 import LBFundLedger from "./LBFundLedger";
+import { useVisibleTabs } from "@/lib/portalGate";
 
+// perm = izin route lama tab tersebut (route lama kini redirect ke tab ini)
 const TABS = [
-  { id: "payroll",        name: "Payroll",          icon: DollarSign, desc: "Penggajian bulanan", render: () => <PayrollList /> },
-  { id: "service-charge", name: "Service Charge",   icon: Receipt,    desc: "Distribusi service charge", render: () => <ServiceChargeList /> },
-  { id: "incentive",      name: "Incentive",        icon: Gift,       desc: "Program insentif & bonus", render: () => <IncentiveList /> },
-  { id: "voucher",        name: "Voucher",          icon: Ticket,     desc: "Voucher karyawan", render: () => <VoucherList /> },
-  { id: "foc",            name: "FOC",              icon: Coffee,     desc: "Free of Charge meal allowance", render: () => <FOCList /> },
-  { id: "advances",       name: "Advances",         icon: Wallet,     desc: "Kasbon karyawan", render: () => <AdvancesList /> },
-  { id: "lb-fund",        name: "LB Fund",          icon: PiggyBank,  desc: "Lebaran & bonus fund ledger", render: () => <LBFundLedger /> },
+  { id: "payroll",        name: "Payroll",        icon: DollarSign, desc: "Penggajian bulanan & salary master karyawan", render: () => <PayrollList embedded />, perm: ["hr.read", "hr.write"] },
+  { id: "service-charge", name: "Service Charge", icon: Receipt,    desc: "Distribusi service charge per outlet & periode", render: () => <ServiceChargeList embedded />, perm: "hr.service_charge" },
+  { id: "incentive",      name: "Incentive",      icon: Gift,       desc: "Program insentif & bonus karyawan", render: () => <IncentiveList embedded />, perm: "hr.incentive" },
+  { id: "voucher",        name: "Voucher",        icon: Ticket,     desc: "Penerbitan & penukaran voucher", render: () => <VoucherList embedded />, perm: "hr.voucher" },
+  { id: "foc",            name: "FOC",            icon: Coffee,     desc: "Pencatatan Free of Charge (staff meal, marketing, kompensasi)", render: () => <FOCList embedded />, perm: "hr.foc" },
+  { id: "advances",       name: "Advances",       icon: Wallet,     desc: "Kasbon karyawan & jadwal cicilan", render: () => <AdvancesList embedded />, perm: "hr.advance" },
+  { id: "lb-fund",        name: "LB Fund",        icon: PiggyBank,  desc: "Buku besar dana Loss & Breakage", render: () => <LBFundLedger embedded />, perm: "hr.lb_fund" },
+];
+
+// Kasbon dipotong saat payroll; LB Fund diisi dari porsi service charge.
+const GROUPS = [
+  { id: "pay", label: "Penggajian", icon: DollarSign, ids: ["payroll", "incentive", "advances"] },
+  { id: "sc", label: "Service charge & LB", icon: Receipt, ids: ["service-charge", "lb-fund"] },
+  { id: "benefit", label: "Voucher & FOC", icon: Ticket, ids: ["voucher", "foc"] },
 ];
 
 export default function CompensationHub() {
+  const tabs = useVisibleTabs(TABS);
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = (searchParams.get("tab") || "payroll").toLowerCase();
-  const activeTab = TABS.find(t => t.id === tab) || TABS[0];
+  const activeTab = tabs.find(t => t.id === tab) || tabs[0];
 
   const setTab = (id) => setSearchParams({ tab: id }, { replace: true });
 
   return (
-    <div className="space-y-4" data-testid="compensation-hub">
-      <div className="glass-card overflow-hidden">
-        <div className="px-5 pt-5">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl grad-aurora-soft flex items-center justify-center">
-              <activeTab.icon className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold leading-tight">Compensation & Benefits</h2>
-              <p className="text-xs text-muted-foreground">{activeTab.desc}</p>
-            </div>
-            <InlineHelp id="hr-compensation-hub" size="sm" />
-          </div>
-        </div>
-        <div
-          className="flex items-center gap-1 px-5 pt-4 border-b border-border/40 -mb-px overflow-x-auto"
-          data-testid="comp-tabs"
-          role="tablist"
-        >
-          {TABS.map(t => {
-            const isActive = t.id === activeTab.id;
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "relative inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-                data-testid={`comp-tab-${t.id}`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{t.name}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="comp-tab-underline"
-                    className="absolute inset-x-0 -bottom-px h-0.5 bg-foreground"
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
-                )}
-              </button>
-            );
-          })}
+    <HubHeaderProvider>
+      <div data-testid="compensation-hub">
+        <PageHeader hub
+          icon={activeTab.icon}
+          title="Compensation"
+          subtitle={activeTab.desc}
+          actions={<InlineHelp id="hr-compensation-hub" size="sm" />}
+        />
+        {/* 7 halaman → 3 kelompok + sub-tab (DESIGN_SYSTEM §10.8) */}
+        <HubTabs
+          groups={groupTabs(tabs.map(t => ({ ...t, label: t.name })), GROUPS)}
+          value={activeTab.id}
+          onChange={setTab}
+          testId="comp-tabs"
+          itemTestId={(id) => `comp-tab-${id}`}
+          groupTestId={(id) => `comp-group-${id}`}
+        />
+        <div className="mt-3" data-testid={`comp-content-${activeTab.id}`} role="tabpanel" aria-label={activeTab.name}>
+          {activeTab.render()}
         </div>
       </div>
-
-      <div data-testid={`comp-content-${activeTab.id}`}>
-        {activeTab.render()}
-      </div>
-    </div>
+    </HubHeaderProvider>
   );
 }

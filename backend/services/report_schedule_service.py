@@ -196,7 +196,7 @@ async def _build_finance_ap_aging_weekly() -> dict:
 <tr><td>61–90 hari</td><td>Rp {buckets['90']:,.0f}</td></tr>
 <tr><td>&gt;90 hari</td><td style='color:red'>Rp {buckets['120plus']:,.0f}</td></tr>
 </table>
-<p><a href='/finance/ap-aging'>Buka FnB ERP Finance → AP Aging →</a></p>
+<p><a href='/finance/payments-hub?tab=ap-aging'>Buka FnB ERP Finance → AP Aging →</a></p>
 </div>"""
     return {
         "subject": f"AP Aging Weekly — {today}",

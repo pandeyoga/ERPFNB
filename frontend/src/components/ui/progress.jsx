@@ -11,9 +11,11 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => (
       className
     )}
     {...props}>
+    {/* Lebar (bukan translateX) — indikator yang digeser keluar tidak selalu ter-clip di
+        dalam kartu glass (backdrop-filter) sehingga tampil sebagai garis di luar kartu. */}
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }} />
+      className="h-full bg-primary transition-[width]"
+      style={{ width: `${Math.max(0, Math.min(100, value || 0))}%` }} />
   </ProgressPrimitive.Root>
 ))
 Progress.displayName = ProgressPrimitive.Root.displayName

@@ -108,7 +108,7 @@ async def trigger_cms_schedule_publish(
     user: dict = Depends(require_perm("admin", "cms")),
 ):
     """Manually trigger the CMS auto-publish/unpublish job (for testing / on-demand)."""
-    from services.scheduler_service import job_cms_schedule_publish
+    from services._scheduler.jobs import job_cms_schedule_publish
     result = await job_cms_schedule_publish()
     return ok_envelope(result)
 

@@ -226,9 +226,9 @@ export async function rejectIncrease(reqId, { note }) {
 // ============================================================================
 
 export function paceColor(status) {
-  if (status === "red") return "text-red-500";
-  if (status === "amber") return "text-amber-500";
-  return "text-emerald-500";
+  if (status === "red") return "text-red-700 dark:text-red-400";
+  if (status === "amber") return "text-amber-800 dark:text-amber-400";
+  return "text-emerald-700 dark:text-emerald-400";
 }
 
 export function paceBg(status) {

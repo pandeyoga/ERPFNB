@@ -263,13 +263,19 @@ class TestARReceipt:
         }
 
         mock_db.ar_invoices.find_one = AsyncMock(return_value=invoice)
+        # FIN-01: the amount is claimed atomically on the invoice before the JE is posted
+        mock_db.ar_invoices.find_one_and_update = AsyncMock(
+            return_value={**invoice, "paid_amount": 5_550_000, "outstanding": 0})
         mock_db.ar_invoices.update_one = AsyncMock(return_value=MagicMock(modified_count=1))
         mock_db.ar_receipts.insert_one = AsyncMock()
 
         # Actual signature: record_receipt(invoice_id, receipt_date, amount, ..., *, user_id)
-        # Patch _post_ar_je at its source module (services._ar.journal)
-        with patch("services._ar.receipt.get_db", return_value=mock_db):
-            with patch("services._ar.journal._post_ar_je", new=AsyncMock(return_value=None)):
+        with patch("services._ar.receipt.get_db", return_value=mock_db), \
+                patch("services._ar.journal.resolve_ar_accounts",
+                      new=AsyncMock(return_value=("coa-ar", "coa-rev", "coa-ppn"))), \
+                patch("services.gl_mapping.resolve", new=AsyncMock(return_value="coa-bank")), \
+                patch("services.journal_service._post_journal", new=AsyncMock(return_value={"id": "je-1"})):
+            if True:
                 result = await record_receipt(
                     "inv-001",
                     receipt_date="2024-06-15",

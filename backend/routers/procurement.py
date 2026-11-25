@@ -5,7 +5,8 @@ from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from core.exceptions import ok_envelope
-from core.security import current_user, enforce_outlet_scope, require_perm, scoped_outlet_ids
+from core.scope import narrow_to_brand
+from core.security import current_user, enforce_outlet_scope, require_any_perm, require_perm, scoped_outlet_ids
 from services import (
     po_pdf_service,
     procurement_service,
@@ -35,6 +36,7 @@ async def list_prs(
         outlet_ids = [outlet_id] if outlet_id else scope
     elif outlet_id:
         outlet_ids = [outlet_id]
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_prs(
         outlet_ids=outlet_ids, status=status, source=source,
         page=page, per_page=per_page,
@@ -107,7 +109,9 @@ async def list_pos(
     status: Optional[str] = None, vendor_id: Optional[str] = None,
     outlet_id: Optional[str] = None,
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
-    user: dict = Depends(require_perm("procurement.po.create")),
+    # Approver PO (procurement.po.approve, mis. Owner) harus bisa membaca PO yang ia setujui — cabang di bawah
+    # memang sudah menangani mereka (lintas toko), tetapi dependency lama hanya menerima po.create.
+    user: dict = Depends(require_any_perm("procurement.po.create", "procurement.po.approve")),
 ):
     # Enforce outlet scope for non-admin users
     from core.security import get_user_permissions
@@ -116,6 +120,7 @@ async def list_pos(
     if "*" not in user_perms and "procurement.po.approve" not in user_perms:
         enforce_outlet_scope(user, outlet_id)  # SEC-06: restricted users never widen to all outlets
         outlet_ids = scoped_outlet_ids(user)
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_pos(
         status=status, vendor_id=vendor_id, outlet_id=outlet_id, outlet_ids=outlet_ids,
         page=page, per_page=per_page,
@@ -186,7 +191,7 @@ async def po_approval_state(id_: str,
 
 
 @router.get("/pos/{id_}")
-async def get_po(id_: str, user: dict = Depends(require_perm("procurement.po.create"))):
+async def get_po(id_: str, user: dict = Depends(require_any_perm("procurement.po.create", "procurement.po.approve"))):
     """Get single PO by id."""
     from core.exceptions import AuroraException
     doc = await procurement_service.get_po_by_id(id_)
@@ -214,6 +219,10 @@ async def cancel_po(id_: str, payload: dict = Body(...),
 async def list_grs(
     status: Optional[str] = None,
     outlet_id: Optional[str] = None,
+    vendor_id: Optional[str] = None,
+    date_from: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    date_to: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    search: Optional[str] = Query(None, max_length=60),
     page: int = Query(1, ge=1), per_page: int = Query(20, ge=1, le=100),
     user: dict = Depends(require_perm("procurement.gr.create")),
 ):
@@ -224,8 +233,10 @@ async def list_grs(
     if "*" not in user_perms and "procurement.gr.post" not in user_perms:
         enforce_outlet_scope(user, outlet_id)
         outlet_ids = scoped_outlet_ids(user)
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     items, meta = await procurement_service.list_grs(
-        status=status, outlet_id=outlet_id, outlet_ids=outlet_ids, page=page, per_page=per_page,
+        status=status, outlet_id=outlet_id, outlet_ids=outlet_ids, vendor_id=vendor_id,
+        date_from=date_from, date_to=date_to, search=search, page=page, per_page=per_page,
     )
     return ok_envelope(items, meta)
 
@@ -259,10 +270,13 @@ async def vendor_scorecard(
     days: int = Query(180, ge=1, le=730),
     user: dict = Depends(require_perm("procurement.vendor.read")),
 ):
-    """Vendor performance scorecard (lead time, on-time%, defect rate, price stability)."""
-    return ok_envelope(await vendor_comparison_service.vendor_scorecard(
-        vendor_id, days=days,
-    ))
+    """Vendor performance scorecard — satu implementasi dengan Finance/Procurement list (reports_service)."""
+    from datetime import date as _date, timedelta as _td
+    from services import reports_service
+    res = await reports_service.vendor_scorecard(
+        vendor_id=vendor_id, date_from=(_date.today() - _td(days=days)).isoformat(), date_to=_date.today().isoformat())
+    row = next(iter(res.get("vendors") or res.get("rows") or res.get("items") or []), None) if isinstance(res, dict) else None
+    return ok_envelope({"vendor_id": vendor_id, "period_days": days, **(row or {})})
 
 
 # =================== PHASE 9B - KANBAN WORKBOARD ===================
@@ -285,6 +299,7 @@ async def workboard(
         outlet_ids = [outlet_id] if outlet_id else scope
     elif outlet_id:
         outlet_ids = [outlet_id]
+    outlet_ids = narrow_to_brand(outlet_ids)  # konteks brand (core/scope.py)
     return ok_envelope(await procurement_workboard_service.get_workboard(
         outlet_ids=outlet_ids, vendor_id=vendor_id, days=days,
         limit_per_column=limit_per_column,

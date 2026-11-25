@@ -61,7 +61,7 @@ export default function PreferencesDialog({ open, onOpenChange }) {
                   >
                     <Icon className="h-4 w-4" />
                     {t.label}
-                    {active && <Check className="h-4 w-4 ml-auto text-green-600 dark:text-green-400" />}
+                    {active && <Check className="h-4 w-4 ml-auto text-green-700 dark:text-green-400" />}
                   </button>
                 );
               })}

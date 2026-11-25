@@ -48,7 +48,7 @@ export default function UpdateBalanceModal({ account, createMode = false, onClos
     try {
       if (isCreate) {
         if (!form.name.trim()) { toast.error("Nama wajib"); return; }
-        if (!form.current_balance) { toast.error("Saldo awal wajib"); return; }
+        if (!form.current_balance) { toast.error("Saldo saat ini wajib diisi"); return; }
         await api.post("/finance/cash/accounts", {
           code: form.code || undefined,
           name: form.name,
@@ -89,7 +89,7 @@ export default function UpdateBalanceModal({ account, createMode = false, onClos
 
         {!isCreate && (
           <div className="text-xs text-muted-foreground mb-3" data-testid="cash-modal-last-balance">
-            Saldo terakhir: <span className="font-mono font-semibold">{fmtRp(account?.current_balance)}</span>
+            Saldo terakhir: <span className="font-semibold tabular-nums">{fmtRp(account?.current_balance)}</span>
           </div>
         )}
 
@@ -98,13 +98,13 @@ export default function UpdateBalanceModal({ account, createMode = false, onClos
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="code">Kode (opsional)</Label>
-                  <Input id="code" value={form.code} onChange={(e) => updateField("code", e.target.value)} placeholder="auto" data-testid="cash-modal-code" />
+                  <Label htmlFor="cash-code">Kode (opsional)</Label>
+                  <Input id="cash-code" value={form.code} onChange={(e) => updateField("code", e.target.value)} placeholder="auto" data-testid="cash-modal-code" />
                 </div>
                 <div>
-                  <Label htmlFor="type">Tipe</Label>
+                  <Label htmlFor="cash-type">Tipe *</Label>
                   <Select value={form.type} onValueChange={(v) => updateField("type", v)}>
-                    <SelectTrigger data-testid="cash-modal-type"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="cash-type" data-testid="cash-modal-type"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {TYPES.map((t) => <SelectItem key={t.v} value={t.v}>{t.l}</SelectItem>)}
                     </SelectContent>
@@ -112,45 +112,46 @@ export default function UpdateBalanceModal({ account, createMode = false, onClos
                 </div>
               </div>
               <div>
-                <Label htmlFor="name">Nama Akun</Label>
-                <Input id="name" value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="BCA Operasional" data-testid="cash-modal-name" />
+                <Label htmlFor="cash-name">Nama Akun *</Label>
+                <Input id="cash-name" value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="BCA Operasional" data-testid="cash-modal-name" />
               </div>
               {form.type === "bank" && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Bank</Label>
-                    <Input value={form.bank_name} onChange={(e) => updateField("bank_name", e.target.value)} placeholder="BCA" data-testid="cash-modal-bank-name" />
+                    <Label htmlFor="cash-bank-name">Bank</Label>
+                    <Input id="cash-bank-name" value={form.bank_name} onChange={(e) => updateField("bank_name", e.target.value)} placeholder="BCA" data-testid="cash-modal-bank-name" />
                   </div>
                   <div>
-                    <Label>No. Rekening</Label>
-                    <Input value={form.bank_account_no} onChange={(e) => updateField("bank_account_no", e.target.value)} data-testid="cash-modal-bank-account-no" />
+                    <Label htmlFor="cash-bank-no">No. Rekening</Label>
+                    <Input id="cash-bank-no" value={form.bank_account_no} onChange={(e) => updateField("bank_account_no", e.target.value)} data-testid="cash-modal-bank-account-no" />
                   </div>
                 </div>
               )}
               <div>
-                <Label>Opening Balance</Label>
-                <Input value={form.opening_balance} onChange={(e) => updateField("opening_balance", e.target.value)} type="number" data-testid="cash-modal-opening-balance" />
+                <Label htmlFor="cash-opening">Saldo pembukaan</Label>
+                <Input id="cash-opening" value={form.opening_balance} onChange={(e) => updateField("opening_balance", e.target.value)} type="number" data-testid="cash-modal-opening-balance" />
+                <p className="mt-1 text-xs text-muted-foreground">Saldo pada awal pencatatan (untuk riwayat). Kosongkan bila sama dengan 0.</p>
               </div>
             </>
           )}
 
           <div>
-            <Label>{isCreate ? "Saldo Awal" : "Saldo Baru"}</Label>
-            <Input value={form.current_balance} onChange={(e) => updateField("current_balance", e.target.value)} type="number" placeholder="0" data-testid="cash-modal-current-balance" />
+            <Label htmlFor="cash-current">{isCreate ? "Saldo saat ini *" : "Saldo baru *"}</Label>
+            <Input id="cash-current" value={form.current_balance} onChange={(e) => updateField("current_balance", e.target.value)} type="number" placeholder="0" data-testid="cash-modal-current-balance" />
           </div>
 
           <div>
-            <Label>Catatan (opsional)</Label>
-            <Textarea value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={2} data-testid="cash-modal-notes" />
+            <Label htmlFor="cash-notes">Catatan (opsional)</Label>
+            <Textarea id="cash-notes" value={form.notes} onChange={(e) => updateField("notes", e.target.value)} rows={2} data-testid="cash-modal-notes" />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={busy} data-testid="cash-modal-cancel">
-            <X className="h-4 w-4 mr-1" /> Batal
+            Batal
           </Button>
           <Button onClick={save} disabled={busy} data-testid="cash-modal-save">
-            <Save className="h-4 w-4 mr-1" /> {busy ? "Menyimpan…" : "Simpan"}
+            <Save /> {busy ? "Menyimpan…" : "Simpan"}
           </Button>
         </DialogFooter>
       </DialogContent>

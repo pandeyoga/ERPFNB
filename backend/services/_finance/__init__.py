@@ -16,6 +16,7 @@ from services._finance.balances import (  # noqa: F401
 from services._finance.reports import (  # noqa: F401
     trial_balance,
     profit_loss,
+    profit_loss_breakdown,
 )
 from services._finance.ap import ap_aging  # noqa: F401
 from services._finance.home import (  # noqa: F401

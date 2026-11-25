@@ -72,7 +72,7 @@ def lv_no(emp_code: str, i: int) -> str:
 async def seed_purchase_requests(db, outlets, vendors, items, admin_id: str) -> int:
     """Seed purchase_requests — 3-4 per outlet, berbagai status."""
     print("\n[1/5] Seeding purchase_requests…")
-    statuses = ["submitted", "submitted", "approved", "approved", "rejected", "converted_to_po"]
+    statuses = ["submitted", "submitted", "approved", "approved", "rejected", "converted"]
     count = 0
     pr_docs = []
 
@@ -401,7 +401,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "sales_deviation",
             "source_type": "daily_sales",
-            "severity": "high",
+            "severity": "severe",
             "title": "Penjualan turun signifikan",
             "description": "Penjualan harian 42% di bawah rata-rata 30 hari.",
             "details": {"actual": 4_200_000, "expected": 7_250_000, "deviation_pct": -42},
@@ -410,7 +410,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "sales_deviation",
             "source_type": "daily_sales",
-            "severity": "medium",
+            "severity": "mild",
             "title": "Penjualan naik tidak biasa",
             "description": "Penjualan 35% di atas rata-rata — verifikasi event/promo.",
             "details": {"actual": 18_500_000, "expected": 13_700_000, "deviation_pct": 35},
@@ -420,7 +420,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "vendor_price_spike",
             "source_type": "goods_receipt",
-            "severity": "high",
+            "severity": "severe",
             "title": "Lonjakan harga bahan baku",
             "description": "Harga daging sapi naik 28% dari pembelian terakhir.",
             "details": {"item": "Daging Sapi", "prev_price": 130_000, "curr_price": 166_400, "spike_pct": 28},
@@ -429,7 +429,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "vendor_price_spike",
             "source_type": "goods_receipt",
-            "severity": "medium",
+            "severity": "mild",
             "title": "Harga kemasan naik",
             "description": "Harga bahan kemasan naik 15% dari PO terakhir.",
             "details": {"item": "Packaging", "prev_price": 8_500, "curr_price": 9_775, "spike_pct": 15},
@@ -439,7 +439,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "vendor_leadtime",
             "source_type": "goods_receipt",
-            "severity": "medium",
+            "severity": "mild",
             "title": "Lead time vendor memburuk",
             "description": "Rata-rata lead time naik dari 3 hari ke 8 hari bulan ini.",
             "details": {"vendor": "CV Sejahtera", "prev_lt": 3, "curr_lt": 8, "delta_days": 5},
@@ -449,7 +449,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "ap_cash_spike",
             "source_type": "ap_ledger",
-            "severity": "high",
+            "severity": "severe",
             "title": "Lonjakan pengeluaran AP tidak biasa",
             "description": "Total AP bulan ini Rp 185jt vs rata-rata 3 bulan Rp 90jt.",
             "details": {"this_month": 185_000_000, "avg_3m": 90_000_000, "spike_pct": 106},
@@ -458,7 +458,7 @@ async def seed_anomaly_events(db, outlets, vendors, admin_id: str) -> int:
         {
             "type": "ap_cash_spike",
             "source_type": "ap_ledger",
-            "severity": "low",
+            "severity": "mild",
             "title": "Invoice vendor duplikat terdeteksi",
             "description": "2 invoice dengan nomor INV-2026-0142 dari vendor yang sama.",
             "details": {"invoice_no": "INV-2026-0142", "count": 2},

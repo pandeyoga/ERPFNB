@@ -95,7 +95,7 @@ export default function ChangePasswordDialog({ open, onOpenChange }) {
       <DialogContent className="max-w-md" data-testid="change-password-dialog">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5" /> Ganti Password
+            <KeyRound className="h-5 w-5" /> Ubah Password
           </DialogTitle>
           <DialogDescription>
             Demi keamanan, masukkan password lama lalu password baru yang kuat.
@@ -116,7 +116,7 @@ export default function ChangePasswordDialog({ open, onOpenChange }) {
           {form.new_password.length > 0 && (
             <ul className="grid grid-cols-1 gap-1 rounded-lg bg-muted/40 p-2.5" data-testid="change-pwd-rules">
               {rulesPass.map((r) => (
-                <li key={r.id} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                <li key={r.id} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-green-700 dark:text-green-400" : "text-muted-foreground"}`}>
                   {r.ok ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
                   {r.label}
                 </li>

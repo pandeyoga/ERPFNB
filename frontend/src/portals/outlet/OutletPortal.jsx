@@ -1,23 +1,19 @@
-/** Outlet Portal shell — adds ApprovalCenter (outlet-scoped, Sprint B).
+/** Outlet Portal shell. Approval outlet ada di Pusat Persetujuan (/my-approvals).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`.
  * Non-sensitive shell/hub/CRM pages remain open to anyone with `outlet.*`; sensitive
  * write flows (daily-close, daily-sales, KDO/BDO/FDO create, petty cash) are gated. */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Wand2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import OutletHome from "./OutletHome";
 import DailySalesList from "./DailySalesList";
 import DailySalesForm from "./DailySalesForm";
 import DailySalesDetail from "./DailySalesDetail";
 import PettyCashList from "./PettyCashList";
 import UrgentPurchaseList from "./UrgentPurchaseList";
-import KdoPage from "./KdoPage";
-import BdoPage from "./BdoPage";
-import FdoPage from "./FdoPage";
 import DailyOrdersHub from "./DailyOrdersHub";
-import DailyClose from "./DailyClose";
 import StockCheck from "./inventory/StockCheck";
 import StockTransfers from "./inventory/StockTransfers";
 import UsageLog from "./inventory/UsageLog";
@@ -28,18 +24,19 @@ import ReservationForm from "./ReservationForm";
 import CRMHub from "./CRMHub";
 import EndOfDayWorkflow from "./EndOfDayWorkflow";
 import OutletBudgetTracker from "./OutletBudgetTracker";
-import ApprovalCenter from "../shared/ApprovalCenter";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
 import { OutletScopeProvider } from "./OutletScopeContext";
-import OutletScopeHeader from "./OutletScopeHeader";
+import { useLayoutEffect, useState } from "react";
+import OutletScopeHeader, { OutletScopeCompact } from "./OutletScopeHeader";
+import { PageHeaderExtrasProvider, usePageHeaderExtrasConsumed } from "@/components/shared/PageHeader";
+import MenuRecipePage from "@/portals/outlet/MenuRecipePage";
 
-// Outlet manager hanya lihat approval lokal: PR (urgent purchase), stock adj/transfer, payment req
-const OUTLET_TYPES = [
-  "purchase_request",
-  "stock_adjustment",
-  "stock_transfer",
-  "payment_request",
-];
+/** Pemilih outlet tampil di header halaman (PageHeader). Bar penuh hanya untuk halaman tanpa PageHeader. */
+function OutletScopeFallback() {
+  const consumed = usePageHeaderExtrasConsumed();
+  const [mounted, setMounted] = useState(false);
+  useLayoutEffect(() => { setMounted(true); }, []);
+  return mounted && consumed === 0 ? <OutletScopeHeader /> : null;
+}
 
 export default function OutletPortal() {
   const { user } = useAuth();
@@ -47,11 +44,14 @@ export default function OutletPortal() {
   const g = makeGate(user);
   return (
     <OutletScopeProvider>
+      <PageHeaderExtrasProvider extras={<OutletScopeCompact />}>
       <div data-testid="outlet-portal">
-        <OutletScopeHeader />
+        <OutletScopeFallback />
         <Routes>
         <Route index element={<OutletHome />} />
-        <Route path="crm" element={<CRMHub />} />
+        {/* CRM hub memanggil reservasi & loyalty — tanpa izin itu halaman hanya berisi 403 */}
+        <Route path="crm" element={g(["crm.view", "reservations.read"], <CRMHub />)} />
+        <Route path="menu" element={g("menu.item.read", <MenuRecipePage />)} />
         <Route path="daily-sales" element={g("outlet.daily_sales.read", <DailySalesList />)} />
         <Route path="daily-sales/new" element={g("outlet.daily_sales.read", <DailySalesForm />)} />
         <Route path="daily-sales/:id" element={g("outlet.daily_sales.read", <DailySalesDetail />)} />
@@ -64,7 +64,9 @@ export default function OutletPortal() {
         <Route path="bdo" element={<Navigate to="/outlet/daily-orders?type=bdo" replace />} />
         <Route path="fdo" element={<Navigate to="/outlet/daily-orders?type=fdo" replace />} />
         <Route path="urgent-purchase" element={g("procurement.pr.create", <UrgentPurchaseList />)} />
-        <Route path="daily-close" element={g("outlet.daily_close.execute", <DailyClose />)} />
+        {/* Deprecated: Daily Close = Langkah 4 di End of Day (komponen yang sama). Rute dipertahankan
+            untuk tautan lama; halaman menampilkan banner ke /outlet/end-of-day. */}
+        <Route path="daily-close" element={<LegacyRedirect to="/outlet/end-of-day?step=3" />} />
         <Route path="end-of-day" element={g("outlet.daily_close.execute", <EndOfDayWorkflow />)} />
         <Route path="opname" element={<Navigate to="/inventory/opname" replace />} />
         <Route path="inventory/stock-check" element={g(["inventory.balance.read", "inventory.view"], <StockCheck />)} />
@@ -77,20 +79,10 @@ export default function OutletPortal() {
         <Route path="reservations/:id/edit" element={<ReservationForm />} />
         {/* Phase 14 — Outlet Operational Budget tracker */}
         <Route path="budget" element={<OutletBudgetTracker />} />
-        <Route
-          path="approvals"
-          element={
-            <ApprovalCenter
-              restrictedTypes={OUTLET_TYPES}
-              outletOnly
-              title="Outlet Approval Center"
-              subtitle="Antrian persetujuan untuk outlet kamu"
-            />
-          }
-        />
         <Route path="*" element={<Navigate to="/outlet" replace />} />
         </Routes>
       </div>
+      </PageHeaderExtrasProvider>
     </OutletScopeProvider>
   );
 }

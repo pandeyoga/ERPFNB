@@ -18,6 +18,51 @@ def _parse_date(s, *, fallback_today=False):
     except ValueError as e:
         raise ValidationError(f"Invalid date format: {s}") from e
 
+async def daily_sales_rows(
+    *,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    outlet_ids: Optional[list[str]] = None,
+    brand_ids: Optional[list[str]] = None,
+) -> list[dict]:
+    """Baris laporan Daily Sales (sales tervalidasi, urut tanggal lalu outlet).
+
+    Satu sumber untuk ekspor Excel dan pratinjau di layar (/api/reports/sales/daily-sales).
+    """
+    db = get_db()
+    match_filter: dict = {"deleted_at": None, "status": "validated"}
+    if date_from or date_to:
+        match_filter["sales_date"] = {}
+        if date_from:
+            match_filter["sales_date"]["$gte"] = date_from
+        if date_to:
+            match_filter["sales_date"]["$lte"] = date_to
+    if outlet_ids:
+        match_filter["outlet_id"] = {"$in": outlet_ids}
+    if brand_ids:
+        match_filter["brand_id"] = {"$in": brand_ids}
+
+    outlet_map = {o["id"]: o.get("name", o["id"])
+                  async for o in db.outlets.find({"deleted_at": None}, {"id": 1, "name": 1})}
+    brand_map = {b["id"]: b.get("name", b["id"])
+                 async for b in db.brands.find({"deleted_at": None}, {"id": 1, "name": 1})}
+
+    rows = []
+    async for doc in db.daily_sales.find(match_filter).sort([("sales_date", 1), ("outlet_id", 1)]):
+        rows.append({
+            "id": doc.get("id"),
+            "sales_date": doc.get("sales_date"),
+            "outlet_id": doc.get("outlet_id"),
+            "outlet_name": outlet_map.get(doc.get("outlet_id"), doc.get("outlet_id") or ""),
+            "brand_id": doc.get("brand_id"),
+            "brand_name": brand_map.get(doc.get("brand_id"), doc.get("brand_id") or ""),
+            "grand_total": float(doc.get("grand_total", 0) or 0),
+            "transaction_count": int(doc.get("transaction_count", 0) or 0),
+            "status": doc.get("status", ""),
+        })
+    return rows
+
+
 async def generate_daily_sales_excel(
     *,
     date_from: Optional[str] = None,
@@ -42,35 +87,10 @@ async def generate_daily_sales_excel(
         format_date,
     )
     
-    db = get_db()
-    
-    # Build query
-    match_filter: dict = {"deleted_at": None, "status": "validated"}
-    if date_from or date_to:
-        match_filter["sales_date"] = {}
-        if date_from:
-            match_filter["sales_date"]["$gte"] = date_from
-        if date_to:
-            match_filter["sales_date"]["$lte"] = date_to
-    if outlet_ids:
-        match_filter["outlet_id"] = {"$in": outlet_ids}
-    if brand_ids:
-        match_filter["brand_id"] = {"$in": brand_ids}
-    
-    # Load data
-    sales_docs = []
-    async for doc in db.daily_sales.find(match_filter).sort([("sales_date", 1), ("outlet_id", 1)]):
-        sales_docs.append(doc)
-    
-    # Load lookups
-    outlet_map = {}
-    async for o in db.outlets.find({"deleted_at": None}):
-        outlet_map[o["id"]] = o.get("name", o["id"])
-    
-    brand_map = {}
-    async for b in db.brands.find({"deleted_at": None}):
-        brand_map[b["id"]] = b.get("name", b["id"])
-    
+    sales_rows = await daily_sales_rows(
+        date_from=date_from, date_to=date_to, outlet_ids=outlet_ids, brand_ids=brand_ids,
+    )
+
     # Create workbook
     wb = create_workbook("Daily Sales")
     ws = wb.active
@@ -91,19 +111,17 @@ async def generate_daily_sales_excel(
     grand_total = 0.0
     grand_trx_count = 0
     
-    for doc in sales_docs:
-        outlet_name = outlet_map.get(doc.get("outlet_id"), doc.get("outlet_id") or "")
-        brand_name = brand_map.get(doc.get("brand_id"), doc.get("brand_id") or "")
-        sales_total = float(doc.get("grand_total", 0) or 0)
-        trx_count = int(doc.get("transaction_count", 0) or 0)
-        
+    for r in sales_rows:
+        sales_total = r["grand_total"]
+        trx_count = r["transaction_count"]
+
         row_data = [
-            format_date(doc.get("sales_date")),
-            outlet_name,
-            brand_name,
+            format_date(r["sales_date"]),
+            r["outlet_name"],
+            r["brand_name"],
             sales_total,
             trx_count,
-            doc.get("status", ""),
+            r["status"],
         ]
         write_data_row(ws, row_data, current_row, number_cols=[4, 5])
         
@@ -112,14 +130,14 @@ async def generate_daily_sales_excel(
         current_row += 1
     
     # Total row
-    if sales_docs:
+    if sales_rows:
         total_row = ["", "", "TOTAL", grand_total, grand_trx_count, ""]
         write_total_row(ws, total_row, current_row, number_cols=[4, 5])
     
     # Styling
-    apply_currency_format(ws, 4, current_row - len(sales_docs), current_row, currency="Rp")
+    apply_currency_format(ws, 4, current_row - len(sales_rows), current_row, currency="Rp")
     autosize_columns(ws)
-    freeze_header_row(ws, header_row=current_row - len(sales_docs) - 1)
+    freeze_header_row(ws, header_row=current_row - len(sales_rows) - 1)
     
     return wb
 

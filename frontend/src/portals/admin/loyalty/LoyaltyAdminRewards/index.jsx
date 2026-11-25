@@ -8,8 +8,8 @@ import {
   Package, BarChart2, Sparkles, AlertTriangle, RefreshCw, Upload, X, Loader2,
 } from "lucide-react";
 import api from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +41,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PageHeader from "@/components/shared/PageHeader";
+import CompactStatCard from "@/components/shared/CompactStatCard";
+import EmptyState from "@/components/shared/EmptyState";
 
 const CATEGORY_LABELS = {
   voucher: "Voucher",
@@ -49,9 +53,9 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORY_COLORS = {
-  voucher: "bg-blue-100 text-blue-700 border-blue-200",
-  merchandise: "bg-purple-100 text-purple-700 border-purple-200",
-  experience: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  voucher: "bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
+  merchandise: "bg-purple-100 dark:bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
+  experience: "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
 };
 
 const EMPTY_FORM = {
@@ -63,30 +67,6 @@ const EMPTY_FORM = {
   stock: "",
   is_active: true,
 };
-
-function SummaryCard({ label, value, icon: Icon, accent }) {
-  const accentMap = {
-    primary: "from-violet-500/10 to-purple-500/10 text-violet-600",
-    success: "from-emerald-500/10 to-teal-500/10 text-emerald-600",
-    warning: "from-amber-500/10 to-orange-500/10 text-amber-600",
-    info: "from-blue-500/10 to-cyan-500/10 text-blue-600",
-  };
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
-            <div className="mt-1.5 text-2xl font-bold tabular-nums">{value}</div>
-          </div>
-          <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${accentMap[accent]} flex items-center justify-center`}>
-            <Icon className="h-4.5 w-4.5" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function ImageUploadField({ value, onChange }) {
   const fileRef = useRef(null);
@@ -110,7 +90,7 @@ function ImageUploadField({ value, onChange }) {
         toast.success("Gambar berhasil diupload");
       }
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal upload gambar");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal upload gambar");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -119,37 +99,33 @@ function ImageUploadField({ value, onChange }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-1 border-b">
-        {["url", "file"].map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-t-md transition-colors ${
-              tab === t ? "bg-white border border-b-white -mb-px" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t === "url" ? "URL" : "Upload File"}
-          </button>
-        ))}
-      </div>
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList aria-label="Sumber gambar">
+          <TabsTrigger value="url" data-testid="reward-image-tab-url">URL</TabsTrigger>
+          <TabsTrigger value="file" data-testid="reward-image-tab-file">Upload file</TabsTrigger>
+        </TabsList>
+      </Tabs>
       {tab === "url" ? (
         <div className="flex gap-2">
           <Input
+            id="reward-form-image-url"
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="https://…"
             className="flex-1"
+            aria-label="URL gambar reward"
             data-testid="reward-form-image-url"
           />
           {value && (
-            <Button type="button" variant="ghost" size="sm" onClick={() => onChange("")}>
+            <Button type="button" variant="ghost" size="icon" aria-label="Hapus gambar" onClick={() => onChange("")}>
               <X className="h-4 w-4" />
             </Button>
           )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 gap-2 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+          role="button" tabIndex={0} aria-label="Pilih file gambar"
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}
           onClick={() => fileRef.current?.click()}>
           {uploading ? (
             <><Loader2 className="h-5 w-5 animate-spin" /><span className="text-xs text-muted-foreground">Mengupload…</span></>
@@ -169,7 +145,7 @@ function ImageUploadField({ value, onChange }) {
   );
 }
 
-export default function LoyaltyAdminRewards() {
+export default function LoyaltyAdminRewards({ embedded = false }) {
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("all");
@@ -256,7 +232,7 @@ export default function LoyaltyAdminRewards() {
       setForm(EMPTY_FORM);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal menyimpan reward");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal menyimpan reward");
     } finally {
       setSaving(false);
     }
@@ -287,7 +263,7 @@ export default function LoyaltyAdminRewards() {
       setRestocking(null);
       load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Gagal restock");
+      toast.error((e?.response?.data?.errors?.[0]?.message || e?.response?.data?.detail) || "Gagal restock");
     } finally {
       setRestockSaving(false);
     }
@@ -299,14 +275,27 @@ export default function LoyaltyAdminRewards() {
   const totalRedeemed = rewards.reduce((s, r) => s + (r.redemption_count || 0), 0);
   const lowStockCount = rewards.filter((r) => r.stock !== null && r.stock !== undefined && r.stock <= 5).length;
 
+  const newRewardBtn = (
+    <Button onClick={openCreate} data-testid="rewards-new">
+      <Plus className="h-4 w-4" /> Tambah Reward
+    </Button>
+  );
+
   return (
-    <div className="space-y-5" data-testid="admin-loyalty-rewards">
+    <div className="space-y-3 lg:space-y-4" data-testid="admin-loyalty-rewards">
+      <PageHeader
+          icon={Gift}
+          title="Rewards Catalog"
+          subtitle="Katalog reward yang bisa ditukar member dengan poin."
+          actions={newRewardBtn}
+        />
+
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryCard label="Total Rewards" value={totalRewards} icon={Gift} accent="primary" />
-        <SummaryCard label="Aktif" value={activeCount} icon={Sparkles} accent="success" />
-        <SummaryCard label="Total Diredeem" value={totalRedeemed.toLocaleString()} icon={BarChart2} accent="info" />
-        <SummaryCard label="Stok Rendah" value={lowStockCount} icon={AlertTriangle} accent="warning" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <CompactStatCard label="Total Rewards" value={totalRewards} icon={Gift} color="aurora-2" />
+        <CompactStatCard label="Aktif" value={activeCount} icon={Sparkles} color="aurora-4" />
+        <CompactStatCard label="Total Diredeem" value={totalRedeemed.toLocaleString()} icon={BarChart2} color="aurora-3" />
+        <CompactStatCard label="Stok Rendah" value={lowStockCount} icon={AlertTriangle} color="aurora-5" tone={lowStockCount > 0 ? "warning" : "default"} />
       </div>
 
       {/* Toolbar */}
@@ -317,12 +306,13 @@ export default function LoyaltyAdminRewards() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari reward…"
-            className="pl-9 h-9"
+            className="pl-9"
+            aria-label="Cari reward"
             data-testid="rewards-search"
           />
         </div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-[160px] h-9" data-testid="category-filter">
+          <SelectTrigger className="w-[160px]" aria-label="Filter kategori" data-testid="category-filter">
             <SelectValue placeholder="Kategori" />
           </SelectTrigger>
           <SelectContent>
@@ -341,27 +331,26 @@ export default function LoyaltyAdminRewards() {
           />
           Tampilkan nonaktif
         </label>
-        <Button variant="outline" size="sm" onClick={load} className="h-9" data-testid="rewards-refresh">
+        <Button variant="outline" size="icon" onClick={load} aria-label="Muat ulang" title="Muat ulang" data-testid="rewards-refresh">
           <RefreshCw className="h-3.5 w-3.5" />
-        </Button>
-        <Button onClick={openCreate} data-testid="rewards-new" className="h-9">
-          <Plus className="h-4 w-4 mr-2" /> Reward Baru
         </Button>
       </div>
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64" />)}
         </div>
       ) : rewards.length === 0 ? (
         <Card>
-          <CardContent className="p-10 text-center text-sm text-muted-foreground">
-            Belum ada reward. Klik tombol <span className="font-medium">Reward Baru</span> untuk membuat.
-          </CardContent>
+          <EmptyState
+            icon={Gift}
+            title="Belum ada reward"
+            description="Klik tombol Reward Baru untuk membuat reward pertama."
+          />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
           {rewards.map((r) => (
             <RewardCard
               key={r.id}
@@ -383,10 +372,11 @@ export default function LoyaltyAdminRewards() {
               Reward aktif akan langsung tampil di katalog customer.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
             <div>
-              <Label>Nama Reward *</Label>
+              <Label htmlFor="reward-form-name">Nama Reward *</Label>
               <Input
+                id="reward-form-name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="mt-1.5"
@@ -394,8 +384,9 @@ export default function LoyaltyAdminRewards() {
               />
             </div>
             <div>
-              <Label>Deskripsi *</Label>
+              <Label htmlFor="reward-form-description">Deskripsi *</Label>
               <Textarea
+                id="reward-form-description"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
@@ -405,8 +396,9 @@ export default function LoyaltyAdminRewards() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Poin Dibutuhkan</Label>
+                <Label htmlFor="reward-form-points">Poin Dibutuhkan *</Label>
                 <Input
+                  id="reward-form-points"
                   type="number" min={1}
                   value={form.points_required}
                   onChange={(e) => setForm({ ...form, points_required: e.target.value })}
@@ -415,9 +407,9 @@ export default function LoyaltyAdminRewards() {
                 />
               </div>
               <div>
-                <Label>Kategori</Label>
+                <Label htmlFor="reward-form-category">Kategori</Label>
                 <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                  <SelectTrigger className="mt-1.5" data-testid="reward-form-category">
+                  <SelectTrigger id="reward-form-category" className="mt-1.5" data-testid="reward-form-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -429,8 +421,9 @@ export default function LoyaltyAdminRewards() {
               </div>
             </div>
             <div>
-              <Label>Stok (kosongkan = unlimited)</Label>
+              <Label htmlFor="reward-form-stock">Stok (kosongkan = unlimited)</Label>
               <Input
+                id="reward-form-stock"
                 type="number" min={0}
                 value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: e.target.value })}
@@ -440,7 +433,7 @@ export default function LoyaltyAdminRewards() {
               />
             </div>
             <div>
-              <Label className="flex items-center gap-2">
+              <Label htmlFor="reward-form-image-url" className="flex items-center gap-2">
                 <ImageIcon className="h-3.5 w-3.5" /> Gambar Reward
               </Label>
               <div className="mt-1.5">
@@ -465,7 +458,7 @@ export default function LoyaltyAdminRewards() {
               Batal
             </Button>
             <Button onClick={saveReward} disabled={saving} data-testid="save-reward">
-              {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Menyimpan…</> : "Simpan"}
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" />Menyimpan…</> : "Simpan"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -488,7 +481,7 @@ export default function LoyaltyAdminRewards() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={doToggle}
-              className={confirmToggle?.is_active ? "bg-red-600 hover:bg-red-700" : ""}
+              className={confirmToggle?.is_active ? buttonVariants({ variant: "destructive" }) : ""}
               data-testid="confirm-toggle-action"
             >
               {confirmToggle?.is_active ? "Nonaktifkan" : "Aktifkan"}
@@ -508,13 +501,14 @@ export default function LoyaltyAdminRewards() {
             </DialogDescription>
           </DialogHeader>
           {restocking?.stock === null || restocking?.stock === undefined ? (
-            <p className="text-sm text-amber-600">
+            <p className="text-sm text-amber-800 dark:text-amber-400">
               Reward ini memiliki stok unlimited. Atur batas stok terlebih dahulu melalui Edit.
             </p>
           ) : (
             <div>
-              <Label>Jumlah Penambahan Stok</Label>
+              <Label htmlFor="restock-amount">Jumlah Penambahan Stok *</Label>
               <Input
+                id="restock-amount"
                 type="number" min={1}
                 value={restockAmount}
                 onChange={(e) => setRestockAmount(e.target.value)}
@@ -533,7 +527,7 @@ export default function LoyaltyAdminRewards() {
                 disabled={restockSaving}
                 data-testid="confirm-restock"
               >
-                {restockSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Menyimpan…</> : "Tambah Stok"}
+                {restockSaving ? <><Loader2 className="h-4 w-4 animate-spin" />Menyimpan…</> : "Tambah Stok"}
               </Button>
             )}
           </DialogFooter>
@@ -567,7 +561,7 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
           />
         ) : null}
         <div className="fallback-icon w-full h-full items-center justify-center" style={{ display: imgSrc ? "none" : "flex" }}>
-          <Gift className="h-10 w-10 text-amber-400/50" />
+          <Gift className="h-10 w-10 text-amber-800 dark:text-amber-400/50" />
         </div>
       </div>
 
@@ -583,7 +577,7 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
               {CATEGORY_LABELS[r.category] || r.category}
             </Badge>
             {!r.is_active && (
-              <Badge variant="outline" className="border-red-300 text-red-600 text-xs">Nonaktif</Badge>
+              <Badge variant="outline" className="border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400 text-xs">Nonaktif</Badge>
             )}
           </div>
         </div>
@@ -591,22 +585,22 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
         {/* Stats row */}
         <div className="flex items-center gap-4 pt-1 border-t">
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Poin</div>
+            <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Poin</div>
             <div className="font-bold tabular-nums">{r.points_required.toLocaleString()}</div>
           </div>
           <div>
-            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Stok</div>
+            <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Stok</div>
             <div className={`font-medium ${
-              r.stock !== null && r.stock !== undefined && r.stock <= 5 ? "text-red-600" : ""
+              r.stock !== null && r.stock !== undefined && r.stock <= 5 ? "text-red-700 dark:text-red-400" : ""
             }`}>
               {r.stock === null || r.stock === undefined ? "∞" : r.stock}
               {r.stock !== null && r.stock !== undefined && r.stock <= 5 && (
-                <AlertTriangle className="inline h-3 w-3 ml-1 text-red-500" />
+                <AlertTriangle className="inline h-3 w-3 ml-1 text-red-700 dark:text-red-400" />
               )}
             </div>
           </div>
           <div className="ml-auto text-right">
-            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Redeemed</div>
+            <div className="text-[11px] uppercase text-muted-foreground tracking-wider">Ditukar</div>
             <div className="font-medium">{(r.redemption_count || 0).toLocaleString()}</div>
           </div>
         </div>
@@ -616,36 +610,36 @@ function RewardCard({ reward: r, onEdit, onToggle, onRestock }) {
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 h-8 text-xs"
+            className="flex-1"
             onClick={onEdit}
             data-testid={`edit-reward-${r.id}`}
           >
-            <Edit2 className="h-3.5 w-3.5 mr-1" /> Edit
+            <Edit2 className="h-3.5 w-3.5" /> Edit
           </Button>
           {r.stock !== null && r.stock !== undefined && (
             <Button
-              size="sm"
+              size="icon-sm"
               variant="outline"
-              className="h-8 text-xs px-2"
               onClick={onRestock}
               title="Tambah stok"
+              aria-label="Tambah stok"
               data-testid={`restock-reward-${r.id}`}
             >
               <Package className="h-3.5 w-3.5" />
             </Button>
           )}
           <Button
-            size="sm"
+            size="icon-sm"
             variant="outline"
-            className="h-8 px-2"
             onClick={onToggle}
             title={r.is_active ? "Nonaktifkan" : "Aktifkan"}
+            aria-label={r.is_active ? "Nonaktifkan reward" : "Aktifkan reward"}
             data-testid={`toggle-reward-${r.id}`}
           >
             {r.is_active ? (
-              <PowerOff className="h-3.5 w-3.5 text-red-500" />
+              <PowerOff className="h-3.5 w-3.5 text-red-700 dark:text-red-400" />
             ) : (
-              <Power className="h-3.5 w-3.5 text-emerald-500" />
+              <Power className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
             )}
           </Button>
         </div>

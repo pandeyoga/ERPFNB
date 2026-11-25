@@ -1,6 +1,6 @@
 """AI Receipt OCR Service — Phase 5 + Phase 8C cache layer.
 
-Uses emergentintegrations.LlmChat with Gemini 2.5 Flash (vision) to extract
+Uses Claude vision (services/ai/client.py) to extract
 structured data from receipt images. Non-blocking: callers should handle
 empty/error responses gracefully (manual entry fallback).
 
@@ -19,9 +19,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from core.config import settings
 from core.db import get_db
-from core.runtime_config import get_setting
 
 logger = logging.getLogger("aurora.ai_ocr")
 
@@ -161,21 +159,11 @@ async def _cache_set(image_hash: str, mime_type: str, result: dict,
 
 async def _call_llm(image_base64: str, mime_type: str) -> dict:
     """Raw LLM call. Returns either the OCR result dict or {"error": ...}."""
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    ocr_model = await get_setting("LLM_MODEL_OCR", default="gemini-2.5-flash")
+    from services.ai import client as ai_client
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"ocr-{uuid.uuid4().hex[:12]}",
-            system_message=SYSTEM_PROMPT,
-        ).with_model("gemini", ocr_model or "gemini-2.5-flash")
-        image_content = ImageContent(image_base64=image_base64)
-        message = UserMessage(
-            text="Extract the structured fields from this receipt. Output JSON only.",
-            file_contents=[image_content],
-        )
-        resp = await chat.send_message(message)
+        resp = await ai_client.ask(
+            system=SYSTEM_PROMPT, user="Extract the structured fields from this receipt. Output JSON only.",
+            files=[base64.b64decode(image_base64)], feature="ocr_receipt", max_tokens=4000)
     except Exception as e:  # noqa: BLE001
         logger.exception(f"LLM vision call failed: {e}")
         return {"error": f"OCR failed: {str(e)[:200]}"}
@@ -210,7 +198,8 @@ async def extract_receipt(
     On any failure → returns dict with optional 'error' key (caller falls back
     to manual). On success returns the canonical OCR result shape.
     """
-    if not settings.feature_ai_enabled or not (await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)):
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         logger.warning("AI not enabled or key missing — skipping OCR")
         return {"error": "AI OCR is not configured. Manual entry required."}
     if not image_base64:
@@ -244,11 +233,10 @@ async def extract_from_file_id(
     """Run OCR on an existing uploaded attachment (Phase 8B integration)."""
     from services import upload_service
     meta = await upload_service.get_attachment(file_id, user=user)
-    path = await upload_service.get_attachment_path(file_id, user=user)
     mime = (meta.get("content_type") or "image/jpeg").lower()
     if mime not in ALLOWED_MIME:
         return {"error": f"File MIME {mime} bukan gambar yang didukung."}
-    raw = path.read_bytes()
+    raw = await upload_service.get_attachment_bytes(file_id, user=user)  # DUP-01: get_attachment_path never existed
     b64 = base64.b64encode(raw).decode("ascii")
     return await extract_receipt(
         image_base64=b64,

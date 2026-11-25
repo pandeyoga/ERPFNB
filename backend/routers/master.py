@@ -31,6 +31,7 @@ _ENTITIES: dict[str, dict] = {
     "payment-methods":  {"col": "payment_methods",   "uniq": "code"},
     "bank-accounts":    {"col": "bank_accounts",     "uniq": "code"},
     "number-series":    {"col": "number_series",     "uniq": "code"},
+    "regions":          {"col": "regions",           "uniq": "code"},  # wilayah harga (Sourcing); outlets.region_id
 }
 
 _NAME_FIELDS: dict[str, str] = {
@@ -216,9 +217,14 @@ async def update_entity(entity: str, id_: str, payload: dict,
     if entity == "number-series" and "*" not in (user.get("permissions") or []):
         raise ForbiddenError("Number series hanya bisa diubah SUPER_ADMIN")
     if entity == "number-series":
-        for k in ("current", "counter", "next", "last_no", "seq"):
+        # DB-02: the live counter field is `current_value` (others kept for legacy docs)
+        for k in ("current_value", "current", "counter", "next", "last_no", "seq"):
             if k in patch and float(patch[k] or 0) < float(before.get(k) or 0):
                 raise ValidationError("Counter number series tidak boleh diturunkan (nomor dokumen bentrok)")
+        if float(before.get("current_value") or 0) > 0:
+            for k in ("code", "format", "prefix", "reset", "padding"):
+                if k in patch and patch[k] != before.get(k):
+                    raise ValidationError(f"'{k}' number series yang sudah dipakai tidak boleh diubah")
     if cfg["col"] == "chart_of_accounts" and await _coa_has_postings(db, id_):
         for k in ("type", "normal_balance", "category"):
             if k in patch and patch[k] != before.get(k):

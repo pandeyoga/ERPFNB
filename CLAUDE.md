@@ -1,0 +1,96 @@
+# FnB Group ERP — instruksi untuk agen AI
+
+Stack: React 19 (CRA + craco) + Tailwind + shadcn/Radix di `frontend/`; FastAPI + MongoDB (motor) di `backend/`.
+Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi/kalimat/status persetujuan ID (`DESIGN_SYSTEM.md` §10.5).
+
+## UI — wajib (detail: `docs/DESIGN_SYSTEM.md`, acuan tunggal)
+
+- Pakai primitive yang ada: `components/ui/*` (Button, Input, Select, Tabs, Card, Dialog) dan
+  `components/shared/*` (PageHeader, DataTable, StatusPill, CompactStatCard, EmptyState, SegmentedFilter,
+  SimpleSelect, InlineHelp, ConfirmDialog, RowActions, HubTabs, KeyFacts, ListToolbar/MoreFilters).
+  Jangan membuat ulang tombol/pill/kartu/tabel sendiri.
+- `Button`: pilih `size` (`default` 36px, `sm` 32px, `icon`, `icon-sm`) dan `variant`
+  (`default`/`outline`/`ghost`/`secondary`/`destructive`/`success`/`link`). **Jangan** override `h-*`,
+  `rounded-full`, atau `pill-active` lewat `className`. Chip = `<Button size="sm" variant="outline" aria-pressed>`.
+- Teks minimal 12px (`text-xs`). `text-[11px]` hanya untuk label **uppercase** & badge angka.
+- Warna netral hanya token (`text-muted-foreground`, `bg-muted`, `border-border`, `bg-background`);
+  warna status `-700` (amber/orange `-800`) + `dark:text-*-400`. Jangan `text-gray-*`, `bg-white`, `opacity-*` pada teks.
+- Satu `<h1>` per halaman lewat `PageHeader`; judul kartu `CardTitle`/h3 16px.
+- Kartu: `.glass-card` / `Card`, padding `p-3` atau `p-4`. Tidak ada kartu di dalam kartu
+  (bungkus konten embedded dengan `.nested-cards`). Status → `StatusPill`. KPI → `CompactStatCard`. Daftar data → `DataTable`.
+- **Anatomi halaman** (`DESIGN_SYSTEM.md` §10):
+  - Posisi tombol = cakupan aksi. Aksi layar di kanan judul (`PageHeader`); aksi kartu di kanan atas kartu;
+    aksi baris di kolom terakhir (maks. 1 + "⋯" → `RowActions`).
+  - Halaman di dalam hub tetap memakai `PageHeader` biasa — otomatis mengisi subtitle & aksi header hub.
+  - Judul blok di dalam kartu (`CardTitle`); judul di luar kartu hanya untuk grup ≥ 2 kartu di dashboard; tanpa judul ganda.
+  - Filter tabel di dalam kartu tabel (`ListToolbar`); filter halaman tanpa kartu; daftar sejenis = baris dalam
+    1 kartu, bukan kartu per item; maks. 2 lapis bingkai; grid tanpa item yatim.
+  - Form yang mengubah data: `FormActionBar` (sticky bawah) + `useUnsavedChanges(dirty)`.
+  - Maks. 6 tab per bar → `HubTabs` (kelompok + sub-tab). Baris filter maks. 3–4 kontrol, sisanya `MoreFilters`;
+    tombol Ekspor di `PageHeader`, bukan di baris filter. Halaman detail: `KeyFacts` di header, tanpa kartu tipis
+    label/nilai (§10.8–10.10).
+  - Bahasa: istilah teknis EN (Payment, COA, Posted, Overdue, Partial); aksi, kalimat & status persetujuan ID
+    (Simpan, Disetujui, Ditolak); label = kata umum ID + istilah EN ("Tanggal Invoice", "Nominal").
+    Buat ‹dokumen› / Tambah ‹data›; uang = Nominal, hitungan = Jumlah.
+- **Konteks Brand/Toko** dipilih sekali di TopNav (`DESIGN_SYSTEM.md` §10.7). Jangan buat pemilih outlet/brand sendiri.
+  Filter toko lokal pakai `useOutletScope()` + `StoreFilter`/`OutletScopePicker`, field form pakai
+  `useOutletScope("", { form: true })`, halaman tingkat Group pakai `GroupLevelBadge`. GET otomatis membawa konteks
+  (`lib/api.js`); opt-out `{ scope: false }`.
+- **Menu/tautan = izin route**: item sidebar & tautan antar-halaman hanya tampil bila guard route tujuan lolos
+  (`canOpenPath`, `lib/routePerms.generated.js` dari `scripts/gen_route_perms.py` — jalankan ulang setelah mengubah
+  guard `g(...)`). Widget tidak memanggil API yang pasti 403 (`DESIGN_SYSTEM.md` §10.7).
+- `data-testid` kebab-case untuk elemen interaktif; **jangan ganti testid yang dipakai tour**
+  (`frontend/src/contexts/tour`).
+- Pengecualian yang sah: tulis komentar `ds-ok: alasan` tepat sebelum elemen.
+
+## Cek sebelum selesai
+
+```bash
+python3 scripts/ux_audit.py --strict   # usability + aturan design system (ds.*) — harus 0 ERROR
+python3 scripts/audit_tours.py         # 0 missing target
+python3 scripts/audit_ui_ia.py         # OK
+```
+
+Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.md`.
+
+## AI (Asisten AI — `docs/ai/AGENTIC_AI_PLAN_2026-11-25.md`)
+
+- Semua panggilan Claude lewat `backend/services/ai/client.py` (`ask`/`create`: kebijakan, kill switch, biaya). Jangan
+  memanggil SDK Anthropic langsung di modul lain. Model default `claude-opus-5-5`; kunci `ANTHROPIC_API_KEY` (setting).
+- Agen bisa menjalankan **semua endpoint** lewat katalog otomatis (`services/ai/agent/catalog.py`): endpoint baru langsung
+  tersedia bila dijaga `require_perm`/`require_any_perm`. Body kompleks → tambah petunjuk di `agent/body_hints.py`.
+  Pengecualian (auth, pengaturan sistem, peran/pengguna tulis, hapus massal) di `EXCLUDED_PREFIXES`/`READ_ONLY_PREFIXES`.
+- Aksi tulis AI selalu lewat usulan → persetujuan pengguna (`agent/actions.py`), dijalankan sebagai pengguna itu.
+- Koleksi transaksi baru yang perlu dianalisis → tambah dataset (field whitelist + izin) di `agent/datasets.py`.
+- Setelah mengubah tour/navigasi/route guard: `python3 scripts/gen_ai_guide.py` (pengetahuan Pemandu).
+- Impor file mentah (POS, delivery, rekap Excel, mutasi bank): `services/smart_import/` — petakan berdasar nama + isi kolom
+  (kamus sinonim di `mapping.py`), jangan posisi; tambah contoh format baru ke `tests/smart_import_samples.py`.
+- AI Finance `services/ai_finance/` (struk → jurnal, rekonsiliasi bank AI, checklist tutup buku); AI Purchasing
+  `services/ai_purchasing/` (price list, restock); AI Auditor `services/ai_audit/` → Anomaly Feed. Penerimaan penjualan
+  per metode bayar → akun lewat `_journal/_common.resolve_receipt_target` (QRIS/kartu ≠ kas, marketplace → piutang marketplace).
+- Menu & Resep: `services/menu_recipe_service.py` (HPP dari GR/penawaran, konversi satuan `ai_purchasing/units.py`).
+- Memori & pengetahuan `services/ai/knowledge.py` (alat remember/forget/search_knowledge/save_research_note); Monitor &
+  Otomasi `services/ai/automations.py` (job `ai_automations` tiap menit, jalan dengan izin pembuat); privasi
+  `services/ai/privacy.py` (mask_pii, retensi, data saya); Data Steward `services/ai_steward/`. Kasus uji agen baru →
+  `backend/tests/ai_evals` (jalankan `scripts/ai_eval.py`, berbiaya).
+- Rekonsiliasi lanjutan `services/ai_finance/reconcile.py`; agen domain `services/ai_domain/` + persona chat
+  `agent/personas.py`; Impor Cerdas target data lain `services/smart_import/records.py` (tambah target: kamus di `mapping.py`
+  TARGETS/REQUIRED/RECORD_TARGETS + preview/commit/rollback di records.py).
+- Endpoint baru wajib lolos `tests/test_ai_action_coverage.py` (tidak boleh 500 lewat agen dengan body kosong/id tak dikenal —
+  validasi field wajib pakai `core.exceptions.require_fields`).
+- WhatsApp: kirim lewat `services/whatsapp_service.py` (provider evolution/fonnte/twilio/meta); bot dua arah di
+  `services/wa_bot/` (aksi tetap lewat usulan + PIN).
+- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py
+  tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py tests/test_ai_steward.py
+  tests/test_ai_knowledge.py tests/test_ai_automations.py tests/test_ai_quality.py tests/test_ai_action_coverage.py
+  tests/test_ai_reconcile.py tests/test_ai_auditor_more.py tests/test_ai_domain.py tests/test_smart_import_records.py`
+  (tanpa jaringan).
+
+## Backend
+
+- Konfigurasi dari `backend/.env` (template lokal: `backend/env.local.example`). Jangan commit secret.
+- Tes: `cd backend && python -m pytest -q tests/<file>`.
+- Izin baru: kode di `core/perms_catalog.py` → otomatis masuk layar Peran (`core/perms_registry.py`: label portal/modul,
+  `LABEL_OVERRIDES`); default untuk peran bawaan lewat `GRANTS` di `services/rbac_sync.py` (`DESIGN_SYSTEM.md` §10.11).
+- Harga sourcing (acuan per wilayah & periode, penawaran supplier, skor): `services/sourcing_service.py`.
+  Jangan membandingkan harga beda satuan.

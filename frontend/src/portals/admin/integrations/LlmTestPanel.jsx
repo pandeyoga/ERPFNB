@@ -1,4 +1,4 @@
-/** Phase 12D — LLM test panel (verifies key + provider + model).  */
+/** Tes koneksi Claude (Anthropic) — memakai kunci & model tersimpan, atau kunci/model sementara (tidak disimpan). */
 import { useState } from "react";
 import { Brain, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -10,17 +10,23 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 const PROMPTS = [
-  "Reply with the single word: OK",
+  "Balas satu kata: OK",
   "Halo, balas dengan 1 kalimat singkat dalam bahasa Indonesia.",
   "Apa nama ibukota Indonesia? Jawab dalam 1 kata.",
 ];
+
+const REASONS = {
+  no_api_key: "ANTHROPIC_API_KEY belum diisi.",
+  ai_disabled_policy: "AI dimatikan lewat tombol darurat (AI Hub → Pengaturan).",
+  ai_disabled_env: "AI dimatikan di server (FEATURE_AI_ENABLED=false).",
+  llm_error: "Claude menolak permintaan atau terjadi galat jaringan.",
+};
 
 export default function LlmTestPanel() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [prompt, setPrompt] = useState(PROMPTS[0]);
   const [ephemKey, setEphemKey] = useState("");
-  const [ephemProvider, setEphemProvider] = useState("");
   const [ephemModel, setEphemModel] = useState("");
 
   async function test(useEphemeral) {
@@ -29,88 +35,83 @@ export default function LlmTestPanel() {
       const body = { prompt: prompt.trim() };
       if (useEphemeral) {
         if (ephemKey.trim()) body.api_key = ephemKey.trim();
-        if (ephemProvider.trim()) body.provider = ephemProvider.trim();
         if (ephemModel.trim()) body.model = ephemModel.trim();
       }
-      const r = await api.post("/system-settings/test/llm", body);
-      const res = unwrap(r);
+      const res = unwrap(await api.post("/system-settings/test/llm", body));
       setResult(res);
-      if (res.ok) toast.success(`LLM OK — ${res.elapsed_ms}ms (${res.provider}/${res.model})`);
-      else toast.error(res.reason || res.error || "LLM gagal");
+      if (res.ok) toast.success(`Claude OK — ${res.elapsed_ms} ms (${res.model})`);
+      else toast.error(REASONS[res.reason] || res.error || "Tes gagal");
     } catch (e) {
-      toast.error(e?.response?.data?.errors?.[0]?.message || "Test LLM gagal");
+      toast.error(e?.response?.data?.errors?.[0]?.message || "Tes gagal");
     } finally { setBusy(false); }
   }
 
   return (
     <div className="glass-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="h-8 w-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+        <span className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
           <Brain className="h-4 w-4" />
         </span>
         <div>
-          <h3 className="font-semibold text-sm">Test LLM</h3>
-          <p className="text-[10px] text-muted-foreground">Verify API key, provider, model</p>
+          <h3 className="font-semibold text-base">Tes Claude</h3>
+          <p className="text-xs text-muted-foreground">Verifikasi API key dan model</p>
         </div>
       </div>
 
       <div className="space-y-3">
         <div>
-          <Label className="text-xs">Test Prompt</Label>
+          <Label htmlFor="llm-test-prompt" className="text-xs md:text-sm font-medium">Prompt uji</Label>
           <div className="flex gap-1 flex-wrap mt-1 mb-1">
             {PROMPTS.map((p) => (
-              <button key={p} onClick={() => setPrompt(p)}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-muted hover:bg-muted/70">
+              <Button key={p} type="button" size="sm" variant="outline" aria-pressed={prompt === p}
+                onClick={() => setPrompt(p)} title={p}>
                 {p.slice(0, 24)}…
-              </button>
+              </Button>
             ))}
           </div>
-          <Textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}
-                    rows={2} className="text-xs" data-testid="llm-test-prompt" />
+          <Textarea id="llm-test-prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)}
+            rows={2} className="text-xs" data-testid="llm-test-prompt" />
         </div>
 
         <Button size="sm" onClick={() => test(false)} disabled={busy || !prompt.trim()}
-                className="w-full gap-1" data-testid="llm-test-saved">
-          <Sparkles className="h-3.5 w-3.5" />
-          {busy ? "Testing…" : "Test Saved Config"}
+          className="w-full" data-testid="llm-test-saved">
+          <Sparkles />
+          {busy ? "Menguji…" : "Tes Konfigurasi Tersimpan"}
         </Button>
 
         <details className="text-xs">
-          <summary className="cursor-pointer font-medium">Test ephemeral (no save)</summary>
+          <summary className="cursor-pointer font-medium">Tes key sementara (tidak disimpan)</summary>
           <div className="space-y-2 mt-2">
-            <Input value={ephemKey} onChange={(e) => setEphemKey(e.target.value)}
-                   placeholder="sk-... (ephemeral key)" className="font-mono text-xs" />
-            <Input value={ephemProvider} onChange={(e) => setEphemProvider(e.target.value)}
-                   placeholder="provider (gemini/openai/anthropic)" className="font-mono text-xs" />
-            <Input value={ephemModel} onChange={(e) => setEphemModel(e.target.value)}
-                   placeholder="model (gemini-2.5-flash)" className="font-mono text-xs" />
-            <Button size="sm" variant="outline" onClick={() => test(true)}
-                    disabled={busy} className="w-full">Test ephemeral</Button>
+            <Input value={ephemKey} onChange={(e) => setEphemKey(e.target.value)} aria-label="API key sementara"
+              placeholder="sk-ant-… (key sementara)" className="font-mono text-xs" />
+            <Input value={ephemModel} onChange={(e) => setEphemModel(e.target.value)} aria-label="Model"
+              placeholder="claude-opus-5-5" className="text-xs" />
+            <Button size="sm" variant="outline" onClick={() => test(true)} disabled={busy} className="w-full">
+              Tes key sementara
+            </Button>
           </div>
         </details>
 
         {result && (
-          <div className="space-y-2">
+          <div className="rounded-lg border border-border p-2 text-xs" data-testid="llm-test-result">
             {result.ok ? (
-              <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-xs">
-                <div className="text-emerald-700 font-semibold mb-1">✓ OK ({result.elapsed_ms}ms)</div>
-                <div className="text-[10px] text-muted-foreground mb-1">
-                  {result.provider} / {result.model}
-                </div>
-                <div className="font-mono text-xs">{result.response}</div>
-              </div>
+              <>
+                <div className="text-emerald-700 dark:text-emerald-400 font-semibold mb-1">Berhasil ({result.elapsed_ms} ms)</div>
+                <div className="text-muted-foreground mb-1">{result.model}</div>
+                <div>{result.response}</div>
+              </>
             ) : (
-              <div className="p-2 rounded bg-rose-50 border border-rose-200 text-xs">
-                <div className="text-rose-700 font-semibold mb-1">✗ Failed</div>
-                <div className="text-[10px]">{result.reason} {result.error}</div>
-              </div>
+              <>
+                <div className="text-red-700 dark:text-red-400 font-semibold mb-1">Gagal</div>
+                <div>{REASONS[result.reason] || result.reason} {result.error}</div>
+              </>
             )}
           </div>
         )}
 
-        <p className="text-[10px] text-muted-foreground">
-          💡 Default pakai Emergent Universal Key. Set <code>OPENAI_API_KEY</code>/<code>ANTHROPIC_API_KEY</code>/<code>GEMINI_API_KEY</code>
-          + ubah <code>LLM_PROVIDER_PRIMARY</code> untuk pakai key langsung.
+        <p className="text-xs text-muted-foreground">
+          Semua fitur AI memakai Claude lewat <code>ANTHROPIC_API_KEY</code>. Model diatur di <code>AI_MODEL</code>
+          (default <code>claude-opus-5-5</code>).
         </p>
       </div>
     </div>

@@ -30,6 +30,23 @@ TRIAGE_PERMS = [
 ]
 
 
+@router.get("/assignees")
+async def list_assignees(user: dict = Depends(require_any_perm("anomaly.feed.read", "finance.sales.validate"))):
+    """UI-04: assignee picker for the anomaly feed. Finance staff got 403 from /admin/users, so the
+    dropdown was always empty. Returns only active users that can work the feed (id, name, email)."""
+    from core.db import get_db
+    db = get_db()
+    roles = await db.roles.find({}, {"_id": 0, "id": 1, "code": 1, "permissions": 1}).to_list(200)
+    ok_roles = {r["id"]: r.get("code") for r in roles
+                if {"*", "anomaly.feed.read", "finance.sales.validate"} & set(r.get("permissions") or [])}
+    users = await db.users.find(
+        {"deleted_at": None, "status": "active", "role_ids": {"$in": list(ok_roles)}},
+        {"_id": 0, "id": 1, "full_name": 1, "email": 1, "role_ids": 1},
+    ).sort("full_name", 1).to_list(500)
+    return ok_envelope([{"id": u["id"], "full_name": u.get("full_name"), "email": u.get("email"),
+                         "roles": [ok_roles[r] for r in u.get("role_ids", []) if r in ok_roles]} for u in users])
+
+
 @router.get("")
 async def list_anomalies(
     type: Optional[str] = None,
@@ -192,11 +209,19 @@ async def manual_scan(
         period=payload.get("period"),
         user_id=user["id"],
     )
+    # Tombol "Scan" juga menjalankan AI Auditor (pemeriksaan pengendalian internal) — temuan masuk feed yang sama
+    audit = None
+    try:
+        from services.ai_audit.auditor import run as run_auditor
+        audit = await run_auditor(days=max(30, int(payload.get("days", 7))), user_id=user["id"])
+    except Exception:  # noqa: BLE001 — auditor gagal tidak menggagalkan scan anomali
+        audit = {"error": "AI Auditor gagal dijalankan"}
     # Don't dump all events in response (could be huge) — only return counts + scan meta
     return ok_envelope({
         "as_of_date": res["as_of_date"],
         "period": res["period"],
         "counts": res["counts"],
+        "auditor": audit,
     })
 
 

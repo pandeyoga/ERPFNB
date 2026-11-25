@@ -9,8 +9,10 @@
  *
  *  Column = {
  *    key, label, render?(row), numeric?, align?, sortable?, sortAccessor?(row),
- *    primary?(mobile title), hideOnMobile?, className?, headerClassName?
+ *    primary?(mobile title), hideOnMobile?, className?, headerClassName?, nowrap?
  *  }
+ *  Uang, tanggal, periode & nomor dokumen tidak pernah dilipat (`nowrap` otomatis dari `numeric`/nama key;
+ *  set `nowrap: false` untuk menonaktifkan).
  */
 import { memo, useMemo, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,6 +23,12 @@ function alignClass(c) {
   if (c.align === "right" || c.numeric) return "text-right";
   if (c.align === "center") return "text-center";
   return "text-left";
+}
+
+// Kolom yang isinya tidak boleh dilipat ("24 Okt / 2026", "PO-2611- / 0003", "Rp 1.250. / 000").
+const NOWRAP_KEY = /(date|tanggal|period|_at$|doc_no|_no$|number|^code$|^kode$)/i;
+function nowrapClass(c) {
+  return (c.nowrap ?? (c.numeric || NOWRAP_KEY.test(c.key || ""))) ? "whitespace-nowrap" : "";
 }
 
 function sortRows(rows, columns, sort) {
@@ -66,7 +74,7 @@ const Row = memo(function Row({
         data-testid={`${rowTestIdPrefix}-${id}`}
       >
         {columns.map((c, ci) => (
-          <td key={c.key} className={cn("px-4 py-3", alignClass(c), c.numeric && "tabular-nums font-medium", c.className)}>
+          <td key={c.key} className={cn("px-3 py-2", alignClass(c), c.numeric && "tabular-nums font-medium", nowrapClass(c), c.className)}>
             {ci === 0 && expandable ? (
               <span className="flex items-center gap-2">
                 <ChevronRight
@@ -81,7 +89,7 @@ const Row = memo(function Row({
           </td>
         ))}
         {rowAction && (
-          <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
+          <td className="px-3 py-1.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>{rowAction(row)}</td>
         )}
       </tr>
       {expandable && (
@@ -228,18 +236,22 @@ export default function DataTable({
                   <th
                     key={c.key}
                     scope="col"
+                    aria-sort={c.sortable ? (active ? (sort.dir === "asc" ? "ascending" : "descending") : "none") : undefined}
                     className={cn(
-                      "px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/60 bg-card/80",
+                      "px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground border-b border-border/60 bg-card/80",
                       stickyHeader && "sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-card/70",
-                      alignClass(c), c.headerClassName,
+                      alignClass(c), nowrapClass(c), c.headerClassName,
                     )}
                   >
                     {c.sortable ? (
                       <span className="inline-flex items-center gap-1">
                         <button
+                          type="button"
                           onClick={() => cycleSort(c.key)}
                           className={cn(
-                            "inline-flex items-center gap-1 hover:text-foreground transition-colors group/sort",
+                            // preflight me-reset text-transform pada <button> → set ulang agar
+                            // header yang bisa di-sort sama kapitalnya dengan header lain.
+                            "inline-flex items-center gap-1 rounded-sm uppercase tracking-[0.06em] font-semibold hover:text-foreground transition-colors group/sort focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             c.numeric && "flex-row-reverse",
                             active && "text-foreground",
                           )}
@@ -260,7 +272,7 @@ export default function DataTable({
                   </th>
                 );
               })}
-              {rowAction && <th className="px-4 py-2.5 border-b border-border/60 bg-card/80" />}
+              {rowAction && <th className="px-3 py-2 border-b border-border/60 bg-card/80" />}
             </tr>
           </thead>
           <tbody>

@@ -6,12 +6,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pymongo.errors import DuplicateKeyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 ROOT_DIR = Path(__file__).parent
@@ -22,11 +23,12 @@ from core.exceptions import AuroraException, error_envelope  # noqa: E402
 from core.logging_config import configure_logging, get_db_sink  # noqa: E402
 from core.middleware import RateLimitMiddleware, RequestIDMiddleware, SecurityHeadersMiddleware  # noqa: E402
 from core.rate_limiter import limiter as rate_limiter  # noqa: E402
+from core.scope import brand_scope  # noqa: E402
 
 # Routers
 from routers import crm_analytics
 from routers import data_management
-from routers import admin, admin_loyalty, admin_ops, ai, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, item_pricing, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
+from routers import admin, admin_loyalty, admin_ops, ai, ai_agent, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics, smart_import, menu_master, whatsapp_bot, ai_finance, ai_ops, ai_knowledge, ai_automations  # noqa: E402
 
 # Configure structured JSON logging EARLY (before any logger.info calls)
 configure_logging()
@@ -77,10 +79,15 @@ async def lifespan(_: FastAPI):
         from utils.number_series import ensure_dedicated_series
         await migrate_employee_salary_to_master()
         await ensure_dedicated_series()
-        from services.data_migrations import unify_journal_schema
+        from services.data_migrations import customer_identity_keys, legacy_seed_field_names, unify_journal_schema
         await unify_journal_schema()
+        await customer_identity_keys()
+        await legacy_seed_field_names()
     except Exception:  # noqa: BLE001
         logger.exception("salary_migration_failed")
+
+    from services.ai.agent import executor as _ai_executor
+    _ai_executor.set_app(app)  # agen menjalankan aksi lewat API ini sendiri (in-process)
 
     try:
         from core.object_storage import init_storage
@@ -90,8 +97,19 @@ async def lifespan(_: FastAPI):
         logger.exception("object_storage_init_failed")
 
     try:
-        from services.rbac_sync import ensure_rbac_grants
+        # Sourcing: kuartal Market List lama → price_periods + indeks koleksi harga
+        from services.sourcing_service import ensure_indexes as _sourcing_indexes, migrate_legacy_quarters
+        await _sourcing_indexes()
+        m = await migrate_legacy_quarters()
+        if m:
+            logger.info("sourcing legacy quarter migration: %d", m)
+    except Exception:  # noqa: BLE001
+        logger.exception("sourcing_migration_failed")
+
+    try:
+        from services.rbac_sync import ensure_rbac_grants, ensure_role_defaults
         n = await ensure_rbac_grants()
+        await ensure_role_defaults()
         if n:
             logger.info("rbac grants synced: %d roles updated", n)
     except Exception:  # noqa: BLE001
@@ -135,6 +153,8 @@ app = FastAPI(
     # silently redirecting to /api/foo (which would break POST body on 307).
     # The TrailingSlashMiddleware below converts 400 with a helpful hint.
     redirect_slashes=False,
+    # Konteks brand global (`?brand_id=`) → daftar toko, dipakai resolve_outlet_filter (core/scope.py).
+    dependencies=[Depends(brand_scope)],
 )
 
 # Order matters: outermost first.
@@ -221,6 +241,20 @@ async def validation_exception_handler(_, exc: RequestValidationError):
     )
 
 
+# SEC-ERR: services raise plain ValueError for business-rule violations ("Invoice berstatus draft…");
+# those are client errors, not server faults → 400 in the standard envelope instead of a bare 500.
+@app.exception_handler(ValueError)
+async def value_error_handler(_, exc: ValueError):
+    return JSONResponse(status_code=400, content=error_envelope("VALIDATION_ERROR", str(exc) or "Input tidak valid"))
+
+
+# A unique index rejected a concurrent duplicate (double click / retry) → 409, never a 500.
+@app.exception_handler(DuplicateKeyError)
+async def duplicate_key_handler(_, exc: DuplicateKeyError):
+    return JSONResponse(status_code=409, content=error_envelope(
+        "CONFLICT", "Data yang sama sudah diproses (duplikat). Muat ulang lalu coba lagi."))
+
+
 # Routers
 from routers import files as files_router  # noqa: E402
 app.include_router(files_router.router)
@@ -243,6 +277,15 @@ app.include_router(approvals.router)
 app.include_router(approval_matrix.router)  # Phase 15: visual workflow builder
 app.include_router(bulk_import.router)  # Sprint D: Bulk Excel Import
 app.include_router(ai.router)
+app.include_router(ai_agent.router)    # Asisten AI agentic (docs/ai/AGENTIC_AI_PLAN_2026-11-25.md)
+app.include_router(smart_import.router)  # Impor Cerdas (penjualan detail, mutasi bank)
+app.include_router(menu_master.router)   # Master menu + alias per sumber
+app.include_router(whatsapp_bot.router)  # Bot WhatsApp Asisten AI (Evolution API)
+app.include_router(ai_finance.router)    # AI Finance: foto → jurnal, rekonsiliasi AI, tutup buku
+app.include_router(ai_ops.router)        # AI Purchasing (price list, restock) & AI Auditor
+app.include_router(ai_knowledge.router)  # Memori, basis pengetahuan & catatan riset Asisten AI
+app.include_router(ai_automations.router)  # Monitor & Otomasi Asisten AI
+app.include_router(ai_automations.inbox_router)  # Kotak masuk email Asisten AI
 app.include_router(finance.router)
 app.include_router(payments.router)
 app.include_router(payment_runs.router)
@@ -275,8 +318,8 @@ app.include_router(rfq.router)             # Sprint E: RFQ Flow
 app.include_router(ebupot.router)          # Sprint E: e-Bupot PPh23
 app.include_router(user_preferences.router) # Sprint F: User Preferences + Dashboard Presets
 app.include_router(payment_requests.router) # Fase 1: Payment Request Workflow (Excel Migration)
-app.include_router(item_pricing.router)    # Fase 2: Item Price Versioning (Market List multi-periode)
 app.include_router(market_list.router)     # Smart Procurement: Market List + Quarterly Pricing
+app.include_router(sourcing.router)        # Sourcing: harga acuan per periode/wilayah, penawaran supplier, analisis
 app.include_router(vendor_items.router)    # Smart Procurement: Vendor Item Catalog
 app.include_router(reservations.router)    # Reservation Feature: Online booking + outlet management
 app.include_router(data_management.router)  # Data Management: Import / Export / Delete
@@ -286,6 +329,7 @@ app.include_router(tour_analytics.router)  # Help & Tour: analytics event tracki
 
 # Mount static files for uploaded images
 from core.config import settings as _up_settings  # B6/SSOT-09
+os.makedirs(_up_settings.upload_dir, exist_ok=True)  # clone baru: folder uploads tidak ada di git
 app.mount("/uploads", StaticFiles(directory=_up_settings.upload_dir), name="uploads")
 
 

@@ -7,36 +7,31 @@
  *   /executive/brand/:id   → BrandDrilldown
  *   /executive/outlet/:id  → OutletDrilldown
  *   /executive/budget-approvals → BudgetApprovals
- *   /executive/approvals   → ApprovalCenter (Tier-3 / high amount only)
+ *   /executive/approvals   → redirect ke /my-approvals (Pusat Persetujuan, App.js)
+ *   /executive/brand · /profit-walk · /period-compare → halaman standalone (dipakai tour);
+ *     di navigasi semuanya tab di /executive/analytics-hub (Performance Analytics).
  *
  * PART Q Phase 2 (2026-07-18): defense-in-depth route-level RBAC via `Gate`.
  * Budget approvals + budget increase requests are gated by `executive.budget.approve`
  * to prevent partial-executive roles from reaching the write surface.
  */
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Brain, AlertTriangle, BarChart3 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { makeGate } from "@/lib/portalGate";
+import LegacyRedirect from "@/components/shared/LegacyRedirect";
 import OwnerHome from "./OwnerHome";
 import ExecutiveHome from "./ExecutiveHome";
 import BrandDrilldown from "./BrandDrilldown";
 import OutletDrilldown from "./OutletDrilldown";
-import ProfitWalk from "./ProfitWalk";
-import PeriodCompare from "./PeriodCompare";
 import ReservationSummary from "./ReservationSummary";
 import BudgetApprovals from "./BudgetApprovals";
-import BrandMixOverview from "./BrandMixOverview";
 import ExecutiveAnalyticsHub from "./ExecutiveAnalyticsHub";
 import ExecutiveQA from "./ExecutiveQA";
 import AnomalyDetection from "./AnomalyDetection";
 import OutletBudgetAllocation from "./OutletBudgetAllocation";
 import OutletBudgetMonitor from "./OutletBudgetMonitor";
 import BudgetIncreaseRequests from "./BudgetIncreaseRequests";
-import ApprovalCenter from "../shared/ApprovalCenter";
-import ComingSoonPage from "@/components/shared/ComingSoonPage";
 
-// Executive only sees high-tier approvals (>= Rp 50jt) across all entity types.
-const EXEC_MIN_AMOUNT = 50_000_000;
 
 export default function ExecutivePortal() {
   const { user } = useAuth();
@@ -51,33 +46,24 @@ export default function ExecutivePortal() {
       <Route path="analytics" element={<ExecutiveHome />} />
       <Route path="brand/:brandId" element={<BrandDrilldown />} />
       <Route path="outlet/:outletId" element={<OutletDrilldown />} />
-      <Route path="profit-walk" element={<ProfitWalk />} />
-      <Route path="period-compare" element={<PeriodCompare />} />
+      <Route path="profit-walk" element={<LegacyRedirect to="/executive/analytics-hub?tab=profit-walk" />} />
+      <Route path="period-compare" element={<LegacyRedirect to="/executive/analytics-hub?tab=period-compare" />} />
       <Route path="reservations" element={<ReservationSummary />} />
       <Route path="budget-approvals" element={g("executive.budget.approve", <BudgetApprovals />)} />
 
       {/* Phase 14 — Outlet Operational Budget (KDO/FDO/BDO cost control) */}
-      <Route path="outlet-budgets" element={g(["executive.budget.approve", "executive.dashboard.read"], <OutletBudgetAllocation />)} />
-      <Route path="budget-monitor" element={g(["executive.budget.approve", "executive.dashboard.read"], <OutletBudgetMonitor />)} />
+      {/* guard = izin API halaman (outlet_budget.read / .monitor); dulu executive.dashboard.read meloloskan Owner ke halaman 403 */}
+      <Route path="outlet-budgets" element={g("outlet_budget.read", <OutletBudgetAllocation />)} />
+      <Route path="budget-monitor" element={g("outlet_budget.monitor", <OutletBudgetMonitor />)} />
       <Route path="budget-increase-requests" element={g("executive.budget.approve", <BudgetIncreaseRequests />)} />
 
       {/* Real pages: AI Q&A, Anomaly Detection, Brand Mix overview */}
-      <Route path="ai-qa" element={<ExecutiveQA />} />
+      <Route path="ai-qa" element={g("ai.exec_qa.use", <ExecutiveQA />)} />
       <Route path="anomaly" element={<AnomalyDetection />} />
-      <Route path="brand" element={<BrandMixOverview />} />
+      <Route path="brand" element={<LegacyRedirect to="/executive/analytics-hub?tab=brand" />} />
       {/* Phase 2g — unified Performance Analytics hub (Brand Mix + Profit Walk + Period Compare) */}
       <Route path="analytics-hub" element={<ExecutiveAnalyticsHub />} />
 
-      <Route
-        path="approvals"
-        element={
-          <ApprovalCenter
-            minAmount={EXEC_MIN_AMOUNT}
-            title="Executive Approval Center"
-            subtitle="Approval bernilai tinggi yang menunggu keputusan eksekutif"
-          />
-        }
-      />
       <Route path="*" element={<Navigate to="/executive" replace />} />
       </Routes>
     </div>

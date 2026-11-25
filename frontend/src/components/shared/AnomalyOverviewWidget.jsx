@@ -3,10 +3,11 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, ShieldCheck, ChevronRight, Zap, RefreshCw } from "lucide-react";
+import { AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { fmtRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 
 const RANGES = [
   { v: 7, l: "7d" },
@@ -43,44 +44,40 @@ export default function AnomalyOverviewWidget() {
   const allClean = counts.total === 0 && !loading;
 
   return (
-    <div className="glass-card p-5" data-testid="anomaly-overview-widget">
+    <div className="glass-card p-4" data-testid="anomaly-overview-widget">
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <div className={cn(
             "h-9 w-9 rounded-xl flex items-center justify-center",
-            counts.severe > 0 ? "bg-red-500/15 text-red-700 dark:text-red-300" :
-            counts.mild > 0 ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" :
-            "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+            counts.severe > 0 ? "bg-red-500/15 text-red-800 dark:text-red-300" :
+            counts.mild > 0 ? "bg-amber-500/15 text-amber-800 dark:text-amber-300" :
+            "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300",
           )}>
             {allClean ? <ShieldCheck className="h-4.5 w-4.5" /> : <AlertTriangle className="h-4.5 w-4.5" />}
           </div>
           <div>
             <h3 className="font-semibold leading-tight">Anomaly Detection</h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Sales, vendor, lead time, kas/AP — last {days}d
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          {RANGES.map(r => (
-            <button key={r.v} onClick={() => setDays(r.v)}
-              className={cn("px-3 py-1 rounded-full text-xs transition-colors",
-                days === r.v ? "pill-active" : "hover:bg-foreground/5 text-muted-foreground")}
-              data-testid={`anomaly-widget-range-${r.v}`}>
-              {r.l}
-            </button>
-          ))}
-        </div>
+        <SegmentedFilter
+          value={days}
+          onChange={(v) => setDays(Number(v))}
+          ariaLabel="Rentang hari"
+          options={RANGES.map(r => ({ value: r.v, label: r.l, testId: `anomaly-widget-range-${r.v}` }))}
+        />
       </div>
 
       {loading && <div className="h-32 skeleton rounded-xl" />}
 
       {!loading && allClean && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-          <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <ShieldCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
           <div className="text-sm">
-            <div className="font-semibold text-emerald-700 dark:text-emerald-300">Semua bersih ✨</div>
-            <div className="text-[11px] text-muted-foreground">Tidak ada anomaly terdeteksi dalam {days} hari terakhir.</div>
+            <div className="font-semibold text-emerald-700 dark:text-emerald-300">Semua bersih</div>
+            <div className="text-xs text-muted-foreground">Tidak ada anomaly terdeteksi dalam {days} hari terakhir.</div>
           </div>
         </div>
       )}
@@ -97,7 +94,7 @@ export default function AnomalyOverviewWidget() {
           {/* By-type stacked bar */}
           {(data.by_type || []).length > 0 && (
             <div className="mb-3">
-              <div className="text-[10px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Breakdown per tipe</div>
+              <div className="text-[11px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Breakdown per tipe</div>
               <div className="space-y-1.5">
                 {data.by_type.map((t) => {
                   const max = Math.max(...data.by_type.map(x => x.total));
@@ -107,7 +104,7 @@ export default function AnomalyOverviewWidget() {
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-muted-foreground">{t.label}</span>
                         <span className="font-bold tabular-nums">
-                          {t.total}{t.severe > 0 && <span className="text-red-500 ml-1">(+{t.severe} severe)</span>}
+                          {t.total}{t.severe > 0 && <span className="text-red-700 dark:text-red-400 ml-1">(+{t.severe} severe)</span>}
                         </span>
                       </div>
                       <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
@@ -124,7 +121,7 @@ export default function AnomalyOverviewWidget() {
           {/* Top outlets */}
           {(data.by_outlet || []).length > 0 && (
             <div className="mb-3">
-              <div className="text-[10px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Top outlet</div>
+              <div className="text-[11px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Top outlet</div>
               <div className="space-y-1">
                 {data.by_outlet.slice(0, 5).map((o) => (
                   <div key={o.outlet_id}
@@ -132,8 +129,8 @@ export default function AnomalyOverviewWidget() {
                     data-testid={`anomaly-outlet-${o.outlet_code || o.outlet_id}`}>
                     <span className="font-medium">{o.outlet_name}</span>
                     <div className="flex items-center gap-1.5">
-                      {o.severe > 0 && <span className="text-[10px] px-1.5 rounded bg-red-500/15 text-red-700">{o.severe}s</span>}
-                      {o.mild > 0 && <span className="text-[10px] px-1.5 rounded bg-amber-500/15 text-amber-700">{o.mild}m</span>}
+                      {o.severe > 0 && <span className="text-xs px-1.5 rounded bg-red-500/15 text-red-800 dark:text-red-400">{o.severe}s</span>}
+                      {o.mild > 0 && <span className="text-xs px-1.5 rounded bg-amber-500/15 text-amber-800 dark:text-amber-400">{o.mild}m</span>}
                       <span className="font-bold tabular-nums">{o.total}</span>
                     </div>
                   </div>
@@ -145,7 +142,7 @@ export default function AnomalyOverviewWidget() {
           {/* Recent events */}
           {(data.recent || []).length > 0 && (
             <div className="mb-3">
-              <div className="text-[10px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Terbaru</div>
+              <div className="text-[11px] uppercase font-semibold text-muted-foreground mb-2 tracking-wide">Terbaru</div>
               <ul className="space-y-1">
                 {data.recent.slice(0, 3).map((e) => (
                   <li key={e.id}>
@@ -160,7 +157,7 @@ export default function AnomalyOverviewWidget() {
                         <span className="truncate">{e.title}</span>
                       </div>
                       <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
-                        <span className="text-[10px]">{fmtRelative(e.created_at)}</span>
+                        <span className="text-xs">{fmtRelative(e.created_at)}</span>
                         <ChevronRight className="h-3 w-3" />
                       </div>
                     </Link>
@@ -179,7 +176,7 @@ export default function AnomalyOverviewWidget() {
             ) : (
               <span className="text-muted-foreground">Belum pernah scan</span>
             )}
-            <Link to="/finance/anomalies"
+            <Link to="/finance/period-closing?phase=1"
               className="inline-flex items-center gap-1 text-foreground hover:underline font-semibold"
               data-testid="anomaly-widget-view-all">
               Buka Feed <ChevronRight className="h-3 w-3" />
@@ -193,13 +190,13 @@ export default function AnomalyOverviewWidget() {
 
 function Tile({ label, value, tone, testid }) {
   const toneClass = {
-    red: "text-red-600 dark:text-red-400 bg-red-500/5 border-red-500/20",
-    amber: "text-amber-600 dark:text-amber-400 bg-amber-500/5 border-amber-500/20",
-    sky: "text-sky-600 dark:text-sky-400 bg-sky-500/5 border-sky-500/20",
+    red: "text-red-800 dark:text-red-400 bg-red-500/5 border-red-500/20",
+    amber: "text-amber-800 dark:text-amber-400 bg-amber-500/5 border-amber-500/20",
+    sky: "text-sky-800 dark:text-sky-400 bg-sky-500/5 border-sky-500/20",
   }[tone] || "";
   return (
     <div className={cn("rounded-xl p-3 border", toneClass)} data-testid={testid}>
-      <div className="text-[10px] uppercase tracking-wide font-semibold opacity-70">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide font-semibold">{label}</div>
       <div className="text-2xl font-bold tabular-nums leading-tight">{value}</div>
     </div>
   );

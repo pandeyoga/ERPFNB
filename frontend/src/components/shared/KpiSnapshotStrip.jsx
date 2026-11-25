@@ -8,18 +8,19 @@ import {
 import api, { unwrap } from "@/lib/api";
 import { fmtNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
 function Tile({ label, value, sub, icon: Icon, tone = "text-foreground" }) {
   return (
-    <div className="glass-card px-3 py-2.5 flex items-center gap-2 min-w-[140px]">
+    <div className="glass-card p-3 flex items-center gap-2 min-w-[140px]">
       <span className={cn("h-7 w-7 rounded-lg flex items-center justify-center", tone)}>
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</div>
+        <div className="text-[11px] text-muted-foreground uppercase tracking-wide truncate">{label}</div>
         <div className="text-sm font-bold leading-tight truncate">{value}</div>
-        {sub && <div className="text-[10px] text-muted-foreground truncate">{sub}</div>}
+        {sub && <div className="text-xs text-muted-foreground truncate">{sub}</div>}
       </div>
     </div>
   );
@@ -77,22 +78,25 @@ export default function KpiSnapshotStrip() {
       <Tile label="Cash" value={fmtJt(data.cash)}
             sub={data.runway ? `${data.runway}d runway` : null}
             icon={Wallet}
-            tone={data.health === "red" ? "bg-rose-100 text-rose-700" : data.health === "amber" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"} />
+            tone={data.health === "red" ? "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400" : data.health === "amber" ? "bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400" : "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"} />
       <Tile label="Rev MTD" value={fmtJt(data.revenue)} icon={TrendingUp} tone="bg-aurora-1/15 text-aurora-1" />
       <Tile label="AP 7d" value={fmtJt(data.ap_due)} icon={Receipt} tone="bg-aurora-4/15 text-aurora-4" />
       <Tile label="Approvals" value={data.pending} icon={ClipboardCheck} tone="bg-aurora-2/15 text-aurora-2" />
       <Tile label="Anomalies" value={data.anomalies} icon={AlertTriangle}
-            tone={data.anomalies ? "bg-rose-100 text-rose-700" : "bg-muted text-muted-foreground"} />
-      <button
+            tone={data.anomalies ? "bg-rose-500/15 text-rose-800 dark:text-rose-300" : "bg-muted text-muted-foreground"} />
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={load}
         disabled={refreshing}
-        className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 ml-auto"
+        className="ml-auto text-muted-foreground"
         data-testid="kpi-strip-refresh"
+        aria-label="Muat ulang ringkasan KPI"
       >
-        <RefreshCw className={cn("h-3 w-3", refreshing && "animate-spin")} />
-        refresh
-      </button>
+        <RefreshCw className={cn(refreshing && "animate-spin")} />
+        Muat ulang
+      </Button>
     </div>
   );
 }

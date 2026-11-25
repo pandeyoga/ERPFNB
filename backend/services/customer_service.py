@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from passlib.context import CryptContext
+from pymongo.errors import DuplicateKeyError
+import re
 import uuid
 import random
 import string
@@ -40,6 +42,8 @@ async def create_customer(db: AsyncIOMotorDatabase, customer_data: CustomerCreat
     existing = await db.customers.find_one({"email": customer_data.email.lower()})
     if existing:
         raise ValueError("Email already registered")
+    if customer_data.phone and await get_customer_by_phone(db, customer_data.phone):
+        raise ValueError("Nomor HP sudah terdaftar")
     
     # Create customer document
     customer_id = str(uuid.uuid4())
@@ -49,7 +53,8 @@ async def create_customer(db: AsyncIOMotorDatabase, customer_data: CustomerCreat
         "id": customer_id,
         "email": customer_data.email.lower(),
         "full_name": customer_data.full_name,
-        "phone": customer_data.phone,
+        "phone": phone_e164(customer_data.phone) or customer_data.phone,
+        "phone_key": phone_key(customer_data.phone),
         "date_of_birth": customer_data.date_of_birth,
         "gender": customer_data.gender,
         "hashed_password": hash_password(customer_data.password),
@@ -61,9 +66,13 @@ async def create_customer(db: AsyncIOMotorDatabase, customer_data: CustomerCreat
         "referral_code": generate_referral_code(),
         "created_at": now,
         "updated_at": now,
+        "deleted_at": None,
     }
     
-    await db.customers.insert_one(customer_doc)
+    try:
+        await db.customers.insert_one(customer_doc)
+    except DuplicateKeyError:
+        raise ValueError("Nomor HP atau email sudah terdaftar")
     return CustomerInDB(**customer_doc)
 
 
@@ -88,10 +97,15 @@ async def get_customer_by_phone(db: AsyncIOMotorDatabase, phone: str) -> Optiona
     
     Normalizes phone: strips spaces/dashes, handles +62 / 08xx variants.
     """
-    normalized = _normalize_phone(phone)
-    # Try multiple phone format variants
-    variants = _phone_variants(normalized)
-    customer_doc = await db.customers.find_one({"phone": {"$in": variants}})
+    key = phone_key(phone)
+    if not key:
+        return None
+    customer_doc = await db.customers.find_one({"phone_key": key, "deleted_at": None})
+    if not customer_doc:
+        # legacy rows written before phone_key existed
+        variants = _phone_variants(_normalize_phone(phone)) | {"+" + key, key, "0" + key[2:]}
+        customer_doc = await db.customers.find_one(
+            {"phone": {"$in": list(variants)}, "deleted_at": None}, sort=[("created_at", 1)])
     if customer_doc:
         return CustomerInDB(**customer_doc)
     return None
@@ -103,7 +117,7 @@ def _normalize_phone(phone: str) -> str:
     return re.sub(r"[\s\-\(\)]", "", phone or "").strip()
 
 
-def _phone_variants(phone: str) -> list[str]:
+def _phone_variants(phone: str) -> set[str]:
     """Generate common Indonesian phone variants to match in DB."""
     variants = {phone}
     if phone.startswith("+62"):
@@ -118,7 +132,29 @@ def _phone_variants(phone: str) -> list[str]:
         intl = "+62" + phone[1:]
         variants.add(intl)
         variants.add("62" + phone[1:])
-    return list(variants)
+    return variants
+
+
+def phone_key(phone: str | None) -> str | None:
+    """POS-05/DB-01: one canonical identity key for an Indonesian mobile number (digits, 62-prefixed).
+
+    '0813 9284-7589', '+6281392847589' and '6281392847589' all map to '6281392847589'.
+    Stored on every customer as `phone_key` (unique index) so the same person can never be
+    registered twice in different formats.
+    """
+    digits = re.sub(r"\D", "", phone or "")
+    if not digits:
+        return None
+    if digits.startswith("0"):
+        digits = "62" + digits[1:]
+    elif digits.startswith("8"):
+        digits = "62" + digits
+    return digits
+
+
+def phone_e164(phone: str | None) -> str | None:
+    key = phone_key(phone)
+    return f"+{key}" if key else None
 
 
 async def authenticate_customer(db: AsyncIOMotorDatabase, email: str, password: str) -> Optional[CustomerInDB]:
@@ -159,13 +195,9 @@ async def create_customer_from_phone(
     - full_name = 'Member XXXX' (last 4 digits)
     - customer can change name/password after first login
     """
-    import re
-    normalized = re.sub(r"[\s\-\(\)]", "", phone or "").strip()
-    # Ensure +62 canonical form
-    if normalized.startswith("0"):
-        normalized = "+62" + normalized[1:]
-    elif normalized.startswith("62") and not normalized.startswith("+"):
-        normalized = "+" + normalized
+    normalized = phone_e164(phone)
+    if not normalized:
+        raise ValueError("Nomor HP tidak valid")
 
     # Check if already exists (race-condition guard)
     existing = await get_customer_by_phone(db, normalized)
@@ -191,6 +223,7 @@ async def create_customer_from_phone(
         "email": email,
         "full_name": full_name,
         "phone": normalized,
+        "phone_key": phone_key(normalized),
         "date_of_birth": None,
         "gender": None,
         "hashed_password": hash_password(initial_password),
@@ -203,9 +236,17 @@ async def create_customer_from_phone(
         "referral_code": generate_referral_code(),
         "created_at": now,
         "updated_at": now,
+        "deleted_at": None,
     }
 
-    await db.customers.insert_one(customer_doc)
+    try:
+        await db.customers.insert_one(customer_doc)
+    except DuplicateKeyError:
+        # concurrent cashier request created this member first (unique phone_key) → reuse it
+        existing = await get_customer_by_phone(db, normalized)
+        if existing:
+            return existing
+        raise
     return CustomerInDB(**customer_doc)
 
 
@@ -215,13 +256,26 @@ async def update_customer(db: AsyncIOMotorDatabase, customer_id: str, update_dat
     if not update_dict:
         return await get_customer_by_id(db, customer_id)
     
+    if "phone" in update_dict:
+        # POS-05: phone is the member identity — keep it canonical and unique
+        key = phone_key(update_dict["phone"])
+        if not key:
+            raise ValueError("Nomor HP tidak valid")
+        other = await get_customer_by_phone(db, update_dict["phone"])
+        if other and other.id != customer_id:
+            raise ValueError("Nomor HP sudah dipakai member lain")
+        update_dict["phone"] = "+" + key
+        update_dict["phone_key"] = key
     update_dict["updated_at"] = datetime.now(timezone.utc)
-    
-    await db.customers.update_one(
-        {"id": customer_id},
-        {"$set": update_dict}
-    )
-    
+
+    try:
+        await db.customers.update_one(
+            {"id": customer_id},
+            {"$set": update_dict}
+        )
+    except DuplicateKeyError:
+        raise ValueError("Nomor HP sudah dipakai member lain")
+
     return await get_customer_by_id(db, customer_id)
 
 

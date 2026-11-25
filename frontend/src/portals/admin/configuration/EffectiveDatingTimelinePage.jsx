@@ -9,17 +9,18 @@ import { useScope } from "@/components/shared/ScopePicker";
 import StatusPill from "@/components/shared/StatusPill";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { fmtDate } from "@/lib/format";
 import { RULE_LABELS, ruleStatus, effectiveText } from "./configHelpers";
 import { cn } from "@/lib/utils";
 
+// Semua jenis aturan yang punya tab di /admin/configuration (anomaly threshold sebelumnya tidak tampil).
 const RULE_TYPES = [
   "sales_input_schema",
   "petty_cash_policy",
   "service_charge_policy",
   "incentive_policy",
+  "anomaly_threshold_policy",
 ];
 
 function monthRange(now = new Date()) {
@@ -90,36 +91,31 @@ export default function EffectiveDatingTimelinePage() {
     return out;
   }, [rows]);
 
-  const totalOverlaps = rows.filter((r) => (r.overlaps_with || []).length > 0).length;
+  // Hitung bentrok hanya untuk jenis aturan yang ditampilkan di timeline (sebelumnya ikut menghitung
+  // rule_type lain dari API, mis. approval_workflow, sehingga angka peringatan tidak cocok dengan bar).
+  const visibleRows = rows.filter((r) => RULE_TYPES.includes(r.rule_type));
+  const totalOverlaps = visibleRows.filter((r) => (r.overlaps_with || []).length > 0).length;
 
   return (
-    <div className="space-y-4" data-testid="config-effective-dating-page">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-3" data-testid="config-effective-dating-page">
+      <div className="space-y-2">
         <div>
-          <h2 className="text-base font-semibold flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" /> Versi & Jadwal
+          <h2 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" /> Effective Dating
           </h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             Lihat semua versi aturan beserta periode berlaku. Periode bentrok ditandai oranye.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            size="sm" className="rounded-full"
-            onClick={() => setFilter("all")}
-            data-testid="timeline-filter-all"
-          >Semua</Button>
-          {RULE_TYPES.map((rt) => (
-            <Button
-              key={rt}
-              variant={filter === rt ? "default" : "outline"}
-              size="sm" className="rounded-full"
-              onClick={() => setFilter(rt)}
-              data-testid={`timeline-filter-${rt}`}
-            >{RULE_LABELS[rt]}</Button>
-          ))}
-        </div>
+        {/* Filter jenis aturan — gaya tab standar (sebelumnya tombol pill rounded-full) */}
+        <Tabs value={filter} onValueChange={setFilter}>
+          <TabsList aria-label="Filter jenis aturan">
+            <TabsTrigger value="all" data-testid="timeline-filter-all">Semua</TabsTrigger>
+            {RULE_TYPES.map((rt) => (
+              <TabsTrigger key={rt} value={rt} data-testid={`timeline-filter-${rt}`}>{RULE_LABELS[rt]}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       {totalOverlaps > 0 && (
@@ -127,7 +123,7 @@ export default function EffectiveDatingTimelinePage() {
           className="glass-card p-3 border border-amber-500/40 flex items-start gap-2"
           data-testid="config-timeline-overlap-warning"
         >
-          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+          <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 mt-0.5" />
           <p className="text-xs text-amber-700 dark:text-amber-300">
             <strong>{totalOverlaps}</strong> aturan memiliki periode yang bentrok. Periksa kembali agar perhitungan konsisten.
           </p>
@@ -142,7 +138,7 @@ export default function EffectiveDatingTimelinePage() {
 
       {loading ? (
         <LoadingState rows={6} />
-      ) : rows.length === 0 ? (
+      ) : visibleRows.length === 0 ? (
         <div className="glass-card">
           <EmptyState
             icon={HistoryIcon}
@@ -167,7 +163,7 @@ function TimelineAxis({ axis }) {
     <div className="relative" aria-hidden>
       <div className="grid pl-44 mb-1" style={{ gridTemplateColumns: `repeat(${axis.length}, 1fr)` }}>
         {axis.map((m) => (
-          <div key={monthKey(m)} className="text-[10px] text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
+          <div key={monthKey(m)} className="text-xs text-muted-foreground text-center border-l border-border/30 first:border-0 px-1">
             {m.toLocaleDateString("id-ID", { month: "short", year: "2-digit" })}
           </div>
         ))}
@@ -191,7 +187,7 @@ function TimelineRow({ ruleType, items, axis }) {
       <div className="flex items-center gap-3">
         <div className="w-44 shrink-0">
           <p className="text-sm font-medium">{RULE_LABELS[ruleType] || ruleType}</p>
-          <p className="text-[10px] text-muted-foreground">{items.length} versi</p>
+          <p className="text-xs text-muted-foreground">{items.length} versi</p>
         </div>
         <div className="flex-1 relative h-12 rounded-md bg-foreground/[0.02] border border-border/30 overflow-hidden">
           <div
@@ -228,13 +224,13 @@ function TimelineRow({ ruleType, items, axis }) {
                   <TooltipContent>
                     <div className="text-xs space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono">v{r.version}</span>
+                        <span className="font-semibold tabular-nums">v{r.version}</span>
                         <StatusPill status={status} />
                       </div>
                       <div className="font-medium">{r.name || ruleType}</div>
                       <div className="text-muted-foreground">{effectiveText(r)}</div>
                       {overlap && (
-                        <div className="text-amber-600">Bentrok dengan {r.overlaps_with.length} versi lain</div>
+                        <div className="text-amber-800 dark:text-amber-400">Bentrok dengan {r.overlaps_with.length} versi lain</div>
                       )}
                     </div>
                   </TooltipContent>
