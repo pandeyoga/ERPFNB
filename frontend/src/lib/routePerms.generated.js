@@ -219,6 +219,10 @@ export const ROUTE_PERMS = {
   "/inventory/transfers/:id": [
     "inventory.transfer"
   ],
+  "/inventory/usage": [
+    "inventory.balance.read",
+    "inventory.view"
+  ],
   "/inventory/valuation": [
     "inventory.valuation.read"
   ],

@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import SimpleSelect from "@/components/shared/SimpleSelect";
 import { useScope } from "@/contexts/ScopeContext";
 import { useTour } from "@/contexts/tour";
 import { cn } from "@/lib/utils";
@@ -212,7 +213,21 @@ function UserMessage({ text, files, page }) {
 }
 
 /** Kotak tulis gaya Claude: lampiran di atas, textarea tumbuh otomatis, tombol lampiran kiri & kirim kanan. */
-function Composer({ onSubmit, busy, page, autoFocus, placeholder }) {
+const PERSONA_KEY = "aurora.ai.persona";
+
+/** Agen domain (Finance, Purchasing, Inventory, Outlet, HR, Analis, Pemandu) — fokus & saran berbeda, otak yang sama. */
+function usePersonas() {
+  const [list, setList] = useState([]);
+  const [persona, setPersonaState] = useState(() => { try { return localStorage.getItem(PERSONA_KEY) || "umum"; } catch { return "umum"; } });
+  useEffect(() => {
+    api.get("/ai/agent/personas", { scope: false }).then((r) => setList(r.data?.data || [])).catch(() => setList([]));
+  }, []);
+  const setPersona = (v) => { setPersonaState(v); try { localStorage.setItem(PERSONA_KEY, v); } catch { /* abaikan */ } };
+  const valid = list.some((p) => p.id === persona) ? persona : "umum";
+  return { list, persona: valid, setPersona, current: list.find((p) => p.id === valid) };
+}
+
+function Composer({ onSubmit, busy, page, autoFocus, placeholder, personas }) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState([]);
   const fileRef = useRef(null);
@@ -257,9 +272,16 @@ function Composer({ onSubmit, busy, page, autoFocus, placeholder }) {
       <div className="flex items-center justify-between gap-2 px-2 pb-2">
         <input ref={fileRef} type="file" multiple accept={ACCEPT} className="hidden" data-testid="ai-file-input"
           onChange={(e) => { setFiles((x) => [...x, ...Array.from(e.target.files || [])].slice(0, 10)); e.target.value = ""; }} />
-        <Button size="icon-sm" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Lampirkan file (foto, PDF, Excel)" title="Lampirkan foto, PDF, atau Excel" data-testid="ai-attach">
-          <Paperclip className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1 min-w-0">
+          <Button size="icon-sm" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Lampirkan file (foto, PDF, Excel)" title="Lampirkan foto, PDF, atau Excel" data-testid="ai-attach">
+            <Paperclip className="h-4 w-4" />
+          </Button>
+          {personas?.list?.length > 1 && (
+            <SimpleSelect value={personas.persona} onValueChange={personas.setPersona} ariaLabel="Pilih agen" testId="ai-persona"
+              className="w-40 sm:w-44 border-0 shadow-none bg-transparent text-xs text-muted-foreground"
+              options={personas.list.map((p) => ({ value: p.id, label: p.nama }))} />
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {page && <span className="hidden md:inline text-xs text-muted-foreground">Enter kirim · Shift+Enter baris baru</span>}
           <Button size="icon-sm" onClick={submit} disabled={busy || (!text.trim() && !files.length)} aria-label="Kirim" data-testid="ai-send">
@@ -279,6 +301,9 @@ export default function AgentChat({ chat, variant, compact = false, onNavigated 
   const { user } = useAuth();
   const scrollRef = useRef(null);
   const { session, busy, steps, pending, error, send, decide, decideBatch, loading } = chat;
+  const personas = usePersonas();
+  const suggestions = personas.current && personas.current.id !== "umum"
+    ? personas.current.saran.map((label) => ({ label, icon: "💡" })) : SUGGESTIONS;
   const display = useMemo(() => (session?.display || []).filter((d) => !(d.role === "user" && d.auto)), [session]);
   const empty = !loading && !display.length && !pending;
 
@@ -292,7 +317,7 @@ export default function AgentChat({ chat, variant, compact = false, onNavigated 
   const submit = async (m, fs = []) => {
     const sp = scope.outlet ? { outlet_id: scope.outlet.id, outlet_name: scope.outlet.name }
       : scope.brand ? { brand_id: scope.brand.id, brand_name: scope.brand.name } : null;
-    await send({ message: m, files: fs, context: { path: location.pathname + location.search, title: document.title }, scope: sp });
+    await send({ message: m, files: fs, context: { path: location.pathname + location.search, title: document.title, agent: personas.persona }, scope: sp });
   };
 
   const fileNames = (d) => ((d.attachments || []).length ? [`${d.attachments.length} lampiran`] : []);
@@ -313,9 +338,9 @@ export default function AgentChat({ chat, variant, compact = false, onNavigated 
               <p className="text-sm text-muted-foreground">Apa yang bisa saya bantu hari ini?</p>
             </div>
           </div>
-          <Composer onSubmit={submit} busy={busy} page={page} autoFocus={page} />
+          <Composer onSubmit={submit} busy={busy} page={page} autoFocus={page} personas={personas} />
           <div className={cn("flex flex-wrap gap-2", page ? "justify-center" : "")}>
-            {SUGGESTIONS.slice(0, page ? 6 : 4).map((s) => (
+            {suggestions.slice(0, page ? 6 : 4).map((s) => (
               <Button key={s.label} size="sm" variant="outline" onClick={() => submit(s.label)} disabled={busy} data-testid="ai-suggestion">
                 <span aria-hidden>{s.icon}</span> {s.label}
               </Button>
@@ -357,7 +382,7 @@ export default function AgentChat({ chat, variant, compact = false, onNavigated 
         </div>
       </div>
       <div className={cn(col, page ? "pb-4 pt-2 space-y-2" : "pb-3 pt-2 space-y-1.5")}>
-        <Composer onSubmit={submit} busy={busy} page={page} placeholder="Balas Asisten AI…" />
+        <Composer onSubmit={submit} busy={busy} page={page} placeholder="Balas Asisten AI…" personas={personas} />
         {disclaimer}
       </div>
     </div>

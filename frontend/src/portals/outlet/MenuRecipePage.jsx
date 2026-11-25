@@ -16,6 +16,7 @@ import StatusPill from "@/components/shared/StatusPill";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
 import SimpleSelect from "@/components/shared/SimpleSelect";
+import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import { useScope } from "@/contexts/ScopeContext";
 import { useAuth } from "@/lib/auth";
 import api, { fetchAll, unwrap, unwrapError } from "@/lib/api";
@@ -201,6 +202,53 @@ function RecipeDialog({ menuId, onClose, onSaved, canManage, canAI }) {
   );
 }
 
+const ME_PILL = { Star: ["confirmed", "Star"], Plowhorse: ["pending", "Plowhorse"], Puzzle: ["submitted", "Puzzle"], Dog: ["rejected", "Dog"] };
+
+/** Menu engineering: popularitas × margin per porsi (GET /api/menu/engineering). */
+function MenuEngineering({ brandId }) {
+  const [days, setDays] = useState("30");
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    setData(null);
+    const end = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const start = new Date(Date.now() - Number(days) * 86400000).toISOString().slice(0, 10);
+    api.get("/menu/engineering", { params: { start, end, ...(brandId ? { brand_id: brandId } : {}) }, scope: false })
+      .then((r) => setData(unwrap(r))).catch((e) => { toast.error(unwrapError(e)); setData({ rows: [], ringkasan: {} }); });
+  }, [brandId, days]);
+  const k = data?.ringkasan?.per_kelas || {};
+  return (
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <CompactStatCard label="Star" value={k.Star ?? 0} sub="laku & margin tinggi" tone="success" />
+        <CompactStatCard label="Plowhorse" value={k.Plowhorse ?? 0} sub="laku, margin rendah" tone="warning" />
+        <CompactStatCard label="Puzzle" value={k.Puzzle ?? 0} sub="margin tinggi, kurang laku" tone="info" />
+        <CompactStatCard label="Dog" value={k.Dog ?? 0} sub="kurang laku & margin rendah" tone="danger" />
+      </div>
+      <Card className="p-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <SimpleSelect value={days} onValueChange={setDays} ariaLabel="Rentang" className="w-36"
+            options={[{ value: "30", label: "30 hari" }, { value: "60", label: "60 hari" }, { value: "90", label: "90 hari" }]} />
+          {data?.ringkasan?.rata2_margin_per_porsi != null && (
+            <span className="text-xs text-muted-foreground">Rata-rata margin {rp(data.ringkasan.rata2_margin_per_porsi)}/porsi · populer bila ≥ {data.ringkasan.batas_populer_pct}% porsi</span>
+          )}
+        </div>
+        {data?.catatan && <p className="text-sm text-amber-800 dark:text-amber-400">{data.catatan}</p>}
+        <DataTable rows={data?.rows || []} loading={!data} rowTestIdPrefix="me-row"
+          renderExpanded={(r) => <p className="text-sm">{r.saran}</p>}
+          columns={[
+            { key: "menu", label: "Menu", primary: true, render: (r) => <span className="font-medium">{r.menu}</span> },
+            { key: "terjual", label: "Terjual", numeric: true, render: (r) => `${r.terjual} (${r.porsi_pct}%)` },
+            { key: "omzet", label: "Omzet", numeric: true, hideOnMobile: true, render: (r) => rp(r.omzet) },
+            { key: "margin_per_porsi", label: "Margin/porsi", numeric: true, render: (r) => rp(r.margin_per_porsi) },
+            { key: "kelas", label: "Kelas", render: (r) => (ME_PILL[r.kelas] ? <StatusPill status={ME_PILL[r.kelas][0]} label={ME_PILL[r.kelas][1]} />
+              : <span className="text-xs text-muted-foreground">{r.kelas}</span>) },
+          ]}
+          empty={<EmptyState icon={ChefHat} title="Belum ada penjualan per menu" description="Impor ekspor POS per item lewat Impor Cerdas." />} />
+      </Card>
+    </>
+  );
+}
+
 export default function MenuRecipePage() {
   const scope = useScope();
   const { can } = useAuth();
@@ -211,6 +259,7 @@ export default function MenuRecipePage() {
   const [openId, setOpenId] = useState(null);
   const [newOpen, setNewOpen] = useState(false);
   const brandId = scope.brand?.id || scope.outlet?.brand_id || "";
+  const [view, setView] = useState("menu");
 
   const load = useCallback(() => {
     api.get("/menu/costing", { params: brandId ? { brand_id: brandId } : {}, scope: false })
@@ -242,6 +291,9 @@ export default function MenuRecipePage() {
             {canManage && <Button onClick={() => setNewOpen(true)} data-testid="menu-new"><Plus className="h-4 w-4" /> Tambah menu</Button>}
           </>
         )} />
+      <SegmentedFilter value={view} onChange={setView} ariaLabel="Tampilan" testId="menu-view"
+        options={[{ value: "menu", label: "Menu & HPP" }, { value: "engineering", label: "Menu engineering" }]} />
+      {view === "engineering" ? <MenuEngineering brandId={brandId} /> : (<>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <CompactStatCard label="Menu" value={s.menu ?? "…"} sub={`${s.perlu_ditinjau ?? 0} perlu ditinjau`} />
         <CompactStatCard label="Dengan resep" value={s.dengan_resep ?? "…"} />
@@ -256,6 +308,7 @@ export default function MenuRecipePage() {
         <DataTable columns={cols} rows={rows} loading={!data} onRowClick={(r) => setOpenId(r.id)} rowTestIdPrefix="menu-row"
           empty={<EmptyState icon={ChefHat} title="Belum ada menu" description="Tambah menu, atau impor penjualan per item (Impor Cerdas) — menu terbentuk otomatis." />} />
       </Card>
+      </>)}
       <NewMenuDialog open={newOpen} onOpenChange={setNewOpen} brands={scope.brands || []} defaultBrand={brandId} onCreated={(m) => { load(); setOpenId(m.id); }} />
       <RecipeDialog menuId={openId} onClose={() => setOpenId(null)} onSaved={() => { setOpenId(null); load(); }} canManage={canManage} canAI={canAI} />
     </div>

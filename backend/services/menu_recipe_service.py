@@ -8,6 +8,7 @@ ditandai agar dilengkapi (mis. berat per butir). Food cost % = HPP / harga jual 
 from __future__ import annotations
 
 import uuid
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -161,3 +162,65 @@ async def costing_overview(brand_id: Optional[str] = None) -> dict:
                                         "food_cost_rata2": round(sum(x["food_cost_pct"] for x in with_fc) / len(with_fc), 1) if with_fc else None,
                                         "di_atas_batas": sum(1 for x in with_fc if x["food_cost_pct"] > FOOD_COST_ALERT * 100),
                                         "perlu_ditinjau": sum(1 for x in rows if x["needs_review"])}}
+
+
+async def menu_engineering(brand_id: Optional[str] = None, *, start: Optional[str] = None, end: Optional[str] = None,
+                           outlet_ids: Optional[list[str]] = None) -> dict:
+    """Menu engineering (Kasavana–Smith): popularitas (porsi terjual vs 70% × rata-rata) × kontribusi margin per porsi
+    (harga − HPP vs rata-rata tertimbang) → Star (pertahankan), Plowhorse (populer, margin rendah → naikkan harga/kurangi
+    porsi), Puzzle (margin tinggi, kurang laku → promosikan/reposisi), Dog (pertimbangkan hapus/ganti)."""
+    from datetime import date, timedelta
+    db = get_db()
+    end = end or (date.today() - timedelta(days=1)).isoformat()
+    start = start or (date.fromisoformat(end) - timedelta(days=29)).isoformat()
+    q: dict = {"deleted_at": None, "business_date": {"$gte": start, "$lte": end}, "void": {"$ne": True}, "menu_item_id": {"$ne": None}}
+    if brand_id:
+        q["brand_id"] = brand_id
+    if outlet_ids is not None:
+        q["outlet_id"] = {"$in": outlet_ids}
+    sold: dict[str, dict] = {}
+    async for ln in db.sales_lines.find(q, {"_id": 0, "menu_item_id": 1, "qty": 1, "amount": 1}):
+        x = sold.setdefault(ln["menu_item_id"], {"qty": 0.0, "omzet": 0.0})
+        x["qty"] += float(ln.get("qty") or 0)
+        x["omzet"] += float(ln.get("amount") or 0)
+    if not sold:
+        return {"periode": [start, end], "rows": [], "ringkasan": {"menu": 0},
+                "catatan": "Belum ada detail penjualan per menu pada periode ini — impor ekspor POS per item lewat Impor Cerdas."}
+    menus = {m["id"]: m async for m in db.menu_items.find({"id": {"$in": list(sold)}}, {"_id": 0})}
+    recipes = {r["menu_item_id"]: r async for r in db.recipes.find({"menu_item_id": {"$in": list(sold)}, "deleted_at": None}, {"_id": 0})}
+    rows = []
+    for mid, s in sold.items():
+        m = menus.get(mid) or {}
+        price = float(m.get("price") or 0) or (s["omzet"] / s["qty"] if s["qty"] else 0)
+        r = recipes.get(mid)
+        c = await cost_recipe(r["lines"], r.get("yield_qty") or 1, price) if r else None
+        hpp = (c or {}).get("hpp_per_porsi")
+        rows.append({"id": mid, "menu": m.get("name") or mid, "kategori": m.get("category"), "terjual": round(s["qty"], 1),
+                     "omzet": round(s["omzet"], 0), "harga": round(price, 0), "hpp": hpp,
+                     "margin_per_porsi": round(price - hpp, 0) if hpp is not None else None,
+                     "food_cost_pct": (c or {}).get("food_cost_pct")})
+    n = len(rows)
+    total_qty = sum(r["terjual"] for r in rows) or 1
+    pop_cut = 0.7 / n
+    with_m = [r for r in rows if r["margin_per_porsi"] is not None]
+    avg_margin = (sum(r["margin_per_porsi"] * r["terjual"] for r in with_m) / sum(r["terjual"] for r in with_m)) if with_m else None
+    advice = {"Star": "Pertahankan kualitas & posisi di menu; jangan diskon.",
+              "Plowhorse": "Laku tapi margin tipis: naikkan harga sedikit, kecilkan porsi, atau ganti bahan lebih murah.",
+              "Puzzle": "Margin bagus tapi kurang laku: promosikan, foto lebih menarik, rekomendasi staf, pindah posisi di menu.",
+              "Dog": "Kurang laku & margin rendah: pertimbangkan hapus atau ganti resep."}
+    for r in rows:
+        r["porsi_pct"] = round(r["terjual"] / total_qty * 100, 1)
+        popular = r["terjual"] / total_qty >= pop_cut
+        if r["margin_per_porsi"] is None or avg_margin is None:
+            r["kelas"], r["saran"] = ("Populer (resep belum ada)" if popular else "Kurang laku (resep belum ada)"), "Lengkapi resep agar margin terhitung."
+            continue
+        high = r["margin_per_porsi"] >= avg_margin
+        r["kelas"] = "Star" if popular and high else "Plowhorse" if popular else "Puzzle" if high else "Dog"
+        r["saran"] = advice[r["kelas"]]
+    rows.sort(key=lambda r: -r["omzet"])
+    count = defaultdict(int)
+    for r in rows:
+        count[r["kelas"]] += 1
+    return {"periode": [start, end], "rows": rows,
+            "ringkasan": {"menu": n, "rata2_margin_per_porsi": round(avg_margin, 0) if avg_margin is not None else None,
+                          "batas_populer_pct": round(pop_cut * 100, 1), "per_kelas": dict(count)}}

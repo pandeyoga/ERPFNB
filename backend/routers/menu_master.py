@@ -133,6 +133,14 @@ async def costing(brand_id: Optional[str] = Query(None), user: dict = Depends(re
     return ok_envelope(await svc.costing_overview(brand_id))
 
 
+@router.get("/engineering", summary="Menu engineering: popularitas × margin per porsi → Star/Plowhorse/Puzzle/Dog + saran")
+async def engineering(brand_id: Optional[str] = Query(None), start: Optional[str] = Query(None), end: Optional[str] = Query(None),
+                      user: dict = Depends(require_perm("menu.item.read"))):
+    from core.security import scoped_outlet_ids
+    from services import menu_recipe_service as svc
+    return ok_envelope(await svc.menu_engineering(brand_id, start=start, end=end, outlet_ids=scoped_outlet_ids(user)))
+
+
 @router.get("/items/{item_id}/recipe", summary="Resep menu + perhitungan HPP")
 async def get_recipe(item_id: str, user: dict = Depends(require_perm("menu.item.read"))):
     from services import menu_recipe_service as svc

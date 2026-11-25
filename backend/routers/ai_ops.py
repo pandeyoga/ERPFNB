@@ -68,3 +68,41 @@ async def steward_deactivate(payload: dict = Body(...), user: dict = Depends(req
     """{entity: items|vendors, id: <duplikat>, keep_id: <yang dipertahankan>}"""
     return ok_envelope(await steward.deactivate(str(payload.get("entity") or ""), str(payload.get("id") or ""),
                                                 str(payload.get("keep_id") or ""), user=user))
+
+
+# ── Agen domain: Inventory, Outlet, HR ─────────────────────────────────────────
+from services.ai_domain import inventory as ai_inv, outlet_hr  # noqa: E402
+
+
+@router.get("/api/ai/inventory/usage-variance", summary="Pemakaian bahan teoretis (penjualan × resep) vs aktual per item & toko")
+async def inv_usage_variance(outlet_id: str = Query(None), start: str = Query(None), end: str = Query(None),
+                             user: dict = Depends(require_any_perm("inventory.view", "inventory.balance.read", "menu.item.read"))):
+    return ok_envelope(await ai_inv.usage_variance(user, outlet_id=outlet_id, start=start, end=end))
+
+
+@router.get("/api/ai/inventory/waste", summary="Analisis waste per item & toko (+ % dari pembelian)")
+async def inv_waste(days: int = Query(30, ge=1, le=366), outlet_id: str = Query(None),
+                    user: dict = Depends(require_any_perm("inventory.view", "inventory.movement.read"))):
+    return ok_envelope(await ai_inv.waste(user, days=days, outlet_id=outlet_id))
+
+
+@router.get("/api/ai/inventory/transfer-suggestions", summary="Saran transfer stok antar toko (berlebih → di bawah par)")
+async def inv_transfer_suggestions(user: dict = Depends(require_any_perm("inventory.view", "inventory.balance.read"))):
+    return ok_envelope(await ai_inv.transfer_suggestions(user))
+
+
+@router.get("/api/ai/outlet/briefing", summary="Briefing harian per toko: penjualan vs 4 minggu, status harian, hal yang perlu perhatian")
+async def outlet_briefing(outlet_id: str = Query(None), on: str = Query(None),
+                          user: dict = Depends(require_any_perm("outlet.daily_sales.read", "executive.dashboard.read"))):
+    return ok_envelope(await outlet_hr.outlet_briefing(user, outlet_id=outlet_id, on=on))
+
+
+@router.get("/api/ai/hr/labor-cost", summary="Labor cost % per toko (payroll + BPJS perusahaan ÷ penjualan)")
+async def hr_labor_cost(period: str = Query(None), user: dict = Depends(require_any_perm("hr.payroll.read", "finance.report.profit_loss"))):
+    return ok_envelope(await outlet_hr.labor_cost(user, period=period))
+
+
+@router.get("/api/ai/hr/leave-coverage", summary="Cakupan cuti per toko & hari (kurang orang) + cuti menunggu persetujuan")
+async def hr_leave_coverage(start: str = Query(None), end: str = Query(None),
+                            user: dict = Depends(require_any_perm("hr.leave.read", "hr.read"))):
+    return ok_envelope(await outlet_hr.leave_coverage(user, start=start, end=end))

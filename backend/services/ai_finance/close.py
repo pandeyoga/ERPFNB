@@ -154,7 +154,10 @@ async def accrual_proposals(period: str, user: dict, *, months: int = 3) -> dict
     from services import gl_mapping
     db = get_db()
     start, end = _bounds(period)
-    accrued = await gl_mapping.resolve_or("accrued_expenses", "accounts_payable")
+    try:
+        accrued = await gl_mapping.resolve_or("accrued_expenses", "accounts_payable")
+    except Exception as e:  # noqa: BLE001 — mapping GL belum diatur
+        raise ValidationError(f"Akun beban yang masih harus dibayar belum dipetakan: {str(e)[:120]}")
     hist_periods = []
     p = period
     for _ in range(months):

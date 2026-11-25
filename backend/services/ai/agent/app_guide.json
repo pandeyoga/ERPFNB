@@ -641,6 +641,17 @@
    ]
   },
   {
+   "label": "Pemakaian & Waste",
+   "path": "/inventory/usage",
+   "perms": [
+    "inventory.balance.read",
+    "inventory.view"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": []
+  },
+  {
    "label": "Item Catalog",
    "path": "/admin/master/items",
    "perms": [],
@@ -1191,6 +1202,10 @@
   ],
   "/inventory/transfers/:id": [
    "inventory.transfer"
+  ],
+  "/inventory/usage": [
+   "inventory.balance.read",
+   "inventory.view"
   ],
   "/inventory/valuation": [
    "inventory.valuation.read"

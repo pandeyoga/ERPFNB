@@ -27,6 +27,12 @@ async def chat(payload: dict = Body(...), user: dict = Depends(require_perm(USE)
         context=payload.get("context") or None, scope=payload.get("scope") or None))
 
 
+@router.get("/personas", summary="Agen domain yang bisa dipilih pengguna (sesuai izin) + saran pertanyaan")
+async def personas(user: dict = Depends(require_perm(USE))):
+    from services.ai.agent import personas as ps
+    return ok_envelope(ps.visible(set(user.get("permissions") or [])))
+
+
 @router.get("/runs/{run_id}")
 async def get_run(run_id: str, user: dict = Depends(require_perm(USE))):
     return ok_envelope(await runtime.get_run(run_id, user))

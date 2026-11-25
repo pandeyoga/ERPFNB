@@ -10,6 +10,7 @@ import CompactStatCard from "@/components/shared/CompactStatCard";
 import PageHeader from "@/components/shared/PageHeader";
 import LoadingState from "@/components/shared/LoadingState";
 import { fmtRp } from "@/lib/format";
+import HRInsightsCard from "@/components/ai/HRInsightsCard";
 
 export default function HRHome() {
   const navigate = useNavigate();
@@ -56,6 +57,8 @@ export default function HRHome() {
             onClick={() => navigate("/hr/compensation?tab=lb-fund")} />
         </div>
       </div>
+
+      <HRInsightsCard />
 
       {(home?.pending_advance_approval > 0 || home?.service_charge_pending > 0 || home?.incentive_pending > 0) && (
         <div className="glass-card p-4 flex items-start gap-3 border-l-4 border-amber-500" data-testid="hr-pending-card">

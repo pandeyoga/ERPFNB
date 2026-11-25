@@ -12,10 +12,11 @@ import StatusPill from "@/components/shared/StatusPill";
 import OutletBudgetMiniWidget from "./OutletBudgetMiniWidget";
 import { fmtRp, fmtDate, todayJakartaISO } from "@/lib/format";
 import { useAuth } from "@/lib/auth";
+import OutletBriefingCard from "@/components/ai/OutletBriefingCard";
 import { useOutletScopeCtx } from "./OutletScopeContext";
 
 export default function OutletHome() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const {
     outletId,
     currentOutlet,
@@ -121,6 +122,8 @@ export default function OutletHome() {
           testId="kpi-urgent-purchase-open"
         />
       </div>
+
+      {can("outlet.daily_sales.read") && <OutletBriefingCard />}
 
       {/* Outlet Operational Budget mini widget */}
       <OutletBudgetMiniWidget scope="monthly" />

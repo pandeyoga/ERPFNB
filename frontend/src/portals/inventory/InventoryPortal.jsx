@@ -13,6 +13,7 @@ import OpnameList from "./OpnameList";
 import OpnameSession from "./OpnameSession";
 import Valuation from "./Valuation";
 import LowStockAlert from "./LowStockAlert";
+import UsageAnalysisPage from "./UsageAnalysisPage";
 
 export default function InventoryPortal() {
   const { user } = useAuth();
@@ -32,6 +33,7 @@ export default function InventoryPortal() {
       <Route path="opname" element={g("inventory.opname", <OpnameList />)} />
       <Route path="opname/:id" element={g("inventory.opname", <OpnameSession />)} />
       <Route path="valuation" element={g("inventory.valuation.read", <Valuation />)} />
+      <Route path="usage" element={g(["inventory.view", "inventory.balance.read"], <UsageAnalysisPage />)} />
       {/* Market Price List pindah ke Procurement › Sourcing › Harga acuan (review item baru ada di sana) */}
       <Route path="market-list" element={<Navigate to="/procurement/sourcing?tab=benchmarks" replace />} />
       <Route path="*" element={<Navigate to="/inventory" replace />} />
