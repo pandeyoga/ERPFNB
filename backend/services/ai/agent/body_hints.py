@@ -87,10 +87,14 @@ BODY_HINTS: dict[str, str] = {
     "POST /api/ai/finance/recon/{session_id}/apply": '{"row_ids": ["<row_id dengan status usulan>"], "learn": true}',
     # ---- Impor Cerdas (file mentah → data) ----
     "POST /api/imports": (
-        '{"attachment_id": "<attachment_id lampiran pengguna>", "target": "sales|bank (opsional, terdeteksi otomatis)",'
+        '{"attachment_id": "<attachment_id lampiran pengguna>", "target": "sales|bank|items|vendors|customers|purchases|opname|'
+        'opening_gl|opening_ap|opening_ar|opening_stock|budget (opsional, terdeteksi otomatis)",'
         ' "options": {"outlet_id": "<toko bila file tanpa kolom toko>", "bank_account_id": "<wajib untuk mutasi bank>",'
-        ' "channel": "GoFood|GrabFood|ShopeeFood (bila file aplikasi delivery)", "cutoff_hour": 4}} — hanya membuat '
-        'pratinjau (belum menyimpan data). Baca hasilnya: columns (pemetaan), days (verdict duplikasi per toko/hari), issues.'),
+        ' "channel": "GoFood|GrabFood|ShopeeFood (bila file aplikasi delivery)", "cutoff_hour": 4, "opening_date": "YYYY-MM-DD (saldo awal)",'
+        ' "post_gl": true, "purchase_mode": "riwayat|posting", "similar_action": "lewati|baru", "period": "YYYY-MM (budget)"}} — hanya '
+        'membuat pratinjau (belum menyimpan data). Baca hasilnya: columns (pemetaan), days (penjualan: verdict per toko/hari) atau '
+        'records_preview + unresolved (data lain: status baru/ubah/mirip/siap/duplikat/galat & nilai yang belum dikenali), issues. '
+        'Nilai belum dikenali → PATCH value_maps {"vendor"|"item"|"outlet"|"customer"|"account": {"<nilai di file>": "<id>"}}.'),
     "PATCH /api/imports/{batch_id}": (
         '{"mapping": {"<nama kolom>": "<field>|null"}, "value_maps": {"outlet": {"<nilai di file>": "<outlet_id>"},'
         ' "payment": {"<nilai di file>": "<payment_method_id>"}}, "options": {"day_actions": {"<outlet_id>|YYYY-MM-DD":'

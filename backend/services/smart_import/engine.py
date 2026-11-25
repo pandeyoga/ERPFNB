@@ -165,6 +165,9 @@ def extract(prof: dict, *, options: Optional[dict] = None) -> dict:
     order = opts.get("date_order") or infer_date_order(date_vals[:500])
     num_cols = [i for i, t in enumerate(prof["types"]) if t == "number"]
     decimal = opts.get("decimal") or infer_decimal([r[i] for r in tbl.rows[:500] for i in num_cols if i < len(r)])
+    if prof["target"] in mp.RECORD_TARGETS:
+        from . import records
+        return records.extract(prof, fields, order, yh, decimal, opts)
     if prof["target"] == "bank":
         return _extract_bank(tbl, fields, order, yh, decimal, opts)
     return _extract_sales(prof, tbl, fields, wide, order, yh, decimal, opts)

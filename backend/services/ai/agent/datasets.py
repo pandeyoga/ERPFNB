@@ -263,6 +263,13 @@ DATASETS: dict[str, Dataset] = {d.id: d for d in [
         "price": F("price", "num", "Harga"), "unit": F("unit", label="Satuan"), "source": F("source", label="Sumber"),
         "min_order_qty": F("min_order_qty", "num", "MOQ"), "lead_time_days": F("lead_time_days", "num", "Lead time (hari)"),
     }, "Bandingkan harga hanya pada satuan yang sama.", "valid_from"),
+    Dataset("purchase_history", "Riwayat pembelian (hasil Impor Cerdas, per item)", "purchase_history",
+            ["procurement.po.create", "procurement.sourcing.read", "finance.ap.read"], {
+        "date": F("date", "date", "Tanggal"), "vendor_id": F("vendor_id", "str", "Supplier", "vendors"),
+        "outlet_id": _o(), "item_id": F("item_id", "str", "Item", "items"), "invoice_no": F("invoice_no", label="No. invoice"),
+        "qty": F("qty", "num", "Qty"), "unit": F("unit", label="Satuan"), "unit_cost": F("unit_cost", "num", "Harga satuan"),
+        "total": F("total", "num", "Total"),
+    }, "Riwayat harga beli dari file lama (tidak memengaruhi stok/GL). Bandingkan harga hanya pada satuan sama.", "date", "outlet_id"),
     Dataset("menu_items", "Master menu per brand (harga jual)", "menu_items", ["menu.item.read", "outlet.daily_sales.read"], {
         "name": F("name", label="Menu"), "brand_id": _b(), "category": F("category", label="Kategori"),
         "bucket": F("bucket", label="Food/Beverage"), "price": F("price", "num", "Harga jual"),

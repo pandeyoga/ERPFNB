@@ -9,12 +9,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import PageHeader from "@/components/shared/PageHeader";
 import KeyFacts from "@/components/shared/KeyFacts";
 import DataTable from "@/components/shared/DataTable";
 import StatusPill from "@/components/shared/StatusPill";
-import SegmentedFilter from "@/components/shared/SegmentedFilter";
 import SimpleSelect from "@/components/shared/SimpleSelect";
 import CompactStatCard from "@/components/shared/CompactStatCard";
 import EmptyState from "@/components/shared/EmptyState";
@@ -28,7 +28,13 @@ import { cn } from "@/lib/utils";
 
 const rp = (v) => (v == null ? "—" : `Rp ${Number(v).toLocaleString("id-ID", { maximumFractionDigits: 0 })}`);
 const ACCEPT = ".csv,.txt,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-const TARGETS = [{ value: "auto", label: "Deteksi otomatis" }, { value: "sales", label: "Penjualan" }, { value: "bank", label: "Mutasi bank" }];
+const TARGET_LABEL = { sales: "Penjualan", bank: "Mutasi bank", items: "Master item", vendors: "Master supplier", customers: "Pelanggan (AR)",
+  purchases: "Pembelian historis", opname: "Hasil opname", opening_gl: "Saldo awal GL", opening_ap: "Saldo awal hutang",
+  opening_ar: "Saldo awal piutang", opening_stock: "Saldo awal stok", budget: "Budget" };
+const ALL_TARGETS = [{ value: "auto", label: "Deteksi otomatis" }, ...Object.entries(TARGET_LABEL).map(([value, label]) => ({ value, label }))];
+const REC_PILL = { baru: ["new", "Baru"], ubah: ["submitted", "Diperbarui"], mirip: ["pending", "Mirip"], siap: ["confirmed", "Siap"],
+  duplikat: ["dup", "Duplikat"], galat: ["rejected", "Galat"] };
+const REF_LABEL = { vendor: "Supplier", item: "Item", outlet: "Toko", customer: "Pelanggan", account: "Akun", category: "Kategori" };
 const DAY_ACTIONS = [
   { value: "create", label: "Buat baru" }, { value: "replace", label: "Ganti" },
   { value: "merge", label: "Gabung" }, { value: "skip", label: "Lewati" },
@@ -64,12 +70,12 @@ function UploadStart({ onCreated }) {
     <Card className="p-4 space-y-3" data-testid="import-upload-card">
       <CardHeader className="p-0 flex-row items-center justify-between space-y-0 gap-2">
         <CardTitle className="text-base">Unggah file</CardTitle>
-        <SegmentedFilter value={target} onChange={setTarget} options={TARGETS} ariaLabel="Jenis data" testId="import-target" />
+        <SimpleSelect value={target} onValueChange={setTarget} options={ALL_TARGETS} ariaLabel="Jenis data" testId="import-target" className="w-56" />
       </CardHeader>
       <CardContent className="p-0 space-y-2">
         <FileDropZone category="import" accept={ACCEPT} maxSizeMB={25} onUploaded={create} testId="import-dropzone"
           label={busy ? "Membaca & memetakan file…" : "Tarik file ke sini atau klik untuk memilih"}
-          description="CSV / Excel / TXT dari POS (Moka, Majoo, ESB, dll.), GoFood, GrabFood, ShopeeFood, rekap Excel buatan sendiri, atau mutasi bank (KlikBCA, Mandiri, BRI, BNI…)." />
+          description="Penjualan (POS, GoFood, GrabFood, ShopeeFood, rekap Excel), mutasi bank, daftar item/supplier/pelanggan, pembelian lama, hasil hitung stok, saldo awal (neraca saldo, hutang, piutang, stok), atau budget — CSV / Excel / TXT, nama & urutan kolom bebas." />
         <p className="text-xs text-muted-foreground">
           Belum ada data yang disimpan sampai Anda menekan <strong>Impor</strong>. Foto/PDF struk: kirim ke Asisten AI (OCR).
         </p>
@@ -89,10 +95,11 @@ function History({ onOpen, refreshKey }) {
     { key: "created_at", label: "Diunggah", render: (r) => fmtDateTime(r.created_at) },
     { key: "filename", label: "File", primary: true, render: (r) => <span className="font-medium">{r.filename}</span> },
     { key: "source", label: "Sumber", render: (r) => r.source || "—" },
-    { key: "target", label: "Jenis", render: (r) => (r.target === "bank" ? "Mutasi bank" : "Penjualan") },
+    { key: "target", label: "Jenis", render: (r) => TARGET_LABEL[r.target] || r.target },
     { key: "status", label: "Status", render: (r) => <StatusPill status={r.status} /> },
     { key: "result", label: "Hasil", hideOnMobile: true, render: (r) => (r.result
-      ? (r.target === "bank" ? `${r.result.rows} baris` : `${r.result.transactions} transaksi · ${(r.result.days || []).length} hari`) : "—") },
+      ? (r.target === "bank" ? `${r.result.rows} baris` : r.target === "sales" ? `${r.result.transactions} transaksi · ${(r.result.days || []).length} hari`
+        : Object.entries(r.result).filter(([k, v]) => typeof v === "number").map(([k, v]) => `${k.replace(/_/g, " ")} ${v}`).join(" · ")) : "—") },
   ];
   return (
     <Card className="p-4 space-y-3">
@@ -166,6 +173,9 @@ function BatchView({ batchId, onBack }) {
 
   const fieldOpts = useMemo(() => [{ value: "", label: "— Abaikan —" }, ...(b?.field_options || [])], [b]);
   if (!b) return <Card className="p-4"><p className="text-sm text-muted-foreground">Membaca file…</p></Card>;
+  if (!["sales", "bank"].includes(b.target)) {
+    return <RecordBatchView b={b} patch={patch} saving={saving} onBack={onBack} load={load} setSaving={setSaving} setB={setB} />;
+  }
   const draft = b.status === "draft";
   const errors = (b.issues || []).filter((i) => i.level === "error");
   const s = b.summary || {};
@@ -352,6 +362,171 @@ function BatchView({ batchId, onBack }) {
           )}
         </Card>
       )}
+    </div>
+  );
+}
+
+/** Batch target data lain (master, pembelian historis, opname, saldo awal, budget): pratinjau per baris, pemetaan
+ * kolom, nilai belum dikenali (pilih padanan), opsi, impor & batalkan. */
+function RecordBatchView({ b, patch, saving, setSaving, onBack, load }) {
+  const scope = useScope();
+  const [tab, setTab] = useState("pratinjau");
+  const draft = b.status === "draft";
+  const s = b.summary || {};
+  const opts = b.options || {};
+  const fieldOpts = [{ value: "", label: "— Abaikan —" }, ...(b.field_options || [])];
+  const mapped = (b.columns || []).filter((c) => c.field).map((c) => c.field);
+  const flabel = Object.fromEntries((b.field_options || []).map((f) => [f.value, f.label]));
+  const opening = String(b.target).startsWith("opening_");
+  const refCol = { items: "match_name", vendors: "match_name", customers: "match_name", purchases: "item_name", opname: "item_name",
+    opening_stock: "item_name", opening_ap: "party_name", opening_ar: "party_name", opening_gl: "coa_label", budget: "coa_label" }[b.target];
+  const fmtCell = (v) => (typeof v === "number" ? v.toLocaleString("id-ID", { maximumFractionDigits: 2 }) : v ?? "—");
+  const cols = [
+    ...mapped.slice(0, 6).map((f, i) => ({ key: f, label: flabel[f] || f, primary: i === 0, numeric: typeof (b.records_preview || [])[0]?.[f] === "number",
+      render: (r) => fmtCell(r[f]) })),
+    ...(refCol ? [{ key: refCol, label: "Padanan di sistem", hideOnMobile: true, render: (r) => r[refCol] || "—" }] : []),
+    { key: "status", label: "Status", render: (r) => <StatusPill status={(REC_PILL[r.status] || ["draft"])[0]} label={(REC_PILL[r.status] || [0, r.status])[1]} /> },
+  ];
+  const unresolved = Object.entries(b.unresolved || {}).flatMap(([kind, list]) => list.map((x) => ({ ...x, kind, key: `${kind}|${x.raw}` })));
+  const commit = async () => {
+    const ok = await confirmDialog({ title: `Impor ${TARGET_LABEL[b.target]}?`, confirmText: "Impor",
+      description: opening ? "Data saldo awal & jurnalnya dibuat sesuai opsi. Bisa dibatalkan (jurnal dibalik)." : "Baris berstatus Baru/Siap/Diperbarui disimpan; Galat & Duplikat dilewati. Bisa dibatalkan." });
+    if (!ok) return;
+    setSaving(true);
+    try { await api.post(`/imports/${b.id}/commit`, { save_recipe: true }, { timeout: 300000 }); toast.success("Impor selesai"); load(); }
+    catch (e) { toast.error(unwrapError(e)); } finally { setSaving(false); }
+  };
+  const rollback = async () => {
+    if (!(await confirmDialog({ title: "Batalkan impor?", description: "Data yang dibuat dari file ini dihapus/dibalik bila belum dipakai transaksi lain.", confirmText: "Batalkan impor", destructive: true }))) return;
+    setSaving(true);
+    try { await api.post(`/imports/${b.id}/rollback`); toast.success("Impor dibatalkan"); load(); } catch (e) { toast.error(unwrapError(e)); }
+    finally { setSaving(false); }
+  };
+  const ready = (s.baru || 0) + (s.siap || 0) + (s.ubah || 0);
+  return (
+    <div className="space-y-3 md:space-y-4" data-testid="import-batch">
+      <PageHeader icon={FileUp} title={b.filename || "Impor"} subtitle={`Impor Cerdas — ${TARGET_LABEL[b.target] || b.target}`}
+        actions={(
+          <>
+            <Button variant="outline" onClick={onBack}><ArrowLeft className="h-4 w-4" /> Kembali</Button>
+            <Button variant="outline" onClick={() => openAI(`Bantu periksa batch impor ${b.id} (${b.filename}, ${TARGET_LABEL[b.target]}): jelaskan baris galat/mirip dan cara memperbaikinya.`)}>
+              <Bot className="h-4 w-4" /> Tanya AI
+            </Button>
+            {b.status === "committed" && <Button variant="outline" onClick={rollback} disabled={saving} data-testid="import-rollback"><Undo2 className="h-4 w-4" /> Batalkan impor</Button>}
+            {draft && <Button onClick={commit} disabled={saving || !ready || (b.missing || []).length > 0} data-testid="import-commit"><Upload className="h-4 w-4" /> Impor</Button>}
+          </>
+        )}>
+        <KeyFacts items={[
+          { label: "Status", value: <StatusPill status={b.status} /> },
+          { label: "Jenis", value: TARGET_LABEL[b.target] || b.target },
+          { label: "Baris data", value: b.rows_in_file },
+          { label: "Sheet / header", value: `${b.sheet} · baris ${b.header_row}` },
+          { label: "Pemetaan", value: BY_LABEL[b.mapping_by] || b.mapping_by },
+        ]} />
+      </PageHeader>
+      {b.error && <Card className="p-4"><p className="text-sm text-rose-700 dark:text-rose-400">{b.error}</p></Card>}
+      {(b.missing || []).length > 0 && (
+        <Card className="p-3"><p className="text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2"><CircleX className="h-4 w-4" />
+          Kolom wajib belum dipetakan: {b.missing.join(", ")} — atur di tab Pemetaan kolom.</p></Card>
+      )}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <CompactStatCard label="Siap diimpor" value={ready} sub={`dari ${s.baris ?? 0} baris`} tone={ready ? "success" : "warning"} />
+        <CompactStatCard label="Mirip data lama" value={s.mirip ?? 0} sub={opts.similar_action === "baru" ? "dibuat baru" : "dilewati"} tone={s.mirip ? "warning" : "default"} />
+        <CompactStatCard label="Galat / duplikat" value={(s.galat || 0) + (s.duplikat || 0)} tone={s.galat ? "danger" : "default"} />
+        {s.total != null ? <CompactStatCard label="Total nominal" value={rp(s.total)} />
+          : s.selisih != null ? <CompactStatCard label="Debit − kredit" value={rp(s.selisih)} tone={Math.abs(s.selisih) > 1 ? "warning" : "success"} sub={`D ${rp(s.total_debit)} · K ${rp(s.total_kredit)}`} />
+            : <CompactStatCard label="Diperbarui" value={s.ubah ?? 0} />}
+      </div>
+      {b.result && (
+        <Card className="p-3" data-testid="import-result"><p className="text-sm">Hasil: {Object.entries(b.result).filter(([, v]) => typeof v !== "object").map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" · ")}</p></Card>
+      )}
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList aria-label="Bagian batch impor">
+          <TabsTrigger value="pratinjau">Pratinjau</TabsTrigger>
+          <TabsTrigger value="kolom">Pemetaan kolom</TabsTrigger>
+          <TabsTrigger value="nilai">Belum dikenali{unresolved.length ? ` (${unresolved.length})` : ""}</TabsTrigger>
+          <TabsTrigger value="opsi">Opsi</TabsTrigger>
+          <TabsTrigger value="masalah">Masalah{(b.issues || []).length ? ` (${b.issues.length})` : ""}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="pratinjau">
+          <Card className="p-0 overflow-hidden">
+            <DataTable rows={(b.records_preview || []).map((r, i) => ({ ...r, _k: i }))} keyField="_k" columns={cols} rowTestIdPrefix="import-rec" loading={false}
+              renderExpanded={(r) => <p className="text-sm">{`Baris ${r._row}: `}{r.keterangan || "OK"}</p>}
+              empty={<EmptyState icon={FileUp} title="Tidak ada baris" description="Periksa pemetaan kolom." />} />
+          </Card>
+        </TabsContent>
+        <TabsContent value="kolom">
+          <Card className="p-0 overflow-hidden">
+            <DataTable rows={b.columns || []} keyField="index" rowTestIdPrefix="import-col" loading={false}
+              columns={[
+                { key: "name", label: "Kolom di file", primary: true, render: (c) => <span className="font-medium">{c.name}</span> },
+                { key: "sample", label: "Contoh isi", hideOnMobile: true, render: (c) => <span className="text-muted-foreground">{(c.sample || []).join(" · ") || "—"}</span> },
+                { key: "field", label: "Dipetakan ke", render: (c) => (
+                  <SimpleSelect value={c.field || ""} onValueChange={(v) => patch({ mapping: { [c.name]: v || null } })} options={fieldOpts}
+                    disabled={!draft || saving} className="w-56" ariaLabel={`Pemetaan kolom ${c.name}`} testId={`import-map-${c.index}`} />) },
+              ]}
+              empty={<EmptyState icon={FileUp} title="Tidak ada kolom" />} />
+          </Card>
+        </TabsContent>
+        <TabsContent value="nilai">
+          <Card className="p-0 overflow-hidden">
+            <DataTable rows={unresolved} keyField="key" rowTestIdPrefix="import-unres" loading={false}
+              columns={[
+                { key: "kind", label: "Jenis", render: (x) => REF_LABEL[x.kind] || x.kind },
+                { key: "raw", label: "Nilai di file", primary: true },
+                { key: "pilih", label: "Padanan di sistem", render: (x) => (
+                  <SimpleSelect value={((b.value_maps || {})[x.kind] || {})[x.raw] || ""} disabled={!draft || saving} className="w-64" ariaLabel={`Padanan ${x.raw}`}
+                    options={[{ value: "", label: "— Pilih —" }, ...x.kandidat.map((k) => ({ ...k, label: `★ ${k.label}` })),
+                      ...((b.choices || {})[x.kind] || []).filter((c) => !x.kandidat.some((k) => k.value === c.value))]}
+                    onValueChange={(v) => patch({ value_maps: { [x.kind]: { [x.raw]: v || null } } })} />) },
+              ]}
+              empty={<EmptyState icon={Info} title="Semua nilai dikenali" description="Supplier, item, toko & akun di file sudah punya padanan." />} />
+          </Card>
+        </TabsContent>
+        <TabsContent value="opsi">
+          <Card className="p-4 grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1"><Label htmlFor="imp-target">Jenis data</Label>
+              <SimpleSelect id="imp-target" value={b.target} disabled={!draft || saving} className="w-full" ariaLabel="Jenis data"
+                options={ALL_TARGETS.filter((t) => t.value !== "auto")} onValueChange={(v) => patch({ target: v })} /></div>
+            {["purchases", "opname", "opening_stock", "opening_ap", "opening_ar", "budget"].includes(b.target) && (
+              <div className="space-y-1"><Label htmlFor="imp-outlet">Toko (bila file tanpa kolom toko)</Label>
+                <SimpleSelect id="imp-outlet" value={opts.outlet_id || ""} disabled={!draft || saving} className="w-full" ariaLabel="Toko default"
+                  options={[{ value: "", label: "— Tidak ada —" }, ...(scope.allOutlets || []).map((o) => ({ value: o.id, label: o.name }))]}
+                  onValueChange={(v) => patch({ options: { outlet_id: v || null } })} /></div>
+            )}
+            {opening && (
+              <>
+                <div className="space-y-1"><Label htmlFor="imp-odate">Tanggal saldo awal</Label>
+                  <Input id="imp-odate" type="date" value={opts.opening_date || ""} disabled={!draft || saving}
+                    onChange={(e) => patch({ options: { opening_date: e.target.value || null } })} /></div>
+                {b.target !== "opening_gl" && (
+                  <div className="flex items-center justify-between gap-3"><div><Label htmlFor="imp-postgl">Buat jurnal saldo awal</Label>
+                    <p className="text-xs text-muted-foreground">Lawan: Laba Ditahan. Matikan bila GL sudah diimpor lewat neraca saldo.</p></div>
+                    <Switch id="imp-postgl" checked={opts.post_gl !== false} disabled={!draft || saving} onCheckedChange={(v) => patch({ options: { post_gl: v } })} /></div>
+                )}
+              </>
+            )}
+            {b.target === "purchases" && (
+              <div className="space-y-1"><Label htmlFor="imp-pmode">Cara impor pembelian</Label>
+                <SimpleSelect id="imp-pmode" value={opts.purchase_mode || "riwayat"} disabled={!draft || saving} className="w-full" ariaLabel="Cara impor pembelian"
+                  options={[{ value: "riwayat", label: "Riwayat harga & analisis (tanpa stok/GL)" }, { value: "posting", label: "Posting sebagai GR (stok, jurnal, hutang)" }]}
+                  onValueChange={(v) => patch({ options: { purchase_mode: v } })} /></div>
+            )}
+            {["items", "vendors", "customers"].includes(b.target) && (
+              <div className="space-y-1"><Label htmlFor="imp-sim">Nama mirip data lama</Label>
+                <SimpleSelect id="imp-sim" value={opts.similar_action || "lewati"} disabled={!draft || saving} className="w-full" ariaLabel="Nama mirip"
+                  options={[{ value: "lewati", label: "Lewati (cegah data ganda)" }, { value: "baru", label: "Tetap buat baru" }]}
+                  onValueChange={(v) => patch({ options: { similar_action: v } })} /></div>
+            )}
+            {b.target === "budget" && (
+              <div className="space-y-1"><Label htmlFor="imp-period">Periode (bila file tanpa kolom periode)</Label>
+                <Input id="imp-period" type="month" value={opts.period || ""} disabled={!draft || saving}
+                  onChange={(e) => patch({ options: { period: e.target.value || null } })} /></div>
+            )}
+          </Card>
+        </TabsContent>
+        <TabsContent value="masalah"><Card className="p-4"><Issues issues={b.issues} /></Card></TabsContent>
+      </Tabs>
     </div>
   );
 }

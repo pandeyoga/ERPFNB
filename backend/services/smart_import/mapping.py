@@ -96,7 +96,111 @@ TARGETS: dict[str, dict[str, tuple[str, set, list[str]]]] = {
     },
 }
 REQUIRED = {"sales": [["date"], ["total", "net", "gross", "item_total", "payout"]],
-            "bank": [["date"], ["amount", "debit", "credit"]]}
+            "bank": [["date"], ["amount", "debit", "credit"]],
+            "items": [["name"]], "vendors": [["name"]], "customers": [["name"]],
+            "purchases": [["date"], ["vendor"], ["item", "code"], ["qty"], ["unit_cost", "total"]],
+            "opname": [["item", "code"], ["counted_qty"]], "opening_gl": [["account_code", "account_name"], ["debit", "credit", "balance"]],
+            "opening_ap": [["vendor"], ["amount"]], "opening_ar": [["customer"], ["amount"]],
+            "opening_stock": [["item", "code"], ["qty"]], "budget": [["account_code", "account_name"], ["amount"]]}
+# ── target data lain (master, pembelian historis, opname, saldo awal, budget) — diproses di records.py ──
+_NAME_ITEM = ["nama item", "item", "item name", "nama barang", "barang", "produk", "product", "bahan", "nama bahan", "nama produk",
+              "description", "deskripsi", "nama"]
+_OUTLET = TARGETS["sales"]["outlet"]
+_DATE = ("Tanggal", {"date", "datetime"}, ["tanggal", "tgl", "date", "tanggal invoice", "invoice date", "tanggal terima",
+                                            "tanggal pembelian", "tanggal faktur", "tgl invoice", "tanggal transaksi", "tgl faktur"])
+_VENDOR = ("Supplier", {"text"}, ["supplier", "vendor", "pemasok", "nama supplier", "nama vendor", "nama pemasok", "distributor"])
+_INV_NO = ("No. invoice", {"text", "number"}, ["no invoice", "invoice", "nomor invoice", "no faktur", "faktur", "no nota", "nota",
+                                              "invoice no", "invoice number", "no dokumen", "no bukti", "no tagihan"])
+_DUE = ("Jatuh tempo", {"date", "datetime"}, ["jatuh tempo", "due date", "due", "tgl jatuh tempo", "tanggal jatuh tempo"])
+_PHONE = ("Telepon", {"text", "number"}, ["telepon", "phone", "hp", "no hp", "telp", "whatsapp", "wa", "mobile", "no telp", "nomor hp", "handphone"])
+_EMAIL = ("Email", {"text"}, ["email", "e-mail", "surel", "alamat email"])
+_ADDR = ("Alamat", {"text"}, ["alamat", "address", "alamat lengkap"])
+_CITY = ("Kota", {"text"}, ["kota", "city", "kabupaten"])
+_NPWP = ("NPWP", {"text", "number"}, ["npwp", "tax id", "nomor npwp", "no npwp"])
+_CONTACT = ("Kontak", {"text"}, ["kontak", "contact", "pic", "contact person", "nama kontak", "cp"])
+_TERMS = ("Termin (hari)", {"number"}, ["top", "termin", "term", "payment terms", "tempo", "terms", "termin hari", "jangka waktu"])
+_ACC_CODE = ("Kode akun", {"text", "number"}, ["kode akun", "account code", "no akun", "coa", "kode perkiraan", "account no", "nomor akun",
+                                               "kode coa", "no perkiraan"])
+_ACC_NAME = ("Nama akun", {"text"}, ["nama akun", "akun", "account", "account name", "nama perkiraan", "perkiraan", "pos", "kategori",
+                                      "category", "nama coa"])
+TARGETS.update({
+    "items": {
+        "code": ("Kode item", {"text", "number"}, ["kode", "code", "kode item", "item code", "sku", "kode barang", "plu", "barcode", "item id", "kode produk", "no item"]),
+        "name": ("Nama item", {"text"}, _NAME_ITEM),
+        "category": ("Kategori", {"text"}, ["kategori", "category", "grup", "group", "jenis", "kelompok", "golongan"]),
+        "unit": ("Satuan", {"text"}, ["satuan", "unit", "uom", "sat", "unit of measure", "satuan dasar"]),
+        "cost": ("Harga standar", {"number"}, ["harga", "harga beli", "cost", "std cost", "standard cost", "hpp", "harga satuan", "unit cost"]),
+        "min_stock": ("Stok minimum / par", {"number"}, ["min", "min stock", "stok minimum", "par", "par level", "minimum", "reorder point", "rop"]),
+    },
+    "vendors": {
+        "code": ("Kode supplier", {"text", "number"}, ["kode", "code", "kode supplier", "kode vendor", "vendor code", "supplier code"]),
+        "name": ("Nama supplier", {"text"}, ["nama supplier", "supplier", "vendor", "nama vendor", "pemasok", "nama", "name", "perusahaan", "company"]),
+        "contact_person": _CONTACT, "phone": _PHONE, "email": _EMAIL, "address": _ADDR, "city": _CITY, "npwp": _NPWP,
+        "bank_name": ("Bank", {"text"}, ["bank", "nama bank", "bank name"]),
+        "bank_account_number": ("No. rekening", {"text", "number"}, ["rekening", "no rekening", "nomor rekening", "account number", "bank account",
+                                                                    "no rek", "norek", "no. rekening"]),
+        "payment_terms_days": _TERMS,
+    },
+    "customers": {
+        "code": ("Kode pelanggan", {"text", "number"}, ["kode", "code", "kode pelanggan", "kode customer", "customer code"]),
+        "name": ("Nama pelanggan", {"text"}, ["nama pelanggan", "customer", "nama customer", "pelanggan", "nama", "name", "perusahaan", "company", "klien"]),
+        "contact_person": _CONTACT, "phone": _PHONE, "email": _EMAIL, "address": _ADDR, "city": _CITY, "npwp": _NPWP,
+        "credit_limit": ("Limit kredit", {"number"}, ["limit", "credit limit", "plafon", "batas kredit", "limit kredit"]),
+        "payment_terms_days": _TERMS,
+    },
+    "purchases": {
+        "date": _DATE, "vendor": _VENDOR, "invoice_no": _INV_NO, "outlet": _OUTLET,
+        "code": ("Kode item", {"text", "number"}, ["kode", "code", "kode item", "item code", "sku", "kode barang", "plu", "barcode", "item id", "kode produk", "no item"]),
+        "item": ("Item", {"text"}, _NAME_ITEM),
+        "qty": ("Qty", {"number"}, ["qty", "jumlah", "kuantitas", "quantity", "banyak", "volume", "jml", "qty beli"]),
+        "unit": ("Satuan", {"text"}, ["satuan", "unit", "uom", "sat"]),
+        "unit_cost": ("Harga satuan", {"number"}, ["harga", "harga satuan", "unit price", "price", "harga beli", "unit cost", "@", "hrg"]),
+        "total": ("Total", {"number"}, ["total", "subtotal", "jumlah harga", "amount", "nilai", "total harga", "line total"]),
+    },
+    "opname": {
+        "outlet": _OUTLET, "date": _DATE,
+        "code": ("Kode item", {"text", "number"}, ["kode", "code", "kode item", "item code", "sku", "kode barang", "plu", "barcode", "item id", "kode produk", "no item"]),
+        "item": ("Item", {"text"}, _NAME_ITEM),
+        "counted_qty": ("Qty fisik", {"number"}, ["qty hitung", "hasil hitung", "counted", "fisik", "stok fisik", "jumlah fisik", "qty fisik",
+                                                  "actual", "stock count", "hitung", "qty aktual", "stok aktual"]),
+        "unit": ("Satuan", {"text"}, ["satuan", "unit", "uom", "sat"]),
+    },
+    "opening_gl": {
+        "account_code": _ACC_CODE, "account_name": _ACC_NAME,
+        "debit": ("Debit", {"number"}, ["debit", "debet", "dr", "saldo debit"]),
+        "credit": ("Kredit", {"number"}, ["kredit", "credit", "cr", "saldo kredit"]),
+        "balance": ("Saldo (+/−)", {"number"}, ["saldo", "balance", "saldo akhir", "ending balance", "nilai", "saldo awal"]),
+    },
+    "opening_ap": {
+        "vendor": _VENDOR, "invoice_no": _INV_NO, "date": _DATE, "due_date": _DUE, "outlet": _OUTLET,
+        "amount": ("Sisa hutang", {"number"}, ["sisa", "saldo", "outstanding", "balance", "sisa hutang", "hutang", "nominal", "amount", "total"]),
+    },
+    "opening_ar": {
+        "customer": ("Pelanggan", {"text"}, ["pelanggan", "customer", "nama pelanggan", "nama customer", "debitur", "klien"]),
+        "invoice_no": _INV_NO, "date": _DATE, "due_date": _DUE, "outlet": _OUTLET,
+        "amount": ("Sisa piutang", {"number"}, ["sisa", "saldo", "outstanding", "balance", "sisa piutang", "piutang", "nominal", "amount", "total"]),
+    },
+    "opening_stock": {
+        "outlet": _OUTLET,
+        "code": ("Kode item", {"text", "number"}, ["kode", "code", "kode item", "item code", "sku", "kode barang", "plu", "barcode", "item id", "kode produk", "no item"]),
+        "item": ("Item", {"text"}, _NAME_ITEM),
+        "qty": ("Qty stok", {"number"}, ["qty", "jumlah", "stok", "stock", "saldo qty", "quantity", "on hand", "stok akhir", "qty stok"]),
+        "unit": ("Satuan", {"text"}, ["satuan", "unit", "uom", "sat"]),
+        "unit_cost": ("Harga pokok satuan", {"number"}, ["harga", "harga satuan", "unit cost", "cost", "hpp", "harga pokok", "nilai satuan", "avg cost"]),
+        "total": ("Nilai", {"number"}, ["nilai", "total", "value", "nilai persediaan", "nilai stok", "amount"]),
+    },
+    "budget": {
+        "period": ("Periode", {"date", "datetime", "text"}, ["periode", "bulan", "period", "month", "tahun-bulan", "tanggal"]),
+        "outlet": _OUTLET, "account_code": _ACC_CODE, "account_name": _ACC_NAME,
+        "amount": ("Anggaran", {"number"}, ["anggaran", "budget", "nominal", "amount", "jumlah", "nilai", "rencana", "plafon"]),
+    },
+})
+RECORD_TARGETS = ("items", "vendors", "customers", "purchases", "opname", "opening_gl", "opening_ap", "opening_ar", "opening_stock", "budget")
+TARGET_LABELS = {"sales": "Penjualan", "bank": "Mutasi bank", "items": "Master item", "vendors": "Master supplier",
+                 "customers": "Pelanggan (AR)", "purchases": "Pembelian historis", "opname": "Hasil opname",
+                 "opening_gl": "Saldo awal GL (neraca saldo)", "opening_ap": "Saldo awal hutang", "opening_ar": "Saldo awal piutang",
+                 "opening_stock": "Saldo awal stok", "budget": "Budget"}
+
 
 
 def normalize(h: Any) -> str:
@@ -182,6 +286,14 @@ def missing_required(target: str, mapping: list[dict]) -> list[str]:
     return miss
 
 
+_RECORD_HINTS = {
+    "vendors": r"npwp|rekening|supplier|vendor|pemasok", "customers": r"pelanggan|customer|limit|plafon",
+    "items": r"sku|satuan|kategori|kode item|kode barang", "purchases": r"faktur|invoice|harga|qty|supplier",
+    "opname": r"fisik|hitung|opname|counted", "opening_gl": r"akun|coa|perkiraan", "opening_ap": r"hutang|jatuh tempo",
+    "opening_ar": r"piutang|jatuh tempo", "opening_stock": r"stok|on hand|nilai persediaan", "budget": r"anggaran|budget",
+}
+
+
 def detect_target(headers: list[str], types: list[str], samples) -> str:
     sales = sum(m["confidence"] for m in auto_map("sales", headers, types, samples) if m["field"])
     bank = sum(m["confidence"] for m in auto_map("bank", headers, types, samples) if m["field"])
@@ -190,7 +302,17 @@ def detect_target(headers: list[str], types: list[str], samples) -> str:
         bank += 1.5
     if re.search(r"struk|receipt|menu|item|order|penjualan|sales", joined):
         sales += 1.5
-    return "bank" if bank > sales else "sales"
+    base = "bank" if bank > sales else "sales"
+    # target data lain hanya bila jelas lebih cocok (kolom wajib lengkap + skor jauh di atas penjualan/bank)
+    best, best_sc = None, max(sales, bank) + 1.0
+    for t in RECORD_TARGETS:
+        m = auto_map(t, headers, types, samples)
+        if missing_required(t, m):
+            continue
+        sc = sum(x["confidence"] for x in m if x["field"]) + (1.5 if re.search(_RECORD_HINTS[t], joined) else 0)
+        if sc > best_sc:
+            best, best_sc = t, sc
+    return best or base
 
 
 DELIVERY_WORDS = {"gofood", "go food", "grabfood", "grab food", "grab", "shopeefood", "shopee food", "shopee", "gojek"}

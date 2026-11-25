@@ -42,6 +42,13 @@ async def upload_and_create(file: UploadFile = File(...), target: Optional[str] 
     return ok_envelope(await service.create_batch(user, attachment_id=att["id"], target=target or None, options=opts or None))
 
 
+@router.get("/targets", summary="Jenis data yang bisa diimpor (penjualan, mutasi bank, master, pembelian, opname, saldo awal, budget)")
+async def targets(user: dict = Depends(require_perm("import.smart.use"))):
+    from services.smart_import import mapping as mp
+    from services.smart_import.records import PERMS
+    return ok_envelope([{"value": k, "label": v, "izin": list(PERMS.get(k, ()))} for k, v in mp.TARGET_LABELS.items()])
+
+
 @router.get("/recipes", summary="Daftar resep impor per sumber")
 async def list_recipes(user: dict = Depends(require_perm(USE))):
     return ok_envelope(await service.list_recipes(user))

@@ -427,6 +427,12 @@ async def view(batch_id: str, user: dict) -> dict:
                            "meta": prof["table"].meta, "dropped": prof["table"].dropped, "rows_in_file": len(prof["table"].rows),
                            "missing": mp.missing_required(b["target"], prof["mapping"]), "detected": {
                                "date_order": ex.get("date_order"), "decimal": ex.get("decimal")}}
+    if b["target"] in mp.RECORD_TARGETS:
+        from . import records
+        res.update(await records.preview(b, ex, user))
+        if b["status"] != "draft":
+            res["result"] = b.get("result")
+        return res
     if b["target"] == "bank":
         dup = await _bank_dups(b, ex["rows"])
         res.update({"summary": engine.summarize_bank(ex["rows"]), "issues": ex["issues"] + dup["issues"],
@@ -480,7 +486,10 @@ async def commit(batch_id: str, user: dict, *, save_recipe: bool = True, recipe_
         miss = mp.missing_required(b["target"], prof["mapping"])
         if miss:
             raise ValidationError(f"Kolom wajib belum dipetakan: {', '.join(miss)}")
-        if b["target"] == "bank":
+        if b["target"] in mp.RECORD_TARGETS:
+            from . import records
+            result = await records.commit(b, ex, user)
+        elif b["target"] == "bank":
             result = await _commit_bank(b, ex, user)
         else:
             result = await _commit_sales(b, ex, user)
@@ -658,7 +667,10 @@ async def rollback(batch_id: str, user: dict) -> dict:
     db = get_db()
     now = _now()
     out: dict = {"days": []}
-    if b["target"] == "bank":
+    if b["target"] in mp.RECORD_TARGETS:
+        from . import records
+        out = await records.rollback(b, user)
+    elif b["target"] == "bank":
         sid = (b.get("result") or {}).get("session_id")
         s = await db.bank_recon_sessions.find_one({"id": sid}) if sid else None
         if s and s.get("status") == "committed":

@@ -43,7 +43,7 @@ BANK_FIELDS = ("bank_account", "bank_account_number", "bank_account_no", "accoun
                "bank_account_name", "account_name")
 SENSITIVE = ("retained_earnings", "income_summary", "cash_on_hand", "bank_default", "inventory", "accounts_payable",
              "cards_receivable", "marketplace_receivable", "petty_cash", "salary_payable")
-TRUSTED_SOURCES = ("bank_recon", "ocr", "accrual", "accrual_reversal")
+TRUSTED_SOURCES = ("bank_recon", "ocr", "accrual", "accrual_reversal", "opening_import")
 SPLIT_LIMIT = 10_000_000
 
 
