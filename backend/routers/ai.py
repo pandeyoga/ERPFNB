@@ -386,7 +386,11 @@ async def ai_usage(month: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
         rows = await db.ai_usage.aggregate([
             {"$match": {"month": m}},
             {"$group": {"_id": f"${key}", "cost_usd": {"$sum": "$cost_usd"}, "calls": {"$sum": 1},
-                        "input_tokens": {"$sum": "$input_tokens"}, "output_tokens": {"$sum": "$output_tokens"},
+                        # input = baru + cache (dibaca/ditulis) — biaya cache sudah dihitung di cost_usd
+                        "input_tokens": {"$sum": {"$add": [{"$ifNull": ["$input_tokens", 0]},
+                                                           {"$ifNull": ["$cache_read_input_tokens", 0]},
+                                                           {"$ifNull": ["$cache_creation_input_tokens", 0]}]}},
+                        "output_tokens": {"$sum": "$output_tokens"},
                         "errors": {"$sum": {"$cond": [{"$eq": ["$status", "error"]}, 1, 0]}}}},
             {"$sort": {"cost_usd": -1}}, {"$limit": limit},
         ]).to_list(limit)

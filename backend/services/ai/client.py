@@ -172,11 +172,16 @@ async def month_usage(month: Optional[str] = None) -> dict:
     rows = await get_db().ai_usage.aggregate([
         {"$match": {"month": month}},
         {"$group": {"_id": None, "cost": {"$sum": "$cost_usd"}, "calls": {"$sum": 1},
-                    "input": {"$sum": "$input_tokens"}, "output": {"$sum": "$output_tokens"}}},
+                    "input": {"$sum": {"$add": [{"$ifNull": ["$input_tokens", 0]},
+                                                {"$ifNull": ["$cache_read_input_tokens", 0]},
+                                                {"$ifNull": ["$cache_creation_input_tokens", 0]}]}},
+                    "cached": {"$sum": {"$ifNull": ["$cache_read_input_tokens", 0]}},
+                    "output": {"$sum": "$output_tokens"}}},
     ]).to_list(1)
     r = rows[0] if rows else {}
     return {"month": month, "cost_usd": round(r.get("cost", 0.0), 4), "calls": r.get("calls", 0),
-            "input_tokens": r.get("input", 0), "output_tokens": r.get("output", 0)}
+            "input_tokens": r.get("input", 0), "cached_input_tokens": r.get("cached", 0),
+            "output_tokens": r.get("output", 0)}
 
 
 async def _maybe_alert_budget(month: str) -> None:

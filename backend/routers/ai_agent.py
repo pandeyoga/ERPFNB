@@ -9,7 +9,7 @@ from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
 
 from core.db import get_db
-from core.exceptions import NotFoundError, ok_envelope
+from core.exceptions import NotFoundError, ValidationError, ok_envelope
 from core.security import require_perm
 from services.ai.agent import actions, catalog, runtime
 
@@ -107,6 +107,72 @@ async def download_file(file_id: str, user: dict = Depends(require_perm(USE))):
     data, _ = await get_object(f["storage_path"])
     return Response(content=data, media_type=f.get("content_type") or "application/octet-stream",
                     headers={"Content-Disposition": f'attachment; filename="{f["filename"]}"'})
+
+
+# ---------------- Dashboard AI (grafik yang disematkan) ----------------
+
+@router.get("/pins")
+async def list_pins(user: dict = Depends(require_perm(USE))):
+    rows = await get_db().ai_pins.find({"user_id": user["id"], "deleted_at": None}, {"_id": 0}).sort(
+        "position", 1).to_list(100)
+    return ok_envelope(rows)
+
+
+@router.post("/pins")
+async def create_pin(payload: dict = Body(...), user: dict = Depends(require_perm(USE))):
+    """{spec: <spesifikasi grafik dari jawaban AI, boleh berisi source_query>, title?, session_id?}"""
+    import uuid
+    from datetime import datetime, timezone
+    from services.ai.agent import datasets, tools
+    raw = dict(payload.get("spec") or {})
+    if raw.get("source_query"):
+        # isi data dari sumbernya (sekaligus cek izin & field) → grafik tersemat selalu data terbaru
+        res = await datasets.run(user, raw["source_query"], max_rows=200)
+        raw["data"] = res["rows"]
+    spec = tools.chart_spec(raw)
+    if raw.get("source_query"):
+        spec["source_query"] = raw["source_query"]
+    db = get_db()
+    now = datetime.now(timezone.utc).isoformat()
+    count = await db.ai_pins.count_documents({"user_id": user["id"], "deleted_at": None})
+    if count >= 30:
+        raise ValidationError("Maksimal 30 grafik di Dashboard AI — hapus yang tidak dipakai")
+    doc = {"id": str(uuid.uuid4()), "user_id": user["id"], "title": str(payload.get("title") or spec["title"] or "Grafik")[:120],
+           "spec": spec, "session_id": payload.get("session_id"), "position": count, "created_at": now,
+           "refreshed_at": now, "deleted_at": None}
+    await db.ai_pins.insert_one(doc)
+    doc.pop("_id", None)
+    return ok_envelope(doc)
+
+
+@router.post("/pins/{pin_id}/refresh")
+async def refresh_pin(pin_id: str, user: dict = Depends(require_perm(USE))):
+    """Jalankan ulang source_query (periode relatif → data terbaru) sebagai pengguna ini."""
+    from datetime import datetime, timezone
+    from services.ai.agent import datasets
+    db = get_db()
+    pin = await db.ai_pins.find_one({"id": pin_id, "user_id": user["id"], "deleted_at": None}, {"_id": 0})
+    if not pin:
+        raise NotFoundError("Grafik")
+    q = (pin.get("spec") or {}).get("source_query")
+    if not q:
+        raise ValidationError("Grafik ini tidak punya sumber data — minta AI membuat ulang dengan source_query")
+    res = await datasets.run(user, q, max_rows=200)
+    keep = {pin["spec"]["x_key"], *[s["key"] for s in pin["spec"]["series"]]}
+    data = [{k: v for k, v in r.items() if k in keep or k.endswith("_name")} for r in res["rows"]]
+    now = datetime.now(timezone.utc).isoformat()
+    await db.ai_pins.update_one({"id": pin_id}, {"$set": {"spec.data": data, "refreshed_at": now}})
+    return ok_envelope({**pin, "spec": {**pin["spec"], "data": data}, "refreshed_at": now})
+
+
+@router.delete("/pins/{pin_id}")
+async def delete_pin(pin_id: str, user: dict = Depends(require_perm(USE))):
+    from datetime import datetime, timezone
+    r = await get_db().ai_pins.update_one({"id": pin_id, "user_id": user["id"], "deleted_at": None},
+                                          {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}})
+    if not r.matched_count:
+        raise NotFoundError("Grafik")
+    return ok_envelope({"deleted": True})
 
 
 @router.get("/capabilities")

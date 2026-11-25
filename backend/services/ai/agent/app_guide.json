@@ -151,6 +151,16 @@
    ]
   },
   {
+   "label": "Dashboard AI",
+   "path": "/ai/dashboard",
+   "perms": [
+    "ai.agent.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Dashboard AI",
+   "tours": []
+  },
+  {
    "label": "Persetujuan AI",
    "path": "/ai/approvals",
    "perms": [
@@ -949,6 +959,9 @@
    "ai.agent.use"
   ],
   "/ai/approvals": [
+   "ai.agent.use"
+  ],
+  "/ai/dashboard": [
    "ai.agent.use"
   ],
   "/ai/settings": [

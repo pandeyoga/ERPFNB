@@ -72,6 +72,9 @@ export const ROUTE_PERMS = {
   "/ai/approvals": [
     "ai.agent.use"
   ],
+  "/ai/dashboard": [
+    "ai.agent.use"
+  ],
   "/ai/settings": [
     "ai.agent.admin"
   ],

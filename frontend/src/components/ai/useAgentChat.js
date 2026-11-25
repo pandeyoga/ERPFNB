@@ -20,7 +20,7 @@ export async function uploadAttachment(file) {
 }
 
 export async function downloadAgentFile(file) {
-  const res = await api.get(`/ai/agent/files/${file.id}`, { responseType: "blob", scope: false, timeout: 120000 });
+  const res = await api.get(`/ai/agent/files/${file.file_id || file.id}`, { responseType: "blob", scope: false, timeout: 120000 });
   const url = URL.createObjectURL(res.data);
   const a = document.createElement("a");
   a.href = url;
@@ -54,17 +54,29 @@ export function useAgentChat(initialSessionId = null) {
 
   const poll = useCallback((rid, sid) => {
     clearTimeout(timer.current);
+    const started = Date.now();
+    let failures = 0;
+    // 1,2 dtk di 20 dtk pertama, lalu 2,5 dtk (agen panjang: riset/laporan) — hemat request
+    const delay = () => (Date.now() - started < 20000 ? POLL_MS : 2500);
     const tick = async () => {
       try {
         const r = unwrap(await api.get(`/ai/agent/runs/${rid}`, NO_SCOPE));
         if (!alive.current) return;
+        failures = 0;
         setSteps((r.events || []).filter((e) => e.type === "step").map((e) => e.label));
-        if (r.status === "running") { timer.current = setTimeout(tick, POLL_MS); return; }
+        if (r.status === "running") { timer.current = setTimeout(tick, delay()); return; }
         await loadSession(sid);
         if (!alive.current) return;
         setRunId(null); setSteps([]); setPending(null);
       } catch (e) {
         if (!alive.current) return;
+        const st = e?.response?.status;
+        // galat sementara (rate limit, jaringan, 5xx) → coba lagi; agen tetap berjalan di server
+        if ((!st || st === 429 || st >= 500) && failures < 8) {
+          failures += 1;
+          timer.current = setTimeout(tick, 3000 * failures);
+          return;
+        }
         setError(unwrapError(e)); setRunId(null); setPending(null);
       }
     };

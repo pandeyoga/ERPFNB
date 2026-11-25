@@ -141,3 +141,64 @@ def test_agent_loop_with_scripted_model(app_catalog, mockdb, monkeypatch):
     assert roles == ["user", "assistant", "user", "assistant"]          # tool_result dikirim sebagai pesan user
     assert sent[1][:2] == sent[0][:2] or sent[1][0] == sent[0][0]        # awal riwayat tidak berubah (append-only)
     assert s["messages"][2]["content"][0]["type"] == "tool_result"
+
+
+def test_query_data_scope_permissions_and_aggregation(mockdb):
+    from services.ai.agent import datasets
+    rows = [{"id": f"s{i}", "outlet_id": o, "brand_id": "b1", "sales_date": d, "status": st, "grand_total": gt,
+             "transaction_count": 10, "deleted_at": None}
+            for i, (o, d, st, gt) in enumerate([("o1", "2026-11-01", "validated", 100.0), ("o1", "2026-11-02", "validated", 50.0),
+                                               ("o2", "2026-11-01", "validated", 70.0), ("o2", "2026-11-02", "draft", 999.0),
+                                               ("o3", "2026-10-15", "validated", 30.0)])]
+    run(mockdb.daily_sales.insert_many(rows))
+    run(mockdb.outlets.insert_many([{"id": "o1", "name": "Satu"}, {"id": "o2", "name": "Dua"}, {"id": "o3", "name": "Tiga"}]))
+    spec = {"dataset": "sales_daily", "date_from": "2026-11-01", "date_to": "2026-11-30",
+            "filters": [{"field": "status", "value": "validated"}], "group_by": ["outlet_id"],
+            "metrics": [{"fn": "sum", "field": "grand_total", "as": "rev"}]}
+    sup = run(datasets.run({"id": "a", "permissions": ["*"], "outlet_ids": ["*"]}, spec))
+    assert {(r["outlet_id_name"], r["rev"]) for r in sup["rows"]} == {("Satu", 150.0), ("Dua", 70.0)}
+    scoped = run(datasets.run({"id": "b", "permissions": ["outlet.daily_sales.read"], "outlet_ids": ["o2"]}, spec))
+    assert [r["outlet_id"] for r in scoped["rows"]] == ["o2"]                       # dibatasi akses toko
+    asked = run(datasets.run({"id": "b", "permissions": ["outlet.daily_sales.read"], "outlet_ids": ["o2"]},
+                             {**spec, "outlet_ids": ["o1"]}))
+    assert asked["rows"] == []                                                        # tidak pernah melebar
+    month = run(datasets.run({"id": "a", "permissions": ["*"], "outlet_ids": ["*"]},
+                             {"dataset": "sales_daily", "group_by": ["date:month"], "metrics": [{"fn": "count"}]}))
+    assert {r["sales_date:month"]: r["count"] for r in month["rows"]} == {"2026-10": 1, "2026-11": 4}
+    with pytest.raises(Exception):
+        run(datasets.run({"id": "b", "permissions": ["outlet.daily_sales.read"], "outlet_ids": ["*"]}, {"dataset": "payroll"}))
+    with pytest.raises(Exception):
+        run(datasets.run({"id": "a", "permissions": ["*"]}, {"dataset": "customers", "fields": ["hashed_password"]}))
+    a, b = datasets.resolve_period("last_month", today=datasets.date(2026, 3, 15))
+    assert (a, b) == ("2026-02-01", "2026-02-28")
+
+
+def test_reports_build_xlsx_and_pdf():
+    from services.ai.agent import reports
+    spec = {"title": "Uji", "format": "xlsx", "sections": [
+        {"heading": "Per toko", "text": "**Naik** 5%", "table": {"columns": ["Toko", "Rev"], "rows": [["A", "1.000.000"]], "number_format": "rp"},
+         "chart": {"type": "bar", "x_key": "t", "series": [{"key": "v"}], "data": [{"t": "A", "v": 1}]}},
+        {"table": {"columns": ["x"], "rows": [[1]]}}]}
+    x, fx, _ = reports.build(spec)
+    p, fp, ct = reports.build({**spec, "format": "pdf"})
+    assert x[:2] == b"PK" and fx.endswith(".xlsx") and p[:4] == b"%PDF" and ct == "application/pdf"
+    with pytest.raises(Exception):
+        reports.build({"title": "", "format": "xlsx", "sections": [{}]})
+
+
+def test_rate_limit_buckets_and_cookie_user_key():
+    """Polling GET /api/ai/* tidak memakai kuota LLM (30/menit); pengguna browser (cookie) dikunci per user, bukan IP."""
+    from starlette.requests import Request
+    from core.middleware import RateLimitMiddleware
+    from core.security import ACCESS_COOKIE, create_access_token
+
+    def req(method, path, cookie=None):
+        headers = [(b"cookie", f"{ACCESS_COOKIE}={cookie}".encode())] if cookie else []
+        return Request({"type": "http", "method": method, "path": path, "headers": headers, "query_string": b"",
+                        "client": ("10.0.0.9", 1234), "server": ("x", 80), "scheme": "http"})
+    mw = RateLimitMiddleware.__new__(RateLimitMiddleware)
+    tok = create_access_token("user-42", {})
+    assert mw._classify(req("GET", "/api/ai/agent/runs/r1", tok)) == ("api", "user:user-42")
+    assert mw._classify(req("POST", "/api/ai/agent/chat", tok)) == ("ai", "user:user-42")
+    assert mw._classify(req("POST", "/api/ai/agent/pins/p1/refresh", tok))[0] == "api"
+    assert mw._classify(req("GET", "/api/finance/journals"))[1].startswith("ip:")

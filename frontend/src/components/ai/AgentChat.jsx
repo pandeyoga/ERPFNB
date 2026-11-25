@@ -5,7 +5,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bot, Paperclip, SendHorizonal, X, ExternalLink, FileDown, Loader2, ListChecks, ChevronDown, ChevronRight, CheckCheck } from "lucide-react";
+import { Bot, Paperclip, SendHorizonal, X, ExternalLink, FileDown, Loader2, ListChecks, ChevronDown, ChevronRight, CheckCheck, Pin } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import EmptyState from "@/components/shared/EmptyState";
@@ -14,7 +15,11 @@ import { useTour } from "@/contexts/tour";
 import { cn } from "@/lib/utils";
 import Markdown from "./Markdown";
 import ActionCard from "./ActionCard";
+import ChartBlock from "./ChartBlock";
 import { downloadAgentFile } from "./useAgentChat";
+import api, { unwrapError } from "@/lib/api";
+import { canOpenPath } from "@/lib/unifiedNav";
+import { useAuth } from "@/lib/auth";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,application/pdf,.csv,.xlsx,.xls,text/csv";
 
@@ -43,18 +48,47 @@ function Steps({ steps }) {
   );
 }
 
-function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, busy }) {
+function ChartCard({ spec, sessionId }) {
+  const { user } = useAuth();
+  const [pinned, setPinned] = useState(false);
+  const pin = async () => {
+    try {
+      await api.post("/ai/agent/pins", { spec, session_id: sessionId });
+      setPinned(true);
+      toast.success("Disematkan ke Dashboard AI");
+    } catch (e) {
+      toast.error(unwrapError(e));
+    }
+  };
+  return (
+    <div className="rounded-md border border-border p-3 space-y-2" data-testid="ai-chart-card">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium">{spec.title}</p>
+        {canOpenPath(user, "/ai/dashboard") && (
+          <Button size="sm" variant="ghost" onClick={pin} disabled={pinned} data-testid="ai-chart-pin">
+            <Pin className="h-3.5 w-3.5" /> {pinned ? "Tersemat" : "Sematkan"}
+          </Button>
+        )}
+      </div>
+      <ChartBlock spec={spec} height={220} />
+    </div>
+  );
+}
+
+function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, busy, sessionId }) {
   const { startTour } = useTour();
   const ui = d.ui || [];
   const acts = ui.filter((u) => u.type === "action").map((u) => actions?.[u.action_id]).filter(Boolean);
   const pendingIds = acts.filter((a) => a.status === "pending").map((a) => a.id);
   const links = ui.filter((u) => u.type === "link");
   const files = ui.filter((u) => u.type === "file");
+  const charts = ui.filter((u) => u.type === "chart");
   return (
     <div className="space-y-2" data-testid="ai-msg-assistant">
       <Steps steps={d.steps} />
       {d.text && <Markdown text={d.text} onNavigate={onNavigate} />}
       {d.error && <p className="text-xs text-rose-700 dark:text-rose-400">{d.error}</p>}
+      {charts.map((c, i) => <ChartCard key={`c${i}`} spec={c.spec} sessionId={sessionId} />)}
       {acts.length > 0 && (
         <div className="space-y-2">
           {acts.map((a) => <ActionCard key={a.id} action={a} onDecide={onDecide} disabled={busy} />)}
@@ -76,7 +110,7 @@ function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, bus
             </Button>
           ))}
           {files.map((f) => (
-            <Button key={f.id} size="sm" variant="outline" onClick={() => downloadAgentFile(f)} data-testid="ai-file">
+            <Button key={f.file_id || f.id} size="sm" variant="outline" onClick={() => downloadAgentFile(f)} data-testid="ai-file">
               <FileDown className="h-3.5 w-3.5" /> {f.filename}
             </Button>
           ))}
@@ -143,7 +177,7 @@ export default function AgentChat({ chat, compact = false, onNavigated }) {
         )}
         {display.map((d, i) => (d.role === "user"
           ? <UserMessage key={i} text={d.text} files={fileNames(d)} />
-          : <AssistantMessage key={i} d={d} actions={session?.actions} onDecide={decide} onDecideBatch={decideBatch} onNavigate={go} busy={busy} />))}
+          : <AssistantMessage key={i} d={d} actions={session?.actions} onDecide={decide} onDecideBatch={decideBatch} onNavigate={go} busy={busy} sessionId={session?.id} />))}
         {pending && <UserMessage text={pending.text} files={pending.files} />}
         {busy && (
           <div className="flex items-start gap-2 text-sm text-muted-foreground" data-testid="ai-working">

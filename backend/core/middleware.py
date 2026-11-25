@@ -183,7 +183,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return "login", client_ip(request)
         if any(path.startswith(p) for p in ("/api/loyalty/login", "/api/loyalty/auth/login", "/api/public/loyalty/login")):
             return "login", client_ip(request)
-        if path.startswith("/api/ai/") or path.startswith("/api/executive/qa"):
+        # Bucket "ai" hanya untuk request yang memanggil model (POST/PUT/…); GET (status, polling run agen,
+        # riwayat, file, pemakaian) dan Dashboard AI (pins: tanpa model) memakai bucket umum — polling run tiap
+        # ~1–2 detik tidak boleh menghabiskan kuota 30/menit.
+        if (path.startswith("/api/ai/") or path.startswith("/api/executive/qa")) and method != "GET" \
+                and not path.startswith("/api/ai/agent/pins"):
             uid = self._user_key(request)
             return "ai", uid
         # Anti-spam untuk public form endpoints (POST only)
@@ -193,13 +197,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     @staticmethod
     def _user_key(request: Request) -> str:
+        # SEC-17: key by verified JWT subject; random/forged tokens fall back to the client IP.
+        # Browser memakai cookie httpOnly (bukan header Bearer) — tanpa ini semua staf di balik satu IP kantor
+        # berbagi satu kuota.
+        from core.security import ACCESS_COOKIE
         auth = request.headers.get("authorization", "")
-        if auth.lower().startswith("bearer "):
-            # SEC-17: key by verified JWT subject; random/forged tokens fall back to the client IP
+        token = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else request.cookies.get(ACCESS_COOKIE)
+        if token:
             try:
                 import jwt as _jwt
                 from core.config import settings as _s
-                sub = _jwt.decode(auth.split(" ", 1)[1].strip(), _s.jwt_secret, algorithms=[_s.jwt_algorithm]).get("sub")
+                sub = _jwt.decode(token, _s.jwt_secret, algorithms=[_s.jwt_algorithm]).get("sub")
                 if sub:
                     return f"user:{sub}"
             except Exception:  # noqa: BLE001

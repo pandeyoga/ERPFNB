@@ -13,12 +13,12 @@ from typing import Any, Optional
 
 from core.db import get_db
 
-from . import actions, catalog, executor
+from . import actions, catalog, datasets, executor, reports
 
 GUIDE_PATH = Path(__file__).with_name("app_guide.json")
 _GUIDE: Optional[dict] = None
 
-TOOLS_VERSION = "2026-11-25.1"
+TOOLS_VERSION = "2026-11-25.2"
 
 TOOL_DEFS: list[dict] = [
     {
@@ -91,6 +91,112 @@ TOOL_DEFS: list[dict] = [
             "attachment_id": {"type": "string"},
             "max_rows": {"type": "integer", "description": "Untuk Excel/CSV (default 200)"},
         }, "required": ["attachment_id"]},
+    },    {
+        "name": "data_catalog",
+        "description": (
+            "Daftar dataset analitik yang boleh dibaca pengguna (penjualan harian/channel/pembayaran, jurnal GL, PO, GR, PR, "
+            "AP, AR, kas kecil, mutasi stok, transfer, KDO/BDO, reservasi, karyawan, cuti, payroll, kasbon, pelanggan, "
+            "loyalty, aset, budget toko) + KAMUS METRIK resmi (definisi revenue, food cost %, labor %, dll.). "
+            "Tanpa argumen → daftar; dengan dataset → field & tipe. Pakai sebelum query_data."),
+        "input_schema": {"type": "object", "properties": {"dataset": {"type": "string"}}},
+    },
+    {
+        "name": "query_data",
+        "description": (
+            "Query aman atas dataset (filter, group_by termasuk tanggal per hari/minggu/bulan/kuartal/hari-dalam-minggu, "
+            "metrik sum/avg/min/max/count/count_distinct/median, sort, limit). Otomatis dibatasi ke toko yang boleh "
+            "diakses pengguna. Kolom id (outlet_id, vendor_id, item_id, coa_id, …) diberi nama otomatis (<kolom>_name). "
+            "export=xlsx|csv → file lengkap untuk diunduh pengguna (sampai 50.000 baris). Untuk angka resmi ikuti kamus "
+            "metrik (mis. revenue = sales_daily status validated)."),
+        "input_schema": {**{"type": "object", "properties": {
+            "dataset": {"type": "string"},
+            "period": {"type": "string", "description": "today|yesterday|last_7d|last_30d|this_week|last_week|mtd|last_month|qtd|last_quarter|ytd|last_year (relatif, WIB)"},
+            "date_from": {"type": "string", "description": "YYYY-MM-DD (bila tidak memakai period)"},
+            "date_to": {"type": "string"},
+            "outlet_ids": {"type": "array", "items": {"type": "string"}},
+            "brand_ids": {"type": "array", "items": {"type": "string"}},
+            "filters": {"type": "array", "items": {"type": "object", "properties": {
+                "field": {"type": "string"}, "op": {"type": "string", "enum": ["eq", "ne", "in", "nin", "gt", "gte", "lt", "lte", "contains", "exists"]},
+                "value": {}}, "required": ["field"]}},
+            "group_by": {"type": "array", "items": {"type": "string"}, "description": "Field atau tanggal: date:day|week|month|quarter|year|weekday"},
+            "metrics": {"type": "array", "items": {"type": "object", "properties": {
+                "fn": {"type": "string", "enum": ["sum", "avg", "min", "max", "count", "count_distinct", "median"]},
+                "field": {"type": "string"}, "as": {"type": "string"}}, "required": ["fn"]}},
+            "fields": {"type": "array", "items": {"type": "string"}, "description": "Mode baris mentah (tanpa group_by/metrics)"},
+            "sort": {"type": "array", "items": {"type": "object", "properties": {"by": {"type": "string"}, "dir": {"type": "string", "enum": ["asc", "desc"]}}}},
+            "limit": {"type": "integer"},
+        }, "required": ["dataset"]}, "properties": {**{"type": "object", "properties": {
+            "dataset": {"type": "string"},
+            "period": {"type": "string", "description": "today|yesterday|last_7d|last_30d|this_week|last_week|mtd|last_month|qtd|last_quarter|ytd|last_year (relatif, WIB)"},
+            "date_from": {"type": "string", "description": "YYYY-MM-DD (bila tidak memakai period)"},
+            "date_to": {"type": "string"},
+            "outlet_ids": {"type": "array", "items": {"type": "string"}},
+            "brand_ids": {"type": "array", "items": {"type": "string"}},
+            "filters": {"type": "array", "items": {"type": "object", "properties": {
+                "field": {"type": "string"}, "op": {"type": "string", "enum": ["eq", "ne", "in", "nin", "gt", "gte", "lt", "lte", "contains", "exists"]},
+                "value": {}}, "required": ["field"]}},
+            "group_by": {"type": "array", "items": {"type": "string"}, "description": "Field atau tanggal: date:day|week|month|quarter|year|weekday"},
+            "metrics": {"type": "array", "items": {"type": "object", "properties": {
+                "fn": {"type": "string", "enum": ["sum", "avg", "min", "max", "count", "count_distinct", "median"]},
+                "field": {"type": "string"}, "as": {"type": "string"}}, "required": ["fn"]}},
+            "fields": {"type": "array", "items": {"type": "string"}, "description": "Mode baris mentah (tanpa group_by/metrics)"},
+            "sort": {"type": "array", "items": {"type": "object", "properties": {"by": {"type": "string"}, "dir": {"type": "string", "enum": ["asc", "desc"]}}}},
+            "limit": {"type": "integer"},
+        }, "required": ["dataset"]}["properties"],
+                         "export": {"type": "string", "enum": ["xlsx", "csv"]},
+                         "export_title": {"type": "string"}}},
+    },
+    {
+        "name": "show_chart",
+        "description": (
+            "Tampilkan grafik interaktif di percakapan (bar/line/area/pie). data = baris hasil query (≤200 titik, ≤6 seri). "
+            "Sertakan source_query (spesifikasi query_data yang menghasilkan data, pakai period relatif) agar pengguna bisa "
+            "menyematkan grafik ke Dashboard AI dan diperbarui otomatis."),
+        "input_schema": {**{"type": "object", "properties": {
+                "type": {"type": "string", "enum": ["bar", "line", "area", "pie"]},
+                "title": {"type": "string"},
+                "x_key": {"type": "string", "description": "Kolom sumbu X / label irisan"},
+                "series": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "string"}, "label": {"type": "string"}}, "required": ["key"]}},
+                "data": {"type": "array", "items": {"type": "object"}},
+                "unit": {"type": "string", "enum": ["rp", "num", "pct"]},
+                "stacked": {"type": "boolean"},
+            }, "required": ["type", "x_key", "series", "data"]}, "properties": {**{"type": "object", "properties": {
+                "type": {"type": "string", "enum": ["bar", "line", "area", "pie"]},
+                "title": {"type": "string"},
+                "x_key": {"type": "string", "description": "Kolom sumbu X / label irisan"},
+                "series": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "string"}, "label": {"type": "string"}}, "required": ["key"]}},
+                "data": {"type": "array", "items": {"type": "object"}},
+                "unit": {"type": "string", "enum": ["rp", "num", "pct"]},
+                "stacked": {"type": "boolean"},
+            }, "required": ["type", "x_key", "series", "data"]}["properties"],
+                         "source_query": {"type": "object", "description": "Spesifikasi query_data sumber data (opsional)"}}},
+    },
+    {
+        "name": "create_report",
+        "description": (
+            "Buat file laporan Excel (xlsx: sheet ringkasan + sheet per tabel + grafik native) atau PDF (A4: judul, narasi, "
+            "tabel, grafik). sections: [{heading, text (markdown sederhana), table: {columns, rows, number_format: rp|num|pct}, "
+            "chart: {type, x_key, series, data, title}}]. Judul membawa konteks brand/toko & periode. Hasil: tombol unduh."),
+        "input_schema": {"type": "object", "properties": {
+            "title": {"type": "string"}, "subtitle": {"type": "string"},
+            "format": {"type": "string", "enum": ["xlsx", "pdf"]},
+            "sections": {"type": "array", "items": {"type": "object", "properties": {
+                "heading": {"type": "string"}, "text": {"type": "string"},
+                "table": {"type": "object", "properties": {
+                    "columns": {"type": "array", "items": {"type": "string"}},
+                    "rows": {"type": "array", "items": {"type": "array", "items": {}}},
+                    "number_format": {"type": "string", "enum": ["rp", "num", "pct"]}}},
+                "chart": {"type": "object", "properties": {
+                "type": {"type": "string", "enum": ["bar", "line", "area", "pie"]},
+                "title": {"type": "string"},
+                "x_key": {"type": "string", "description": "Kolom sumbu X / label irisan"},
+                "series": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "string"}, "label": {"type": "string"}}, "required": ["key"]}},
+                "data": {"type": "array", "items": {"type": "object"}},
+                "unit": {"type": "string", "enum": ["rp", "num", "pct"]},
+                "stacked": {"type": "boolean"},
+            }, "required": ["type", "x_key", "series", "data"]},
+            }}},
+        }, "required": ["title", "format", "sections"]},
     },
 ]
 
@@ -184,6 +290,24 @@ def guide_search(query: str, perms: set[str], limit: int = 6) -> dict:
 
 # ---------------- eksekusi alat ----------------
 
+def chart_spec(args: dict) -> dict:
+    """Validasi spesifikasi grafik untuk UI (recharts) — ukuran dibatasi agar riwayat percakapan tetap ringan."""
+    from core.exceptions import ValidationError
+    t = args.get("type")
+    if t not in ("bar", "line", "area", "pie"):
+        raise ValidationError("type harus bar/line/area/pie")
+    data = [r for r in (args.get("data") or []) if isinstance(r, dict)][:200]
+    series = [x for x in (args.get("series") or []) if isinstance(x, dict) and x.get("key")][:6]
+    if not data or not series or not args.get("x_key"):
+        raise ValidationError("Grafik butuh x_key, series, dan data")
+    keys = {args["x_key"], *[x["key"] for x in series]}
+    data = [{k: v for k, v in r.items() if k in keys or k.endswith("_name")} for r in data]
+    return {"type": t, "title": str(args.get("title") or "")[:120], "x_key": args["x_key"],
+            "series": [{"key": x["key"], "label": str(x.get("label") or x["key"])[:60]} for x in series],
+            "data": data, "unit": args.get("unit") if args.get("unit") in ("rp", "num", "pct") else "num",
+            "stacked": bool(args.get("stacked"))}
+
+
 class ToolContext:
     def __init__(self, *, user: dict, session: dict, run_id: str, scope: Optional[dict]):
         self.user, self.session, self.run_id, self.scope = user, session, run_id, scope or {}
@@ -250,6 +374,42 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
             return "Tombol tautan ditampilkan ke pengguna.", False
         if name == "read_attachment":
             return await _read_attachment(args.get("attachment_id", ""), int(args.get("max_rows") or 200), ctx)
+        if name == "data_catalog":
+            ctx.steps.append({"tool": name, "label": "Membaca katalog data" + (f": {args['dataset']}" if args.get("dataset") else "")})
+            return json.dumps(datasets.describe(ctx.perms, args.get("dataset")), ensure_ascii=False), False
+        if name == "query_data":
+            spec = {k: v for k, v in args.items() if k not in ("export", "export_title")}
+            d = datasets.DATASETS.get(str(spec.get("dataset")))
+            ctx.steps.append({"tool": name, "label": f"Menganalisis data: {d.label if d else spec.get('dataset')}"})
+            fmt = args.get("export")
+            res = await datasets.run(ctx.user, spec, for_export=bool(fmt))
+            out = {k: v for k, v in res.items() if k != "rows"}
+            if fmt in ("xlsx", "csv"):
+                data, fname, ct = datasets.to_file(res, fmt, args.get("export_title") or res["label"])
+                f = await executor.save_file(data, filename=fname, content_type=ct, user=ctx.user, source="query_data")
+                ctx.ui.append({"type": "file", **f})
+                out["file"] = {"filename": f["filename"], "baris": res["rows_shown"]}
+                out["catatan_file"] = "File siap diunduh pengguna (tombol muncul di jawaban)."
+            out["rows"] = res["rows"][:datasets.ROWS_TO_MODEL]
+            if res["truncated"]:
+                out["peringatan"] = (f"Hanya {len(out['rows'])} dari {res['total_rows']} baris ditampilkan — "
+                                     "agregasikan/filter lebih spesifik, atau pakai export untuk data lengkap.")
+            return json.dumps(out, ensure_ascii=False, default=str)[:60_000], False
+        if name == "show_chart":
+            spec = chart_spec(args)
+            if args.get("source_query"):
+                await datasets.run(ctx.user, args["source_query"], max_rows=1)  # validasi izin & field sumber
+                spec["source_query"] = args["source_query"]
+            ctx.ui.append({"type": "chart", "spec": spec})
+            ctx.steps.append({"tool": name, "label": f"Membuat grafik: {spec.get('title') or spec['type']}"})
+            return "Grafik ditampilkan ke pengguna (bisa disematkan ke Dashboard AI).", False
+        if name == "create_report":
+            ctx.steps.append({"tool": name, "label": f"Menyusun laporan {str(args.get('format') or 'xlsx').upper()}: {args.get('title', '')}"})
+            data, fname, ct = reports.build(args)
+            f = await executor.save_file(data, filename=fname, content_type=ct, user=ctx.user, source="create_report")
+            ctx.ui.append({"type": "file", **f})
+            return json.dumps({"file": f["filename"], "ukuran_kb": round(len(data) / 1024, 1),
+                               "catatan": "Tombol unduh muncul di jawaban; jangan tulis URL."}, ensure_ascii=False), False
         return f"Alat tidak dikenal: {name}", True
     except Exception as e:  # noqa: BLE001 — galat alat dikembalikan ke model, bukan menghentikan run
         return f"Galat: {type(e).__name__}: {str(e)[:500]}", True
