@@ -53,6 +53,18 @@ python3 scripts/audit_ui_ia.py         # OK
 
 Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.md`.
 
+## AI (Asisten AI — `docs/ai/AGENTIC_AI_PLAN_2026-11-25.md`)
+
+- Semua panggilan Claude lewat `backend/services/ai/client.py` (`ask`/`create`: kebijakan, kill switch, biaya). Jangan
+  memanggil SDK Anthropic langsung di modul lain. Model default `claude-opus-5-5`; kunci `ANTHROPIC_API_KEY` (setting).
+- Agen bisa menjalankan **semua endpoint** lewat katalog otomatis (`services/ai/agent/catalog.py`): endpoint baru langsung
+  tersedia bila dijaga `require_perm`/`require_any_perm`. Body kompleks → tambah petunjuk di `agent/body_hints.py`.
+  Pengecualian (auth, pengaturan sistem, peran/pengguna tulis, hapus massal) di `EXCLUDED_PREFIXES`/`READ_ONLY_PREFIXES`.
+- Aksi tulis AI selalu lewat usulan → persetujuan pengguna (`agent/actions.py`), dijalankan sebagai pengguna itu.
+- Koleksi transaksi baru yang perlu dianalisis → tambah dataset (field whitelist + izin) di `agent/datasets.py`.
+- Setelah mengubah tour/navigasi/route guard: `python3 scripts/gen_ai_guide.py` (pengetahuan Pemandu).
+- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py` (tanpa jaringan).
+
 ## Backend
 
 - Konfigurasi dari `backend/.env` (template lokal: `backend/env.local.example`). Jangan commit secret.

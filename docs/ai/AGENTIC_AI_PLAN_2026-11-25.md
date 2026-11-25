@@ -1,7 +1,7 @@
 # Rencana Pengembangan AI Agentic — FnB Group ERP (25 Nov 2026)
 
 Dokumen acuan sebelum pembangunan. Disusun dari diskusi dengan pemilik (25 Nov 2026), audit kode, dan riset
-(sumber di Lampiran). Status: **disetujui untuk disusun; keputusan terbuka di §3 memakai default sementara.**
+(sumber di Lampiran). Status: **disetujui; D1–D9 diputuskan 25 Nov. R1 (T1–T3) selesai — lihat §13.1.**
 
 ---
 
@@ -471,6 +471,31 @@ Setiap tahap selesai bila: gate (`ux_audit --strict`, `audit_tours`, `audit_ui_i
 lolos, kriteria selesai modul (§7) tercapai di data uji, dan dokumentasi diperbarui.
 
 ---
+
+### 13.1 Status implementasi (25 Nov 2026)
+
+**R1 selesai** (commit a7ef9b5, 195d11c, 3d90b97, 07f556c di branch `claude/bold-newton-uplp38`):
+
+| Tahap | Yang jadi | Lokasi |
+|---|---|---|
+| T1 | Satu klien Claude (`claude-opus-5-5`, fallback server-side, pencatatan biaya `ai_usage`, kebijakan & tombol darurat, peringatan anggaran), 9 fitur lama dimigrasi, Emergent dihapus, storage lokal/S3 | `backend/services/ai/client.py`, `core/object_storage.py`, `routers/ai.py` |
+| T2 | Katalog aksi otomatis dari route FastAPI (±640 aksi, izin dibaca dari `require_perm`), usulan → persetujuan/edit → eksekusi sebagai pengguna (izin & validasi route tetap berlaku), audit log, anti-dobel; loop agen (riwayat append-only, web search, lampiran foto/PDF/Excel via Files API); panel **Asisten AI** di TopNav; halaman `/ai` (Percakapan, Persetujuan AI, Pemakaian & Pengaturan); Pemandu dari tour & navigasi | `backend/services/ai/agent/`, `routers/ai_agent.py`, `frontend/src/components/ai/`, `frontend/src/portals/ai/`, `scripts/gen_ai_guide.py` |
+| T3 | 24 dataset analitik whitelisted (`query_data`: filter, group_by tanggal/toko/item/akun, metrik, batas toko otomatis, ekspor xlsx/csv), kamus metrik resmi, grafik di chat, **Dashboard AI** (`/ai/dashboard`, diperbarui otomatis dari sumber query), laporan Excel (grafik native) & PDF | `services/ai/agent/datasets.py`, `reports.py` |
+
+Terverifikasi dengan Claude sungguhan (data demo): kategori GL, OCR struk, generator jurnal, daily briefing, SEO,
+rekomendasi vendor, reservasi end-to-end lewat panel (usul → setujui → tersimpan → AI melanjutkan), analisis revenue
+30 vs 30 hari per toko + grafik + PDF (angka cocok dengan dashboard resmi). Biaya contoh: analisis lengkap ± $0,26.
+
+Batas verifikasi: MongoDB sungguhan tidak tersedia di sandbox (dipakai mongomock); `web_fetch` ditolak jaringan sandbox
+(otomatis dilepas — web search tetap jalan); belum diuji beban.
+
+Perbaikan di luar AI yang ditemukan sepanjang jalan: rate limit memakai kunci IP untuk pengguna browser (cookie) →
+kini per pengguna; polling GET `/api/ai/*` tidak lagi memakan kuota LLM; daily briefing tidak pernah memanggil LLM
+(argumen hilang); generator jurnal tanpa tanggal hari ini & hanya 100 akun COA; SEO memakai brand demo hardcode;
+upload bergantung pada storage Emergent.
+
+**Berikutnya: R2** — T4 Impor Cerdas (riset format ekspor POS/marketplace/bank, pemetaan, cek duplikasi, detail per
+transaksi, master menu; resep & menu ketika modulnya ada) dan T5 WA MVP (Evolution API).
 
 ## 14. Risiko & mitigasi
 
