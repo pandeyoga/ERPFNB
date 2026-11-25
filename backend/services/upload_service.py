@@ -26,8 +26,9 @@ from core.exceptions import ForbiddenError, NotFoundError, ValidationError
 
 logger = logging.getLogger("aurora.uploads")
 
+# Berkas lokal lama (sebelum object storage) tersimpan relatif ke folder ini. Jangan dibuat saat import:
+# di server yang tidak punya /app (repo di path lain, CI) import modul ini dulu gagal "Permission denied: '/app'".
 UPLOAD_ROOT = Path("/app/uploads")
-UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
 
 # Configuration
 from core.config import settings as _settings
@@ -274,7 +275,11 @@ async def get_attachment_bytes(file_id: str, *, user: Optional[dict] = None) -> 
         from core.object_storage import get_object
         data, _ = await get_object(a["storage_path"])
         return data
-    p = Path(a.get("absolute_path") or (UPLOAD_ROOT / a["storage_path"]))  # legacy local files
+    if a.get("absolute_path"):                                                    # legacy local files
+        p = Path(a["absolute_path"])
+    else:
+        roots = (Path(_settings.upload_dir), UPLOAD_ROOT)
+        p = next((r / a["storage_path"] for r in roots if (r / a["storage_path"]).exists()), UPLOAD_ROOT / a["storage_path"])
     if not p.exists():
         raise NotFoundError("File hilang dari storage")
     return p.read_bytes()
