@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
 from core.exceptions import ValidationError
@@ -315,6 +315,13 @@ def _extract_sales(prof, tbl, fields, wide, order, yh, decimal, opts) -> dict:
         txs.append(tx)
     if bad_dates > 5:
         issues.append({"level": "error", "row": None, "pesan": f"{bad_dates} baris tanpa tanggal terbaca"})
+    # transaksi "di masa depan" (jam/tanggal setelah sekarang, WIB) → hampir pasti tanggal/zona waktu file salah
+    now = datetime.now(timezone(timedelta(hours=7))).replace(tzinfo=None)
+    future = [t for t in txs if not t["void"] and datetime.fromisoformat(f"{t['date']}T{t.get('time') or '00:00:00'}") > now]
+    if future:
+        issues.append({"level": "warning", "row": future[0]["rows"][0],
+                       "pesan": f"{len(future)} transaksi tercatat setelah waktu sekarang ({future[0]['date']} {future[0].get('time') or ''}) "
+                                "— cek tanggal/zona waktu file"})
     # konsistensi: total ≈ net + service charge + pajak (selisih = kolom diskon/biaya yang belum dipetakan)
     if "total" in fields and ({"net", "gross"} & fields.keys()):
         off = [t for t in txs if not t["void"] and t.get("total") is not None and t.get("net") is not None and

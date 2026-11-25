@@ -27,7 +27,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-@router.get("/items")
+@router.get("/items", summary="Daftar master menu")
 async def list_items(brand_id: Optional[str] = Query(None), q: Optional[str] = Query(None),
                      needs_review: Optional[bool] = Query(None), limit: int = Query(500, ge=1, le=2000),
                      user: dict = Depends(require_perm("menu.item.read"))):
@@ -42,7 +42,7 @@ async def list_items(brand_id: Optional[str] = Query(None), q: Optional[str] = Q
     return ok_envelope(rows)
 
 
-@router.post("/items")
+@router.post("/items", summary="Tambah menu")
 async def create_item(payload: dict = Body(...), user: dict = Depends(require_perm("menu.item.manage"))):
     """{brand_id, name, category?, bucket?: food|beverage|other, price?, aliases?: [nama lain]}"""
     name = str(payload.get("name") or "").strip()
@@ -64,7 +64,7 @@ async def create_item(payload: dict = Body(...), user: dict = Depends(require_pe
     return ok_envelope(doc)
 
 
-@router.patch("/items/{item_id}")
+@router.patch("/items/{item_id}", summary="Ubah menu / alias")
 async def update_item(item_id: str, payload: dict = Body(...), user: dict = Depends(require_perm("menu.item.manage"))):
     """{name?, category?, bucket?, price?, active?, needs_review?, add_aliases?: [..], remove_aliases?: [..]}"""
     db = get_db()
@@ -92,7 +92,7 @@ async def update_item(item_id: str, payload: dict = Body(...), user: dict = Depe
     return ok_envelope({**cur, **upd})
 
 
-@router.post("/items/{item_id}/merge")
+@router.post("/items/{item_id}/merge", summary="Gabungkan menu duplikat")
 async def merge_items(item_id: str, payload: dict = Body(...), user: dict = Depends(require_perm("menu.item.manage"))):
     """Gabungkan menu duplikat ke item ini: {source_ids: [..]} — nama & alias sumber jadi alias, baris penjualan dipindah."""
     db = get_db()
@@ -116,7 +116,7 @@ async def merge_items(item_id: str, payload: dict = Body(...), user: dict = Depe
     return ok_envelope({"merged": merged, "aliases": len(aliases)})
 
 
-@router.delete("/items/{item_id}")
+@router.delete("/items/{item_id}", summary="Hapus menu")
 async def delete_item(item_id: str, user: dict = Depends(require_perm("menu.item.manage"))):
     r = await get_db().menu_items.update_one({"id": item_id, "deleted_at": None}, {"$set": {"deleted_at": _now()}})
     if not r.matched_count:

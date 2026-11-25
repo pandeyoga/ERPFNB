@@ -16,12 +16,12 @@ router = APIRouter(prefix="/api/imports", tags=["smart-import"])
 USE = "import.smart.use"
 
 
-@router.get("")
+@router.get("", summary="Daftar batch Impor Cerdas")
 async def list_batches(limit: int = Query(50, ge=1, le=200), user: dict = Depends(require_perm(USE))):
     return ok_envelope(await service.list_batches(user, limit))
 
 
-@router.post("")
+@router.post("", summary="Buat pratinjau Impor Cerdas dari lampiran (belum menyimpan data)")
 async def create_batch(payload: dict = Body(...), user: dict = Depends(require_perm(USE))):
     """{attachment_id, target?: "sales"|"bank", options?: {outlet_id, channel, bank_account_id, cutoff_hour, default_bucket,
     date_order: DMY|MDY|YMD, decimal: ","|"."}} → batch + pratinjau (belum menyimpan data)."""
@@ -29,7 +29,7 @@ async def create_batch(payload: dict = Body(...), user: dict = Depends(require_p
                                                   target=payload.get("target") or None, options=payload.get("options") or None))
 
 
-@router.post("/upload")
+@router.post("/upload", summary="Unggah file lalu buat pratinjau impor")
 async def upload_and_create(file: UploadFile = File(...), target: Optional[str] = Form(None),
                             outlet_id: Optional[str] = Form(None), bank_account_id: Optional[str] = Form(None),
                             user: dict = Depends(require_perm(USE))):
@@ -42,24 +42,24 @@ async def upload_and_create(file: UploadFile = File(...), target: Optional[str] 
     return ok_envelope(await service.create_batch(user, attachment_id=att["id"], target=target or None, options=opts or None))
 
 
-@router.get("/recipes")
+@router.get("/recipes", summary="Daftar resep impor per sumber")
 async def list_recipes(user: dict = Depends(require_perm(USE))):
     return ok_envelope(await service.list_recipes(user))
 
 
-@router.delete("/recipes/{recipe_id}")
+@router.delete("/recipes/{recipe_id}", summary="Hapus resep impor")
 async def delete_recipe(recipe_id: str, user: dict = Depends(require_perm(USE))):
     await service.delete_recipe(recipe_id, user)
     return ok_envelope({"deleted": True})
 
 
-@router.get("/{batch_id}")
+@router.get("/{batch_id}", summary="Pratinjau batch impor")
 async def get_batch(batch_id: str, user: dict = Depends(require_perm(USE))):
     """Pratinjau: kolom & pemetaan, ringkasan, rekap per toko/hari dengan status duplikasi, masalah, contoh transaksi."""
     return ok_envelope(await service.view(batch_id, user))
 
 
-@router.patch("/{batch_id}")
+@router.patch("/{batch_id}", summary="Ubah pemetaan/opsi batch impor")
 async def update_batch(batch_id: str, payload: dict = Body(...), user: dict = Depends(require_perm(USE))):
     """{mapping?: {nama_kolom|index: field|null}, options?: {..., day_actions: {"<outlet_id>|<YYYY-MM-DD>":
     "create"|"replace"|"merge"|"skip"}, allow_duplicate_file}, value_maps?: {outlet: {nilai_file: outlet_id},
@@ -70,7 +70,7 @@ async def update_batch(batch_id: str, payload: dict = Body(...), user: dict = De
         source=payload.get("source")))
 
 
-@router.post("/{batch_id}/commit")
+@router.post("/{batch_id}/commit", summary="Impor batch: simpan transaksi & rekap Daily Sales draf / sesi rekonsiliasi")
 async def commit(batch_id: str, payload: dict = Body(default={}), user: dict = Depends(require_perm(USE))):
     """Simpan transaksi + rekap ke Daily Sales DRAF (penjualan) atau buat sesi rekonsiliasi (bank).
     {save_recipe?: true, recipe_name?}"""
@@ -79,7 +79,7 @@ async def commit(batch_id: str, payload: dict = Body(default={}), user: dict = D
                                             recipe_name=payload.get("recipe_name")))
 
 
-@router.post("/{batch_id}/rollback")
+@router.post("/{batch_id}/rollback", summary="Batalkan impor")
 async def rollback(batch_id: str, user: dict = Depends(require_perm(USE))):
     """Batalkan impor: transaksi dihapus, Daily Sales draf dihitung ulang / dikembalikan (yang sudah divalidasi tidak diubah)."""
     return ok_envelope(await service.rollback(batch_id, user))
