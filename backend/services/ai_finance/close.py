@@ -121,3 +121,103 @@ async def checklist(period: str, user: dict, *, use_ai: bool = False) -> dict:
                 logger.warning("penjelasan AI tutup buku gagal", exc_info=True)
     return result
 
+
+
+# ───────────────────────────── usulan accrual ─────────────────────────────
+
+_RECURRING_HINT = ("listrik", "pln", "air", "pdam", "internet", "telepon", "telkom", "sewa", "rent", "gas", "kebersihan",
+                   "keamanan", "security", "langganan", "subscription", "asuransi", "parkir", "sampah", "maintenance", "lisensi")
+_SKIP_HINT = ("penyusutan", "depresiasi", "depreciation", "hpp", "cogs", "harga pokok", "gaji", "salary", "upah")
+
+
+async def _movements_by(period: str) -> dict[tuple, float]:
+    """(coa_id, outlet) → mutasi bersih (dr − cr) jurnal posted periode itu."""
+    out: dict[tuple, float] = defaultdict(float)
+    async for je in get_db().journal_entries.find({"period": period, "status": "posted", "deleted_at": None},
+                                                  {"_id": 0, "lines": 1, "outlet_id": 1}):
+        for ln in je.get("lines") or []:
+            out[(ln.get("coa_id"), ln.get("dim_outlet") or je.get("outlet_id"))] += float(ln.get("dr") or 0) - float(ln.get("cr") or 0)
+    return out
+
+
+def _next(period: str) -> str:
+    y, m = int(period[:4]), int(period[5:7])
+    return f"{y + 1}-01" if m == 12 else f"{y}-{m + 1:02d}"
+
+
+async def accrual_proposals(period: str, user: dict, *, months: int = 3) -> dict:
+    """Beban rutin yang selalu muncul 3 bulan terakhir (listrik, air, internet, sewa, …) tetapi belum dicatat periode ini,
+    dan gaji bila payroll belum diposting → usulan jurnal accrual (Dr beban, Cr beban yang masih harus dibayar) di akhir
+    periode + jurnal balik di awal periode berikutnya. Dibukukan hanya lewat persetujuan (POST /api/finance/journals/manual)."""
+    from statistics import mean, pstdev
+
+    from services import gl_mapping
+    db = get_db()
+    start, end = _bounds(period)
+    accrued = await gl_mapping.resolve_or("accrued_expenses", "accounts_payable")
+    hist_periods = []
+    p = period
+    for _ in range(months):
+        p = _prev(p)
+        hist_periods.append(p)
+    hist = [await _movements_by(hp) for hp in hist_periods]
+    cur = await _movements_by(period)
+    coa = {c["id"]: c async for c in db.chart_of_accounts.find({"type": "expense", "deleted_at": None},
+                                                               {"_id": 0, "id": 1, "code": 1, "name": 1})}
+    outlets = {o["id"]: o["name"] async for o in db.outlets.find({}, {"_id": 0, "id": 1, "name": 1})}
+    next_start = f"{_next(period)}-01"
+    props = []
+    keys = {k for h in hist for k in h if k[0] in coa}
+    for key in sorted(keys, key=lambda k: str(k)):
+        cid, oid = key
+        name = coa[cid]["name"].lower()
+        if any(s in name for s in _SKIP_HINT):
+            continue
+        vals = [h.get(key, 0.0) for h in hist]
+        if not all(v > 0 for v in vals) or cur.get(key, 0.0) > 0.2 * mean(vals):
+            continue
+        stable = pstdev(vals) / mean(vals) < 0.35
+        if not (stable or any(s in name for s in _RECURRING_HINT)):
+            continue
+        amt = round(mean(vals), -2)
+        label = f"{coa[cid]['code']} {coa[cid]['name']}"
+        desc = f"Accrual {coa[cid]['name']} {period}" + (f" — {outlets.get(oid, '')}" if oid else "")
+        props.append({"jenis": "beban_rutin", "akun": label, "toko": outlets.get(oid), "nominal": amt,
+                      "dasar": f"rata-rata {', '.join(hist_periods)}: " + ", ".join(f"Rp {v:,.0f}".replace(",", ".") for v in vals),
+                      "journal": {"entry_date": end, "description": desc, "outlet_id": oid,
+                                  "lines": [{"coa_id": cid, "dr": amt, "cr": 0, "memo": desc},
+                                            {"coa_id": accrued, "dr": 0, "cr": amt, "memo": desc}],
+                                  "reference": {"source": "accrual", "date": end, "total": amt}},
+                      "reversal": {"entry_date": next_start, "description": f"Balik {desc}", "outlet_id": oid,
+                                   "lines": [{"coa_id": accrued, "dr": amt, "cr": 0, "memo": f"Balik {desc}"},
+                                             {"coa_id": cid, "dr": 0, "cr": amt, "memo": f"Balik {desc}"}],
+                                   "reference": {"source": "accrual_reversal", "date": next_start, "total": amt}}})
+    # gaji: payroll periode belum diposting → accrual dari rata-rata beban gaji
+    posted = await db.payroll_cycles.count_documents({"period": period, "deleted_at": None, "status": {"$in": ["posted", "paid", "closed"]}})
+    if not posted:
+        try:
+            sal, sal_pay = await gl_mapping.resolve("salary_expense"), await gl_mapping.resolve("salary_payable")
+            vals = [sum(v for (c, _), v in h.items() if c == sal) for h in hist]
+            if all(v > 0 for v in vals) and sum(v for (c, _), v in cur.items() if c == sal) < 0.2 * mean(vals):
+                amt = round(mean(vals), -3)
+                desc = f"Accrual gaji {period} (payroll belum diposting)"
+                props.append({"jenis": "gaji", "akun": "Beban gaji", "toko": None, "nominal": amt,
+                              "dasar": f"rata-rata beban gaji {', '.join(hist_periods)}",
+                              "journal": {"entry_date": end, "description": desc,
+                                          "lines": [{"coa_id": sal, "dr": amt, "cr": 0, "memo": desc},
+                                                    {"coa_id": sal_pay, "dr": 0, "cr": amt, "memo": desc}],
+                                          "reference": {"source": "accrual", "date": end, "total": amt}},
+                              "reversal": {"entry_date": next_start, "description": f"Balik {desc}",
+                                           "lines": [{"coa_id": sal_pay, "dr": amt, "cr": 0, "memo": f"Balik {desc}"},
+                                                     {"coa_id": sal, "dr": 0, "cr": amt, "memo": f"Balik {desc}"}],
+                                           "reference": {"source": "accrual_reversal", "date": next_start, "total": amt}}})
+        except Exception:  # noqa: BLE001 — mapping gaji belum ada
+            pass
+    # sudah pernah diusulkan & dibukukan? (reference.source=accrual pada periode ini)
+    booked = {(j.get("description") or "") async for j in db.journal_entries.find(
+        {"period": period, "deleted_at": None, "reference.source": "accrual"}, {"description": 1})}
+    for pr in props:
+        pr["sudah_dibukukan"] = pr["journal"]["description"] in booked
+    return {"period": period, "usulan": props, "total": round(sum(p["nominal"] for p in props if not p["sudah_dibukukan"]), 2),
+            "catatan": "Bukukan tiap usulan (journal) dan jurnal baliknya (reversal) lewat POST /api/finance/journals/manual — "
+                       "keduanya butuh persetujuan."}

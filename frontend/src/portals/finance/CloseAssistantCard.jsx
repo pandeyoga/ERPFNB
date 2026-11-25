@@ -30,18 +30,33 @@ function lastMonths(n = 6) {
 }
 
 export default function CloseAssistantCard() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const navigate = useNavigate();
   const months = useMemo(() => lastMonths(), []);
   const [period, setPeriod] = useState(months[0].value);
   const [data, setData] = useState(null);
   const [aiBusy, setAiBusy] = useState(false);
+  const [accr, setAccr] = useState(null);
+  const [posting, setPosting] = useState("");
 
   useEffect(() => {
     setData(null);
     api.get(`/ai/finance/close/${period}`, { scope: false }).then((r) => setData(unwrap(r)))
       .catch((e) => { toast.error(unwrapError(e)); setData({ checklist: [], fluktuasi: [] }); });
+    setAccr(null);
+    api.get(`/ai/finance/close/${period}/accruals`, { scope: false }).then((r) => setAccr(unwrap(r))).catch(() => setAccr({ usulan: [] }));
   }, [period]);
+
+  // accrual + jurnal balik awal bulan berikutnya → dua jurnal manual (izin & validasi jurnal tetap berlaku)
+  const book = async (p) => {
+    setPosting(p.journal.description);
+    try {
+      await api.post("/finance/journals/manual", p.journal);
+      await api.post("/finance/journals/manual", p.reversal);
+      toast.success("Accrual & jurnal balik dibukukan");
+      setAccr((a) => ({ ...a, usulan: a.usulan.map((x) => (x === p ? { ...x, sudah_dibukukan: true } : x)) }));
+    } catch (e) { toast.error(unwrapError(e)); } finally { setPosting(""); }
+  };
 
   const explain = async () => {
     setAiBusy(true);
@@ -97,6 +112,23 @@ export default function CloseAssistantCard() {
                   { key: "periode_lalu", label: "Bulan lalu", numeric: true, hideOnMobile: true, render: (r) => fmtRp(r.periode_lalu) },
                   { key: "persen", label: "Perubahan", numeric: true, render: (r) => (r.persen != null ? `${r.persen > 0 ? "+" : ""}${r.persen}%` : "baru") },
                 ]} />
+            </div>
+          )}
+          {(accr?.usulan || []).length > 0 && (
+            <div className="space-y-2" data-testid="close-accruals">
+              <h4 className="text-sm font-medium">Usulan accrual (beban rutin & gaji belum tercatat) · {fmtRp(accr.total)}</h4>
+              <DataTable rows={accr.usulan.map((p, i) => ({ ...p, _k: i }))} keyField="_k" rowTestIdPrefix="close-accrual" loading={!accr}
+                empty={<p className="p-3 text-sm text-muted-foreground">Tidak ada usulan.</p>}
+                columns={[
+                  { key: "akun", label: "Akun", primary: true, render: (r) => <span>{r.akun}{r.toko ? ` · ${r.toko}` : ""}</span> },
+                  { key: "nominal", label: "Nominal", numeric: true, render: (r) => fmtRp(r.nominal) },
+                  { key: "dasar", label: "Dasar", hideOnMobile: true, render: (r) => <span className="text-xs">{r.dasar}</span> },
+                ]}
+                rowAction={(r) => (r.sudah_dibukukan ? <StatusPill status="posted" label="Dibukukan" />
+                  : can("finance.journal_entry.create") ? (
+                    <Button size="sm" variant="outline" onClick={() => book(accr.usulan[r._k])} disabled={!!posting} data-testid={`close-accrual-book-${r._k}`}>
+                      {posting === r.journal.description ? "Membukukan…" : "Bukukan"}
+                    </Button>) : null)} />
             </div>
           )}
           {data.penjelasan_ai && (

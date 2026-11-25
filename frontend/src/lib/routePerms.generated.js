@@ -160,6 +160,11 @@ export const ROUTE_PERMS = {
   "/finance/period-closing/:period": [
     "finance.period.lock"
   ],
+  "/finance/reconciliation": [
+    "finance.ap.read",
+    "finance.bank_reconciliation",
+    "finance.journal_entry.read"
+  ],
   "/finance/reports": [
     "finance.report"
   ],

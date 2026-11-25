@@ -465,6 +465,18 @@
    ]
   },
   {
+   "label": "Rekonsiliasi",
+   "path": "/finance/reconciliation",
+   "perms": [
+    "finance.ap.read",
+    "finance.bank_reconciliation",
+    "finance.journal_entry.read"
+   ],
+   "portal": "Finance Portal",
+   "section": "Period Closing",
+   "tours": []
+  },
+  {
    "label": "Reports",
    "path": "/finance/reports",
    "perms": [
@@ -1120,6 +1132,11 @@
   ],
   "/finance/period-closing/:period": [
    "finance.period.lock"
+  ],
+  "/finance/reconciliation": [
+   "finance.ap.read",
+   "finance.bank_reconciliation",
+   "finance.journal_entry.read"
   ],
   "/finance/reports": [
    "finance.report"

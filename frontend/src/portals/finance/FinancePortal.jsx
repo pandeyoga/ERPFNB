@@ -14,6 +14,7 @@ import ValidationQueue from "./ValidationQueue";
 import JournalList from "./JournalList";
 import JournalDetail from "./JournalDetail";
 import ManualJournalForm from "./ManualJournalForm";
+import ReconciliationPage from "./ReconciliationPage";
 import COABrowser from "./COABrowser";
 import PeriodClosingWizard from "./PeriodClosingWizard";
 import VendorScorecard from "./VendorScorecard";
@@ -89,6 +90,7 @@ export default function FinancePortal() {
       <Route path="vendor-scorecard" element={g("finance.ap.read", <VendorScorecard />)} />
       <Route path="periods" element={<LegacyRedirect to="/finance/period-closing?phase=0" />} />
       <Route path="period-closing" element={g(["finance.period.lock", "finance.journal_entry.read"], <PeriodClosingHub />)} />
+      <Route path="reconciliation" element={g(["finance.ap.read", "finance.bank_reconciliation", "finance.journal_entry.read"], <ReconciliationPage />)} />
       <Route path="period-closing/:period" element={g("finance.period.lock", <PeriodClosingWizard />)} />
       <Route path="closing-wizard" element={<LegacyRedirect to="/finance/period-closing" />} />
       <Route path="coa" element={g("finance.journal_entry.read", <COABrowser />)} />

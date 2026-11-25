@@ -49,6 +49,7 @@ READ_LIKE_POSTS = {
     # AI Finance: analisis (OCR struk, rekonsiliasi) tidak membukukan apa pun
     "/api/ai/finance/receipts/analyze", "/api/ai/finance/recon/{session_id}/analyze",
     "/api/ai/purchasing/pricelist/analyze", "/api/menu/recipe/simulate",
+    "/api/ai/finance/reconcile/vendor-statement", "/api/ai/finance/reconcile/non-cash", "/api/ai/finance/reconcile/export",
 }
 
 _HIGH = re.compile(r"/(post|approve|reject|validate|send|pay|reverse|close|cancel|receive|submit|lock|unlock|apply|"

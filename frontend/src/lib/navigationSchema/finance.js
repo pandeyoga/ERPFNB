@@ -63,6 +63,7 @@ export const financeNav = {
       icon: Calendar,
       items: [
         { id: "period-closing-hub", name: "Period Closing", path: "/finance/period-closing" },
+        { id: "reconciliation", name: "Rekonsiliasi", path: "/finance/reconciliation" },
         // Periods (List) & Anomaly Feed are built-in PHASES of the Period Closing
         // workflow (/finance/period-closing) — standalone routes kept for deep-links.
       ],

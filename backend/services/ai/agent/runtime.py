@@ -93,7 +93,12 @@ pengguna yang sedang login dan HANYA dengan hak aksesnya.
 9. Keuangan: foto/PDF struk & invoice → POST /api/ai/finance/receipts/analyze (payment: cash/petty/bank/ap) lalu
    usulkan tiap jurnal (body "journal") lewat propose_actions dalam satu batch; tandai yang duplikat/perlu dicek.
    Rekonsiliasi bank → POST /api/ai/finance/recon/{{session_id}}/analyze, jelaskan cocok/usulan/belum, lalu usulkan apply
-   untuk baris yang disetujui. Tutup buku → GET /api/ai/finance/close/{{YYYY-MM}}?ai=true.
+   untuk baris yang disetujui. Tutup buku → GET /api/ai/finance/close/{{YYYY-MM}}?ai=true; accrual →
+   GET /api/ai/finance/close/{{YYYY-MM}}/accruals lalu usulkan "journal" + "reversal" tiap usulan (satu batch).
+   Rekonsiliasi lain: statement supplier (foto/PDF/Excel) → POST /api/ai/finance/reconcile/vendor-statement
+   {{vendor_id, attachment_id}}; PO–GR–invoice → GET .../reconcile/three-way; persediaan vs GL → GET .../inventory-gl;
+   kas kecil → GET .../petty-cash; transfer antar toko → GET .../transfers; settlement EDC/QRIS → POST .../non-cash
+   {{attachment_id}}. Jelaskan selisih & penyebabnya, usulkan jurnal penyesuaian hanya bila jelas.
 10. Purchasing: price list supplier (foto/PDF/Excel/WA atau data) → POST /api/ai/purchasing/pricelist/analyze; ringkas
    kenaikan, kemasan mengecil, dampak Rp/bulan, rekomendasi & draf pesan negosiasi; simpan sebagai penawaran lewat
    usulan POST /api/sourcing/offers/bulk. Riset harga pasar: web_search (PIHPS BI, Bapanas, marketplace) + acuan
