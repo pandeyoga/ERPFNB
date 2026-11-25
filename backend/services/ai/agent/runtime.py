@@ -272,6 +272,7 @@ async def _run(run_id: str, session_id: str, user: dict, message: str, attachmen
     ctx = tools.ToolContext(user=user, session=session, run_id=run_id, scope=scope)
     messages: list[dict] = list(session.get("messages") or [])
     final_text, status, err = "", "done", None
+    interim: list[str] = []
     usage = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
     try:
         content = await _build_user_content(user, message, attachments, context, scope, outcome)
@@ -288,6 +289,12 @@ async def _run(run_id: str, session_id: str, user: dict, message: str, attachmen
             usage["cost_usd"] += ai_client.cost_usd(getattr(resp, "model", "") or "claude-opus-5-5", resp.usage)
             content = [_dump(b) for b in resp.content]
             messages.append({"role": "assistant", "content": content})
+            if resp.stop_reason in ("tool_use", "pause_turn"):
+                # teks substantif yang ditulis model di antara langkah alat (mis. hasil diagnosa sebelum menambah tombol)
+                # ikut ditampilkan — sebelumnya hanya teks giliran terakhir yang terlihat pengguna
+                t = "".join(b.get("text", "") for b in content if b.get("type") == "text").strip()
+                if len(t) >= 80:
+                    interim.append(t)
             for b in content:
                 if b.get("type") == "server_tool_use":
                     await _event(run_id, {"type": "step", "label": _server_tool_label(b)})
@@ -299,6 +306,7 @@ async def _run(run_id: str, session_id: str, user: dict, message: str, attachmen
             tool_uses = [b for b in content if b.get("type") == "tool_use"]
             if resp.stop_reason != "tool_use" or not tool_uses:
                 final_text = "".join(b.get("text", "") for b in content if b.get("type") == "text").strip()
+                final_text = "\n\n".join([*[t for t in interim if t not in final_text], final_text]).strip()
                 if resp.stop_reason == "max_tokens":
                     final_text += "\n\n_(jawaban terpotong — minta lanjutkan)_"
                 break

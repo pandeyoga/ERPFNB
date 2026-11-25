@@ -143,6 +143,38 @@ def test_agent_loop_with_scripted_model(app_catalog, mockdb, monkeypatch):
     assert s["messages"][2]["content"][0]["type"] == "tool_result"
 
 
+def test_agent_keeps_interim_explanation(app_catalog, mockdb, monkeypatch):
+    """Penjelasan substantif yang ditulis model sebelum memanggil alat tidak hilang dari jawaban akhir."""
+    from services.ai import client as ai
+    from services.ai.agent import runtime
+    expl = ("Jurnal tidak bisa diposting karena periode bulan lalu sudah dikunci (lock) di Period Closing; "
+            "saya cek status periodenya dulu.")
+
+    def blk(d):
+        return types.SimpleNamespace(model_dump=lambda **k: d)
+    replies = [
+        types.SimpleNamespace(stop_reason="tool_use", model="claude-opus-5-5", usage=types.SimpleNamespace(
+            input_tokens=100, output_tokens=10), content=[blk({"type": "text", "text": expl}), blk(
+                {"type": "tool_use", "id": "tu1", "name": "search_actions", "input": {"query": "periode", "kind": "read"}})]),
+        types.SimpleNamespace(stop_reason="end_turn", model="claude-opus-5-5", usage=types.SimpleNamespace(
+            input_tokens=200, output_tokens=20), content=[blk({"type": "text", "text": "Buka kunci periode lewat Period Closing."})]),
+    ]
+    n = []
+
+    async def fake_create(**kw):
+        n.append(1)
+        return replies[len(n) - 1]
+    monkeypatch.setattr(ai, "create", fake_create)
+
+    async def go():
+        out = await runtime.start_run(USER, message="kenapa jurnal tidak bisa diposting")
+        while (await runtime.get_run(out["run_id"], USER))["status"] == "running":
+            await asyncio.sleep(0.01)
+        return (await runtime.get_run(out["run_id"], USER))["answer"]["text"]
+    text = run(go())
+    assert text.startswith(expl) and text.endswith("Buka kunci periode lewat Period Closing.")
+
+
 def test_query_data_scope_permissions_and_aggregation(mockdb):
     from services.ai.agent import datasets
     rows = [{"id": f"s{i}", "outlet_id": o, "brand_id": "b1", "sales_date": d, "status": st, "grand_total": gt,

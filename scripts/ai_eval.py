@@ -38,6 +38,12 @@ def upload(base, token, path):
         return json.loads(r.read())["data"]["id"]
 
 
+def _matches(used, expected):
+    """Path usulan sudah terisi (/api/master/items/abc) — cocokkan dengan template katalog (/api/master/{entity}/{id_})."""
+    rx = [re.compile("^" + re.sub(r"\\\{[^/]+?\\\}", "[^/]+", re.escape(e)) + "$") for e in expected]
+    return any(r.match(u) for u in used for r in rx)
+
+
 def check(case, session, actions):
     e = case["harap"]
     disp = [d for d in session.get("display", []) if d.get("role") == "assistant"]
@@ -52,7 +58,7 @@ def check(case, session, actions):
     if e.get("alat") and not tools & set(e["alat"]):
         fails.append(f"alat {e['alat']} tidak dipakai (dipakai: {sorted(t for t in tools if t)})")
     ds_ok = bool(datasets & set(e.get("dataset") or []))
-    act_ok = bool((read_paths | act_paths) & set(e.get("aksi") or []))
+    act_ok = _matches(read_paths | act_paths, e.get("aksi") or [])
     if e.get("dataset") and e.get("aksi"):          # dua sumber alternatif: dataset analitik ATAU laporan/aksi resmi
         if not (ds_ok or act_ok):
             fails.append(f"sumber {e['dataset'] + e['aksi']} tidak dipakai (dataset: {sorted(datasets)}, aksi: {sorted(read_paths | act_paths)[:6]})")
