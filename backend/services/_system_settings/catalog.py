@@ -9,13 +9,16 @@ KNOWN_SETTINGS: dict[str, dict] = {
     "EMAIL_FROM_NAME": {"label": "Email Sender Display Name", "description": "Nama pengirim email.", "is_secret": False, "category": "email", "placeholder": "FnB Group"},
     "EMAIL_REPLY_TO": {"label": "Email Reply-To", "description": "Optional Reply-To header.", "is_secret": False, "category": "email", "placeholder": "support@yourdomain.com"},
     # AI
-    "EMERGENT_LLM_KEY": {"label": "Emergent Universal LLM Key", "description": "Universal key dari Emergent.", "is_secret": True, "category": "ai", "placeholder": "sk-emergent-XXXXXXXXXXXX"},
-    "OPENAI_API_KEY": {"label": "OpenAI API Key (Direct)", "description": "Override OpenAI.", "is_secret": True, "category": "ai", "placeholder": "sk-XXXXXXXXXXXXXXXXXXXX"},
-    "ANTHROPIC_API_KEY": {"label": "Anthropic API Key (Direct)", "description": "Override Anthropic.", "is_secret": True, "category": "ai", "placeholder": "sk-ant-XXXXXXXXXXXX"},
-    "GEMINI_API_KEY": {"label": "Google Gemini API Key (Direct)", "description": "Override Gemini.", "is_secret": True, "category": "ai", "placeholder": "AIzaSyXXXXXXXXXXXX"},
-    "LLM_PROVIDER_PRIMARY": {"label": "Primary LLM Provider", "description": "Provider utama: emergent | openai | anthropic | gemini.", "is_secret": False, "category": "ai", "placeholder": "emergent"},
-    "LLM_MODEL_TEXT": {"label": "Default Text Model", "description": "Model default untuk text generation.", "is_secret": False, "category": "ai", "placeholder": "gemini-2.5-flash"},
-    "LLM_MODEL_OCR": {"label": "OCR Model", "description": "Model untuk OCR.", "is_secret": False, "category": "ai", "placeholder": "gemini-2.5-flash"},
+    "ANTHROPIC_API_KEY": {"label": "Anthropic API Key (Claude)", "description": "Kunci API Claude untuk semua fitur AI & agen. Dari console.anthropic.com.", "is_secret": True, "category": "ai", "placeholder": "sk-ant-XXXXXXXXXXXX"},
+    "AI_MODEL": {"label": "Model Claude", "description": "Model untuk semua fitur AI. Default claude-opus-5-5.", "is_secret": False, "category": "ai", "placeholder": "claude-opus-5-5"},
+    # Penyimpanan file (upload, foto struk, lampiran, gambar CMS)
+    "STORAGE_BACKEND": {"label": "Penyimpanan File", "description": "local (disk server; default) | s3 (S3-compatible: AWS S3, Cloudflare R2, MinIO, dll.).", "is_secret": False, "category": "storage", "placeholder": "local"},
+    "UPLOAD_DIR": {"label": "Folder Upload (local)", "description": "Folder di server untuk STORAGE_BACKEND=local. Pastikan volume persisten.", "is_secret": False, "category": "storage", "placeholder": "/app/backend/uploads"},
+    "S3_BUCKET": {"label": "S3 Bucket", "description": "Nama bucket untuk STORAGE_BACKEND=s3.", "is_secret": False, "category": "storage", "placeholder": "erp-uploads"},
+    "S3_ENDPOINT_URL": {"label": "S3 Endpoint URL", "description": "Kosongkan untuk AWS; isi untuk R2/MinIO (mis. https://<akun>.r2.cloudflarestorage.com).", "is_secret": False, "category": "storage", "placeholder": "https://..."},
+    "S3_REGION": {"label": "S3 Region", "description": "Region bucket (R2: auto).", "is_secret": False, "category": "storage", "placeholder": "ap-southeast-1"},
+    "S3_ACCESS_KEY_ID": {"label": "S3 Access Key ID", "description": "Access key untuk bucket.", "is_secret": True, "category": "storage", "placeholder": "AKIA..."},
+    "S3_SECRET_ACCESS_KEY": {"label": "S3 Secret Access Key", "description": "Secret key untuk bucket.", "is_secret": True, "category": "storage", "placeholder": "..."},
     # WhatsApp
     "WHATSAPP_PROVIDER": {"label": "WhatsApp Provider", "description": "fonnte | twilio | meta | disabled.", "is_secret": False, "category": "whatsapp", "placeholder": "fonnte"},
     "FONNTE_API_TOKEN": {"label": "Fonnte API Token", "description": "Token dari fonnte.com.", "is_secret": True, "category": "whatsapp", "placeholder": "abcd1234efgh5678"},

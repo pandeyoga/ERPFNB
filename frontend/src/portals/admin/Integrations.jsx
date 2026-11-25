@@ -34,7 +34,7 @@ const TABS = [
   { id: "telegram",  label: "Telegram",   icon: MessageSquare, category: "telegram" },
   { id: "whatsapp",  label: "WhatsApp",   icon: Phone,         category: "whatsapp" },
   { id: "email",     label: "Email",      icon: Mail,          category: "email" },
-  { id: "ai",        label: "AI / LLM",   icon: Brain,         category: "ai" },
+  { id: "ai",        label: "AI (Claude)", icon: Brain,       category: "ai" },
   { id: "branding",  label: "Branding",   icon: Palette,       category: "branding" },
   { id: "custom",    label: "Lainnya",    icon: Wrench,        category: null },
 ];

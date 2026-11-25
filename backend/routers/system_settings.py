@@ -15,7 +15,6 @@ from core.exceptions import ValidationError, ok_envelope
 from core.security import require_perm
 from services import (
     email_service,
-    llm_service,
     system_settings_service,
     telegram_service,
     whatsapp_service,
@@ -211,49 +210,26 @@ async def test_resend(
 
 
 # ---------------------------------------------------------------------------
-# LLM (Emergent + direct providers)
+# LLM (Claude — services/ai/client.py)
 # ---------------------------------------------------------------------------
 @router.post("/test/llm")
 async def test_llm(
     payload: dict = Body(default={}),
     user: dict = Depends(require_perm("system.settings.manage")),
 ):
-    """Send a tiny LLM prompt and report the result.
+    """Kirim prompt kecil ke Claude dan laporkan hasilnya.
 
-    Body: { api_key?, provider?, model?, prompt? } \u2014 ephemeral overrides.
+    Body: { api_key?, model?, prompt? } — kunci/model sementara untuk diuji sebelum disimpan (tidak disimpan).
+    Dulu override lewat os.environ: tidak berlaku bila kunci sudah ada di DB (DB > env) dan tidak aman dipakai
+    bersamaan; sekarang diteruskan langsung ke klien.
     """
     payload = payload or {}
-    ephemeral_key = (payload.get("api_key") or "").strip()
-    ephemeral_provider = (payload.get("provider") or "").strip()
-    ephemeral_model = (payload.get("model") or "").strip()
-    prompt = (payload.get("prompt") or "Reply with the single word: OK").strip()
-
-    overrides = {}
-    if ephemeral_key:
-        overrides["EMERGENT_LLM_KEY"] = (os.environ.get("EMERGENT_LLM_KEY"), ephemeral_key)
-    if ephemeral_provider:
-        overrides["LLM_PROVIDER_PRIMARY"] = (os.environ.get("LLM_PROVIDER_PRIMARY"), ephemeral_provider)
-    if ephemeral_model:
-        overrides["LLM_MODEL_TEXT"] = (os.environ.get("LLM_MODEL_TEXT"), ephemeral_model)
-    for k, (_, new_v) in overrides.items():
-        os.environ[k] = new_v
-    try:
-        from core import runtime_config
-        for k in overrides:
-            runtime_config.invalidate(k)
-        res = await llm_service.quick_test(prompt)
-    finally:
-        for k, (old_v, _) in overrides.items():
-            if old_v is None:
-                os.environ.pop(k, None)
-            else:
-                os.environ[k] = old_v
-        try:
-            from core import runtime_config
-            for k in overrides:
-                runtime_config.invalidate(k)
-        except Exception:  # noqa: BLE001
-            pass
+    from services.ai import client as ai_client
+    res = await ai_client.quick_test(
+        (payload.get("prompt") or "Balas satu kata: OK").strip(),
+        api_key_override=(payload.get("api_key") or "").strip() or None,
+        model=(payload.get("model") or "").strip() or None,
+    )
     return ok_envelope(res)
 
 

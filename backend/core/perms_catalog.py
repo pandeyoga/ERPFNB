@@ -170,6 +170,10 @@ PERMISSIONS_CATALOG: list[dict] = [
     # Phase 9D
     {"code": "ai.exec_qa.use", "category": "AI", "label": "Executive Q&A (tool-calling)"},
     {"code": "ai.vendor_recommend.use", "category": "AI", "label": "AI vendor recommendation"},
+    # Asisten AI agentic (docs/ai/AGENTIC_AI_PLAN_2026-11-25.md)
+    {"code": "ai.agent.use", "category": "AI", "label": "Pakai Asisten AI"},
+    {"code": "ai.agent.automate", "category": "AI", "label": "Buat monitor & otomasi AI"},
+    {"code": "ai.agent.admin", "category": "AI", "label": "Kelola AI (kebijakan, biaya, log)"},
 
     # Anomaly (Phase 7D)
     {"code": "anomaly.feed.read", "category": "Anomaly", "label": "Read anomaly feed"},

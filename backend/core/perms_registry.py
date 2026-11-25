@@ -60,7 +60,7 @@ MODULES: dict[str, str] = {
     "system.metrics": "Metrics", "system.logs": "Logs", "system.scheduler": "Scheduler", "system.archival": "Archival",
     "system.settings": "Pengaturan sistem",
     "ai.chat": "AI chat", "ai.autocomplete": "AI autocomplete", "ai.ocr": "AI OCR (scan struk)", "ai.categorize": "AI kategori",
-    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor",
+    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor", "ai.agent": "Asisten AI",
     "search.global": "Pencarian global",
 }
 
@@ -86,6 +86,7 @@ ACTION_LABELS = {"view": "Lihat", "use": "Pakai", "create": "Buat", "edit": "Uba
 
 # Izin berdampak besar: UI memberi tanda & konfirmasi.
 SENSITIVE = {
+    "ai.agent.admin",
     "*", "admin.role.manage", "admin.user.create", "admin.user.update", "admin.user.disable",
     "admin.user.reset_password", "admin.user.impersonate", "admin.system_settings.manage", "system.settings.manage",
     "system.scheduler.manage", "system.archival.manage", "finance.period.unlock", "finance.period.write_to_locked",
@@ -123,6 +124,9 @@ def _action(last: str) -> str:
 
 # Label yang ditulis ulang (label Inggris lama terlalu singkat / ambigu)
 LABEL_OVERRIDES = {
+    "ai.agent.use": "Pakai Asisten AI (chat, analisis, usulan aksi)",
+    "ai.agent.automate": "Buat monitor & otomasi AI",
+    "ai.agent.admin": "Kelola AI: kebijakan, tombol darurat, biaya, log",
     "finance.report.profit_loss": "Lihat laporan Laba Rugi (P&L)",
     "finance.report.balance_sheet": "Lihat Neraca (Balance Sheet)",
     "finance.report.cashflow": "Lihat laporan Cashflow",

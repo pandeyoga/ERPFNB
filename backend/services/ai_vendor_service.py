@@ -22,9 +22,7 @@ from core.clock import period_now as _biz_period, today_str as _biz_today  # SSO
 from datetime import datetime, timezone
 from typing import Optional
 
-from core.config import settings
 from core.db import get_db
-from core.runtime_config import get_setting
 
 logger = logging.getLogger("aurora.ai_vendor")
 
@@ -176,12 +174,11 @@ async def _generate_rationale(item_name: str, vendor_name: str, stats: dict, sco
         + f", {stats.get('gr_count', 0)} riwayat pembelian."
     )
 
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return fallback
 
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
         sys = (
             "You explain why a vendor is recommended for an Indonesian F&B procurement. "
             "Write ONE concise sentence in Bahasa Indonesia (max 22 words). "
@@ -197,13 +194,7 @@ async def _generate_rationale(item_name: str, vendor_name: str, stats: dict, sco
             f"Recency: {stats.get('recency_days', 'N/A')} hari lalu\n"
             f"Composite score: {score:.2f}/1.0\n"
         ).replace(",", ".")
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"vrec-{vendor_name[:10]}",
-            system_message=sys,
-        ).with_model("gemini", "gemini-2.5-flash")
-        resp = await chat.send_message(UserMessage(text=prompt))
-        resp = (resp or "").strip()
+        resp = (await ai_client.ask(system=sys, user=prompt, feature="vendor_recommend", max_tokens=300) or "").strip()
         if 4 < len(resp) < 400:
             return resp
         return fallback

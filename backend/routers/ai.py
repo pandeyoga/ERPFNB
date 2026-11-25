@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 
 from core.exceptions import ok_envelope
-from core.security import require_perm
+from core.security import current_user, require_perm
 from services import ai_service, ai_journal_generator_service
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
@@ -164,7 +164,7 @@ async def explain_opname_variance(
     """Generate AI-powered explanation for opname variance.
 
     Loads the opname session by id, extracts variance lines, calls the LLM
-    via emergentintegrations, and returns:
+    (Claude — services/ai/client.py), and returns:
       { summary, top_drivers[], recommended_actions[], confidence }
 
     Non-blocking: failures return { error: "..." } and UI shows manual variance.
@@ -346,3 +346,64 @@ async def generate_journal_entry(
     )
     
     return ok_envelope(result)
+
+
+# =================== STATUS, KEBIJAKAN & PEMAKAIAN (Claude) ===================
+
+@router.get("/status")
+async def ai_status(user: dict = Depends(current_user)):
+    """Apakah AI aktif untuk dipakai UI (tanpa membocorkan kunci)."""
+    from services.ai import client as ai_client
+    st = await ai_client.status()
+    return ok_envelope({"available": st["available"], "reason": st["reason"], "model": st["model"],
+                        "write_actions_enabled": st["policy"]["write_actions_enabled"]})
+
+
+@router.get("/policy")
+async def get_ai_policy(user: dict = Depends(require_perm("ai.agent.admin"))):
+    from services.ai import client as ai_client
+    return ok_envelope({**await ai_client.get_policy(), "usage": await ai_client.month_usage()})
+
+
+@router.put("/policy")
+async def update_ai_policy(payload: dict = Body(...), user: dict = Depends(require_perm("ai.agent.admin"))):
+    """Tombol darurat (`enabled`, `write_actions_enabled`), anggaran bulanan (USD, peringatan saja), ambang %."""
+    from services.ai import client as ai_client
+    return ok_envelope(await ai_client.update_policy(payload, user=user))
+
+
+@router.get("/usage")
+async def ai_usage(month: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
+                   user: dict = Depends(require_perm("ai.agent.admin"))):
+    """Pemakaian & biaya per bulan: total, per fitur, per pengguna, per hari."""
+    from core.db import get_db
+    from services.ai import client as ai_client
+    db = get_db()
+    summary = await ai_client.month_usage(month)
+    m = summary["month"]
+
+    async def group(key: str, limit: int = 50):
+        rows = await db.ai_usage.aggregate([
+            {"$match": {"month": m}},
+            {"$group": {"_id": f"${key}", "cost_usd": {"$sum": "$cost_usd"}, "calls": {"$sum": 1},
+                        "input_tokens": {"$sum": "$input_tokens"}, "output_tokens": {"$sum": "$output_tokens"},
+                        "errors": {"$sum": {"$cond": [{"$eq": ["$status", "error"]}, 1, 0]}}}},
+            {"$sort": {"cost_usd": -1}}, {"$limit": limit},
+        ]).to_list(limit)
+        return [{**{k: v for k, v in r.items() if k != "_id"}, key: r["_id"], "cost_usd": round(r["cost_usd"], 4)}
+                for r in rows]
+
+    by_user = await group("user_id")
+    names = {u["id"]: u.get("full_name") or u.get("email") async for u in db.users.find(
+        {"id": {"$in": [r["user_id"] for r in by_user if r["user_id"]]}}, {"id": 1, "full_name": 1, "email": 1})}
+    for r in by_user:
+        r["user_name"] = names.get(r["user_id"], "Sistem" if not r["user_id"] else r["user_id"])
+    daily = await db.ai_usage.aggregate([
+        {"$match": {"month": m}},
+        {"$group": {"_id": {"$substr": ["$ts", 0, 10]}, "cost_usd": {"$sum": "$cost_usd"}, "calls": {"$sum": 1}}},
+        {"$sort": {"_id": 1}},
+    ]).to_list(40)
+    policy = await ai_client.get_policy()
+    return ok_envelope({**summary, "budget_usd": policy.get("monthly_budget_usd"),
+                        "by_feature": await group("feature"), "by_user": by_user,
+                        "daily": [{"date": d["_id"], "cost_usd": round(d["cost_usd"], 4), "calls": d["calls"]} for d in daily]})

@@ -45,9 +45,7 @@ python3 -m venv .venv
 source .venv/bin/activate            # Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install --upgrade pip
 
-# emergentintegrations & litellm hanya untuk fitur AI dan berasal dari index privat —
-# lewati saat install lokal (aplikasi tetap jalan; AI menjawab "Layanan AI tidak aktif").
-grep -v -e '^emergentintegrations' -e '^litellm' requirements.txt | pip install -r /dev/stdin
+pip install -r requirements.txt
 
 cp env.local.example .env
 ```
@@ -118,4 +116,4 @@ Akun peran lain (HR, outlet, inventory) bisa dilihat di Admin › Users & Roles.
 | Backend gagal start: `ServerSelectionTimeoutError` | MongoDB belum berjalan atau `MONGO_URL` salah. |
 | `yarn install` gagal di `@emergentbase/visual-edits` | Paket editor visual Emergent. Hapus baris itu dari `devDependencies` di `frontend/package.json`; aplikasi tetap jalan tanpa paket ini. |
 | Port 3000 / 8001 dipakai aplikasi lain | Frontend: `PORT=3001 yarn start`. Backend di port lain: jalankan uvicorn dengan `--port 8002` dan isi `LOCAL_BACKEND_URL=http://localhost:8002` di `frontend/.env`. |
-| Fitur AI menjawab "Layanan AI tidak aktif" | Normal di lokal tanpa `EMERGENT_LLM_KEY` (lihat langkah 4). |
+| Fitur AI menjawab "AI tidak aktif" | Isi `ANTHROPIC_API_KEY` di `backend/.env` atau Admin → Integrations → AI (Claude). |

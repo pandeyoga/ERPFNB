@@ -24,15 +24,11 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
-from core.config import settings
 from core.db import get_db
-from core.runtime_config import get_setting
 
 logger = logging.getLogger("aurora.ai_exec_qa")
 
 # Model used for Phase 9D
-PROVIDER = "gemini"
-MODEL = "gemini-2.5-flash"
 
 # History size kept per session
 HISTORY_LIMIT = 10
@@ -237,17 +233,11 @@ def _tool_catalog_str() -> str:
 
 # =================== LLM HELPERS ===================
 async def _llm_call(system: str, user_text: str, *, session_id: str = "exec-qa") -> str:
-    llm_key = await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)
-    if not settings.feature_ai_enabled or not llm_key:
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return ""
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=session_id,
-            system_message=system,
-        ).with_model(PROVIDER, MODEL)
-        return await chat.send_message(UserMessage(text=user_text)) or ""
+        return await ai_client.ask(system=system, user=user_text, feature="exec_qa", max_tokens=2000)
     except Exception as e:  # noqa: BLE001
         logger.warning(f"Exec-QA LLM call failed: {e}")
         return ""
@@ -355,7 +345,8 @@ async def ask(question: str, *, user: dict, session_id: Optional[str] = None) ->
             "session_id": session_id or "",
             "history": [],
         }
-    if not settings.feature_ai_enabled or not (await get_setting("EMERGENT_LLM_KEY", default=settings.emergent_llm_key)):
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return {
             "answer": "Layanan AI tidak aktif. Hubungi admin.",
             "tool_calls": [],

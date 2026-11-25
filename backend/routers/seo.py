@@ -9,7 +9,6 @@ Endpoints:
   AI:      POST /api/seo/ai/analyze      — analyze keywords → intent + clusters
            POST /api/seo/ai/generate     — generate title/description from keywords
 """
-import os
 import asyncio
 import logging
 import uuid
@@ -28,7 +27,7 @@ router = APIRouter(prefix="/api/seo", tags=["seo"])
 
 # Hard timeout for any single LLM call (prevents middleware/ingress timeout).
 # Keep below typical 60s ingress timeout & front-end axios defaults.
-LLM_CALL_TIMEOUT_SEC = 35
+LLM_CALL_TIMEOUT_SEC = 60
 
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -171,39 +170,40 @@ async def delete_seo_page(seo_id: str, user=Depends(require_perm("admin.cms.writ
 
 # ─── AI Endpoints ───────────────────────────────────────────────────────────────
 
-async def _get_llm_client():
-    """Get LLM client; returns None if key not configured."""
-    api_key = os.environ.get("EMERGENT_LLM_KEY", "")
-    if not api_key:
+SEO_SYSTEM = (
+    "You are an expert SEO consultant specializing in F&B restaurant chains in Indonesia. "
+    "You understand Indonesian consumer search behavior, Google Indonesia trends, and local F&B market. "
+    "Always respond in valid JSON only, no markdown, no explanation outside the JSON."
+)
+
+
+async def _seo_llm(prompt: str, *, user_id: str | None = None) -> str | None:
+    """Claude (services/ai/client.py). None bila AI tidak aktif → pemanggil memakai fallback berbasis aturan."""
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         return None
-    try:
-        from emergentintegrations.llm.chat import LlmChat
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"seo-{uuid.uuid4()}",
-            system_message=(
-                "You are an expert SEO consultant specializing in F&B restaurant chains in Indonesia. "
-                "You understand Indonesian consumer search behavior, Google Indonesia trends, and local F&B market. "
-                "Always respond in valid JSON only, no markdown, no explanation outside the JSON."
-            )
-        ).with_model("openai", "gpt-4.1-mini")
-        return chat
-    except Exception as e:
-        logger.warning(f"LLM init failed: {e}")
-        return None
+    return await ai_client.ask(system=SEO_SYSTEM, user=prompt, feature="seo", user_id=user_id, max_tokens=3000)
+
+
+async def _company_context() -> str:
+    """Nama grup & brand dari master data (dulu ditulis tetap di prompt)."""
+    db = get_db()
+    brands = [b.get("name") async for b in db.brands.find({"deleted_at": None}, {"name": 1}) if b.get("name")]
+    return f"FnB Group = grup F&B multi-brand ({', '.join(brands) or 'beberapa brand'}). Target: konsumen kuliner Indonesia."
+
 
 @router.post("/ai/analyze")
 async def ai_analyze_keywords(body: AiAnalyzeIn, user=Depends(require_perm("admin.cms.write"))):
     """
     AI keyword analysis: input keywords → search intent + keyword clusters + quick suggestions.
-    Falls back to rule-based analysis if EMERGENT_LLM_KEY not configured.
+    Falls back to rule-based analysis if AI is not available.
     """
-    chat = await _get_llm_client()
-    if not chat:
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
         # Fallback: rule-based analysis
-        return ok_envelope(_fallback_analysis(body), meta={"ai_powered": False, "message": "AI tidak aktif (EMERGENT_LLM_KEY belum dikonfigurasi). Menggunakan analisis dasar."})
+        return ok_envelope(_fallback_analysis(body), meta={"ai_powered": False, "message": "AI tidak aktif (ANTHROPIC_API_KEY belum diisi). Menggunakan analisis dasar."})
 
-    prompt = f"""FnB Group = multi-brand F&B premium di Bandung (The Coffeeshop coffee, The Restaurant Latin, The Bistro bistro, The Lounge smokehouse, The Bakery bakery). Target: 22-45yo kuliner Bandung.
+    prompt = f"""{await _company_context()}
 
 Halaman: {body.page_name} | URL: {body.path}
 Konteks: {body.page_context or 'Website FnB Group'}
@@ -213,11 +213,7 @@ Kembalikan JSON saja (no markdown):
 {{"primary_intent":"commercial|informational|navigational|transactional","intent_explanation":"1 kalimat","keyword_clusters":[{{"cluster_name":"nama","keywords":["kw1","kw2","kw3"],"intent":"commercial","estimated_volume":"medium","competition":"medium"}}],"suggested_title":"title 50-60 karakter","suggested_description":"desc 150-160 karakter dgn CTA","suggested_og_title":"OG title max 70 karakter","suggested_og_description":"OG desc max 200 karakter","focus_keywords":["kw1","kw2","kw3"],"lsi_keywords":["lsi1","lsi2","lsi3"],"quick_wins":["tip1","tip2"],"search_intent_analysis":"2 kalimat"}}"""
 
     try:
-        from emergentintegrations.llm.chat import UserMessage
-        response = await asyncio.wait_for(
-            chat.send_message(UserMessage(text=prompt)),
-            timeout=LLM_CALL_TIMEOUT_SEC,
-        )
+        response = await asyncio.wait_for(_seo_llm(prompt, user_id=user["id"]), timeout=LLM_CALL_TIMEOUT_SEC) or ""
         import json
         # Clean up possible markdown code blocks
         clean = response.strip()
@@ -253,16 +249,16 @@ async def ai_generate_seo(body: AiGenerateIn, user=Depends(require_perm("admin.c
     AI SEO content generation: keywords + intent → title/description/OG content + JSON-LD outline.
     Falls back to template-based generation if key not configured.
     """
-    chat = await _get_llm_client()
-    if not chat:
-        return ok_envelope(_fallback_generate(body), meta={"ai_powered": False, "message": "AI tidak aktif (EMERGENT_LLM_KEY belum dikonfigurasi). Menggunakan template dasar."})
+    from services.ai import client as ai_client
+    if not await ai_client.is_available():
+        return ok_envelope(_fallback_generate(body), meta={"ai_powered": False, "message": "AI tidak aktif (ANTHROPIC_API_KEY belum diisi). Menggunakan template dasar."})
 
     intent_info = f"Intent utama: {body.intent}" if body.intent else ""
     suggestions_info = ""
     if body.suggestions:
         suggestions_info = f"Cluster keywords yang relevan: {', '.join([s.get('cluster_name','') for s in body.suggestions[:3]])}"
 
-    prompt = f"""FnB Group = multi-brand F&B premium di Bandung (The Coffeeshop coffee, The Restaurant Latin, The Bistro bistro, The Lounge smokehouse, The Bakery bakery).
+    prompt = f"""{await _company_context()}
 
 Halaman: {body.page_name} | URL: {body.path}
 Keywords: {body.keywords}
@@ -274,11 +270,7 @@ Kembalikan JSON saja (no markdown):
 {{"title":"title 50-60 karakter mengandung keyword & brand","description":"meta desc 148-158 karakter dgn CTA","og_title":"OG title max 65 karakter","og_description":"OG desc max 200 karakter","focus_keywords":["kw1","kw2","kw3"],"h1_suggestion":"H1 berbeda dari title","schema_type":"Restaurant|LocalBusiness|WebPage|Organization","content_tips":["tip1","tip2","tip3"]}}"""
 
     try:
-        from emergentintegrations.llm.chat import UserMessage
-        response = await asyncio.wait_for(
-            chat.send_message(UserMessage(text=prompt)),
-            timeout=LLM_CALL_TIMEOUT_SEC,
-        )
+        response = await asyncio.wait_for(_seo_llm(prompt, user_id=user["id"]), timeout=LLM_CALL_TIMEOUT_SEC) or ""
         import json
         clean = response.strip()
         if clean.startswith("```"):

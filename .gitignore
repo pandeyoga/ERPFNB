@@ -111,3 +111,7 @@ frontend/node_modules/.cache/default-development/2.pack
 scripts/ui_metrics/out/*.json
 scripts/ui_metrics/out/shots/
 scripts/ui_metrics/out/*.log
+
+# File upload lokal (STORAGE_BACKEND=local)
+/uploads/
+/backend/uploads/

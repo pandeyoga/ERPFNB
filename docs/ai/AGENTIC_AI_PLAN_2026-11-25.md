@@ -61,10 +61,13 @@ Fondasi pertama: **mengganti ketergantungan Emergent** — semua fitur AI sekara
 | 25 Nov | Tanggal sudah ada → **AI menilai duplikasi** |
 | 25 Nov | **Rekonsiliasi Finance** dengan bantuan AI |
 | 25 Nov | (Sebelumnya) Harga PO di atas acuan cukup peringatan; API harga lama dihapus; Outlet/Inventory Manager dapat akses Sourcing |
+| 25 Nov | D1 **B (Messages API)**, D2 Evolution API, D3 PIN + > Rp 10 jt via aplikasi, D4 riset web terbuka, D5 pengecualian aksi, D6 peringatan 80%, D9 semua Opus — **disetujui** |
+| 25 Nov | D7 **data gaji boleh dibaca AI** oleh peran yang berhak; D8 **semua brand** sekaligus (tanpa pilot) |
+| 25 Nov | Semua yang ada di sistem harus bisa dilakukan & diketahui AI, termasuk modul baru (mis. reservasi; kelak menu & resep + analisis/riset resep) |
 
 ---
 
-## 3. Keputusan terbuka (default sementara dipakai sampai diputuskan)
+## 3. Keputusan (D1–D9 — semua sudah diputuskan 25 Nov, lihat §2)
 
 | # | Keputusan | Default sementara | Catatan |
 |---|---|---|---|
@@ -94,6 +97,10 @@ lead time, kas/AP), autocomplete item/vendor.
 approval matrix, audit log, scheduler (APScheduler), notifikasi, uploads (object storage), impor Excel master
 (`excel_import_service`), WhatsApp kirim-saja (`whatsapp_service`: fonnte/twilio/meta), Telegram (webhook), Sourcing
 (acuan, penawaran, skor), tour (465 langkah) & bantuan inline, kontrak API POS (`docs/pos`).
+
+**Penyimpanan file** juga bergantung pada Emergent (`core/object_storage.py` → `integrations.emergentagent.com`), sehingga
+upload, foto struk, slip setoran, dan gambar CMS gagal di luar Emergent. **Diperbaiki di T1**: disk lokal (default) atau
+S3-compatible.
 
 **Ukuran API**: 698 endpoint — **362 baca, 336 tulis**; **164 endpoint tulis** menerima `dict` tanpa skema.
 
