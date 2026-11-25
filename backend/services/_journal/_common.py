@@ -215,3 +215,27 @@ async def resolve_payment_target(pm: dict | None, outlet_id: str | None, ba: dic
     if pm and pm.get("type") == "card":
         return await gl_mapping.resolve("cards_receivable")
     return await gl_mapping.resolve("cash_on_hand")
+
+
+async def resolve_receipt_target(pm: dict | None, outlet_id: str | None, ba: dict | None = None) -> str:
+    """Akun DEBIT untuk penerimaan PENJUALAN per metode bayar (jurnal Daily Sales).
+
+    Berbeda dari pembayaran keluar: uang non-tunai belum ada di kas — QRIS/e-wallet/kartu masuk piutang kartu (cair
+    ke bank T+1/T+2 dikurangi MDR), penjualan aplikasi delivery (GoFood/Grab/Shopee) masuk piutang marketplace (cair
+    sebagai payout setelah komisi). Sebelumnya QRIS jatuh ke Kas di Tangan sehingga kas fisik & setoran selisih.
+    """
+    from services import gl_mapping
+    if pm and pm.get("code") == "PETTY":
+        return await gl_mapping.resolve("petty_cash", scope_outlet_id=outlet_id)
+    if pm and pm.get("bank_account_id"):
+        ba = ba or await get_db().bank_accounts.find_one({"id": pm["bank_account_id"]})
+        if ba and ba.get("gl_account_id"):
+            return ba["gl_account_id"]
+    kind = (pm or {}).get("type")
+    if kind == "marketplace":
+        return await gl_mapping.resolve_or("marketplace_receivable", "cards_receivable")
+    if kind in ("card", "qris", "ewallet", "e-wallet", "edc"):
+        return await gl_mapping.resolve("cards_receivable")
+    if kind == "transfer":
+        return await gl_mapping.resolve_or("bank_default", "cash_on_hand")
+    return await gl_mapping.resolve("cash_on_hand")

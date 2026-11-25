@@ -96,7 +96,7 @@ def test_sales_import_dedupe_merge_and_rollback(db):
         assert b["target"] == "sales" and not b["missing"]
         assert {d["verdict"] for d in b["days"]} == {"baru"} and len(b["days"]) == 2
         assert {v["raw"]: v["id"] for v in b["value_maps_resolved"]["payment"]} == {
-            "Cash": "pm-cash", "Debit Card": "pm-card", "GoFood": None, "QRIS": "pm-qris"}
+            "Cash": "pm-cash", "Debit Card": "pm-card", "GoFood": "auto:GoFood", "QRIS": "pm-qris"}
         res = await service.commit(b["id"], SUPER)
         assert res["result"]["transactions"] == 4 and {d["status"] for d in res["result"]["days"]} == {"dibuat"}
         ds20 = await db.daily_sales.find_one({"outlet_id": "o-lounge", "sales_date": "2026-11-20"})
@@ -121,6 +121,10 @@ def test_sales_import_dedupe_merge_and_rollback(db):
         await service.commit(g["id"], SUPER)
         ds21 = await db.daily_sales.find_one({"outlet_id": "o-lounge", "sales_date": "2026-11-21", "deleted_at": None})
         assert ds21["grand_total"] == 104500 + 120000          # POS (dengan pajak) + GoFood baru (harga kotor)
+        gofood_pm = await db.payment_methods.find_one({"code": "GOFOOD"})
+        assert gofood_pm["type"] == "marketplace"                # dibuat otomatis → jurnal validasi seimbang
+        pays = {p["payment_method_id"]: p["amount"] for p in ds21["payment_breakdown"]}
+        assert pays[gofood_pm["id"]] == 104500 + 120000          # seluruh pesanan GoFood (POS & aplikasi) via platform
 
         # rollback GoFood → hari dihitung ulang dari transaksi POS saja; rollback POS → draf impor dihapus
         await service.rollback(g["id"], SUPER)

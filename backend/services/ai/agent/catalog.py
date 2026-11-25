@@ -44,9 +44,11 @@ READ_LIKE_POSTS = {
     "/api/forecasting/guard/check", "/api/tax/calculate", "/api/outlet-budget/precheck-pr",
     # Impor Cerdas: membuat/mengubah PRATINJAU batch (draf, belum menulis data bisnis) — commit tetap aksi tulis
     "/api/imports", "/api/imports/{batch_id}",
+    # AI Finance: analisis (OCR struk, rekonsiliasi) tidak membukukan apa pun
+    "/api/ai/finance/receipts/analyze", "/api/ai/finance/recon/{session_id}/analyze",
 }
 
-_HIGH = re.compile(r"/(post|approve|reject|validate|send|pay|reverse|close|cancel|receive|submit|lock|unlock|"
+_HIGH = re.compile(r"/(post|approve|reject|validate|send|pay|reverse|close|cancel|receive|submit|lock|unlock|apply|"
                    r"execute|disburse|settle|void|finalize|release)(/|$)|/grs$|/payments?(/|$)|payment-runs")
 _CRITICAL = re.compile(r"/(delete|bulk|import|restore|purge|reset|archive)(/|$)|payroll|/commit/")
 

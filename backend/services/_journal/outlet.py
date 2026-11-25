@@ -4,7 +4,7 @@ from typing import Optional
 from core.db import get_db
 from core.exceptions import ValidationError
 from services import gl_mapping
-from services._journal._common import _post_journal, resolve_payment_target
+from services._journal._common import _post_journal, resolve_payment_target, resolve_receipt_target
 
 
 async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
@@ -38,7 +38,7 @@ async def post_for_daily_sales(sales: dict, *, user_id: str) -> dict:
         pm = pm_lookup.get(pm_id)
         if not pm:
             continue
-        target = await resolve_payment_target(pm, outlet_id, ba_lookup.get(pm.get("bank_account_id")))
+        target = await resolve_receipt_target(pm, outlet_id, ba_lookup.get(pm.get("bank_account_id")))
         lines.append({
             "coa_id": target, "dr": amount, "cr": 0,
             "memo": f"Sales {sales['sales_date']} via {pm['name']}",

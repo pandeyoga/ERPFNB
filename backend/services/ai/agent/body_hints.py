@@ -34,9 +34,11 @@ BODY_HINTS: dict[str, str] = {
         ' "on": "YYYY-MM-DD", "source": "survey|manual|offers_median|import", "source_note": ""}'),
     # ---- Finance ----
     "POST /api/finance/journals/manual": (
-        '{"entry_date": "YYYY-MM-DD", "description": "", "outlet_id": "<id toko atau null untuk pusat>",'
-        ' "lines": [{"coa_id": "<id akun COA, bukan kode>", "dr": 0, "cr": 0, "memo": ""}]} — total debit harus'
-        ' sama dengan kredit; tiap baris hanya debit ATAU kredit; langsung terposting.'),
+        '{"entry_date": "YYYY-MM-DD", "description": "", "outlet_id": "<toko (dimensi P&L)>", '
+        '"lines": [{"coa_id": "<id akun postable>", "dr": 0, "cr": 0, "memo": ""}], '
+        '"attachment_ids": ["<bukti foto/PDF>"], "reference": {"vendor": "", "receipt_no": "", "total": 0, "date": "YYYY-MM-DD",'
+        ' "image_hash": ""}, "learn": {"pattern": "<nama vendor>", "coa_id": "<akun beban>"}} — total debit = kredit. '
+        'Untuk foto struk: pakai body "journal" dari POST /api/ai/finance/receipts/analyze apa adanya.'),
     "POST /api/ar/invoices": (
         '{"customer_id": "", "customer_name": "", "outlet_id": "", "invoice_date": "YYYY-MM-DD", "due_date":'
         ' "YYYY-MM-DD", "credit_terms_days": 30, "include_ppn": false, "notes": "",'
@@ -79,6 +81,10 @@ BODY_HINTS: dict[str, str] = {
         'entity: groups | brands | outlets | items | categories | vendors | employees | chart-of-accounts | '
         'tax-codes | payment-methods | bank-accounts | number-series | regions. Field mengikuti dokumen yang ada: '
         'baca dulu 1–2 contoh lewat GET /api/master/{entity}, lalu tiru field-nya (kode harus unik).'),
+    "POST /api/ai/finance/receipts/analyze": (
+        '{"attachment_ids": ["<foto/PDF struk>"], "payment": "cash|petty|bank|ap|<coa_id>", "outlet_id": "<toko>",'
+        ' "creditable_vat": null} — hanya membaca; hasilnya: usulan jurnal per lampiran.'),
+    "POST /api/ai/finance/recon/{session_id}/apply": '{"row_ids": ["<row_id dengan status usulan>"], "learn": true}',
     # ---- Impor Cerdas (file mentah → data) ----
     "POST /api/imports": (
         '{"attachment_id": "<attachment_id lampiran pengguna>", "target": "sales|bank (opsional, terdeteksi otomatis)",'

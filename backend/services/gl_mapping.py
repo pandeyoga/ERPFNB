@@ -67,6 +67,11 @@ _PAYROLL_ACCOUNTS = [
     # POS-02: restaurant tax (PB1/PBJT) is a regional tax liability, separate from PPN Keluaran (2110)
     ("pb1_payable", "2116", "Utang Pajak Restoran (PB1/PBJT)", "liability", "Cr", "2100"),
     ("bpjs_employer_expense", "5413", "Beban BPJS Perusahaan", "expense", "Dr", "5400"),
+    # Penjualan aplikasi delivery & rekonsiliasi bank (AI Finance, R3)
+    ("marketplace_receivable", "1121", "Piutang Marketplace (GoFood/Grab/Shopee)", "asset", "Dr", "1100"),
+    ("platform_commission", "5431", "Komisi Platform Delivery", "expense", "Dr", "5400"),
+    ("bank_charges", "5432", "Biaya Administrasi Bank", "expense", "Dr", "5400"),
+    ("interest_income", "4031", "Pendapatan Bunga Bank", "revenue", "Cr", "4000"),
 ]
 
 

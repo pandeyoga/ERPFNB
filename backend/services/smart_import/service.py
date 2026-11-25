@@ -96,6 +96,13 @@ def match_payment(raw: str, methods: list[dict]) -> Optional[str]:
     for m in methods:
         if r in (_norm(m.get("code")), _norm(m.get("name"))):
             return m["id"]
+    plat = engine.canonical_channel(raw)
+    if plat in DELIVERY:                       # GoFood/GrabFood/ShopeeFood → metode bayar marketplace platform itu
+        for m in methods:
+            if (m.get("type") == "marketplace" and plat.lower().replace("food", "") in
+                    (_norm(m.get("name")) + " " + _norm(m.get("code"))).replace(" ", "")):
+                return m["id"]
+        return None
     kind = engine.payment_kind(raw)
     if not kind:
         return None
@@ -239,9 +246,21 @@ async def _resolve(b: dict, ex: dict, user: dict, *, exclude_batch: Optional[str
             out_map[raw] = (vm.get("outlet") or {}).get(raw) or match_outlet(raw, outlets)
         else:   # file tanpa kolom/kop toko → toko dari opsi (atau konteks TopNav saat membuat batch)
             out_map[raw] = (vm.get("outlet") or {}).get("") or opts.get("outlet_id")
+    # Pesanan aplikasi delivery tanpa kolom bayar → dibayar lewat platform (piutang marketplace, cair sebagai payout)
+    for t in txs:
+        if not t["payment_raw"] and t["channel"] in DELIVERY and not t["wide_payments"]:
+            t["payment_raw"] = t["channel"]
     raws_pay = {t["payment_raw"] for t in txs if t["payment_raw"]} | {k for t in txs for k in t["wide_payments"]}
+    auto_new = []
     for raw in sorted(raws_pay):
         pay_map[raw] = (vm.get("payment") or {}).get(raw) or match_payment(raw, methods)
+        plat = engine.canonical_channel(raw)
+        if not pay_map[raw] and plat in DELIVERY:
+            pay_map[raw] = f"auto:{plat}"          # dibuat saat impor: metode bayar tipe marketplace
+            auto_new.append(plat)
+    if auto_new:
+        issues.append({"level": "info", "row": None, "pesan": f"Metode bayar {', '.join(sorted(set(auto_new)))} (tipe marketplace → "
+                                                              "Piutang Marketplace) akan dibuat otomatis saat impor"})
     allowed = {o["id"] for o in outlets}
     unmapped_out = [r or "(tanpa kolom toko)" for r, v in out_map.items() if not v or v not in allowed]
     if unmapped_out:
@@ -488,6 +507,27 @@ async def _commit_sales(b: dict, ex: dict, user: dict) -> dict:
     all_ok = [t for t in ex["transactions"] if t.get("outlet_id") and not t["dup"]]
     txs = [t for t in all_ok if (t["outlet_id"], t["business_date"]) in keep_days]
     skipped_days_tx = len(all_ok) - len(txs)
+    auto = {v for v in r["pay_map"].values() if v and str(v).startswith("auto:")}
+    created: dict[str, str] = {}
+    for key in auto:
+        plat = key.split(":", 1)[1]
+        code = re.sub(r"[^A-Z0-9]", "", plat.upper())[:12]
+        ex_m = await db.payment_methods.find_one({"code": code, "deleted_at": None}, {"_id": 0, "id": 1})
+        if ex_m:
+            created[key] = ex_m["id"]
+            continue
+        pid = str(uuid.uuid4())
+        await db.payment_methods.insert_one({"id": pid, "code": code, "name": plat, "type": "marketplace", "active": True,
+                                             "created_at": _now(), "created_by": user["id"], "deleted_at": None,
+                                             "notes": "Dibuat otomatis oleh Impor Cerdas (piutang marketplace)"})
+        await audit_log(user_id=user["id"], entity_type="payment_method", entity_id=pid, action="create",
+                        after={"code": code, "name": plat, "type": "marketplace", "via": "smart_import"})
+        created[key] = pid
+    for t in txs:
+        if t.get("payment_method_id") in created:
+            t["payment_method_id"] = created[t["payment_method_id"]]
+        if t.get("payment_split"):
+            t["payment_split"] = {created.get(k, k): v for k, v in t["payment_split"].items()}
     brand_of = {o["id"]: o.get("brand_id") for o in r["outlets"]}
     menu_cache: dict[tuple, str] = {}
     now = _now()
