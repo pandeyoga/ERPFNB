@@ -181,6 +181,18 @@
    "tours": []
   },
   {
+   "label": "Kualitas Data",
+   "path": "/ai/data-quality",
+   "perms": [
+    "admin.master_data.manage",
+    "inventory.view",
+    "procurement.vendor.read"
+   ],
+   "portal": "Asisten AI",
+   "section": "Kualitas Data",
+   "tours": []
+  },
+  {
    "label": "Persetujuan AI",
    "path": "/ai/approvals",
    "perms": [
@@ -993,6 +1005,11 @@
   ],
   "/ai/dashboard": [
    "ai.agent.use"
+  ],
+  "/ai/data-quality": [
+   "admin.master_data.manage",
+   "inventory.view",
+   "procurement.vendor.read"
   ],
   "/ai/import": [
    "import.smart.use"

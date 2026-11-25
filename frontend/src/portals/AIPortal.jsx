@@ -10,6 +10,7 @@ import AISettingsPage from "@/portals/ai/AISettingsPage";
 import AIDashboardPage from "@/portals/ai/AIDashboardPage";
 import AIImportPage from "@/portals/ai/AIImportPage";
 import AIWhatsAppPage from "@/portals/ai/AIWhatsAppPage";
+import AIDataQualityPage from "@/portals/ai/AIDataQualityPage";
 
 export default function AIPortal() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function AIPortal() {
       <Route path="dashboard" element={g("ai.agent.use", <AIDashboardPage />)} />
       <Route path="import" element={g("import.smart.use", <AIImportPage />)} />
       <Route path="whatsapp" element={g("ai.wa.use", <AIWhatsAppPage />)} />
+      <Route path="data-quality" element={g(["admin.master_data.manage", "inventory.view", "procurement.vendor.read"], <AIDataQualityPage />)} />
       <Route path="approvals" element={g("ai.agent.use", <AIActionsPage />)} />
       <Route path="settings" element={g("ai.agent.admin", <AISettingsPage />)} />
       <Route path="*" element={<Navigate to="/ai" replace />} />

@@ -75,6 +75,11 @@ export const ROUTE_PERMS = {
   "/ai/dashboard": [
     "ai.agent.use"
   ],
+  "/ai/data-quality": [
+    "admin.master_data.manage",
+    "inventory.view",
+    "procurement.vendor.read"
+  ],
   "/ai/import": [
     "import.smart.use"
   ],

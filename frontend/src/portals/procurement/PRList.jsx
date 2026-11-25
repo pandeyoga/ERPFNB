@@ -2,7 +2,10 @@
  *  ?status=<key> di URL memilih tab status awal (dipakai KPI di Procurement Overview). */
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Plus, FileText, Eye, Download } from "lucide-react";
+import { Plus, FileText, Eye, Download, PackageSearch } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import RestockAIDialog from "./RestockAIDialog";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
@@ -37,6 +40,9 @@ export default function PRList() {
   const [source, setSource] = useState("");
   const [page, setPage] = useState(1);
   const { downloading, exportXlsx } = useExcelExport();
+  const { can } = useAuth();
+  const [restockOpen, setRestockOpen] = useState(false);
+  const qc = useQueryClient();
 
   const filters = useMemo(() => {
     const f = {};
@@ -74,12 +80,20 @@ export default function PRList() {
             >
               <Download /> {downloading ? "Mengunduh…" : "Ekspor Excel"}
             </Button>
+            {can("procurement.pr.create") && (
+              <Button variant="outline" onClick={() => setRestockOpen(true)} data-testid="pr-restock-ai">
+                <PackageSearch /> Saran restock
+              </Button>
+            )}
             <Button asChild data-testid="pr-new">
               <Link to="/procurement/pr/new"><Plus /> Buat PR</Link>
             </Button>
           </>
         }
       />
+
+      <RestockAIDialog open={restockOpen} onOpenChange={setRestockOpen} outletId={outletId}
+        onCreated={() => qc.invalidateQueries({ queryKey: ["/procurement/prs"] })} />
 
       <div className="glass-card overflow-hidden" data-testid="pr-table-card">
         {/* Filter menempel pada tabel yang difilternya (DESIGN_SYSTEM §10.3). */}

@@ -1,7 +1,10 @@
 /** Journal List with filters: period, source_type, search, COA, dim_outlet. (7E mobile-card polish) */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, BookOpenCheck, Search, Eye, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, BookOpenCheck, Search, Eye, Download, ChevronLeft, ChevronRight, ScanText } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import ReceiptJournalDialog from "./ReceiptJournalDialog";
 import { usePaginatedList } from "@/hooks/useListQuery";
 import api, { unwrap } from "@/lib/api";
 import useExcelExport from "@/hooks/useExcelExport";
@@ -51,6 +54,9 @@ export default function JournalList() {
   const [sourceType, setSourceType] = useState("");
   const { outletId, setOutletId, scopedOutlets, allOutlets, params: scopeParams, isFullAccess, allLabel } = useOutletScope();
   const { scope } = useScope();
+  const { can } = useAuth();
+  const qc = useQueryClient();
+  const [receiptOpen, setReceiptOpen] = useState(false);
   // "Pusat" = jurnal tanpa toko & brand (AR, payroll, payment run); hanya bermakna di konteks Semua brand.
   const canPusat = isFullAccess && scope.level === "group";
   const [pusat, setPusat] = useState(false);
@@ -94,6 +100,8 @@ export default function JournalList() {
 
   return (
     <div data-testid="journal-list-page" className="space-y-3 lg:space-y-4">
+      <ReceiptJournalDialog open={receiptOpen} onOpenChange={setReceiptOpen}
+        onPosted={() => qc.invalidateQueries({ queryKey: ["/finance/journals"] })} />
       <PageHeader
         icon={BookOpenCheck}
         title="Journals"
@@ -108,6 +116,11 @@ export default function JournalList() {
             >
               <Download className="h-4 w-4" /> {downloading ? "Mengunduh..." : "Ekspor Excel"}
             </Button>
+            {can("finance.journal_entry.create") && can("ai.agent.use") && (
+              <Button variant="outline" onClick={() => setReceiptOpen(true)} data-testid="je-receipt-ai">
+                <ScanText className="h-4 w-4" /> Dari foto struk
+              </Button>
+            )}
             <Button asChild data-testid="je-new">
               <Link to="/finance/manual-journal">
                 <Plus className="h-4 w-4" /> Buat Manual Journal

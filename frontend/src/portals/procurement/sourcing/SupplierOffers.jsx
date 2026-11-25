@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Edit2, Plus, Tag, Trash2, Upload } from "lucide-react";
+import { Download, Edit2, Plus, Sparkles, Tag, Trash2, Upload } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import PriceListAIDialog from "./PriceListAIDialog";
 import { toast } from "sonner";
 import api, { unwrap, fetchAll } from "@/lib/api";
 import { fmtDate, fmtRp } from "@/lib/format";
@@ -36,6 +38,8 @@ export default function SupplierOffers() {
   const [editing, setEditing] = useState(null);
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const { can } = useAuth();
 
   const { data: offers = [], isLoading } = useQuery({
     queryKey: ["sourcing", "offers", status, region, search],
@@ -76,6 +80,7 @@ export default function SupplierOffers() {
         subtitle="Harga yang ditawarkan supplier beserta masa berlakunya. Penawaran RFQ masuk otomatis."
         actions={canOffers ? (
           <>
+            {can("ai.agent.use") && <Button variant="outline" onClick={() => setAiOpen(true)} data-testid="offers-ai-pricelist"><Sparkles /> Analisis price list (AI)</Button>}
             <Button variant="outline" onClick={() => setImportOpen(true)} data-testid="offers-import"><Upload /> Impor CSV</Button>
             <Button onClick={() => { setEditing(null); setOpen(true); }} data-testid="offers-add"><Plus /> Tambah Penawaran</Button>
           </>
@@ -100,6 +105,7 @@ export default function SupplierOffers() {
         />
       </div>
       <OfferDialog open={open} onOpenChange={setOpen} initial={editing} />
+      <PriceListAIDialog open={aiOpen} onOpenChange={setAiOpen} canSave={canOffers} onSaved={() => qc.invalidateQueries({ queryKey: ["sourcing"] })} />
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
