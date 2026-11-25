@@ -63,7 +63,12 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
 - Aksi tulis AI selalu lewat usulan → persetujuan pengguna (`agent/actions.py`), dijalankan sebagai pengguna itu.
 - Koleksi transaksi baru yang perlu dianalisis → tambah dataset (field whitelist + izin) di `agent/datasets.py`.
 - Setelah mengubah tour/navigasi/route guard: `python3 scripts/gen_ai_guide.py` (pengetahuan Pemandu).
-- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py` (tanpa jaringan).
+- Impor file mentah (POS, delivery, rekap Excel, mutasi bank): `services/smart_import/` — petakan berdasar nama + isi kolom
+  (kamus sinonim di `mapping.py`), jangan posisi; tambah contoh format baru ke `tests/smart_import_samples.py`.
+- WhatsApp: kirim lewat `services/whatsapp_service.py` (provider evolution/fonnte/twilio/meta); bot dua arah di
+  `services/wa_bot/` (aksi tetap lewat usulan + PIN).
+- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py`
+  (tanpa jaringan).
 
 ## Backend
 

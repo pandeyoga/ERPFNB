@@ -1,7 +1,7 @@
 # Rencana Pengembangan AI Agentic — FnB Group ERP (25 Nov 2026)
 
 Dokumen acuan sebelum pembangunan. Disusun dari diskusi dengan pemilik (25 Nov 2026), audit kode, dan riset
-(sumber di Lampiran). Status: **disetujui; D1–D9 diputuskan 25 Nov. R1 (T1–T3) selesai — lihat §13.1.**
+(sumber di Lampiran). Status: **disetujui; D1–D9 diputuskan 25 Nov. R1 (T1–T3) & R2 (T4–T5) selesai — lihat §13.1.**
 
 ---
 
@@ -494,8 +494,30 @@ kini per pengguna; polling GET `/api/ai/*` tidak lagi memakan kuota LLM; daily b
 (argumen hilang); generator jurnal tanpa tanggal hari ini & hanya 100 akun COA; SEO memakai brand demo hardcode;
 upload bergantung pada storage Emergent.
 
-**Berikutnya: R2** — T4 Impor Cerdas (riset format ekspor POS/marketplace/bank, pemetaan, cek duplikasi, detail per
-transaksi, master menu; resep & menu ketika modulnya ada) dan T5 WA MVP (Evolution API).
+**UI**: halaman `/ai` bergaya chatbot layar penuh (mirip Claude: riwayat di kiri, kolom percakapan di tengah, layar
+sambutan, mode Layar penuh); panel samping tetap ada di semua halaman.
+
+**R2 selesai** (commit c5f7ff6, a57941d, fedc338, c02fe92):
+
+| Tahap | Yang jadi | Lokasi |
+|---|---|---|
+| T4 | **Impor Cerdas** `/ai/import`: CSV/TXT/XLSX/XLS/HTML-as-xls; deteksi header, kop, baris total, sel gabung, encoding; angka & tanggal Indonesia/Inggris; pemetaan kolom berdasar nama + isi (kamus ID/EN → AI bila ragu → resep tersimpan per sumber); format lebar (channel/bayar per kolom); payout aplikasi delivery dideteksi dari angka; cut-off hari bisnis; void/refund; peringatan waktu di masa depan & total tidak konsisten. Cek duplikasi 4 lapis (file, transaksi, hari yang sudah ada: baru/sama/ganti/gabung/konflik/terkunci, pesanan ganda POS vs aplikasi). Simpan detail per struk & per item (`sales_transactions`, `sales_lines`) + rekap ke Daily Sales DRAF lewat validasi yang ada; rollback; master menu otomatis + alias (`/api/menu/items`). Mutasi bank → sesi rekonsiliasi (unggah di layar Rekonsiliasi Bank kini memakai parser yang sama). | `services/smart_import/`, `routers/smart_import.py`, `routers/menu_master.py` |
+| T5 | **Bot WhatsApp** (Evolution API): tautan nomor dengan kode dari aplikasi, tanya-jawab lewat agen yang sama, lampiran foto/PDF/Excel, laporan & grafik PNG dikirim balik, persetujuan "SETUJUI 1" setelah PIN (15 menit; > Rp10 jt via aplikasi), notifikasi penting, log pesan, cabut akses oleh admin. Halaman `/ai/whatsapp`. | `services/wa_bot/`, `services/whatsapp_service.py`, `routers/whatsapp_bot.py` |
+
+Riset format (T4): vendor POS/aplikasi delivery/bank tidak memublikasikan daftar kolom ekspor & formatnya berubah antar
+versi — karena itu mesin memetakan berdasarkan nama + isi kolom (bukan posisi), dengan 13 contoh format berbeda sebagai
+uji (`backend/tests/smart_import_samples.py`). Tambahkan contoh nyata dari pemilik ke kumpulan uji saat tersedia.
+
+**Memasang WhatsApp (Evolution API)**: jalankan Evolution API v2 (Docker) dengan nomor khusus bot → buat instance &
+scan QR → di ERP (Admin → Integrations/System settings, kategori whatsapp) isi `WHATSAPP_PROVIDER=evolution`,
+`EVOLUTION_API_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE`, `WHATSAPP_BOT_NUMBER`, `WHATSAPP_WEBHOOK_SECRET` →
+set webhook instance ke `https://<app>/api/wa/webhook?token=<WHATSAPP_WEBHOOK_SECRET>` dengan event `MESSAGES_UPSERT`
+(opsional `webhook_base64: true`). Gateway tidak resmi: risiko blokir nomor oleh WhatsApp — pakai nomor khusus,
+tanpa broadcast.
+
+**Berikutnya: R3** — T6 foto → jurnal, rekonsiliasi (bank, kanal bayar, marketplace, kas, AP) & tutup buku dengan AI;
+T7 AI Purchasing (riset harga, price list, restock/RFQ) & AI Auditor. Modul **Menu & Resep (BOM)** di atas master
+menu yang kini ada (resep, HPP, analisis/riset resep dengan AI).
 
 ## 14. Risiko & mitigasi
 
