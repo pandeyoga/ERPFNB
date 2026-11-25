@@ -515,9 +515,21 @@ set webhook instance ke `https://<app>/api/wa/webhook?token=<WHATSAPP_WEBHOOK_SE
 (opsional `webhook_base64: true`). Gateway tidak resmi: risiko blokir nomor oleh WhatsApp — pakai nomor khusus,
 tanpa broadcast.
 
-**Berikutnya: R3** — T6 foto → jurnal, rekonsiliasi (bank, kanal bayar, marketplace, kas, AP) & tutup buku dengan AI;
-T7 AI Purchasing (riset harga, price list, restock/RFQ) & AI Auditor. Modul **Menu & Resep (BOM)** di atas master
-menu yang kini ada (resep, HPP, analisis/riset resep dengan AI).
+**R3 selesai** (commit 39cf14e, cf8207b, 7856380 + UI):
+
+| Tahap | Yang jadi | Lokasi |
+|---|---|---|
+| T6 | **Foto/PDF struk → jurnal**: OCR (Claude), akun beban dari aturan kategorisasi → AI, PPN masukan opsional, cek bukti ganda (hash file, vendor+no struk, vendor+total+tanggal, kas kecil), jurnal manual menyimpan dimensi toko/brand/vendor + lampiran + referensi bukti, akun vendor dipelajari. **Rekonsiliasi bank dengan AI** (tombol *Analisis AI* di sesi rekonsiliasi): payout GoFood/Grab/Shopee banyak-ke-satu (1–7 hari, komisi otomatis), settlement QRIS/EDC − MDR, setoran tunai per toko, biaya/bunga/pajak bunga; sisa baris dijelaskan Claude + alasan bila belum cocok; usulan terpilih dibukukan & mutasi ditandai cocok; pola dipelajari (`recon_rules`). **Asisten tutup buku** (kartu *Kesiapan tutup buku* di Period Closing): checklist Daily Sales/GRNI/AP/rekonsiliasi/kas kecil/payroll/penyusutan + fluktuasi akun + ringkasan AI. | `services/ai_finance/`, `routers/ai_finance.py`, `portals/finance/AIReconPanel.jsx`, `CloseAssistantCard.jsx` |
+| T7 | **AI Purchasing**: analisis price list supplier (foto/PDF/Excel/teks) — cocokkan ke master item, normalisasi kemasan (dus 12×1 L → per liter), banding harga GR terakhir, penawaran vendor lain & acuan wilayah, deteksi kenaikan/shrinkflation, dampak per bulan, draf negosiasi, payload penawaran; saran restock (PR per toko, PO per vendor). **AI Auditor** (terjadwal 03:30 + tombol Scan anomali): invoice ganda, bukti ganda, pemecahan pembelian di bawah batas, maker = checker, jurnal di luar jam/angka bulat/reversal dekat tutup buku, pola kas kecil (Benford, pencilan), harga PO di atas acuan → masuk Anomaly Feed. | `services/ai_purchasing/`, `services/ai_audit/`, `routers/ai_ops.py` |
+| Menu | **Menu & Resep** `/outlet/menu`: master menu per brand (termasuk dari impor penjualan), resep/BOM dengan konversi satuan & susut, HPP per porsi dari harga GR 90 hari/penawaran, food cost % (peringatan > 35%), simulasi saat mengedit, versi resep, riset/analisis resep lewat Asisten AI. | `services/menu_recipe_service.py`, `routers/menu_master.py`, `portals/outlet/MenuRecipePage.jsx` |
+
+Perbaikan akuntansi yang ditemukan: penerimaan QRIS/kartu/e-wallet di jurnal Daily Sales dulu masuk **Kas di tangan**
+→ kini Piutang kartu/QRIS; penjualan GoFood/Grab/Shopee → Piutang marketplace (akun 1121, komisi 5431, biaya bank
+5432, bunga 4031 dibuat otomatis); impor penjualan delivery dulu tanpa metode bayar (jurnal tidak seimbang) → metode
+marketplace dibuat otomatis; jurnal manual dulu membuang dimensi toko/brand; unggah mutasi bank kini menerima XLSX/XLS.
+
+Diuji: 41 tes AI tanpa jaringan + alur UI nyata (rekonsiliasi: 3 jurnal penyesuaian dibukukan & baris cocok; resep:
+simulasi HPP; tutup buku dengan ringkasan Claude).
 
 ## 14. Risiko & mitigasi
 

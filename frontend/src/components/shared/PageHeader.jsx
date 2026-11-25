@@ -119,7 +119,7 @@ export default function PageHeader({
           </div>
         </div>
         {(slot || hubSlots || ex?.extras) && (
-          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-end shrink-0 ml-auto" data-testid="page-header-actions">
+          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap justify-end shrink-0 max-w-full ml-auto" data-testid="page-header-actions">
             {ex?.extras && <ExtrasSlot ex={ex} />}
             {slot}
             {hubSlots && <div ref={ctx.setActionsEl} className="contents" />}

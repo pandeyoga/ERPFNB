@@ -34,6 +34,7 @@ import { InlineHelp } from "@/components/shared/InlineHelp";
 import PageHeader from "@/components/shared/PageHeader";
 import { GroupLevelBadge } from "@/components/shared/ScopeControls";
 import EmptyState from "@/components/shared/EmptyState";
+import CloseAssistantCard from "./CloseAssistantCard";
 
 const PHASES = [
   {
@@ -172,6 +173,7 @@ export default function PeriodClosingHub() {
       </PageHeader>
 
       <div className="space-y-3">
+        <CloseAssistantCard />
         {PHASES.map((phase, idx) => {
           const Icon = phase.icon;
           const isActive = idx === activeIdx;

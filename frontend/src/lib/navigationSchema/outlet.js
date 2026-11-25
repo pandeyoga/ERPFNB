@@ -1,6 +1,6 @@
 /** navigationSchema/outlet.js — Outlet portal navigation. */
 
-import { LayoutDashboard, Receipt, History, PiggyBank, Sparkles, Boxes } from "lucide-react";
+import { LayoutDashboard, Receipt, History, PiggyBank, Sparkles, Boxes, ChefHat } from "lucide-react";
 
 export const outletNav = {
   id: "outlet",
@@ -49,6 +49,14 @@ export const outletNav = {
       icon: Sparkles,
       items: [
         { id: "crm-hub", name: "CRM & Reservations", path: "/outlet/crm", matchPaths: ["/outlet/reservations", "/outlet/voucher-redeem", "/outlet/loyalty"] },
+      ],
+    },
+    {
+      id: "menu",
+      name: "Menu & Resep",
+      icon: ChefHat,
+      items: [
+        { id: "menu-recipe", name: "Menu & Resep", path: "/outlet/menu" },
       ],
     },
     {

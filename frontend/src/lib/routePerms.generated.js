@@ -238,6 +238,9 @@ export const ROUTE_PERMS = {
     "inventory.movement.read",
     "inventory.view"
   ],
+  "/outlet/menu": [
+    "menu.item.read"
+  ],
   "/outlet/petty-cash": [
     "finance.cash.read",
     "finance.cash.update",

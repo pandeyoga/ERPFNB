@@ -692,6 +692,16 @@
    ]
   },
   {
+   "label": "Menu & Resep",
+   "path": "/outlet/menu",
+   "perms": [
+    "menu.item.read"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Menu & Resep",
+   "tours": []
+  },
+  {
    "label": "Stock Check",
    "path": "/outlet/inventory/stock-check",
    "perms": [
@@ -1146,6 +1156,9 @@
   "/outlet/inventory/usage": [
    "inventory.movement.read",
    "inventory.view"
+  ],
+  "/outlet/menu": [
+   "menu.item.read"
   ],
   "/outlet/petty-cash": [
    "finance.cash.read",

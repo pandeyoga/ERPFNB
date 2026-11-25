@@ -28,6 +28,7 @@ import { OutletScopeProvider } from "./OutletScopeContext";
 import { useLayoutEffect, useState } from "react";
 import OutletScopeHeader, { OutletScopeCompact } from "./OutletScopeHeader";
 import { PageHeaderExtrasProvider, usePageHeaderExtrasConsumed } from "@/components/shared/PageHeader";
+import MenuRecipePage from "@/portals/outlet/MenuRecipePage";
 
 /** Pemilih outlet tampil di header halaman (PageHeader). Bar penuh hanya untuk halaman tanpa PageHeader. */
 function OutletScopeFallback() {
@@ -50,6 +51,7 @@ export default function OutletPortal() {
         <Route index element={<OutletHome />} />
         {/* CRM hub memanggil reservasi & loyalty — tanpa izin itu halaman hanya berisi 403 */}
         <Route path="crm" element={g(["crm.view", "reservations.read"], <CRMHub />)} />
+        <Route path="menu" element={g("menu.item.read", <MenuRecipePage />)} />
         <Route path="daily-sales" element={g("outlet.daily_sales.read", <DailySalesList />)} />
         <Route path="daily-sales/new" element={g("outlet.daily_sales.read", <DailySalesForm />)} />
         <Route path="daily-sales/:id" element={g("outlet.daily_sales.read", <DailySalesDetail />)} />

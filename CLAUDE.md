@@ -65,9 +65,14 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
 - Setelah mengubah tour/navigasi/route guard: `python3 scripts/gen_ai_guide.py` (pengetahuan Pemandu).
 - Impor file mentah (POS, delivery, rekap Excel, mutasi bank): `services/smart_import/` — petakan berdasar nama + isi kolom
   (kamus sinonim di `mapping.py`), jangan posisi; tambah contoh format baru ke `tests/smart_import_samples.py`.
+- AI Finance `services/ai_finance/` (struk → jurnal, rekonsiliasi bank AI, checklist tutup buku); AI Purchasing
+  `services/ai_purchasing/` (price list, restock); AI Auditor `services/ai_audit/` → Anomaly Feed. Penerimaan penjualan
+  per metode bayar → akun lewat `_journal/_common.resolve_receipt_target` (QRIS/kartu ≠ kas, marketplace → piutang marketplace).
+- Menu & Resep: `services/menu_recipe_service.py` (HPP dari GR/penawaran, konversi satuan `ai_purchasing/units.py`).
 - WhatsApp: kirim lewat `services/whatsapp_service.py` (provider evolution/fonnte/twilio/meta); bot dua arah di
   `services/wa_bot/` (aksi tetap lewat usulan + PIN).
-- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py`
+- Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py
+  tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py`
   (tanpa jaringan).
 
 ## Backend

@@ -137,7 +137,9 @@ async def _propose(row: dict, kind: str, platform: Optional[str], ctx: dict) -> 
             if best is None or cand[:3] < best[:3]:
                 best = cand
         if not best:
-            return None
+            return {"explanation": f"Tidak ada penjualan {platform or 'marketplace'} 1–7 hari sebelumnya yang cocok (payout = 65–95% "
+                                   "penjualan, atau sama dengan payout per transaksi). Cek Daily Sales / impor laporan platform.",
+                    "lines": None}
         _, _, _, days, booked, conf, why = best
         booked = booked or amt
         fee = round(booked - amt, 2)
@@ -158,7 +160,8 @@ async def _propose(row: dict, kind: str, platform: Optional[str], ctx: dict) -> 
                 if best is None or cand < best:
                     best = cand
         if not best:
-            return None
+            return {"explanation": "Tidak ada penjualan QRIS/kartu/e-wallet 1–4 hari sebelumnya yang cocok (settlement = 97–100% "
+                                   "penjualan non-tunai). Cek metode pembayaran di Daily Sales.", "lines": None}
         _, _, _, days, booked = best
         mdr = round(booked - amt, 2)
         lines = [{"coa_id": bank, "dr": amt, "cr": 0, "memo": "Settlement QRIS/kartu"}]
@@ -177,7 +180,8 @@ async def _propose(row: dict, kind: str, platform: Optional[str], ctx: dict) -> 
                         "explanation": f"Setoran tunai penjualan {dd} toko {ctx['outlets'].get(oid, oid)} {_rp(booked)}",
                         "lines": [{"coa_id": bank, "dr": amt, "cr": 0, "memo": f"Setoran tunai {dd}", "dim_outlet": oid},
                                   {"coa_id": gm["cash_on_hand"], "dr": 0, "cr": amt, "memo": f"Setoran tunai {dd}", "dim_outlet": oid}]}
-    return None
+    return {"explanation": "Tidak ada penjualan tunai satu toko dengan nominal sama (±Rp1.000) 0–3 hari sebelumnya — setoran "
+                           "gabungan beberapa hari/toko perlu dicocokkan manual.", "lines": None}
 
 
 async def _ai_explain(rows: list[dict], ctx: dict, user_id: str) -> dict[str, dict]:
@@ -272,6 +276,12 @@ async def analyze(session_id: str, user: dict, *, use_ai: bool = True) -> dict:
                           {"coa_id": coa, "dr": 0, "cr": amt, "memo": item["description"][:120]}])
                 item.update({"status": "usulan", "lines": lines, "confidence": round(float(a.get("yakin") or 0) * 0.9, 2),
                              "explanation": a.get("penjelasan"), "source": "ai"})
+    coa_ids = {ln["coa_id"] for it in out for ln in it.get("lines") or [] if ln.get("coa_id")}
+    labels = {c["id"]: f"{c.get('code')} {c.get('name')}" async for c in db.chart_of_accounts.find(
+        {"id": {"$in": list(coa_ids)}}, {"_id": 0, "id": 1, "code": 1, "name": 1})}
+    for it in out:
+        for ln in it.get("lines") or []:
+            ln["coa_label"] = labels.get(ln.get("coa_id"), ln.get("coa_id"))
     analysis = {"id": str(uuid.uuid4()), "session_id": session_id, "user_id": user["id"], "rows": out,
                 "created_at": datetime.now(timezone.utc).isoformat()}
     await db.recon_analyses.insert_one(analysis)

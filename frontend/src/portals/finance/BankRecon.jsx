@@ -1,6 +1,6 @@
 /** Bank Reconciliation wizard — list, upload, review-matches, commit. Sprint F v2: summary, bulk-accept, exception, CSV export. */
 import { useEffect, useRef, useState } from "react";
-import { FileSpreadsheet, Upload, CheckCircle2, X, RefreshCw, Check, PlusCircle, ListChecks, ArrowLeft, AlertCircle, Zap, FileDown, RotateCcw, History, ChevronDown, Landmark, Rows3, Banknote } from "lucide-react";
+import { FileSpreadsheet, Upload, CheckCircle2, X, RefreshCw, Check, PlusCircle, ListChecks, ArrowLeft, AlertCircle, Zap, FileDown, RotateCcw, History, ChevronDown, Landmark, Rows3, Banknote, Sparkles } from "lucide-react";
 import api, { unwrap } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { fmtRp, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import AIReconPanel from "@/portals/finance/AIReconPanel";
 
 // ── Audit history config ────────────────────────────────────────────────────
 const ACTION_HISTORY_CONFIG = {
@@ -203,6 +205,8 @@ function BankReconDetail({ sessionId, onBack }) {
   const [showReverseDialog, setShowReverseDialog] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(true);
+  const [showAI, setShowAI] = useState(false);
+  const { can } = useAuth();
 
   async function load() {
     setLoading(true);
@@ -393,6 +397,11 @@ function BankReconDetail({ sessionId, onBack }) {
           </Button>
           {!isCommitted && (
             <>
+              {can("finance.journal_entry.create") && (
+                <Button variant="outline" onClick={() => setShowAI(true)} data-testid="br-ai-analyze">
+                  <Sparkles className="h-4 w-4" />Analisis AI
+                </Button>
+              )}
               <Button variant="outline" onClick={() => setShowBulkDialog(true)} data-testid="br-bulk-accept">
                 <Zap className="h-4 w-4" />Terima massal
               </Button>
@@ -430,6 +439,8 @@ function BankReconDetail({ sessionId, onBack }) {
           empty={<div className="p-6"><EmptyState icon={FileSpreadsheet} title="Tidak ada baris" description="Statement ini tidak memiliki baris transaksi." /></div>}
         />
       </div>
+
+      <AIReconPanel sessionId={sessionId} open={showAI} onOpenChange={setShowAI} onApplied={load} />
 
       {isCommitted && (
         <div className="glass-card p-4 bg-emerald-500/5 border-emerald-500/20">
