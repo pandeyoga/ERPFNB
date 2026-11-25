@@ -16,6 +16,16 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Asisten AI (/ai) = halaman chat layar penuh: tanpa padding/max-width, scroll diatur halaman itu sendiri.
+  // Mode "Layar penuh" di halaman itu menyembunyikan TopNav & sidebar (event "aurora-ai-focus").
+  const aiImmersive = /^\/ai\/?$/.test(location.pathname);
+  const [aiFocus, setAiFocus] = useState(false);
+  useEffect(() => {
+    const on = (e) => setAiFocus(!!e.detail);
+    window.addEventListener("aurora-ai-focus", on);
+    return () => window.removeEventListener("aurora-ai-focus", on);
+  }, []);
+  const hideChrome = aiImmersive && aiFocus;
 
   // Global outlet guard — warn when outlet staff hits a URL with out-of-scope outlet_id
   useEffect(() => {
@@ -84,7 +94,7 @@ export default function AppShell() {
         </a>
 
         {/* Level 1: Top Navigation */}
-        <TopNav onSearchOpen={() => setSearchOpen(true)} />
+        {!hideChrome && <TopNav onSearchOpen={() => setSearchOpen(true)} />}
 
         {/* Mobile Sidebar (Sheet) — navigasi terpadu */}
         <MobileSidebar />
@@ -92,7 +102,7 @@ export default function AppShell() {
         {/* Level 2 & 3: Sidebar + Content */}
         <div className="flex-1 flex w-full min-h-0 overflow-hidden">
           {/* Level 2: Left Sidebar terpadu (Desktop only) */}
-          <Sidebar />
+          {!hideChrome && <Sidebar />}
           
           {/* Content area */}
           <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
@@ -100,9 +110,10 @@ export default function AppShell() {
             <main
               id="main-content"
               tabIndex={-1}
-              className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-5 py-3 lg:py-4 pb-20 lg:pb-6"
+              className={aiImmersive ? "flex-1 min-h-0 flex flex-col overflow-hidden"
+                : "flex-1 overflow-y-auto px-3 sm:px-4 lg:px-5 py-3 lg:py-4 pb-20 lg:pb-6"}
             >
-              <div className="max-w-[1600px] mx-auto w-full">
+              <div className={aiImmersive ? "flex-1 min-h-0 flex flex-col w-full" : "max-w-[1600px] mx-auto w-full"}>
                 {/* Fix 2026-05-27: Removed AnimatePresence + motion.div wrapper.
                    framer-motion v11 + React 19 + mode="wait" has a known bug
                    where the new motion.div gets stuck at exit state (opacity: 0,

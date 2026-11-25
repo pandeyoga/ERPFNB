@@ -1,41 +1,64 @@
-/** AgentChat — isi percakapan Asisten AI (dipakai panel TopNav & halaman /ai).
+/** AgentChat — isi percakapan Asisten AI, gaya chatbot (mirip antarmuka Claude).
  *
- * Menampilkan jawaban (markdown aman), jejak langkah agen, kartu usulan aksi (Setujui/Tolak/ubah isi), tombol tautan
- * halaman (+tour), file hasil, dan composer dengan lampiran (foto struk, PDF, Excel/CSV).
+ * variant:
+ *  - "page"  : halaman /ai layar penuh — kolom percakapan di tengah (maks. ±768px), layar sambutan dengan kotak tulis
+ *              di tengah + saran, jawaban AI tanpa gelembung (avatar + teks), pesan pengguna dalam gelembung.
+ *  - "panel" : panel samping TopNav — tata letak sama, ukuran lebih rapat.
+ * Isi jawaban: markdown aman, jejak langkah agen, grafik (bisa disematkan), kartu usulan aksi (Setujui/Tolak/Ubah isi),
+ * tombol tautan halaman (+tour), file hasil. Kotak tulis: lampiran foto/PDF/Excel, Enter kirim, Shift+Enter baris baru.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bot, Paperclip, SendHorizonal, X, ExternalLink, FileDown, Loader2, ListChecks, ChevronDown, ChevronRight, CheckCheck, Pin } from "lucide-react";
+import {
+  Bot, Paperclip, ArrowUp, X, ExternalLink, FileDown, Loader2, ListChecks, ChevronDown, ChevronRight,
+  CheckCheck, Pin, Copy, Check, FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import EmptyState from "@/components/shared/EmptyState";
 import { useScope } from "@/contexts/ScopeContext";
 import { useTour } from "@/contexts/tour";
 import { cn } from "@/lib/utils";
+import api, { unwrapError } from "@/lib/api";
+import { canOpenPath } from "@/lib/unifiedNav";
+import { useAuth } from "@/lib/auth";
 import Markdown from "./Markdown";
 import ActionCard from "./ActionCard";
 import ChartBlock from "./ChartBlock";
 import { downloadAgentFile } from "./useAgentChat";
-import api, { unwrapError } from "@/lib/api";
-import { canOpenPath } from "@/lib/unifiedNav";
-import { useAuth } from "@/lib/auth";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,application/pdf,.csv,.xlsx,.xls,text/csv";
 
-const SUGGESTIONS = [
-  "Bandingkan sales per toko minggu ini vs lalu",
-  "Apa yang perlu saya setujui hari ini?",
-  "Buat reservasi 4 orang besok jam 19.00",
-  "Bagaimana cara membuat purchase order?",
+export const SUGGESTIONS = [
+  { label: "Bandingkan sales per toko minggu ini vs lalu", icon: "📊" },
+  { label: "Apa yang perlu saya setujui hari ini?", icon: "✅" },
+  { label: "Buat laporan PDF penjualan bulan ini", icon: "📄" },
+  { label: "Buat reservasi 4 orang besok jam 19.00", icon: "🗓️" },
+  { label: "Cek harga beli daging sapi vs harga pasar", icon: "🔎" },
+  { label: "Bagaimana cara membuat purchase order?", icon: "🧭" },
 ];
+
+function greeting(name) {
+  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Asia/Jakarta" }).format(new Date()));
+  const part = h < 11 ? "pagi" : h < 15 ? "siang" : h < 18 ? "sore" : "malam";
+  const first = String(name || "").replace(/^(pak|bu|bapak|ibu)\s+/i, "").split(/\s+/)[0];
+  return `Selamat ${part}${first ? `, ${first}` : ""}`;
+}
+
+function Avatar({ small }) {
+  return (
+    <span className={cn("shrink-0 rounded-lg grad-aurora flex items-center justify-center", small ? "h-6 w-6" : "h-7 w-7")} aria-hidden>
+      <Bot className={cn("text-white", small ? "h-3.5 w-3.5" : "h-4 w-4")} />
+    </span>
+  );
+}
 
 function Steps({ steps }) {
   const [open, setOpen] = useState(false);
   if (!steps?.length) return null;
   return (
     <div className="text-xs text-muted-foreground">
-      <button type="button" className="inline-flex items-center gap-1 hover:text-foreground" onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="inline-flex items-center gap-1 hover:text-foreground" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <ListChecks className="h-3.5 w-3.5" /> {steps.length} langkah kerja AI
       </button>
@@ -61,7 +84,7 @@ function ChartCard({ spec, sessionId }) {
     }
   };
   return (
-    <div className="rounded-md border border-border p-3 space-y-2" data-testid="ai-chart-card">
+    <div className="rounded-xl border border-border bg-background p-3 space-y-2" data-testid="ai-chart-card">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium">{spec.title}</p>
         {canOpenPath(user, "/ai/dashboard") && (
@@ -70,12 +93,31 @@ function ChartCard({ spec, sessionId }) {
           </Button>
         )}
       </div>
-      <ChartBlock spec={spec} height={220} />
+      <ChartBlock spec={spec} height={240} />
     </div>
   );
 }
 
-function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, busy, sessionId }) {
+function CopyButton({ text }) {
+  const [done, setDone] = useState(false);
+  if (!text) return null;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setDone(true);
+      setTimeout(() => setDone(false), 1500);
+    } catch {
+      toast.error("Tidak bisa menyalin");
+    }
+  };
+  return (
+    <Button size="icon-sm" variant="ghost" onClick={copy} aria-label={done ? "Tersalin" : "Salin jawaban"} title="Salin" data-testid="ai-copy">
+      {done ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+    </Button>
+  );
+}
+
+function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, busy, sessionId, page }) {
   const { startTour } = useTour();
   const ui = d.ui || [];
   const acts = ui.filter((u) => u.type === "action").map((u) => actions?.[u.action_id]).filter(Boolean);
@@ -84,142 +126,206 @@ function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, bus
   const files = ui.filter((u) => u.type === "file");
   const charts = ui.filter((u) => u.type === "chart");
   return (
-    <div className="space-y-2" data-testid="ai-msg-assistant">
-      <Steps steps={d.steps} />
-      {d.text && <Markdown text={d.text} onNavigate={onNavigate} />}
-      {d.error && <p className="text-xs text-rose-700 dark:text-rose-400">{d.error}</p>}
-      {charts.map((c, i) => <ChartCard key={`c${i}`} spec={c.spec} sessionId={sessionId} />)}
-      {acts.length > 0 && (
-        <div className="space-y-2">
-          {acts.map((a) => <ActionCard key={a.id} action={a} onDecide={onDecide} disabled={busy} />)}
-          {pendingIds.length > 1 && (
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => onDecideBatch(pendingIds, "approve")} disabled={busy} data-testid="ai-approve-all">
-                <CheckCheck className="h-3.5 w-3.5" /> Setujui semua ({pendingIds.length})
+    <div className="flex gap-3" data-testid="ai-msg-assistant">
+      <Avatar small={!page} />
+      <div className="flex-1 min-w-0 space-y-3">
+        <Steps steps={d.steps} />
+        {d.text && <Markdown text={d.text} onNavigate={onNavigate} className={page ? "text-[15px] leading-7 space-y-3" : "leading-6"} />}
+        {d.error && <p className="text-xs text-rose-700 dark:text-rose-400">{d.error}</p>}
+        {charts.map((c, i) => <ChartCard key={`c${i}`} spec={c.spec} sessionId={sessionId} />)}
+        {acts.length > 0 && (
+          <div className="space-y-2">
+            {acts.map((a) => <ActionCard key={a.id} action={a} onDecide={onDecide} disabled={busy} />)}
+            {pendingIds.length > 1 && (
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => onDecideBatch(pendingIds, "approve")} disabled={busy} data-testid="ai-approve-all">
+                  <CheckCheck className="h-3.5 w-3.5" /> Setujui semua ({pendingIds.length})
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+        {(links.length > 0 || files.length > 0) && (
+          <div className="flex flex-wrap gap-2">
+            {links.map((l, i) => (
+              <Button key={`l${i}`} size="sm" variant="outline" data-testid="ai-link"
+                onClick={() => { onNavigate(l.path); if (l.tour_id) setTimeout(() => startTour(l.tour_id), 700); }}>
+                <ExternalLink className="h-3.5 w-3.5" /> {l.label}
               </Button>
-            </div>
-          )}
-        </div>
-      )}
-      {(links.length > 0 || files.length > 0) && (
-        <div className="flex flex-wrap gap-2">
-          {links.map((l, i) => (
-            <Button key={`l${i}`} size="sm" variant="outline" data-testid="ai-link"
-              onClick={() => { onNavigate(l.path); if (l.tour_id) setTimeout(() => startTour(l.tour_id), 700); }}>
-              <ExternalLink className="h-3.5 w-3.5" /> {l.label}
-            </Button>
-          ))}
-          {files.map((f) => (
-            <Button key={f.file_id || f.id} size="sm" variant="outline" onClick={() => downloadAgentFile(f)} data-testid="ai-file">
-              <FileDown className="h-3.5 w-3.5" /> {f.filename}
-            </Button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function UserMessage({ text, files }) {
-  return (
-    <div className="flex justify-end" data-testid="ai-msg-user">
-      <div className="max-w-[85%] rounded-lg bg-primary/10 px-3 py-2 text-sm whitespace-pre-wrap break-words">
-        {text}
-        {files?.length > 0 && <p className="mt-1 text-xs text-muted-foreground">📎 {files.join(", ")}</p>}
+            ))}
+            {files.map((f) => (
+              <Button key={f.file_id || f.id} size="sm" variant="outline" onClick={() => downloadAgentFile(f)} data-testid="ai-file">
+                <FileDown className="h-3.5 w-3.5" /> {f.filename}
+              </Button>
+            ))}
+          </div>
+        )}
+        {d.text && <div className="-ml-2"><CopyButton text={d.text} /></div>}
       </div>
     </div>
   );
 }
 
-export default function AgentChat({ chat, compact = false, onNavigated }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const scope = useScope();
+function UserMessage({ text, files, page }) {
+  return (
+    <div className="flex justify-end" data-testid="ai-msg-user">
+      <div className={cn("max-w-[85%] rounded-2xl bg-muted px-4 py-2.5 whitespace-pre-wrap break-words", page ? "text-[15px] leading-7" : "text-sm")}>
+        {text}
+        {files?.length > 0 && (
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><FileText className="h-3.5 w-3.5" /> {files.join(", ")}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Kotak tulis gaya Claude: lampiran di atas, textarea tumbuh otomatis, tombol lampiran kiri & kirim kanan. */
+function Composer({ onSubmit, busy, page, autoFocus, placeholder }) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState([]);
   const fileRef = useRef(null);
-  const endRef = useRef(null);
+  const taRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
+  }, [text]);
+  useEffect(() => { if (autoFocus) taRef.current?.focus(); }, [autoFocus]);
+
+  const submit = () => {
+    const m = text.trim();
+    if ((!m && !files.length) || busy) return;
+    onSubmit(m, files);
+    setText("");
+    setFiles([]);
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-background shadow-sm focus-within:border-ring/60 transition-colors" data-testid="ai-composer">
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-3 pt-3">
+          {files.map((f, i) => (
+            <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 h-7 text-xs max-w-[220px]">
+              <FileText className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{f.name}</span>
+              <button type="button" aria-label={`Hapus lampiran ${f.name}`} onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <Textarea ref={taRef} value={text} onChange={(e) => setText(e.target.value)} rows={1}
+        placeholder={placeholder || "Tanya, analisis, atau minta dikerjakan…"}
+        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
+        className={cn("min-h-0 resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 px-4",
+          page ? "pt-4 pb-2 md:text-[15px] max-h-56" : "pt-3 pb-1 max-h-44")}
+        aria-label="Pesan untuk Asisten AI" data-testid="ai-input" />
+      <div className="flex items-center justify-between gap-2 px-2 pb-2">
+        <input ref={fileRef} type="file" multiple accept={ACCEPT} className="hidden" data-testid="ai-file-input"
+          onChange={(e) => { setFiles((x) => [...x, ...Array.from(e.target.files || [])].slice(0, 10)); e.target.value = ""; }} />
+        <Button size="icon-sm" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Lampirkan file (foto, PDF, Excel)" title="Lampirkan foto, PDF, atau Excel" data-testid="ai-attach">
+          <Paperclip className="h-4 w-4" />
+        </Button>
+        <div className="flex items-center gap-2">
+          {page && <span className="hidden md:inline text-xs text-muted-foreground">Enter kirim · Shift+Enter baris baru</span>}
+          <Button size="icon-sm" onClick={submit} disabled={busy || (!text.trim() && !files.length)} aria-label="Kirim" data-testid="ai-send">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AgentChat({ chat, variant, compact = false, onNavigated }) {
+  const page = (variant || (compact ? "panel" : "page")) === "page";
+  const navigate = useNavigate();
+  const location = useLocation();
+  const scope = useScope();
+  const { user } = useAuth();
+  const scrollRef = useRef(null);
   const { session, busy, steps, pending, error, send, decide, decideBatch, loading } = chat;
   const display = useMemo(() => (session?.display || []).filter((d) => !(d.role === "user" && d.auto)), [session]);
+  const empty = !loading && !display.length && !pending;
 
-  useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [display.length, steps.length, pending]);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [display.length, steps.length, pending, busy]);
 
   const go = (path) => { navigate(path); onNavigated?.(path); };
 
-  const submit = async (msg) => {
-    const m = (msg ?? text).trim();
-    if ((!m && !files.length) || busy) return;
-    const fs = files;
-    setText(""); setFiles([]);
+  const submit = async (m, fs = []) => {
     const sp = scope.outlet ? { outlet_id: scope.outlet.id, outlet_name: scope.outlet.name }
       : scope.brand ? { brand_id: scope.brand.id, brand_name: scope.brand.name } : null;
     await send({ message: m, files: fs, context: { path: location.pathname + location.search, title: document.title }, scope: sp });
   };
 
-  const fileNames = (d) => (d.attachments || []).length ? [`${d.attachments.length} lampiran`] : [];
+  const fileNames = (d) => ((d.attachments || []).length ? [`${d.attachments.length} lampiran`] : []);
+  const col = page ? "w-full max-w-3xl mx-auto px-4" : "w-full px-4";
+  const disclaimer = (
+    <p className="text-xs text-muted-foreground text-center">AI bisa keliru — periksa angka penting. Aksi tulis selalu menunggu persetujuan Anda.</p>
+  );
 
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className={cn("flex-1 min-h-0 overflow-y-auto space-y-4", compact ? "px-4 py-3" : "px-1 py-2")} data-testid="ai-chat-log" aria-live="polite">
-        {loading && <p className="text-sm text-muted-foreground">Memuat percakapan…</p>}
-        {!loading && !display.length && !pending && (
-          <div className="space-y-3">
-            <EmptyState icon={Bot} title="Tanya, analisis, atau minta dikerjakan"
-              description="AI bisa membaca data sesuai izin Anda, mencari di web, membaca foto/PDF/Excel, dan menyiapkan aksi (buat/ubah/hapus) yang Anda setujui dulu." />
-            <div className="flex flex-col gap-1.5">
-              {SUGGESTIONS.map((s) => (
-                <Button key={s} size="sm" variant="outline" className="justify-start truncate" onClick={() => submit(s)} data-testid="ai-suggestion">
-                  {s}
-                </Button>
-              ))}
+  // Layar sambutan: kotak tulis di tengah (gaya Claude)
+  if (empty) {
+    return (
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col" data-testid="ai-chat-log">
+        <div className={cn(col, "flex-1 flex flex-col justify-center gap-5 py-8")}>
+          <div className={cn("flex items-center gap-3", page ? "justify-center" : "")}>
+            <Avatar />
+            <div>
+              <h2 className={cn("font-semibold tracking-tight", page ? "text-2xl md:text-3xl" : "text-lg")}>{greeting(user?.full_name)}</h2>
+              <p className="text-sm text-muted-foreground">Apa yang bisa saya bantu hari ini?</p>
             </div>
           </div>
-        )}
-        {display.map((d, i) => (d.role === "user"
-          ? <UserMessage key={i} text={d.text} files={fileNames(d)} />
-          : <AssistantMessage key={i} d={d} actions={session?.actions} onDecide={decide} onDecideBatch={decideBatch} onNavigate={go} busy={busy} sessionId={session?.id} />))}
-        {pending && <UserMessage text={pending.text} files={pending.files} />}
-        {busy && (
-          <div className="flex items-start gap-2 text-sm text-muted-foreground" data-testid="ai-working">
-            <Loader2 className="h-4 w-4 animate-spin mt-0.5" />
-            <div className="space-y-0.5">
-              <p>AI sedang bekerja…</p>
-              {steps.slice(-4).map((s, i) => <p key={i} className="text-xs">• {s}</p>)}
-            </div>
-          </div>
-        )}
-        {error && <p className="text-sm text-rose-700 dark:text-rose-400" role="alert">{error}</p>}
-        <div ref={endRef} />
-      </div>
-
-      <div className={cn("border-t border-border space-y-2", compact ? "p-3" : "pt-3")}>
-        {files.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {files.map((f, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 h-6 text-xs">
-                {f.name}
-                <button type="button" aria-label={`Hapus lampiran ${f.name}`} onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}>
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
+          <Composer onSubmit={submit} busy={busy} page={page} autoFocus={page} />
+          <div className={cn("flex flex-wrap gap-2", page ? "justify-center" : "")}>
+            {SUGGESTIONS.slice(0, page ? 6 : 4).map((s) => (
+              <Button key={s.label} size="sm" variant="outline" onClick={() => submit(s.label)} disabled={busy} data-testid="ai-suggestion">
+                <span aria-hidden>{s.icon}</span> {s.label}
+              </Button>
             ))}
           </div>
-        )}
-        <div className="flex items-end gap-2">
-          <input ref={fileRef} type="file" multiple accept={ACCEPT} className="hidden" data-testid="ai-file-input"
-            onChange={(e) => { setFiles((x) => [...x, ...Array.from(e.target.files || [])].slice(0, 10)); e.target.value = ""; }} />
-          <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} aria-label="Lampirkan file (foto, PDF, Excel)" data-testid="ai-attach">
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 2 : 3}
-            placeholder="Tulis pertanyaan atau perintah… (Enter kirim, Shift+Enter baris baru)"
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
-            className="flex-1 resize-none" aria-label="Pesan untuk Asisten AI" data-testid="ai-input" />
-          <Button size="icon" onClick={() => submit()} disabled={busy || (!text.trim() && !files.length)} aria-label="Kirim" data-testid="ai-send">
-            <SendHorizonal className="h-4 w-4" />
-          </Button>
+          {page && (
+            <p className="text-xs text-muted-foreground text-center max-w-xl mx-auto">
+              Membaca data sesuai izin Anda di semua modul, mencari di web, membaca foto struk/PDF/Excel, membuat grafik &amp;
+              laporan Excel/PDF, dan menyiapkan aksi (buat/ubah/hapus) yang Anda setujui dulu.
+            </p>
+          )}
+          {error && <p className="text-sm text-rose-700 dark:text-rose-400 text-center" role="alert">{error}</p>}
         </div>
-        <p className="text-xs text-muted-foreground">AI bisa keliru — periksa angka penting. Aksi tulis selalu menunggu persetujuan Anda.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto" data-testid="ai-chat-log" aria-live="polite">
+        <div className={cn(col, page ? "py-6 space-y-7" : "py-4 space-y-5")}>
+          {loading && <p className="text-sm text-muted-foreground">Memuat percakapan…</p>}
+          {display.map((d, i) => (d.role === "user"
+            ? <UserMessage key={i} text={d.text} files={fileNames(d)} page={page} />
+            : <AssistantMessage key={i} d={d} actions={session?.actions} onDecide={decide} onDecideBatch={decideBatch}
+                onNavigate={go} busy={busy} sessionId={session?.id} page={page} />))}
+          {pending && <UserMessage text={pending.text} files={pending.files} page={page} />}
+          {busy && (
+            <div className="flex gap-3" data-testid="ai-working">
+              <Avatar small={!page} />
+              <div className="space-y-1 text-sm text-muted-foreground pt-0.5">
+                <p className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> AI sedang bekerja…</p>
+                {steps.slice(-4).map((s, i) => <p key={i} className="text-xs pl-6">{s}</p>)}
+              </div>
+            </div>
+          )}
+          {error && <p className="text-sm text-rose-700 dark:text-rose-400" role="alert">{error}</p>}
+        </div>
+      </div>
+      <div className={cn(col, page ? "pb-4 pt-2 space-y-2" : "pb-3 pt-2 space-y-1.5")}>
+        <Composer onSubmit={submit} busy={busy} page={page} placeholder="Balas Asisten AI…" />
+        {disclaimer}
       </div>
     </div>
   );

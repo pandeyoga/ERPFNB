@@ -51,9 +51,12 @@ function Panel({ user }) {
 
   return (
     <>
-      <Button size="icon" variant="ghost" onClick={() => setOpen(true)} aria-label="Buka Asisten AI" title="Asisten AI" data-testid="open-ai-assistant">
-        <Bot className="h-4 w-4" />
-      </Button>
+      {/* Layar sempit: TopNav penuh → panel lewat menu "Asisten AI" (halaman layar penuh) */}
+      <div className="hidden sm:flex">
+        <Button size="icon" variant="ghost" onClick={() => setOpen(true)} aria-label="Buka Asisten AI" title="Asisten AI" data-testid="open-ai-assistant">
+          <Bot className="h-4 w-4" />
+        </Button>
+      </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-full sm:max-w-[480px] p-0 gap-0 flex flex-col" data-testid="ai-panel">
           <div className="flex items-center gap-2 px-4 pt-4 pb-3 pr-12 border-b border-border">

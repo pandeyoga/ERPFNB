@@ -14,7 +14,8 @@ export default function AIPortal() {
   if (!user) return null;
   const g = makeGate(user);
   return (
-    <div data-testid="ai-portal">
+    // "contents": halaman chat /ai mengisi tinggi layar (flex dari AppShell diteruskan ke halaman)
+    <div data-testid="ai-portal" className="contents">
       <Routes>
         <Route index element={g("ai.agent.use", <AIChatPage />)} />
       <Route path="dashboard" element={g("ai.agent.use", <AIDashboardPage />)} />
