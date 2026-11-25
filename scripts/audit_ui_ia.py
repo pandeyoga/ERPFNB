@@ -9,14 +9,14 @@ Mencegah UI-RC (lihat UI_IA_PARITY_GUARDRAILS.md):
   - Discoverability: route yang tidak ada di sidebar nav (selain tab/detail/new)
 
 CARA PAKAI:
-  python3 /app/scripts/audit_ui_ia.py
-  python3 /app/scripts/audit_ui_ia.py --strict   # exit 1 jika ada portal > MAX_ITEMS
+  python3 scripts/audit_ui_ia.py
+  python3 scripts/audit_ui_ia.py --strict   # exit 1 jika ada portal > MAX_ITEMS
 
 Catatan: heuristik. Gunakan sebagai gate review, bukan kebenaran absolut.
 """
 import re, glob, os, sys, collections
 
-FE = '/app/frontend/src'
+FE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'frontend', 'src')
 NAV_DIR = f'{FE}/lib/navigationSchema'
 MAX_ITEMS = 12
 STRICT = '--strict' in sys.argv

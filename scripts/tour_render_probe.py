@@ -24,7 +24,7 @@ run as SUPER_ADMIN to maximize visibility. Missing targets on data-driven pages
 usually mean "no data available", not a broken tour.
 
 Env:
-  PREVIEW_URL (default https://repo-sync-tour.preview.emergentagent.com)
+  PREVIEW_URL (default http://localhost:3000)
   ADMIN_EMAIL, ADMIN_PASSWORD (default admin@fnbgroup.id / Demo@2026)
 
 Exit 0 if PASS+PARTIAL >= 90% of testable routes (any FAIL counts).

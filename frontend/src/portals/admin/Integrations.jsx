@@ -3,7 +3,7 @@
  * Single page where admin manages ALL external integrations:
  *  - Telegram (bot token + webhook)
  *  - Email (Resend)
- *  - AI / LLM (Emergent universal + direct provider keys)
+ *  - AI / LLM (direct provider keys, e.g. ANTHROPIC_API_KEY)
  *  - WhatsApp (Fonnte / Twilio / Meta)
  *  - App Branding (name, logo, color)
  *  - Custom (anything else)

@@ -4,25 +4,6 @@
 @tailwind utilities;
 
 /* ============================================
-   HIDE PLATFORM BADGE (FnB Group ERP branding)
-   ============================================ */
-#emergent-badge,
-a[href*="emergent.sh"],
-[id*="emergent"],
-[class*="emergent-badge"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  top: -9999px !important;
-  left: -9999px !important;
-}
-
-/* ============================================
    DESIGN TOKENS
    ============================================ */
 @layer base {
