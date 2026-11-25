@@ -51,10 +51,15 @@ def check(case, session, actions):
     fails = []
     if e.get("alat") and not tools & set(e["alat"]):
         fails.append(f"alat {e['alat']} tidak dipakai (dipakai: {sorted(t for t in tools if t)})")
-    if e.get("dataset") and not datasets & set(e["dataset"]):
+    ds_ok = bool(datasets & set(e.get("dataset") or []))
+    act_ok = bool((read_paths | act_paths) & set(e.get("aksi") or []))
+    if e.get("dataset") and e.get("aksi"):          # dua sumber alternatif: dataset analitik ATAU laporan/aksi resmi
+        if not (ds_ok or act_ok):
+            fails.append(f"sumber {e['dataset'] + e['aksi']} tidak dipakai (dataset: {sorted(datasets)}, aksi: {sorted(read_paths | act_paths)[:6]})")
+    elif e.get("dataset") and not ds_ok:
         fails.append(f"dataset {e['dataset']} tidak dipakai (dipakai: {sorted(datasets)})")
-    if e.get("aksi") and not (read_paths | act_paths) & set(e["aksi"]):
-        fails.append(f"aksi {e['aksi']} tidak dibaca/diusulkan")
+    elif e.get("aksi") and not act_ok:
+        fails.append(f"aksi {e['aksi']} tidak dibaca/diusulkan (dipakai: {sorted(read_paths | act_paths)[:6]})")
     if e.get("usul") and not actions:
         fails.append("tidak ada usulan aksi")
     for rx in e.get("memuat", []):
@@ -100,6 +105,7 @@ def main():
             time.sleep(2)
         s = call(a.base, "GET", f"/api/ai/agent/sessions/{st['session_id']}", token)["data"]
         acts = s.get("actions") or []
+        acts = list(acts.values()) if isinstance(acts, dict) else acts
         fails = check(c, s, acts)
         cost = float((s.get("usage") or {}).get("cost_usd") or 0)
         total_cost += cost

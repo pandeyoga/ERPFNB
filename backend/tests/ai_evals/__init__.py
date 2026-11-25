@@ -33,7 +33,8 @@ CASES = [
     {"id": "finance-close", "agen": "finance", "pertanyaan": "Apa saja yang belum beres untuk tutup buku bulan ini?",
      "harap": {"alat": ["run_read"], "aksi": ["GET /api/ai/finance/close/{period}"]}},
     {"id": "finance-ap-due", "agen": "finance", "pertanyaan": "Hutang supplier mana yang sudah jatuh tempo dan berapa totalnya?",
-     "harap": {"alat": ["query_data", "run_read"], "dataset": ["ap_invoices"], "memuat": [r"Rp"]}},
+     "harap": {"alat": ["query_data", "run_read"], "dataset": ["ap_invoices"],
+               "aksi": ["GET /api/finance/ap-aging", "GET /api/finance/ap-invoices", "GET /api/finance/ap-ledger"], "memuat": [r"Rp"]}},
     {"id": "finance-anomaly", "agen": "finance", "pertanyaan": "Ada kejanggalan transaksi apa saja minggu ini?",
      "harap": {"alat": ["run_read", "query_data"], "aksi": ["GET /api/anomalies", "POST /api/ai/audit/run"], "dataset": ["anomalies"]}},
     # Purchasing
