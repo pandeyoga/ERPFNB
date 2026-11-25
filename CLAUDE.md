@@ -73,11 +73,17 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
   Otomasi `services/ai/automations.py` (job `ai_automations` tiap menit, jalan dengan izin pembuat); privasi
   `services/ai/privacy.py` (mask_pii, retensi, data saya); Data Steward `services/ai_steward/`. Kasus uji agen baru →
   `backend/tests/ai_evals` (jalankan `scripts/ai_eval.py`, berbiaya).
+- Rekonsiliasi lanjutan `services/ai_finance/reconcile.py`; agen domain `services/ai_domain/` + persona chat
+  `agent/personas.py`; Impor Cerdas target data lain `services/smart_import/records.py` (tambah target: kamus di `mapping.py`
+  TARGETS/REQUIRED/RECORD_TARGETS + preview/commit/rollback di records.py).
+- Endpoint baru wajib lolos `tests/test_ai_action_coverage.py` (tidak boleh 500 lewat agen dengan body kosong/id tak dikenal —
+  validasi field wajib pakai `core.exceptions.require_fields`).
 - WhatsApp: kirim lewat `services/whatsapp_service.py` (provider evolution/fonnte/twilio/meta); bot dua arah di
   `services/wa_bot/` (aksi tetap lewat usulan + PIN).
 - Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py
   tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py tests/test_ai_steward.py
-  tests/test_ai_knowledge.py tests/test_ai_automations.py tests/test_ai_quality.py`
+  tests/test_ai_knowledge.py tests/test_ai_automations.py tests/test_ai_quality.py tests/test_ai_action_coverage.py
+  tests/test_ai_reconcile.py tests/test_ai_auditor_more.py tests/test_ai_domain.py tests/test_smart_import_records.py`
   (tanpa jaringan).
 
 ## Backend

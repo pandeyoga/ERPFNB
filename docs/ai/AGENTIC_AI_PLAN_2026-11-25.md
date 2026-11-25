@@ -547,6 +547,18 @@ Uji eval dengan Claude sungguhan (data demo): SOP → jawaban berkutipan, "ingat
 per kasus. Opsional yang butuh server pemilik: kotak masuk email (IMAP), voice note (server Whisper/STT), gateway
 WhatsApp (Evolution API).
 
+**Penyempurnaan setelah R4 (25 Nov 2026)**:
+
+| Area | Yang jadi | Lokasi |
+|---|---|---|
+| Semua aksi | Audit 648 aksi katalog lewat jalur eksekusi agen: 12 endpoint galat 500 (field wajib tidak dicek, analitik CRM kosong, accrual tanpa GL mapping) → kini 400 berpesan jelas (`core.exceptions.require_fields`); RFQ/lowongan tidak tersimpan kosong; modul Payment Request lama keluar dari katalog. Tes regresi: semua endpoint staf ada di katalog + petunjuk body, tidak ada aksi yang crash lewat agen, CRUD lewat usulan → persetujuan. Uji di data demo: 25/27 operasi CRUD lintas domain sukses (2 ditolak validasi bisnis yang benar). | `tests/test_ai_action_coverage.py` |
+| Rekonsiliasi | Finance → **Rekonsiliasi**: statement supplier vs hutang (foto/PDF/Excel), 3-way match PO–GR–invoice, persediaan kartu stok vs GL (dengan asal selisih per jenis jurnal/mutasi), kas kecil, transfer antar toko, settlement EDC/QRIS vs POS; ekspor PDF/Excel. **Usulan accrual** (beban rutin & gaji + jurnal balik) di kartu tutup buku. | `services/ai_finance/reconcile.py`, `close.py` |
+| AI Auditor | + rekening supplier berubah lalu dibayar, supplier baru dibayar besar, invoice/GR ≠ PO, selisih opname berulang, jurnal manual ke akun sensitif (dikelompokkan); jalan tiap 3 jam. | `services/ai_audit/auditor.py` |
+| Agen domain | Pemilih agen di chat (Umum, Finance, Purchasing, Inventory, Outlet, HR, Analis, Pemandu). Inventory → **Pemakaian & Waste** (teoretis vs aktual, waste, saran transfer); Outlet → kartu **Briefing toko**; HR → kartu **Insight SDM** (labor cost %, cakupan cuti); Menu & Resep → **Menu engineering**. | `services/ai_domain/`, `services/ai/agent/personas.py` |
+| Impor Cerdas | 10 jenis data baru: master item/supplier/pelanggan, pembelian historis (riwayat atau posting GR), hasil opname, saldo awal GL/hutang/piutang/stok, budget — pemetaan nama+isi, padanan referensi, status per baris, rollback. | `services/smart_import/records.py` |
+
+Kumpulan uji: 37 kasus (termasuk lampiran file & persona) — `python3 scripts/ai_eval.py ...`.
+
 ## 14. Risiko & mitigasi
 
 | Risiko | Mitigasi |

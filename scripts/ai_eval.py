@@ -26,6 +26,18 @@ def call(base, method, path, token=None, body=None, timeout=120):
         return json.loads(r.read() or b"{}")
 
 
+def upload(base, token, path):
+    boundary = "----aievalboundary"
+    data = path.read_bytes()
+    body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"category\"\r\n\r\ngeneral\r\n"
+            f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{path.name}\"\r\n"
+            f"Content-Type: text/csv\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
+    req = urllib.request.Request(base + "/api/uploads", method="POST", data=body,
+                                 headers={"Authorization": f"Bearer {token}", "content-type": f"multipart/form-data; boundary={boundary}"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return json.loads(r.read())["data"]["id"]
+
+
 def check(case, session, actions):
     e = case["harap"]
     disp = [d for d in session.get("display", []) if d.get("role") == "assistant"]
@@ -73,7 +85,11 @@ def main():
             print(f"Batas biaya ${a.max_cost} tercapai — berhenti.")
             break
         t0 = time.time()
-        st = call(a.base, "POST", "/api/ai/agent/chat", token, {"message": c["pertanyaan"]})["data"]
+        atts = []
+        if c.get("lampiran"):
+            atts.append(upload(a.base, token, Path(__file__).resolve().parents[1] / "backend" / "tests" / "ai_evals" / c["lampiran"]))
+        body = {"message": c["pertanyaan"], "attachments": atts, "context": {"path": "/ai", "agent": c.get("persona") or "umum"}}
+        st = call(a.base, "POST", "/api/ai/agent/chat", token, body)["data"]
         while True:
             r = call(a.base, "GET", f"/api/ai/agent/runs/{st['run_id']}", token)["data"]
             if r["status"] != "running":

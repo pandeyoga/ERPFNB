@@ -135,7 +135,15 @@ def test_eval_cases_are_valid(app_catalog):
     from tests.ai_evals import CASES
     assert len(CASES) >= 20 and len({c["id"] for c in CASES}) == len(CASES)
     agents = {c["agen"] for c in CASES}
-    assert {"pemandu", "analis", "finance", "purchasing", "inventory", "hr", "pengetahuan", "aksi"} <= agents
+    assert {"pemandu", "analis", "finance", "purchasing", "inventory", "hr", "pengetahuan", "aksi", "outlet", "impor"} <= agents
+    from pathlib import Path
+    from services.ai.agent import personas
+    base = Path(__file__).parent / "ai_evals"
+    for c in CASES:
+        if c.get("lampiran"):
+            assert (base / c["lampiran"]).exists(), c["id"]
+        if c.get("persona"):
+            assert any(p["id"] == c["persona"] for p in personas.PERSONAS), c["id"]
     paths = {(o.method, o.path) for o in catalog.catalog()}
     for c in CASES:
         e = c["harap"]
