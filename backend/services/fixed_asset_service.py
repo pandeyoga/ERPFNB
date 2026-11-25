@@ -36,6 +36,8 @@ async def next_asset_code(category: str) -> str:
 # ────────────────────────────────────────────────
 
 async def create_asset(payload: dict, *, user_id: str) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "name", "purchase_date")
     db = get_db()
     category = payload.get("category", "OTHER")
     code = payload.get("asset_code") or await next_asset_code(category)

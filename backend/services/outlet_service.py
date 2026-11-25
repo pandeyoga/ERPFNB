@@ -442,6 +442,8 @@ async def petty_cash_balance(outlet_id: str) -> float:
 
 
 async def add_petty_cash(payload: dict, *, user: dict) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "outlet_id")
     db = get_db()
     outlet_id = payload["outlet_id"]
     from core.security import enforce_outlet_scope
@@ -555,6 +557,8 @@ async def list_urgent_purchases(
 
 
 async def create_urgent_purchase(payload: dict, *, user: dict) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "outlet_id")
     db = get_db()
     outlet_id = payload["outlet_id"]
     from core.security import enforce_outlet_scope

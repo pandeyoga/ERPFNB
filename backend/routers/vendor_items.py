@@ -1,7 +1,7 @@
 """Vendor Items router — vendor item catalog management."""
 from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
-from core.exceptions import ok_envelope
+from core.exceptions import ok_envelope, require_fields
 from core.security import require_any_perm, require_perm
 from services import vendor_item_service
 
@@ -79,6 +79,7 @@ async def manual_upsert(
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
     """Manually add/update a vendor-item with price."""
+    require_fields(payload, "vendor_id", "item_id")
     result = await vendor_item_service.upsert_vendor_item(
         vendor_id=payload["vendor_id"],
         item_id=payload["item_id"],

@@ -2,7 +2,7 @@
 from typing import Optional
 from fastapi import APIRouter, Body, Depends, Query
 from fastapi.responses import Response
-from core.exceptions import ok_envelope, ValidationError as AuroraException
+from core.exceptions import ok_envelope, ValidationError as AuroraException, require_fields
 from core.security import require_perm
 from services import market_list_service, vendor_item_service
 
@@ -29,6 +29,7 @@ async def create_quarter(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "year", "quarter")
     return ok_envelope(await market_list_service.create_quarter(
         year=int(payload["year"]),
         quarter=int(payload["quarter"]),
@@ -110,6 +111,7 @@ async def approve_pending_item(
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
     """Approve a pending_review item: assign category + optionally set ref price."""
+    require_fields(payload, "category_id")
     return ok_envelope(await market_list_service.approve_pending_item(
         item_id=item_id,
         category_id=payload["category_id"],
@@ -167,6 +169,7 @@ async def set_ref_price(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "quarter_id", "item_id", "ref_price")
     return ok_envelope(await market_list_service.set_ref_price(
         quarter_id=payload["quarter_id"],
         item_id=payload["item_id"],
@@ -182,6 +185,7 @@ async def bulk_set_ref_prices(
     payload: dict = Body(...),
     user: dict = Depends(require_perm("procurement.market_list.manage")),
 ):
+    require_fields(payload, "quarter_id")
     return ok_envelope(await market_list_service.bulk_set_ref_prices(
         quarter_id=payload["quarter_id"],
         prices=payload.get("prices", []),

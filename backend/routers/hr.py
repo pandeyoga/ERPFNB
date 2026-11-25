@@ -510,6 +510,8 @@ async def create_job_listing(
     user: dict = Depends(require_perm("hr.advance.approve")),
 ):
     """Create a new job listing."""
+    from core.exceptions import require_fields
+    require_fields(payload, "title")
     from core.db import get_db
     from datetime import datetime, timezone
     import uuid

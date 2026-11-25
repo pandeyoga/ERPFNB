@@ -42,6 +42,16 @@ class ConflictError(AuroraException):
     code = "CONFLICT"
 
 
+def require_fields(payload: Any, *fields: str) -> None:
+    """Field wajib di body dict → 400 dengan pesan jelas (bukan KeyError → 500). Dipakai juga oleh Asisten AI untuk
+    memperbaiki usulannya sendiri."""
+    if not isinstance(payload, dict):
+        raise ValidationError("Body harus berupa objek JSON")
+    missing = [f for f in fields if payload.get(f) in (None, "")]
+    if missing:
+        raise ValidationError(f"Field wajib belum diisi: {', '.join(missing)}", field=missing[0])
+
+
 def ok_envelope(data: Any = None, meta: dict | None = None) -> dict:
     return {"success": True, "data": data, "errors": None, "meta": meta}
 

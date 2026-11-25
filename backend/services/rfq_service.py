@@ -18,6 +18,9 @@ RFQ_STATUSES = ["draft", "sent", "quotes_received", "accepted", "cancelled"]
 
 
 async def create_rfq(data: dict, user: dict) -> dict:
+    from core.exceptions import ValidationError
+    if not data.get("items") and not data.get("pr_ids"):
+        raise ValidationError("RFQ butuh minimal 1 item (items) atau PR sumber (pr_ids)", field="items")
     db = get_db()
     now = datetime.now(timezone.utc).isoformat()
     items = []

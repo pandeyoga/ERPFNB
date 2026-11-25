@@ -11,6 +11,8 @@ from services._budget._common import _enrich_lines, _check_editable, _now
 
 
 async def create_budget(payload: dict, *, user_id: str) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "period")
     db = get_db()
     lines = await _enrich_lines(payload.get("lines", []))
     scope = payload.get("scope", "outlet")

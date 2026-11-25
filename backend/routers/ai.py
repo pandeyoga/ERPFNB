@@ -263,6 +263,11 @@ async def exec_qa_delete(
     return ok_envelope({"deleted": deleted})
 
 
+async def ai_client_status() -> dict:
+    from services.ai import client as ai_client
+    return await ai_client.status()
+
+
 @router.get("/exec-qa/tools")
 async def exec_qa_tools(
     user: dict = Depends(require_perm("ai.exec_qa.use")),
@@ -274,8 +279,8 @@ async def exec_qa_tools(
             {"name": k, "params": v["params"], "desc": v["desc"]}
             for k, v in ai_executive_qa_service.TOOL_REGISTRY.items()
         ],
-        "model": ai_executive_qa_service.MODEL,
-        "provider": ai_executive_qa_service.PROVIDER,
+        "model": (await ai_client_status())["model"],
+        "provider": "anthropic",
     })
 
 

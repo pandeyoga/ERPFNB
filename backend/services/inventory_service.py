@@ -565,6 +565,8 @@ async def get_opname(id_: str) -> dict:
 
 
 async def start_opname(payload: dict, *, user: dict) -> dict:
+    from core.exceptions import require_fields
+    require_fields(payload, "outlet_id")
     db = get_db()
     outlet_id = payload["outlet_id"]
     today = _biz_today()
