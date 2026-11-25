@@ -115,3 +115,6 @@ scripts/ui_metrics/out/*.log
 # File upload lokal (STORAGE_BACKEND=local)
 /uploads/
 /backend/uploads/
+
+# Kunci enkripsi pengaturan yang dibuat otomatis saat boot (core/secrets.py) — rahasia, jangan di-commit
+/.app_secret
