@@ -139,6 +139,38 @@
    ]
   },
   {
+   "label": "Percakapan",
+   "path": "/ai",
+   "perms": [
+    "ai.agent.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Percakapan",
+   "tours": [
+    "ai-assistant"
+   ]
+  },
+  {
+   "label": "Persetujuan AI",
+   "path": "/ai/approvals",
+   "perms": [
+    "ai.agent.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Persetujuan AI",
+   "tours": []
+  },
+  {
+   "label": "Pemakaian & Pengaturan",
+   "path": "/ai/settings",
+   "perms": [
+    "ai.agent.admin"
+   ],
+   "portal": "Asisten AI",
+   "section": "Pemakaian & Pengaturan",
+   "tours": []
+  },
+  {
    "label": "Overview",
    "path": "/executive",
    "perms": [],
@@ -912,6 +944,15 @@
   "/admin/user-management": [
    "admin.audit_log",
    "admin.user"
+  ],
+  "/ai": [
+   "ai.agent.use"
+  ],
+  "/ai/approvals": [
+   "ai.agent.use"
+  ],
+  "/ai/settings": [
+   "ai.agent.admin"
   ],
   "/executive/ai-qa": [
    "ai.exec_qa.use"
@@ -4007,6 +4048,29 @@
     {
      "content": "Muat ulang antrean. Di mobile, swipe ← → pada kartu untuk approve/reject; reject wajib isi alasan (jejak audit).",
      "title": "Refresh"
+    }
+   ]
+  },
+  {
+   "description": "Tanya, analisis, baca foto/PDF/Excel, dan minta AI menyiapkan aksi yang Anda setujui.",
+   "id": "ai-assistant",
+   "name": "Asisten AI",
+   "steps": [
+    {
+     "content": "AI membaca data sesuai izin Anda di semua modul, bisa mencari di web, dan menyiapkan aksi (buat/ubah/hapus) yang selalu menunggu persetujuan Anda.",
+     "title": "Asisten AI"
+    },
+    {
+     "content": "Contoh: *Bandingkan sales per toko minggu ini vs lalu*, *Buat PO dari PR-2611-0004*, *Bagaimana cara tutup buku?*. Konteks brand/toko di TopNav ikut terkirim.",
+     "title": "Tulis permintaan"
+    },
+    {
+     "content": "Lampirkan foto struk/invoice, PDF, atau Excel/CSV — AI membaca isinya (OCR) lalu bisa menyiapkan jurnal atau entri data.",
+     "title": "Lampiran"
+    },
+    {
+     "content": "Percakapan tersimpan di sini dan sama dengan panel Asisten AI (ikon robot di kanan atas) yang bisa dibuka dari halaman mana pun.",
+     "title": "Riwayat percakapan"
     }
    ]
   }

@@ -57,6 +57,7 @@ const OwnerPortal = lazyWithRetry(() => import("@/portals/OwnerPortal"), "OwnerP
 const ProcurementPortal = lazyWithRetry(() => import("@/portals/ProcurementPortal"), "ProcurementPortal");
 const AdminPortal = lazyWithRetry(() => import("@/portals/admin/AdminPortal"), "AdminPortal");
 const ReportsPortal = lazyWithRetry(() => import("@/portals/ReportsPortal"), "ReportsPortal");
+const AIPortal = lazyWithRetry(() => import("@/portals/AIPortal"), "AIPortal");
 
 // Public Compro Pages — lazy loaded (heavy, not critical path)
 const PublicLayout = lazyWithRetry(() => import("@/pages/public/PublicLayout"), "PublicLayout");
@@ -295,6 +296,18 @@ export default function App() {
                           <ErrorBoundary scope="Reports Portal">
                             <Suspense fallback={<PageLoader />}>
                               <ReportsPortal />
+                            </Suspense>
+                          </ErrorBoundary>
+                        </RequirePortal>
+                      }
+                    />
+                    <Route
+                      path="/ai/*"
+                      element={
+                        <RequirePortal permPrefix="ai.agent">
+                          <ErrorBoundary scope="Asisten AI">
+                            <Suspense fallback={<PageLoader />}>
+                              <AIPortal />
                             </Suspense>
                           </ErrorBoundary>
                         </RequirePortal>

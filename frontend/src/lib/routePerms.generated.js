@@ -66,6 +66,15 @@ export const ROUTE_PERMS = {
     "admin.audit_log",
     "admin.user"
   ],
+  "/ai": [
+    "ai.agent.use"
+  ],
+  "/ai/approvals": [
+    "ai.agent.use"
+  ],
+  "/ai/settings": [
+    "ai.agent.admin"
+  ],
   "/executive/ai-qa": [
     "ai.exec_qa.use"
   ],

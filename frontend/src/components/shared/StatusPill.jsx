@@ -100,6 +100,13 @@ const STATUS = {
   seated: ["Sudah Datang", "success"],
   waitlist: ["Waitlist", "warning"],
   done: ["Selesai", "success"],
+  // Usulan aksi Asisten AI (status + tingkat risiko)
+  executing: ["Sedang Dijalankan", "info"],
+  running: ["Sedang Berjalan", "info"],
+  risk_rendah: ["Risiko Rendah", "neutral"],
+  risk_sedang: ["Risiko Sedang", "info"],
+  risk_tinggi: ["Risiko Tinggi", "warning"],
+  risk_kritis: ["Risiko Kritis", "danger"],
 };
 
 

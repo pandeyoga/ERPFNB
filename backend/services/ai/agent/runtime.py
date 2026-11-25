@@ -178,10 +178,13 @@ async def _build_user_content(user: dict, message: str, attachments: list[str], 
             continue
         ct = (meta.get("content_type") or "").lower()
         name = meta.get("filename") or att_id
-        if ct.startswith("image/") or ct == "application/pdf":
+        if tools.model_readable(ct):
             data = await upload_service.get_attachment_bytes(att_id, user=user)
             content.append(await tools.file_content_block(att_id, data, ct, name))
             content.append({"type": "text", "text": f"[Lampiran di atas: {name} · attachment_id={att_id}]"})
+        elif ct.startswith("image/"):
+            content.append({"type": "text", "text": f"[Lampiran {name}: format {ct} belum bisa dibaca AI — "
+                                                    "minta pengguna mengirim JPG/PNG]"})
         else:
             content.append({"type": "text", "text": f"[Lampiran: {name} ({ct}) · attachment_id={att_id} — "
                                                     "baca dengan read_attachment]"})

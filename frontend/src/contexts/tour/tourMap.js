@@ -197,6 +197,7 @@ const pathToTours = {
 
   // ==== Top-level (cross-portal) ====
   "/my-approvals": ["my-approvals"],
+  "/ai": ["ai-assistant"],
   "/finance/reports?tab=trial-balance": ["finance-trial-balance"],
   "/finance/reports?tab=balance-sheet": ["finance-balance-sheet"],
   "/finance/reports?tab=cashflow": ["finance-cashflow"],
@@ -363,6 +364,7 @@ const tourMetadata = {
   "general-navigation": { title: "Navigasi Umum", description: "Cara mengelola sistem ERP secara umum" },
   "approval-center": { title: "Pusat Persetujuan", description: "Inbox persetujuan terpusat + delegasi untuk semua dokumen" },
   "my-approvals": { title: "My Approvals", description: "Inbox persetujuan personal — approve/reject cepat" },
+  "ai-assistant": { title: "Asisten AI", description: "Tanya, analisis, lampiran, dan aksi yang Anda setujui" },
 };
 
 // =====================================================

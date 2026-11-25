@@ -21,6 +21,7 @@ import NotificationBell from "@/components/shared/NotificationBell";
 import ApprovalsInboxButton from "@/components/shared/ApprovalsInboxButton";
 import ThemeToggle from "@/components/shared/ThemeToggle";
 import HelpTourButton from "@/components/shared/HelpTourButton";
+import AssistantPanel from "@/components/ai/AssistantPanel";
 
 /** Breadcrumb trail: Beranda › Modul › Seksi › Halaman (› Detail). */
 export function buildCrumbs(pathname) {
@@ -147,6 +148,8 @@ export default function TopNav({ onSearchOpen }) {
         >
           <Search className="h-4 w-4" />
         </button>
+        {/* Asisten AI (izin ai.agent.use) — panel samping di semua halaman */}
+        <AssistantPanel />
         <NotificationBell />
         <ApprovalsInboxButton />
         <HelpTourButton />

@@ -146,7 +146,7 @@ import {
   hrFOCTour,
   hrLBFundTour,
 } from './hr';
-import { generalNavigationTour, approvalCenterTour, myApprovalsTour } from './shared';
+import { generalNavigationTour, approvalCenterTour, myApprovalsTour, aiAssistantTour } from './shared';
 
 export const tourRegistry = {
   // ==== Outlet ====
@@ -302,6 +302,7 @@ export const tourRegistry = {
   "general-navigation": generalNavigationTour,
   "approval-center": approvalCenterTour,
   "my-approvals": myApprovalsTour,
+  "ai-assistant": aiAssistantTour,
 };
 
 

@@ -28,6 +28,7 @@ PORTALS = {
     "portals/inventory/InventoryPortal.jsx": "/inventory",
     "portals/owner/OwnerPortal.jsx": "/owner",
     "portals/HRPortal.jsx": "/hr",
+    "portals/AIPortal.jsx": "/ai",
 }
 
 ROUTE_RE = re.compile(

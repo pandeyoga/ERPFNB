@@ -255,6 +255,14 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
         return f"Galat: {type(e).__name__}: {str(e)[:500]}", True
 
 
+# Format gambar yang bisa dibaca model; HEIC/HEIF (kamera iPhone) belum → minta JPG/PNG.
+MODEL_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"}
+
+
+def model_readable(ct: str) -> bool:
+    return ct in MODEL_IMAGE_TYPES or ct == "application/pdf"
+
+
 async def _read_attachment(att_id: str, max_rows: int, ctx: ToolContext):
     from services import upload_service
     meta = await upload_service.get_attachment(att_id, user=ctx.user)
@@ -262,13 +270,15 @@ async def _read_attachment(att_id: str, max_rows: int, ctx: ToolContext):
     ct = (meta.get("content_type") or "").lower()
     name = meta.get("filename") or att_id
     ctx.steps.append({"tool": "read_attachment", "label": f"Membaca lampiran {name}"})
-    if ct.startswith("image/") or ct == "application/pdf":
+    if model_readable(ct):
         block = await file_content_block(att_id, data, ct, name)
         return [block, {"type": "text", "text": f"Lampiran: {name} ({ct})"}], False
     if ct in ("text/csv", "application/vnd.ms-excel", "application/csv") or name.lower().endswith((".csv", ".xlsx", ".xls")):
         return table_preview(data, name, max_rows), False
     if ct.startswith("text/"):
         return data.decode("utf-8", errors="replace")[:30_000], False
+    if ct.startswith("image/"):
+        return f"Format gambar {ct} belum bisa dibaca — minta pengguna mengirim ulang sebagai JPG/PNG", True
     return f"Jenis lampiran {ct} belum bisa dibaca", True
 
 

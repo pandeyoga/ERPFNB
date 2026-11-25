@@ -9,6 +9,7 @@ import {
   Settings,
   Crown,
   FileSpreadsheet,
+  Bot,
 } from "lucide-react";
 
 /** Report Center (/reports) — sama dengan _REPORT_READ_PERMS di backend routers/reports.py. */
@@ -69,6 +70,14 @@ export const PORTALS = [
     path: "/reports",
     icon: FileSpreadsheet,
     perms: REPORT_CENTER_PERMS,
+  },
+  {
+    // Asisten AI: percakapan layar penuh, persetujuan usulan aksi, pemakaian & pengaturan (panel juga di TopNav).
+    id: "ai",
+    name: "Asisten AI",
+    path: "/ai",
+    icon: Bot,
+    perms: ["ai.agent.use"],
   },
   {
     id: "hr",
