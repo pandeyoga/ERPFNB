@@ -1,6 +1,6 @@
 """Seed demo E-Menu data: brand_menu_items, brand_menu_categories, brand_menu_pdfs.
 
-Run: cd /app/backend && PYTHONPATH=/app/backend python seed/seed_emenu.py
+Run: cd backend && PYTHONPATH=backend python seed/seed_emenu.py
 """
 import asyncio
 import uuid

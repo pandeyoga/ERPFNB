@@ -1,7 +1,7 @@
 #!/bin/bash
 # Quick API probe to understand actual response structures
 
-BASE_URL="https://source-sync-engine.preview.emergentagent.com"
+BASE_URL="http://localhost:8001"
 
 # Login as admin
 echo "=== LOGIN ==="

@@ -451,10 +451,10 @@ class RestorationTester:
 def main():
     print(f"{BLUE}{'='*60}")
     print("FnB Group ERP - Restoration Verification Test")
-    print("Testing: https://bug-fix-sprint-25.preview.emergentagent.com")
+    print("Testing: http://localhost:8001")
     print(f"{'='*60}{RESET}\n")
     
-    base_url = "https://bug-fix-sprint-25.preview.emergentagent.com"
+    base_url = "http://localhost:8001"
     tester = RestorationTester(base_url)
     
     # Run all tests

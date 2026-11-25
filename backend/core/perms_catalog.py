@@ -1,5 +1,5 @@
 """Master list of permission codes used by RBAC.
-Syncronize with /app/memory/RBAC_MATRIX.md.
+Syncronize with memory/RBAC_MATRIX.md.
 """
 PERMISSIONS_CATALOG: list[dict] = [
     # Special

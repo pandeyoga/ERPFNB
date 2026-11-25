@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """audit_tours_v2.py — stricter, page-scoped tour drift + coverage gaps."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import re
 from pathlib import Path
 
-SRC = Path("/app/frontend/src")
+SRC = Path((_REPO_ROOT + "/frontend/src"))
 TOURS_DIR = SRC / "contexts/tour/tours"
 
 # PURE data-testid literals only (no constants heuristic)

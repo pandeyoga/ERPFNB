@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Forensic data-integrity audit against MongoDB (read-only)."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import asyncio
 import re as _re
 import sys
@@ -9,7 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 # Read the REAL DB target from backend/.env (never hardcode — the previous
 # hardcoded 'aurora_fnb'/'localhost' audited an empty wrong DB and falsely
 # reported "no issues").
-_env = open("/app/backend/.env").read()
+_env = open((_REPO_ROOT + "/backend/.env")).read()
 MONGO = _re.search(r"MONGO_URL=(.*)", _env).group(1).strip().strip('"')
 DB_NAME = _re.search(r"DB_NAME=(.*)", _env).group(1).strip().strip('"')
 

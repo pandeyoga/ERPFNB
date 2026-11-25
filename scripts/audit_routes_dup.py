@@ -1,14 +1,15 @@
 """Audit: duplicate route registrations + param-route shadowing."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import collections
 import os
 import sys
 
 os.environ.setdefault("SCHEDULER_ENABLED", "false")
-sys.path.insert(0, "/app/backend")
-os.chdir("/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
+os.chdir((_REPO_ROOT + "/backend"))
 from dotenv import load_dotenv  # noqa: E402
 
-load_dotenv("/app/backend/.env")
+load_dotenv((_REPO_ROOT + "/backend/.env"))
 from server import app  # noqa: E402
 
 seen = collections.defaultdict(list)

@@ -6,6 +6,7 @@ Tujuan: Achieve 0% BUG dengan testing logic, bukan hanya API response
 - Test dengan business logic validation
 - Verify calculations, state transitions, data integrity
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import requests
 import json
@@ -414,7 +415,7 @@ class ComprehensiveLogicTester:
             print(f"  {module:20s}: {passed}/{tested} passed ({rate:.0f}%), {failed} failed")
         
         # Save detailed report
-        report_path = f"/app/test_reports/comprehensive_logic_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = f"{_REPO_ROOT}/test_reports/comprehensive_logic_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w") as f:
             json.dump(self.results, f, indent=2)
         print(f"\n💾 Detailed report saved: {report_path}")

@@ -14,7 +14,7 @@ Flows exercised:
   FLOW 3 — Period lock guard (lock a fresh period → verify JE post rejected → unlock)
   FLOW 4 — Inventory transfer full cycle (create → send → receive → verify stock delta)
 
-Run:  python /app/scripts/e2e_write_flows.py
+Run:  python scripts/e2e_write_flows.py
 Exit: 0 on all-pass, 1 on any fail.
 """
 from __future__ import annotations

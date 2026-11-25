@@ -9,7 +9,7 @@
 #   - Quick demo environment setup
 #
 # Usage:
-#   cd <root repo>          # /app di deployment, folder clone di komputer lokal
+#   cd <root repo>
 #   bash scripts/seed_reset.sh
 #   (aktifkan virtualenv backend dulu, atau PYTHON=/path/absolut/ke/python bash scripts/seed_reset.sh)
 #
@@ -376,9 +376,9 @@ fi
 
 # ── Intent audit: remaining modules (Fixed Assets · Tax · Payment Runs · Bank Recon)
 #    Write-path checks use synthetic data + full rollback (zero residue).
-if [ -f "/app/backend/scripts/intent_audit_remaining.py" ]; then
+if [ -f "${BACKEND_DIR}/scripts/intent_audit_remaining.py" ]; then
     echo ""
-    if (cd /app/backend && ${PYTHON} scripts/intent_audit_remaining.py); then
+    if (cd "${BACKEND_DIR}" && ${PYTHON} scripts/intent_audit_remaining.py); then
         echo -e "  ${GREEN}Intent audit (remaining modules) PASS.${RESET}"
     else
         echo -e "  ${RED}${BOLD}Intent audit FAIL — periksa invariant modul di atas.${RESET}"

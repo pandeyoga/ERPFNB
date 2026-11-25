@@ -4,6 +4,7 @@ BUSINESS LOGIC EDGE CASES TESTING - DEEP VALIDATION
 Test boundary conditions, extreme values, edge cases that can break business logic
 NO SHALLOW TESTING. DEPTH ONLY.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import requests
 import json
@@ -467,7 +468,7 @@ class EdgeCaseTester:
             print(f"\n✅ No edge case bugs found!")
         
         # Save report
-        report_path = f"/app/test_reports/edge_case_testing_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = f"{_REPO_ROOT}/test_reports/edge_case_testing_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w") as f:
             json.dump({
                 "tests_run": self.tests_run,

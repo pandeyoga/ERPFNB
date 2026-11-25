@@ -6,7 +6,7 @@ import requests
 import sys
 from datetime import datetime
 
-BASE_URL = "https://bug-fix-sprint-25.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 
 class Phase3Tester:
     def __init__(self):

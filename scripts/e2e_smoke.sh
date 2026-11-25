@@ -14,19 +14,20 @@
 # di-rollback (snapshot/restore DB) — tidak mengotori data seed.
 #
 # Pakai:
-#   bash /app/scripts/e2e_smoke.sh            # jalankan smoke pipeline
-#   bash /app/scripts/e2e_smoke.sh -v         # verbose per-test
+#   bash scripts/e2e_smoke.sh            # jalankan smoke pipeline
+#   bash scripts/e2e_smoke.sh -v         # verbose per-test
 #
 # Exit code: 0 = semua lulus (aman deploy), !=0 = ada yang gagal (BLOKIR deploy).
 # =============================================================================
 set -uo pipefail
 
-BACKEND_DIR="/app/backend"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # root repo
+BACKEND_DIR="${ROOT_DIR}/backend"
 EXTRA_ARGS="${*:-}"
 
 echo "==================================================================="
 echo " E2E SMOKE PIPELINE — FnB Group ERP (deploy gate)"
-echo " target: $(grep REACT_APP_BACKEND_URL /app/frontend/.env | cut -d= -f2-)"
+echo " target: $(grep REACT_APP_BACKEND_URL "${ROOT_DIR}/frontend/.env" | cut -d= -f2-)"
 echo " waktu : $(date '+%Y-%m-%d %H:%M:%S')"
 echo "==================================================================="
 
@@ -40,7 +41,7 @@ cd "$BACKEND_DIR" || { echo "FATAL: $BACKEND_DIR tidak ditemukan"; exit 2; }
 echo ""
 echo ">>> STEP 0/2 — Data integrity & drift (GL balance, number_series)"
 echo "-------------------------------------------------------------------"
-python /app/scripts/audit_data_integrity.py --strict
+python "${ROOT_DIR}/scripts/audit_data_integrity.py" --strict
 INTEG=$?
 if [ "$INTEG" -ne 0 ]; then
     echo "-------------------------------------------------------------------"
@@ -58,7 +59,7 @@ echo "✅ Data integrity bersih — GL balanced, tak ada drift kritis."
 echo ""
 echo ">>> STEP 1/2 — GET endpoint sweep (5xx / route hilang)"
 echo "-------------------------------------------------------------------"
-python /app/scripts/audit_endpoint_sweep.py --strict
+python "${ROOT_DIR}/scripts/audit_endpoint_sweep.py" --strict
 SWEEP=$?
 if [ "$SWEEP" -ne 0 ]; then
     echo "-------------------------------------------------------------------"

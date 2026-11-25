@@ -4,6 +4,7 @@ DATA INTEGRITY CROSS-MODULE TESTING
 Validate that data flows correctly across modules and maintains consistency
 Example: PO posted → AP Ledger updated, Daily Sales → Journal Entry created
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import requests
 import json
@@ -400,7 +401,7 @@ class DataIntegrityTester:
                 print(f"  [{bug['severity']}] {bug['test']}: {bug['issue']}")
         
         # Save report
-        report_path = f"/app/test_reports/data_integrity_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = f"{_REPO_ROOT}/test_reports/data_integrity_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w") as f:
             json.dump({
                 "tests_run": self.tests_run,

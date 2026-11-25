@@ -1,4 +1,5 @@
 """Phase 2a live check: GR cumulative PO status, AP settlement, voucher grand total."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import json
 import os
 import sys
@@ -6,7 +7,7 @@ import uuid
 
 import requests
 
-API = open("/app/frontend/.env").read().split("REACT_APP_BACKEND_URL=")[1].split()[0].rstrip("/") + "/api"
+API = open((_REPO_ROOT + "/frontend/.env")).read().split("REACT_APP_BACKEND_URL=")[1].split()[0].rstrip("/") + "/api"
 
 
 def login(email):
@@ -67,11 +68,11 @@ if st != "approved":
 print("payment status before mark-paid:", st)
 unwrap(requests.post(f"{API}/finance/payments/{pay['id']}/mark-paid", headers=H, json={"bank_account_id": bank["id"], "payment_ref": "TEST"}))
 
-sys.path.insert(0, "/app/backend")
-os.chdir("/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
+os.chdir((_REPO_ROOT + "/backend"))
 import asyncio
 from dotenv import load_dotenv
-load_dotenv("/app/backend/.env")
+load_dotenv((_REPO_ROOT + "/backend/.env"))
 from motor.motor_asyncio import AsyncIOMotorClient
 
 

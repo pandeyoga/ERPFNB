@@ -2,7 +2,7 @@
 
 Idempotent: clears prior `seed_9d` PRs before re-inserting.
 
-Run: cd /app/backend && python -m seed.seed_phase9d_demo
+Run: cd backend && python -m seed.seed_phase9d_demo
 """
 import asyncio
 import random

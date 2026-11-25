@@ -1,9 +1,10 @@
 """Phase 2a fix verification: C1 global search, C2 endpoint paths, A3 daily sales voucher."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import os
 import pytest
 import requests
 
-BASE_URL = open("/app/frontend/.env").read().split("REACT_APP_BACKEND_URL=")[1].split()[0].rstrip("/")
+BASE_URL = open((_REPO_ROOT + "/frontend/.env")).read().split("REACT_APP_BACKEND_URL=")[1].split()[0].rstrip("/")
 API = BASE_URL + "/api"
 PWD = "Demo@2026"
 
@@ -135,9 +136,9 @@ class TestA3DailySalesVoucher:
         # Cleanup: delete draft doc directly from db
         try:
             import asyncio, sys
-            sys.path.insert(0, "/app/backend")
+            sys.path.insert(0, (_REPO_ROOT + "/backend"))
             from dotenv import load_dotenv
-            load_dotenv("/app/backend/.env")
+            load_dotenv((_REPO_ROOT + "/backend/.env"))
             from motor.motor_asyncio import AsyncIOMotorClient
             async def _del():
                 db = AsyncIOMotorClient(os.environ["MONGO_URL"])[os.environ["DB_NAME"]]

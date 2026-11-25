@@ -4,10 +4,11 @@ Flags endpoints that return data but have NO permission guard (only authenticate
 or fully public) — these are the real data-leak risk for partial-access roles.
 Static analysis of routers/*.py.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import re
 from pathlib import Path
 
-ROUTERS = Path("/app/backend/routers")
+ROUTERS = Path((_REPO_ROOT + "/backend/routers"))
 DECOR = re.compile(r'@router\.(get|post|put|patch|delete)\(\s*["\']([^"\']*)["\']')
 
 # auth markers in the function signature/decorator block

@@ -14,7 +14,7 @@ GUARDRAILS yang diikuti:
   - RC-8: Tanggal dinamis — datetime.now(), bukan literal
   - Idempoten: upsert by natural key
 
-Run: cd /app/backend && python3 -m seed.seed_missing_demo
+Run: cd backend && python3 -m seed.seed_missing_demo
 """
 from __future__ import annotations
 

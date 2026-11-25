@@ -1,12 +1,13 @@
 """Seed demo rewards for the loyalty program."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import sys
 import uuid
 from datetime import datetime, timezone
 
-sys.path.insert(0, '/app/backend')
+sys.path.insert(0, (_REPO_ROOT + '/backend'))
 from dotenv import load_dotenv
-load_dotenv('/app/backend/.env')
+load_dotenv((_REPO_ROOT + '/backend/.env'))
 
 REWARDS = [
     {

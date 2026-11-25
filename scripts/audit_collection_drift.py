@@ -2,12 +2,13 @@
 """Comprehensive collection-drift scanner.
 For every db.<collection> read reference in services+routers, flag collections
 that are EMPTY in the live DB (potential RC-1 drift / dead reads)."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import asyncio, os, re
 from pathlib import Path
 from collections import defaultdict
 from motor.motor_asyncio import AsyncIOMotorClient
 
-BACKEND = Path("/app/backend")
+BACKEND = Path((_REPO_ROOT + "/backend"))
 
 # Read MONGO_URL + DB_NAME from backend/.env (NEVER hardcode DB — RC-1 / guardrails §10).
 _env = BACKEND / ".env"

@@ -6,12 +6,13 @@ Adds:
 - Default system settings for all tax toggles (PPN enabled @12%, PPh all disabled by default)
 - GL mapping entries for the 3 Utang PPh accounts
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import sys
 import uuid
 from datetime import datetime, timezone
 
-sys.path.insert(0, "/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
 
 from core.db import close_db, get_db, init_db
 

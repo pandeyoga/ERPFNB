@@ -9,7 +9,7 @@ we need:
     using a simple per-outlet usage profile so balances trend below par.
   - Reasonable `par_levels` set on items.
 
-Run: cd /app/backend && python -m seed.seed_phase9c_demo
+Run: cd backend && python -m seed.seed_phase9c_demo
 
 Idempotent: safe to re-run; it clears its own seeded movements first
 (tagged with source_type="seed_9c") and then re-inserts.

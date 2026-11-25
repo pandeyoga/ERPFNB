@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 
 # Base URL from frontend/.env
-BASE_URL = "https://source-sync-engine.preview.emergentagent.com"
+BASE_URL = "http://localhost:8001"
 
 # Test credentials (all share password Demo@2026)
 CREDENTIALS = {

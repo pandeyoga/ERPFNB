@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Forensic route audit — dump all registered routes, detect duplicates & anomalies."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import sys
 from collections import Counter, defaultdict
 
-sys.path.insert(0, "/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
 from server import app  # noqa
 
 routes = []

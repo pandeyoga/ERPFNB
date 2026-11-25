@@ -7,6 +7,7 @@ These tests are READ-ONLY against the user collection except `test_change_passwo
 which changes admin password and changes it back immediately.
 """
 import sys
+from pathlib import Path
 import pytest
 
 from .conftest import DEMO_USERS, DEMO_PASSWORD, api_get, api_post
@@ -130,8 +131,8 @@ class TestChangePasswordRoundtrip:
             [sys.executable, "-c", """
 import asyncio, sys, os
 from dotenv import load_dotenv
-sys.path.insert(0, '/app/backend')
-load_dotenv('/app/backend/.env')
+sys.path.insert(0, os.getcwd())  # cwd = folder backend (lihat cwd= di bawah)
+load_dotenv('.env')
 from core.db import init_db, get_db, close_db
 from core.security import hash_password
 
@@ -148,6 +149,7 @@ async def restore():
 asyncio.run(restore())
 """],
             capture_output=True, text=True, timeout=30,
+            cwd=str(Path(__file__).resolve().parents[1]),
         )
         assert "RESTORED" in result.stdout, f"Restore failed: stdout={result.stdout!r} stderr={result.stderr!r}"
 

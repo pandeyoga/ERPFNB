@@ -1,5 +1,5 @@
 """Regression tests for AUDIT_2026-09-27_PHASE2 fixes (mongomock, no real DB).
-Run: cd /app/tests/audit_regression && ERP_BACKEND=/app/backend python -m pytest -q test_audit_fixes.py
+Run: cd tests/audit_regression && python -m pytest -q test_audit_fixes.py
 """
 import asyncio
 

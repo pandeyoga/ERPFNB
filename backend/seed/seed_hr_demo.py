@@ -12,8 +12,9 @@ Design notes (follows ENGINEERING_GUARDRAILS canonical paths):
     hand-rolled doc) so allocations/policy stay correct. It reads validated
     daily_sales.service_charge — we defensively backfill that field if missing.
 
-Idempotent. Run: cd /app/backend && python3 -m seed.seed_hr_demo
+Idempotent. Run: cd backend && python3 -m seed.seed_hr_demo
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import random
 import uuid
@@ -21,7 +22,7 @@ from datetime import datetime, timezone
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

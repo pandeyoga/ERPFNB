@@ -4,11 +4,12 @@ Menjalankan semua modul seed secara berurutan, idempotent, non-interaktif.
 Setiap step boleh gagal secara independen (kecuali Step 1 - master data wajib).
 
 Run:
-    cd /app/backend && python3 -m seed.seed_master
-    cd /app/backend && python3 -m seed.seed_master --verify   # jalankan gate setelah seed
-    cd /app/backend && python3 -m seed.seed_master --skip-transactions
+    cd backend && python3 -m seed.seed_master
+    cd backend && python3 -m seed.seed_master --verify   # jalankan gate setelah seed
+    cd backend && python3 -m seed.seed_master --skip-transactions
 """
 from __future__ import annotations
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import asyncio
 import importlib
@@ -18,7 +19,7 @@ from typing import Optional
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 
@@ -152,8 +153,8 @@ async def run_all(skip_transactions: bool = False, verify: bool = False):
     print(f"\n{ARROW} Menjalankan backfill_ap_opening...")
     import subprocess
     res = subprocess.run(
-        ["python3", "/app/scripts/backfill_ap_opening.py"],
-        capture_output=True, text=True, cwd="/app/backend"
+        ["python3", (_REPO_ROOT + "/scripts/backfill_ap_opening.py")],
+        capture_output=True, text=True, cwd=(_REPO_ROOT + "/backend")
     )
     if res.returncode == 0:
         print(f"  {CHECK} backfill_ap_opening OK")
@@ -163,8 +164,8 @@ async def run_all(skip_transactions: bool = False, verify: bool = False):
     # Integrity gate
     print(f"\n{BOLD}[GATE]{RESET} Integrity gate...")
     res = subprocess.run(
-        ["python3", "/app/scripts/verify_data_integrity.py"],
-        cwd="/app"
+        ["python3", (_REPO_ROOT + "/scripts/verify_data_integrity.py")],
+        cwd=_REPO_ROOT
     )
     if res.returncode == 0:
         print(f"  {CHECK} {GREEN}Integrity gate PASS.{RESET}")
@@ -174,8 +175,8 @@ async def run_all(skip_transactions: bool = False, verify: bool = False):
     if verify:
         print(f"\n{BOLD}[VERIFY]{RESET} Health check...")
         res = subprocess.run(
-            ["python3", "/app/scripts/health_check.py"],
-            cwd="/app"
+            ["python3", (_REPO_ROOT + "/scripts/health_check.py")],
+            cwd=_REPO_ROOT
         )
         if res.returncode == 0:
             print(f"  {CHECK} {GREEN}Health check PASS.{RESET}")

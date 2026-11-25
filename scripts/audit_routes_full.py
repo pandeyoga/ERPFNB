@@ -6,10 +6,11 @@ composes full absolute paths, classifies each, and resolves each path against
 the real tourMap getToursForPath logic. Reports every REAL page that only gets
 the generic 'general-navigation' fallback (i.e. not truly covered).
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import re
 from pathlib import Path
 
-SRC = Path("/app/frontend/src")
+SRC = Path((_REPO_ROOT + "/frontend/src"))
 TOUR = SRC / "contexts/tour"
 
 # ---- portal file -> mount prefix ----

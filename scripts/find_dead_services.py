@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Find truly-unused service modules by parsing imports across backend."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import ast, os, re
 from pathlib import Path
 
-BACKEND = Path("/app/backend")
+BACKEND = Path((_REPO_ROOT + "/backend"))
 SERVICES = BACKEND / "services"
 
 service_mods = set()

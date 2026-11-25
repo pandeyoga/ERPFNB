@@ -4,6 +4,7 @@ PERMISSION MATRIX TESTING - COMPREHENSIVE DEPTH
 Test ALL roles against ALL critical endpoints to find authorization bugs
 NO SKIPPING. NO EXCUSES.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import requests
 import json
@@ -272,7 +273,7 @@ class PermissionMatrixTester:
             print(f"  {role:15s}: {tested} tests, {allowed} allowed, {blocked} blocked, {bugs} bugs")
         
         # Save report
-        report_path = f"/app/test_reports/permission_matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = f"{_REPO_ROOT}/test_reports/permission_matrix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w") as f:
             json.dump(self.results, f, indent=2)
         print(f"\n💾 Report saved: {report_path}")

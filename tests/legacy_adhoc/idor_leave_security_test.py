@@ -28,7 +28,7 @@ YELLOW = "\033[93m"
 BLUE = "\033[94m"
 RESET = "\033[0m"
 
-BASE_URL = "https://zen-swartz-5.preview.emergentagent.com"
+BASE_URL = "http://localhost:8001"
 PASSWORD = "Demo@2026"
 
 # Test users

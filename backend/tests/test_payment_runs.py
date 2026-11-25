@@ -13,7 +13,7 @@ Covers:
   10. Trailing-slash rejection — /api/finance/payment-runs/ → 400
 
 Run:
-    cd /app/backend
+    cd backend
     python3 -m pytest tests/test_payment_runs.py -v
 """
 import pytest

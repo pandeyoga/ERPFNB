@@ -27,7 +27,7 @@ BLUE = "\033[94m"
 RESET = "\033[0m"
 
 # Base URL from frontend .env
-BASE_URL = "https://bug-fix-sprint-25.preview.emergentagent.com"
+BASE_URL = "http://localhost:8001"
 
 class BugFixTester:
     def __init__(self, base_url: str):

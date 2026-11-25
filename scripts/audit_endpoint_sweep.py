@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Comprehensive GET-endpoint sweep — hit every GET route as admin, resolve path
 params from real data, record status + emptiness + errors. No gaps left."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import asyncio, re, sys
 import httpx
 
-sys.path.insert(0, "/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
 from server import app  # noqa
 
-API = open("/app/frontend/.env").read()
+API = open((_REPO_ROOT + "/frontend/.env")).read()
 API = re.search(r"REACT_APP_BACKEND_URL=(\S+)", API).group(1).strip().rstrip("/")
 ADMIN = {"email": "admin@fnbgroup.id", "password": "Demo@2026"}
 

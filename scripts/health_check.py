@@ -6,7 +6,7 @@ Verifikasi SEMUA endpoint kritis: cek isi (bukan hanya status 200).
 Deteksi dini: tabel kosong, 404, 500, respons tidak sesuai ekspektasi.
 
 Usage:
-    cd /app
+    cd <root repo>
     python scripts/health_check.py
 
     # Atau dengan API URL eksplisit:

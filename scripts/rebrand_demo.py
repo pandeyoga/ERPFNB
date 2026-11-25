@@ -13,13 +13,14 @@ Pemetaan brand:
   Rucker Park (street food & bar)     -> The Lounge      LNG
   Bakkies     (artisan bakery)        -> The Bakery      BKY
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import os
 import re
 import sys
 
-ROOT = "/app"
+ROOT = _REPO_ROOT
 SCAN_DIRS = ["frontend/src", "frontend/public", "backend", "scripts", "tests"]
-ROOT_FILES = ["backend_test.py", "phase3_backend_test.py", "README.md"]
+ROOT_FILES = ["README.md"]
 EXTS = {".py", ".js", ".jsx", ".json", ".html", ".css", ".sh", ".md", ".txt", ".webmanifest", ".yml", ".yaml"}
 SKIP_PARTS = {"node_modules", "__pycache__", ".git", "artifacts", "uploads", "build"}
 SELF = os.path.abspath(__file__)

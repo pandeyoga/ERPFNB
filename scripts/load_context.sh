@@ -11,9 +11,9 @@
 # status setiap dokumen) + header status tiap dokumen.
 #
 # Usage:
-#   cd /app && bash scripts/load_context.sh             # tampilkan peta + probe state
-#   cd /app && bash scripts/load_context.sh --task bug  # rute Tier-1 utk task tertentu
-#   cd /app && bash scripts/load_context.sh --print t0   # cetak isi semua file Tier-0
+#   cd <root repo> && bash scripts/load_context.sh             # tampilkan peta + probe state
+#   cd <root repo> && bash scripts/load_context.sh --task bug  # rute Tier-1 utk task tertentu
+#   cd <root repo> && bash scripts/load_context.sh --print t0   # cetak isi semua file Tier-0
 #
 #   --task <bug|feature|ui|finance|inventory|procurement|hr|testing|rbac>
 #   --print <t0|t1>   Cetak (cat) seluruh isi file pada tier tsb ke stdout
@@ -25,9 +25,9 @@ BOLD='\033[1m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; RED='\033[0;31m'
 CYAN='\033[0;36m'; MAGENTA='\033[0;35m'; RESET='\033[0m'
 OK="${GREEN}✓${RESET}"; NO="${RED}✗${RESET}"; ARROW="${CYAN}→${RESET}"; WARN="${YELLOW}⚠${RESET}"
 
-# ── Pastikan dari /app ────────────────────────────────────────────────────────
+# ── Pastikan dari root repo ────────────────────────────────────────────────────────
 if [ ! -f "backend/server.py" ]; then
-  echo -e "${RED}ERROR:${RESET} Jalankan dari /app  →  cd /app && bash scripts/load_context.sh"
+  echo -e "${RED}ERROR:${RESET} Jalankan dari root repo  →  cd <root repo> && bash scripts/load_context.sh"
   exit 1
 fi
 
@@ -42,7 +42,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-# ── Definisi tier (path relatif /app) ─────────────────────────────────────────
+# ── Definisi tier (path relatif root repo) ─────────────────────────────────────────
 # Tier-0 = HUKUM + KEBENARAN TERVERIFIKASI (selalu dibaca lebih dulu)
 TIER0=(
   "memory/ENGINEERING_GUARDRAILS.md|SSOT ATURAN (WAJIB): RC-1..15, koleksi kanonik, DoD, gate eksekutabel"
@@ -59,7 +59,6 @@ TIER1=(
   "memory/COMPLETE_FEATURE_INVENTORY_2026-06-18.md|Peta ~180 fitur & endpoint — orientasi cakupan"
   "memory/UI_UX_AUDIT_2026-06-17.md|Temuan UI/UX per-halaman — untuk task UI/UX"
   "memory/PARITY_AUDIT_2026-06-17.md|Parity Backend↔Frontend — untuk task parity"
-  "test_result.md|Log hasil test per-sesi (protokol testing data/render)"
 )
 
 # Aspiratif = JANGAN dibaca sebagai sumber kebenaran (visi/requirement/blueprint)
@@ -139,7 +138,7 @@ if [ -n "$TASK" ]; then
       echo -e "  ${ARROW} ENGINEERING_GUARDRAILS RC-9 (RBAC bukan satu sumber) + core/perms_catalog.py + koleksi roles"
       echo -e "  ${ARROW} Verifikasi code-first: bandingkan peta akses FE vs BE per endpoint (jangan percaya audit lama)" ;;
     testing|qa|coverage)
-      echo -e "  ${ARROW} test_result.md + ENGINEERING_GUARDRAILS RC-10/DoD (data+render, bukan status 200)"
+      echo -e "  ${ARROW} ENGINEERING_GUARDRAILS RC-10/DoD (data+render, bukan status 200)"
       echo -e "  ${ARROW} Gate: verify_data_integrity.py · health_check.py · intent_audit_*.py · pytest" ;;
     finance|inventory|procurement|hr)
       echo -e "  ${ARROW} memory/FLOW_INVENTORY_2026-06-18.md (cari domain '${TASK}')"

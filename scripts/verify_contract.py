@@ -8,7 +8,7 @@ nama koleksi yang BENAR sesuai dengan yang dibaca oleh API handler.
 Mencegah RC-1 (Collection Name Drift) sebelum terjadi.
 
 Usage:
-    cd /app
+    cd <root repo>
     # Cek koleksi apa yang dibaca oleh router tertentu:
     python scripts/verify_contract.py --router procurement
 

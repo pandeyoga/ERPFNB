@@ -5,14 +5,15 @@ dan GL opening JE tidak bisa dihitung. Script ini menambahkan harga pokok
 realistis per item berdasarkan kategori.
 
 Idempotent: update hanya jika unit_cost belum diset atau = 0.
-Run: cd /app/backend && python3 -m seed.seed_item_costs
+Run: cd backend && python3 -m seed.seed_item_costs
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import os
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

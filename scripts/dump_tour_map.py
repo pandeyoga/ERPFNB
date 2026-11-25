@@ -11,11 +11,12 @@ Writes:
 This is consumed by scripts/tour_render_probe.py (Playwright) which walks each
 route and asserts each target actually mounts in the DOM at runtime.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import json
 import re
 from pathlib import Path
 
-ROOT = Path("/app")
+ROOT = Path(_REPO_ROOT)
 SRC = ROOT / "frontend/src"
 TOUR_MAP_JS = SRC / "contexts/tour/tourMap.js"
 TOURS_DIR = SRC / "contexts/tour/tours"

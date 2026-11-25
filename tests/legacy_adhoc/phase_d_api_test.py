@@ -14,7 +14,7 @@ import requests
 from typing import Dict, Any
 
 # Backend URL from .env
-BASE_URL = "https://bug-fix-sprint-25.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 
 # Test credentials
 TEST_EMAIL = "admin@fnbgroup.id"

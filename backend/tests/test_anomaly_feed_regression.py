@@ -18,7 +18,7 @@ Tests ini memastikan:
   8. GET /api/admin/users — correct endpoint for user list (BUG-2 regression)
 
 Run:
-    cd /app/backend
+    cd backend
     python3 -m pytest tests/test_anomaly_feed_regression.py -v
 """
 import pytest

@@ -15,7 +15,7 @@ the OWNER (and SUPER_ADMIN) still can.
 HOW TO EXTEND (next agent): copy an entry in CASES below. Two shapes:
   * "user_scoped"     — the resource id in the URL IS a user/employee id.
   * "resource_scoped" — create a resource as the owner, then probe by its id.
-Run:  python /app/scripts/idor_ownership_probe.py
+Run:  python scripts/idor_ownership_probe.py
 Exit code 0 = all ownership invariants hold; non-zero = a real IDOR leak.
 """
 import json

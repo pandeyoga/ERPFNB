@@ -2,6 +2,7 @@
 seed_transactions.py — Seeds realistic transaction data per outlet for richer dashboards.
 ...
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import random
 import uuid
@@ -10,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 # Load .env if present
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

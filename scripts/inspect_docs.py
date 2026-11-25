@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Inspect actual document structures for forensic accuracy."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import asyncio, json, os
 from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Read MONGO_URL + DB_NAME from backend/.env (NEVER hardcode DB — RC-1 / guardrails §10).
-_env = Path("/app/backend/.env")
+_env = Path((_REPO_ROOT + "/backend/.env"))
 if _env.exists():
     for _ln in _env.read_text().splitlines():
         _ln = _ln.strip()

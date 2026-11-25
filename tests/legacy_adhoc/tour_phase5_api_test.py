@@ -18,7 +18,7 @@ RESET = "\033[0m"
 
 
 class TourPhase5APITester:
-    def __init__(self, base_url="https://bug-fix-sprint-25.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

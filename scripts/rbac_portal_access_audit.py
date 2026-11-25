@@ -3,11 +3,12 @@
 that access is FULL or PARTIAL (partial = leak-risk if sub-routes aren't guarded).
 Read-only. DB from .env.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import os
 from pathlib import Path
 from collections import defaultdict
 
-for ln in Path("/app/backend/.env").read_text().splitlines():
+for ln in Path((_REPO_ROOT + "/backend/.env")).read_text().splitlines():
     if "=" in ln and not ln.strip().startswith("#"):
         k, v = ln.split("=", 1)
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))

@@ -14,7 +14,7 @@ BLUE = "\033[94m"
 RESET = "\033[0m"
 
 class AnomalyAPITester:
-    def __init__(self, base_url="https://bug-fix-sprint-25.preview.emergentagent.com/api"):
+    def __init__(self, base_url="http://localhost:8001/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

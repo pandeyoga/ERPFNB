@@ -19,14 +19,15 @@ Design notes (follows ENGINEERING_GUARDRAILS):
 Idempotent: wipes prior AR demo data AND its journal entries before re-seeding, so the
 GL returns to its pre-AR (balanced) state on every run. Safe to run repeatedly.
 
-Run: cd /app/backend && python3 -m seed.seed_ar_demo
+Run: cd backend && python3 -m seed.seed_ar_demo
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 from datetime import datetime, timezone, timedelta
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

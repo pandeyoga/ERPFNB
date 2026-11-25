@@ -7,6 +7,7 @@ NOT just HTTP status codes.
 Based on test request: focus on real fixed bug verification - manual journal
 creation (JE/JER number series seeded) and end-to-end daily sales -> JE flow.
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import os
 import pytest
 import requests
@@ -15,7 +16,7 @@ from datetime import datetime, date, timezone
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 if not BASE_URL:
     # Fallback - read from frontend env
-    with open("/app/frontend/.env") as f:
+    with open((_REPO_ROOT + "/frontend/.env")) as f:
         for line in f:
             if line.startswith("REACT_APP_BACKEND_URL="):
                 BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
@@ -536,7 +537,7 @@ from pymongo import MongoClient
 
 @pytest.fixture(scope="session")
 def mongo_db():
-    env = open("/app/backend/.env").read()
+    env = open((_REPO_ROOT + "/backend/.env")).read()
     mongo = _re.search(r"MONGO_URL=(.*)", env).group(1).strip().strip('"')
     dbn = _re.search(r"DB_NAME=(.*)", env).group(1).strip().strip('"')
     client = MongoClient(mongo)

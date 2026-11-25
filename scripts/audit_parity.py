@@ -7,17 +7,18 @@ Tujuan: mencegah PAR-RC (lihat UI_IA_PARITY_GUARDRAILS.md):
   - Endpoint usang/duplikat (drift)
 
 CARA PAKAI:
-  python3 /app/scripts/audit_parity.py
-  python3 /app/scripts/audit_parity.py --strict   # exit 1 jika ada ORPHAN MODULE
+  python3 scripts/audit_parity.py
+  python3 scripts/audit_parity.py --strict   # exit 1 jika ada ORPHAN MODULE
 
 Catatan: panggilan frontend yang dibangun dinamis (hook/variabel) TIDAK selalu
 terdeteksi -> tool ini ADALAH "review prompt", bukan hard-gate untuk endpoint-level.
 Yang dapat dipercaya sebagai hard-gate hanyalah "ORPHAN MODULE" (prefix 0 referensi).
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import re, os, glob, collections, sys
 
-BACKEND_ROUTERS = glob.glob('/app/backend/routers/*.py')
-FRONTEND_SRC = '/app/frontend/src'
+BACKEND_ROUTERS = glob.glob((_REPO_ROOT + '/backend/routers/*.py'))
+FRONTEND_SRC = (_REPO_ROOT + '/frontend/src')
 STRICT = '--strict' in sys.argv
 
 def norm(p):

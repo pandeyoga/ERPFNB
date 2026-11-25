@@ -6,8 +6,8 @@ Philosophy (per CASE_STUDY): assert VALUES & cross-endpoint invariants, not just
   - Sum of breakdown == headline total
   - API value == DB ground-truth aggregation
 
-Run from /app/backend:  python3 -m scripts.intent_audit_5portals
-(or)  cd /app/backend && python3 scripts/intent_audit_5portals.py
+Run from backend:  python3 -m scripts.intent_audit_5portals
+(or)  cd backend && python3 scripts/intent_audit_5portals.py
 """
 import asyncio
 import os

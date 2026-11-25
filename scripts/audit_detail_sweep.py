@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Second-pass: resolve REAL ids for every domain, hit detail + param-required
 endpoints. Catch hidden 500s the first sweep skipped."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import asyncio, re
 import httpx
 
-API = re.search(r"REACT_APP_BACKEND_URL=(\S+)", open("/app/frontend/.env").read()).group(1).strip().rstrip("/")
+API = re.search(r"REACT_APP_BACKEND_URL=(\S+)", open((_REPO_ROOT + "/frontend/.env")).read()).group(1).strip().rstrip("/")
 ADMIN = {"email": "admin@fnbgroup.id", "password": "Demo@2026"}
 
 

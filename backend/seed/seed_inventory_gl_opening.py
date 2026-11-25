@@ -13,15 +13,16 @@ Nilai = Σ(qty_opening × unit_cost) per kategori, menggunakan data
 inventory_movements tipe 'opening' yang sudah ada dari seed_inventory_opening.py.
 
 Idempotent: hapus JE OPENING-INV sebelumnya lalu buat ulang.
-Run: cd /app/backend && python3 -m seed.seed_inventory_gl_opening
+Run: cd backend && python3 -m seed.seed_inventory_gl_opening
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import uuid
 from datetime import datetime, timezone, timedelta
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

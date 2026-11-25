@@ -12,7 +12,7 @@ YELLOW = "\033[93m"
 BLUE = "\033[94m"
 RESET = "\033[0m"
 
-BASE_URL = "https://bug-fix-sprint-25.preview.emergentagent.com"
+BASE_URL = "http://localhost:8001"
 TEST_EMAIL = "admin@fnbgroup.id"
 TEST_PASSWORD = "Demo@2026"
 

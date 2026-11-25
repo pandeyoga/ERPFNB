@@ -15,16 +15,17 @@ Fix:
      - pph23_bukti_no = "BP-{YYYY}{MM}-{seq:04d}"
 
 Idempotent: hanya update jika ppn_amount == 0.
-Run: cd /app/backend && python3 -m seed.seed_ap_tax_fields
+Run: cd backend && python3 -m seed.seed_ap_tax_fields
 """
 from __future__ import annotations
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import asyncio
 import os
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

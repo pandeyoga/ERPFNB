@@ -1,15 +1,16 @@
 """Audit: frontend api.* literal paths vs backend registered routes."""
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 import glob
 import os
 import re
 import sys
 
 os.environ.setdefault("SCHEDULER_ENABLED", "false")
-sys.path.insert(0, "/app/backend")
-os.chdir("/app/backend")
+sys.path.insert(0, (_REPO_ROOT + "/backend"))
+os.chdir((_REPO_ROOT + "/backend"))
 from dotenv import load_dotenv  # noqa: E402
 
-load_dotenv("/app/backend/.env")
+load_dotenv((_REPO_ROOT + "/backend/.env"))
 from server import app  # noqa: E402
 
 routes = []
@@ -23,7 +24,7 @@ call_re = re.compile(r"""api\.(get|post|put|patch|delete)\(\s*["']([^"'?]+)["']"
 tmpl_re = re.compile(r"""api\.(get|post|put|patch|delete)\(\s*`([^`?]+)`""")
 missing = []
 checked = 0
-for f in glob.glob("/app/frontend/src/**/*.js*", recursive=True):
+for f in glob.glob((_REPO_ROOT + "/frontend/src/**/*.js*"), recursive=True):
     if "/tour/" in f or "/__" in f:
         continue
     src = open(f).read()
@@ -38,7 +39,7 @@ for f in glob.glob("/app/frontend/src/**/*.js*", recursive=True):
         ok = any(rx.match(p) and m.upper() in ms for rx, ms, _ in routes)
         if not ok:
             path_only = any(rx.match(p) for rx, _, _ in routes)
-            missing.append((f.replace("/app/frontend/src/", ""), m.upper(), p, "METHOD-MISMATCH" if path_only else "NO-ROUTE"))
+            missing.append((f.replace((_REPO_ROOT + "/frontend/src/"), ""), m.upper(), p, "METHOD-MISMATCH" if path_only else "NO-ROUTE"))
 
 print(f"checked {checked} frontend api calls; unmatched: {len(missing)}")
 for row in sorted(set(missing)):

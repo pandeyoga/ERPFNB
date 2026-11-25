@@ -5,16 +5,17 @@
 # Runs every forensic gate in a fixed order so ANY agent gets the SAME signal.
 # Read-only except the IDOR probe (creates+deletes its own throwaway leave doc).
 #
-# Usage:   bash /app/scripts/forensic_master_suite.sh
+# Usage:   bash scripts/forensic_master_suite.sh
 # Exit:    0 = all automated gates green; non-zero = at least one gate failed.
 #
 # NOTE: Covers the AUTOMATABLE gates. Gate 8 now automates the Phase 3 browser
 #       tour-render sweep (headless Playwright). The remaining MANUAL/agent gate
 #       is the frontend route-guard URL-tamper check (PHASE 2 in
-#       /app/memory/FORENSIC_TEST_PLAYBOOK.md).
+#       memory/FORENSIC_TEST_PLAYBOOK.md).
 # =============================================================================
 set -u
-cd /app/scripts || exit 2
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # root repo
+cd "${ROOT_DIR}/scripts" || exit 2
 
 PASS=0; FAIL=0; FAILED_GATES=""
 line() { printf '%.0s=' {1..78}; echo; }
@@ -46,7 +47,7 @@ gate "Live IDOR / ownership probe" python idor_ownership_probe.py
 gate "UI tour static drift (no stale targets)" bash -c 'out=$(python audit_tours_v2.py); echo "$out" | grep -E "target resolution"; echo "$out" | grep -q "MISSING=0"'
 
 # --- Gate 6: backend unit/integration tests ---
-gate "Backend pytest suite" bash -c 'cd /app/backend && python -m pytest -q 2>&1 | tail -n 5; cd /app/backend && python -m pytest -q >/dev/null 2>&1'
+gate "Backend pytest suite" bash -c 'cd "$0" && python -m pytest -q 2>&1 | tail -n 5; python -m pytest -q >/dev/null 2>&1' "${ROOT_DIR}/backend"
 
 # --- Gate 7: E2E WRITE flows — Phase 4 (asserts) ---
 # Purchase Request approval, Payment full cycle (create→submit→approve→mark-paid→verify JE),

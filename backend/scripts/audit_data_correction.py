@@ -1,8 +1,8 @@
 """Audit Fase 2 — historical data correction (run BEFORE go-live, reviewed by Finance).
 
 Usage:
-  cd /app/backend && python -m scripts.audit_data_correction            # dry-run report
-  cd /app/backend && python -m scripts.audit_data_correction --apply    # post safe fixes (AR receipts)
+  cd backend && python -m scripts.audit_data_correction            # dry-run report
+  cd backend && python -m scripts.audit_data_correction --apply    # post safe fixes (AR receipts)
 
 Only AR receipts are auto-fixed (missing JE → posted with receipt id as source_id).
 Everything else is REPORTED for a Finance-reviewed manual correcting journal.

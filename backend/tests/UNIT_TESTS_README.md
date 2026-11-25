@@ -100,7 +100,7 @@ tests/
 
 ### Run All Unit Tests
 ```bash
-cd /app/backend
+cd backend
 python -m pytest tests/unit/ -v
 ```
 

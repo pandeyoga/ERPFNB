@@ -10,7 +10,7 @@ import sys
 from typing import Dict, Any, List
 
 # Backend URL from environment
-BASE_URL = "https://bug-fix-sprint-25.preview.emergentagent.com"
+BASE_URL = "http://localhost:8001"
 
 # Color codes
 GREEN = "\033[92m"

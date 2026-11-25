@@ -4,7 +4,7 @@ Run this to migrate an existing deployment to the new index set without restart.
 For fresh deployments, ensure_indexes() in core/db.py applies them automatically.
 
 Usage:
-    cd /app/backend
+    cd backend
     python -m seed.patch_indexes_phase4_perf
 
 What it does:

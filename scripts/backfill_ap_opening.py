@@ -9,13 +9,13 @@ This one-off, idempotent script posts a single opening-balance JE:
     Cr Accounts Payable    (total outstanding)
 so GL AP control == AP subledger and the Balance Sheet reflects the liability.
 
-Run: python scripts/backfill_ap_opening.py   (dari root repo; /app di deployment)
+Run: python scripts/backfill_ap_opening.py   (dari root repo; <root repo> di deployment)
 """
 import asyncio
 import os
 import sys
 
-# <root repo>/backend — bukan /app/backend tetap, agar jalan juga di komputer lokal.
+# <root repo>/backend — bukan backend tetap, agar jalan juga di komputer lokal.
 BACKEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend")
 sys.path.insert(0, BACKEND_DIR)
 

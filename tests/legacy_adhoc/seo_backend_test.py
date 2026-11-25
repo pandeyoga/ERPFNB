@@ -1,6 +1,6 @@
 """
 SEO Backend API Test — Bulk AI Optimize Feature
-Tests all SEO endpoints with AI integration (EMERGENT_LLM_KEY configured)
+Tests all SEO endpoints with AI integration (ANTHROPIC_API_KEY configured)
 
 Endpoints tested:
 1. POST /api/seo/ai/generate - AI content generation
@@ -9,6 +9,7 @@ Endpoints tested:
 4. GET /api/seo/public?path=/ - public SEO retrieval
 5. GET /api/seo/pages - list all SEO settings (auth)
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import requests
 import sys
 import json
@@ -22,7 +23,7 @@ BLUE = "\033[94m"
 RESET = "\033[0m"
 
 class SEOAPITester:
-    def __init__(self, base_url="https://bug-fix-sprint-25.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8001"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -482,10 +483,10 @@ def main():
         "errors": tester.errors
     }
     
-    with open("/app/backend/seo_test_results.json", "w") as f:
+    with open((_REPO_ROOT + "/backend/seo_test_results.json"), "w") as f:
         json.dump(results, f, indent=2)
     
-    print(f"\n{BLUE}📄 Results saved to /app/backend/seo_test_results.json{RESET}")
+    print(f"\n{BLUE}📄 Results saved to {_REPO_ROOT}/backend/seo_test_results.json{RESET}")
     
     return 0 if success else 1
 

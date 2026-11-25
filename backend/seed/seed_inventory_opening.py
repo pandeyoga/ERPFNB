@@ -15,8 +15,9 @@ sales COGS postings. Bringing the GL to match requires REAL opening-stock valuat
 owner decision (per forensic audit). We do not fabricate that financial figure; this script
 only fixes the operational subledger view.
 
-Idempotent. Run: cd /app/backend && python3 -m seed.seed_inventory_opening
+Idempotent. Run: cd backend && python3 -m seed.seed_inventory_opening
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 import asyncio
 import random
 import uuid
@@ -25,7 +26,7 @@ from datetime import datetime, timezone, timedelta
 
 try:
     from dotenv import load_dotenv
-    load_dotenv("/app/backend/.env")
+    load_dotenv((_REPO_ROOT + "/backend/.env"))
 except Exception:
     pass
 

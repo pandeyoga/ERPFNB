@@ -29,7 +29,7 @@ This gate fixes the method, not just the symptom:
   - it asserts real VALUES and CROSS-ENDPOINT invariants, not "HTTP 200".
 
 Usage:
-    cd /app && python scripts/verify_data_integrity.py
+    cd <root repo> && python scripts/verify_data_integrity.py
 Exit 0 = all invariants hold. Non-zero = integrity violation (use as CI/seed gate).
 """
 import asyncio

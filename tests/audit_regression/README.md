@@ -2,7 +2,7 @@
 Reproduksi temuan P0/P1 terhadap kode backend asli, memakai MongoDB in-memory (mongomock-motor) — TIDAK menyentuh DB nyata.
 
     pip install mongomock-motor motor pyjwt bcrypt python-dotenv fastapi pydantic
-    ERP_BACKEND=/app/backend python3 t_payroll.py   # dst.
+    python3 t_payroll.py   # dst. (ERP_BACKEND=<path backend> bila bukan ../../backend)
 
 | Skrip | Temuan |
 |---|---|

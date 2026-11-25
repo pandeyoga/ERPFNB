@@ -30,6 +30,7 @@ Env:
 Exit 0 if PASS+PARTIAL >= 90% of testable routes (any FAIL counts).
 """
 from __future__ import annotations
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[1])  # root repo
 
 import asyncio
 import json
@@ -37,7 +38,7 @@ import os
 import sys
 from pathlib import Path
 
-ARTIFACTS = Path("/app/scripts/artifacts")
+ARTIFACTS = Path((_REPO_ROOT + "/scripts/artifacts"))
 TOUR_MAP = ARTIFACTS / "tour_map_expanded.json"
 REPORT = ARTIFACTS / "tour_render_report.json"
 REPORT.parent.mkdir(exist_ok=True, parents=True)

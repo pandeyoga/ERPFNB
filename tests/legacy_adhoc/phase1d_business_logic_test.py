@@ -6,6 +6,7 @@ Validasi bahwa logic aplikasi bekerja sesuai intended:
 - State transitions valid (draft→posted)
 - Data integrity maintained (running balances, stock)
 """
+_REPO_ROOT = str(__import__("pathlib").Path(__file__).resolve().parents[2])  # root repo
 
 import requests
 import json
@@ -543,7 +544,7 @@ class BusinessLogicTester:
             print(f"  {module:15s}: {passed}/{tested} passed ({rate:.0f}%), {failed} failed")
         
         # Save report
-        report_path = f"/app/test_reports/phase1d_business_logic_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_path = f"{_REPO_ROOT}/test_reports/phase1d_business_logic_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_path, "w") as f:
             json.dump(self.results, f, indent=2)
         print(f"\n💾 Report saved: {report_path}")
