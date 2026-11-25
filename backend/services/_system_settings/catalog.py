@@ -20,7 +20,12 @@ KNOWN_SETTINGS: dict[str, dict] = {
     "S3_ACCESS_KEY_ID": {"label": "S3 Access Key ID", "description": "Access key untuk bucket.", "is_secret": True, "category": "storage", "placeholder": "AKIA..."},
     "S3_SECRET_ACCESS_KEY": {"label": "S3 Secret Access Key", "description": "Secret key untuk bucket.", "is_secret": True, "category": "storage", "placeholder": "..."},
     # WhatsApp
-    "WHATSAPP_PROVIDER": {"label": "WhatsApp Provider", "description": "fonnte | twilio | meta | disabled.", "is_secret": False, "category": "whatsapp", "placeholder": "fonnte"},
+    "WHATSAPP_PROVIDER": {"label": "WhatsApp Provider", "description": "evolution (bot Asisten AI dua arah) | fonnte | twilio | meta | disabled.", "is_secret": False, "category": "whatsapp", "placeholder": "evolution"},
+    "EVOLUTION_API_URL": {"label": "Evolution API URL", "description": "URL server Evolution API (self-hosted), mis. https://wa.perusahaan.com.", "is_secret": False, "category": "whatsapp", "placeholder": "https://wa.example.com"},
+    "EVOLUTION_API_KEY": {"label": "Evolution API Key", "description": "apikey global/instance Evolution API.", "is_secret": True, "category": "whatsapp", "placeholder": "B6D711FCDE4D4FD5936544120E713976"},
+    "EVOLUTION_INSTANCE": {"label": "Evolution Instance", "description": "Nama instance (nomor khusus bot).", "is_secret": False, "category": "whatsapp", "placeholder": "erp-bot"},
+    "WHATSAPP_BOT_NUMBER": {"label": "Nomor Bot WhatsApp", "description": "Nomor bot yang ditampilkan ke pengguna saat menghubungkan WA.", "is_secret": False, "category": "whatsapp", "placeholder": "628123456789"},
+    "WHATSAPP_WEBHOOK_SECRET": {"label": "Rahasia Webhook WhatsApp", "description": "Token di URL webhook Evolution: https://<app>/api/wa/webhook?token=<rahasia>.", "is_secret": True, "category": "whatsapp", "placeholder": "acak-panjang-32-karakter"},
     "FONNTE_API_TOKEN": {"label": "Fonnte API Token", "description": "Token dari fonnte.com.", "is_secret": True, "category": "whatsapp", "placeholder": "abcd1234efgh5678"},
     "TWILIO_ACCOUNT_SID": {"label": "Twilio Account SID", "description": "Account SID dari Twilio.", "is_secret": True, "category": "whatsapp", "placeholder": "ACxxxxxxxx..."},
     "TWILIO_AUTH_TOKEN": {"label": "Twilio Auth Token", "description": "Auth Token dari Twilio.", "is_secret": True, "category": "whatsapp", "placeholder": "your_auth_token_here"},

@@ -171,6 +171,16 @@
    "tours": []
   },
   {
+   "label": "WhatsApp",
+   "path": "/ai/whatsapp",
+   "perms": [
+    "ai.wa.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "WhatsApp",
+   "tours": []
+  },
+  {
    "label": "Persetujuan AI",
    "path": "/ai/approvals",
    "perms": [
@@ -979,6 +989,9 @@
   ],
   "/ai/settings": [
    "ai.agent.admin"
+  ],
+  "/ai/whatsapp": [
+   "ai.wa.use"
   ],
   "/executive/ai-qa": [
    "ai.exec_qa.use"

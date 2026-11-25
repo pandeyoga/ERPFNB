@@ -174,6 +174,7 @@ PERMISSIONS_CATALOG: list[dict] = [
     {"code": "ai.agent.use", "category": "AI", "label": "Pakai Asisten AI"},
     {"code": "ai.agent.automate", "category": "AI", "label": "Buat monitor & otomasi AI"},
     {"code": "ai.agent.admin", "category": "AI", "label": "Kelola AI (kebijakan, biaya, log)"},
+    {"code": "ai.wa.use", "category": "AI", "label": "Bot WhatsApp Asisten AI"},
     # Impor Cerdas & master menu (R2)
     {"code": "import.smart.use", "category": "Import", "label": "Impor Cerdas (penjualan, mutasi bank)"},
     {"code": "menu.item.read", "category": "Menu", "label": "Lihat master menu"},

@@ -24,7 +24,7 @@ WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 EXCLUDED_PREFIXES = (
     "/api/auth", "/api/ai/agent", "/api/ai/policy", "/api/system-settings", "/api/public", "/api/telegram",
     "/api/health", "/api/uploads", "/api/files", "/api/loyalty/auth", "/api/loyalty/me", "/api/tour-analytics",
-    "/api/admin/menu/public",
+    "/api/admin/menu/public", "/api/wa",
     # D5: backup/impor/hapus massal seluruh data (khusus Super Admin, lewat layar Data Management)
     "/api/admin/data",
     # telemetri & endpoint akun pelanggan loyalty (bukan aksi staf)

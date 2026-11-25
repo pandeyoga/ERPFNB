@@ -60,7 +60,7 @@ MODULES: dict[str, str] = {
     "system.metrics": "Metrics", "system.logs": "Logs", "system.scheduler": "Scheduler", "system.archival": "Archival",
     "system.settings": "Pengaturan sistem",
     "ai.chat": "AI chat", "ai.autocomplete": "AI autocomplete", "ai.ocr": "AI OCR (scan struk)", "ai.categorize": "AI kategori",
-    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor", "ai.agent": "Asisten AI", "import.smart": "Impor Cerdas", "menu.item": "Master menu",
+    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor", "ai.agent": "Asisten AI", "ai.wa": "WhatsApp bot", "import.smart": "Impor Cerdas", "menu.item": "Master menu",
     "search.global": "Pencarian global",
 }
 
@@ -128,6 +128,7 @@ LABEL_OVERRIDES = {
     "ai.agent.automate": "Buat monitor & otomasi AI",
     "ai.agent.admin": "Kelola AI: kebijakan, tombol darurat, biaya, log",
     "import.smart.use": "Impor Cerdas: unggah & impor penjualan / mutasi bank",
+    "ai.wa.use": "Pakai Asisten AI lewat WhatsApp (owner & manager)",
     "menu.item.read": "Lihat master menu",
     "menu.item.manage": "Kelola master menu, kategori & alias",
     "finance.report.profit_loss": "Lihat laporan Laba Rugi (P&L)",

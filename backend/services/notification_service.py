@@ -22,6 +22,14 @@ async def push(*, user_id: str, type: str, title: str, body: str | None = None,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.notifications.insert_one(doc)
+    if type in ("urgent", "warn"):
+        # Notifikasi penting juga ke WhatsApp bila pengguna menautkan nomor & mengizinkan (bot Asisten AI)
+        try:
+            import asyncio
+            from services.wa_bot.service import notify as wa_notify
+            asyncio.get_running_loop().create_task(wa_notify(user_id, title, body))
+        except Exception:  # noqa: BLE001
+            pass
     return serialize(doc)
 
 

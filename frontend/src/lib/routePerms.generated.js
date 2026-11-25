@@ -81,6 +81,9 @@ export const ROUTE_PERMS = {
   "/ai/settings": [
     "ai.agent.admin"
   ],
+  "/ai/whatsapp": [
+    "ai.wa.use"
+  ],
   "/executive/ai-qa": [
     "ai.exec_qa.use"
   ],
