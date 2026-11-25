@@ -29,8 +29,8 @@ async def upload_statement(
     amount_tol: Optional[float] = Form(1000),
     user: dict = Depends(require_perm("finance.bank_reconciliation")),
 ):
-    if not file.filename or not file.filename.lower().endswith((".csv", ".txt")):
-        raise ValidationError("Hanya file CSV yang didukung")
+    if not file.filename or not file.filename.lower().endswith((".csv", ".txt", ".xlsx", ".xls")):
+        raise ValidationError("Format didukung: CSV, TXT, XLSX, XLS (ekspor mutasi bank apa pun)")
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:
         raise ValidationError("File terlalu besar (max 10MB)")

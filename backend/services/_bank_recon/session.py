@@ -26,16 +26,35 @@ async def get_session(session_id: str) -> dict:
     return serialize(s)
 
 
-async def upload_statement(
-    *, bank_account_id: str, filename: str, content: bytes, user: dict,
+def parse_statement_any(content: bytes, filename: str) -> list[dict]:
+    """Mutasi bank format apa pun (CSV/XLSX/XLS/HTML; KlikBCA, Mandiri, BRI, BNI, …) lewat mesin Impor Cerdas.
+    Fallback ke parser CSV lama bila kolom wajib tidak ditemukan."""
+    from services.smart_import import engine
+    from services.smart_import import mapping as mp
+    try:
+        prof = engine.profile(content, filename, target="bank")
+        if mp.missing_required("bank", prof["mapping"]):
+            raise ValidationError("kolom wajib tidak ditemukan")
+        rows = engine.extract(prof)["rows"]
+    except ValidationError:
+        if not filename.lower().endswith((".csv", ".txt")):
+            raise
+        return parse_statement_csv(content)
+    return [{"id": str(uuid.uuid4()), "date": r["date"], "description": r["description"], "amount": r["amount"],
+             "reference": r.get("reference"), "balance": r.get("balance"),
+             "matched": False, "match_type": None, "match_target_type": None, "match_target_id": None,
+             "match_target_doc_no": None, "match_confidence": None, "match_reason": None} for r in rows]
+
+
+async def create_session_from_rows(
+    *, bank_account_id: str, filename: str, rows: list[dict], user: dict,
     date_tol_days: int = DEFAULT_DATE_TOL_DAYS, amount_tol: float = DEFAULT_AMOUNT_TOL,
 ) -> dict:
-    """Parse file, create session, auto-match."""
+    """Buat sesi rekonsiliasi dari baris mutasi yang sudah diparse (unggah langsung / Impor Cerdas), lalu auto-match."""
     db = get_db()
     ba = await db.bank_accounts.find_one({"id": bank_account_id, "deleted_at": None})
     if not ba:
         raise ValidationError("bank_account_id tidak valid")
-    rows = parse_statement_csv(content)
     if not rows:
         raise ValidationError("Tidak ada baris valid terdeteksi dari file.")
     dates = sorted(r["date"] for r in rows)
@@ -58,6 +77,18 @@ async def upload_statement(
                     entity_id=session["id"], action="create", after={"filename": filename, "rows": len(rows)})
     await auto_match(session["id"], user=user)
     return await get_session(session["id"])
+
+
+async def upload_statement(
+    *, bank_account_id: str, filename: str, content: bytes, user: dict,
+    date_tol_days: int = DEFAULT_DATE_TOL_DAYS, amount_tol: float = DEFAULT_AMOUNT_TOL,
+) -> dict:
+    """Parse file (format bank apa pun), buat sesi, auto-match."""
+    if not await get_db().bank_accounts.find_one({"id": bank_account_id, "deleted_at": None}):
+        raise ValidationError("bank_account_id tidak valid")
+    rows = parse_statement_any(content, filename)
+    return await create_session_from_rows(bank_account_id=bank_account_id, filename=filename, rows=rows, user=user,
+                                          date_tol_days=date_tol_days, amount_tol=amount_tol)
 
 
 async def auto_match(session_id: str, *, user: dict) -> dict:

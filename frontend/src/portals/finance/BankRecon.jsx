@@ -90,7 +90,7 @@ function BankReconList({ onOpen, embedded = false }) {
 
   async function uploadFile() {
     const file = fileRef.current?.files?.[0];
-    if (!file || !bankId) { toast.error("File CSV dan bank account wajib diisi"); return; }
+    if (!file || !bankId) { toast.error("File mutasi dan bank account wajib diisi"); return; }
     setUploading(true);
     const fd = new FormData();
     fd.append("bank_account_id", bankId);
@@ -121,7 +121,7 @@ function BankReconList({ onOpen, embedded = false }) {
     { key: "created_at", label: "Dibuat", sortable: true, render: (s) => <span className="text-xs whitespace-nowrap">{fmtDateTime(s.created_at)}</span> },
   ];
 
-  const subtitle = "Unggah statement bank (CSV) → auto-match ke payment (PAY) & jurnal → commit rekonsiliasi.";
+  const subtitle = "Unggah mutasi bank (CSV/Excel, format bank apa pun) → auto-match ke payment (PAY) & jurnal → commit rekonsiliasi.";
   const actions = (
     <Button onClick={() => setShowUpload(true)} data-testid="br-new-upload">
       <PlusCircle className="h-4 w-4" /> Unggah Statement
@@ -142,7 +142,7 @@ function BankReconList({ onOpen, embedded = false }) {
           defaultSort={{ key: "created_at", dir: "desc" }}
           onRowClick={(s) => onOpen(s.id)}
           empty={<EmptyState icon={FileSpreadsheet} title="Belum ada sesi rekonsiliasi"
-            description="Unggah statement bank (CSV) untuk mulai mencocokkan transaksi."
+            description="Unggah mutasi bank (CSV/Excel dari KlikBCA, Livin/MCM Mandiri, BRI, BNI, dll.) untuk mulai mencocokkan transaksi."
             action={<Button size="sm" onClick={() => setShowUpload(true)} data-testid="br-empty-upload">
               <PlusCircle className="h-4 w-4" /> Unggah Statement</Button>} />}
         />
@@ -150,7 +150,7 @@ function BankReconList({ onOpen, embedded = false }) {
 
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent data-testid="br-upload-dialog">
-          <DialogHeader><DialogTitle>Unggah Bank Statement (CSV)</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Unggah Mutasi Bank</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Bank Account <span className="text-red-700 dark:text-red-400">*</span></Label>
               <SimpleSelect value={bankId} onValueChange={setBankId}
@@ -158,8 +158,8 @@ function BankReconList({ onOpen, embedded = false }) {
                 placeholder="Pilih..." ariaLabel="Bank Account"
                 className="glass-input mt-1 w-full" testId="br-bank-select" />
             </div>
-            <div><Label htmlFor="br-file">File CSV <span className="text-red-700 dark:text-red-400">*</span></Label>
-              <Input id="br-file" type="file" accept=".csv,.txt" ref={fileRef} className="mt-1" data-testid="br-file" />
+            <div><Label htmlFor="br-file">File mutasi (CSV/Excel) <span className="text-red-700 dark:text-red-400">*</span></Label>
+              <Input id="br-file" type="file" accept=".csv,.txt,.xlsx,.xls" ref={fileRef} className="mt-1" data-testid="br-file" />
               <p className="text-xs text-muted-foreground mt-1">
                 Kolom yang dikenal: Date / Tanggal, Description / Keterangan, Amount / Debit+Credit, Reference (opsional).
                 Format tanggal: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY.

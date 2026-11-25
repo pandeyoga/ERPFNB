@@ -79,6 +79,28 @@ BODY_HINTS: dict[str, str] = {
         'entity: groups | brands | outlets | items | categories | vendors | employees | chart-of-accounts | '
         'tax-codes | payment-methods | bank-accounts | number-series | regions. Field mengikuti dokumen yang ada: '
         'baca dulu 1–2 contoh lewat GET /api/master/{entity}, lalu tiru field-nya (kode harus unik).'),
+    # ---- Impor Cerdas (file mentah → data) ----
+    "POST /api/imports": (
+        '{"attachment_id": "<attachment_id lampiran pengguna>", "target": "sales|bank (opsional, terdeteksi otomatis)",'
+        ' "options": {"outlet_id": "<toko bila file tanpa kolom toko>", "bank_account_id": "<wajib untuk mutasi bank>",'
+        ' "channel": "GoFood|GrabFood|ShopeeFood (bila file aplikasi delivery)", "cutoff_hour": 4}} — hanya membuat '
+        'pratinjau (belum menyimpan data). Baca hasilnya: columns (pemetaan), days (verdict duplikasi per toko/hari), issues.'),
+    "PATCH /api/imports/{batch_id}": (
+        '{"mapping": {"<nama kolom>": "<field>|null"}, "value_maps": {"outlet": {"<nilai di file>": "<outlet_id>"},'
+        ' "payment": {"<nilai di file>": "<payment_method_id>"}}, "options": {"day_actions": {"<outlet_id>|YYYY-MM-DD":'
+        ' "create|replace|merge|skip"}, "default_bucket": "food|beverage|other", "date_order": "DMY|MDY|YMD",'
+        ' "decimal": ",|.", "allow_duplicate_file": false}, "sheet": "<nama sheet>", "header_row": <nomor baris>}'
+        ' — ubah pemetaan sesuai perintah pengguna; hasil pratinjau baru dikembalikan.'),
+    "POST /api/imports/{batch_id}/commit": (
+        '{"save_recipe": true} — menyimpan transaksi & rekap Daily Sales DRAF (atau sesi rekonsiliasi bank). '
+        'Ringkas dulu ke pengguna: jumlah transaksi, total, hari baru/ganti/gabung/dilewati, masalah.'),
+    "POST /api/menu/items": (
+        '{"brand_id": "<id brand>", "name": "", "category": "", "bucket": "food|beverage|other", "price": 0,'
+        ' "aliases": ["nama di GoFood", "nama di POS"]}'),
+    "PATCH /api/menu/items/{item_id}": (
+        '{"name": "", "category": "", "bucket": "food|beverage|other", "price": 0, "needs_review": false,'
+        ' "add_aliases": [], "remove_aliases": []} — kirim hanya yang diubah.'),
+    "POST /api/menu/items/{item_id}/merge": '{"source_ids": ["<id menu duplikat>"]}',
     "PATCH /api/master/{entity}/{id_}": (
         'Kirim HANYA field yang diubah. Baca dokumen saat ini dulu (GET /api/master/{entity}) agar tahu nama field.'),
 }

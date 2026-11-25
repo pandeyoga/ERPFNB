@@ -42,6 +42,8 @@ READ_ONLY_PREFIXES = ("/api/admin/roles", "/api/admin/users", "/api/admin/permis
 READ_LIKE_POSTS = {
     "/api/sourcing/price-check", "/api/ai/categorize", "/api/ai/generate-journal-entry", "/api/ai/ocr/receipt",
     "/api/forecasting/guard/check", "/api/tax/calculate", "/api/outlet-budget/precheck-pr",
+    # Impor Cerdas: membuat/mengubah PRATINJAU batch (draf, belum menulis data bisnis) — commit tetap aksi tulis
+    "/api/imports", "/api/imports/{batch_id}",
 }
 
 _HIGH = re.compile(r"/(post|approve|reject|validate|send|pay|reverse|close|cancel|receive|submit|lock|unlock|"

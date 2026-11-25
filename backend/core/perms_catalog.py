@@ -174,6 +174,10 @@ PERMISSIONS_CATALOG: list[dict] = [
     {"code": "ai.agent.use", "category": "AI", "label": "Pakai Asisten AI"},
     {"code": "ai.agent.automate", "category": "AI", "label": "Buat monitor & otomasi AI"},
     {"code": "ai.agent.admin", "category": "AI", "label": "Kelola AI (kebijakan, biaya, log)"},
+    # Impor Cerdas & master menu (R2)
+    {"code": "import.smart.use", "category": "Import", "label": "Impor Cerdas (penjualan, mutasi bank)"},
+    {"code": "menu.item.read", "category": "Menu", "label": "Lihat master menu"},
+    {"code": "menu.item.manage", "category": "Menu", "label": "Kelola master menu & alias"},
 
     # Anomaly (Phase 7D)
     {"code": "anomaly.feed.read", "category": "Anomaly", "label": "Read anomaly feed"},

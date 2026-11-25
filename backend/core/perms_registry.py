@@ -13,7 +13,7 @@ from core.perms_catalog import PERMISSIONS_CATALOG
 
 # prefix kode → (id portal, label portal). Urutan = urutan tampil.
 PORTALS: list[tuple[str, str, tuple[str, ...]]] = [
-    ("outlet", "Outlet", ("outlet", "outlet_budget", "reservations", "loyalty", "vouchers", "crm")),
+    ("outlet", "Outlet", ("outlet", "outlet_budget", "reservations", "loyalty", "vouchers", "crm", "menu")),
     ("procurement", "Procurement", ("procurement",)),
     ("inventory", "Inventory", ("inventory",)),
     ("finance", "Finance", ("finance", "tax")),
@@ -21,7 +21,7 @@ PORTALS: list[tuple[str, str, tuple[str, ...]]] = [
     ("executive", "Executive & Owner", ("executive", "owner", "anomaly")),
     ("admin", "Admin", ("admin", "report_schedules")),
     ("system", "Sistem", ("system",)),
-    ("tools", "AI & Alat", ("ai", "search")),
+    ("tools", "AI & Alat", ("ai", "search", "import")),
 ]
 _PREFIX_PORTAL = {p: (pid, label) for pid, label, prefixes in PORTALS for p in prefixes}
 
@@ -60,7 +60,7 @@ MODULES: dict[str, str] = {
     "system.metrics": "Metrics", "system.logs": "Logs", "system.scheduler": "Scheduler", "system.archival": "Archival",
     "system.settings": "Pengaturan sistem",
     "ai.chat": "AI chat", "ai.autocomplete": "AI autocomplete", "ai.ocr": "AI OCR (scan struk)", "ai.categorize": "AI kategori",
-    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor", "ai.agent": "Asisten AI",
+    "ai.forecast": "Forecast", "ai.anomaly": "AI anomali", "ai.exec_qa": "Executive Q&A", "ai.vendor_recommend": "Rekomendasi vendor", "ai.agent": "Asisten AI", "import.smart": "Impor Cerdas", "menu.item": "Master menu",
     "search.global": "Pencarian global",
 }
 
@@ -127,6 +127,9 @@ LABEL_OVERRIDES = {
     "ai.agent.use": "Pakai Asisten AI (chat, analisis, usulan aksi)",
     "ai.agent.automate": "Buat monitor & otomasi AI",
     "ai.agent.admin": "Kelola AI: kebijakan, tombol darurat, biaya, log",
+    "import.smart.use": "Impor Cerdas: unggah & impor penjualan / mutasi bank",
+    "menu.item.read": "Lihat master menu",
+    "menu.item.manage": "Kelola master menu, kategori & alias",
     "finance.report.profit_loss": "Lihat laporan Laba Rugi (P&L)",
     "finance.report.balance_sheet": "Lihat Neraca (Balance Sheet)",
     "finance.report.cashflow": "Lihat laporan Cashflow",

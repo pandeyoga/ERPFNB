@@ -28,7 +28,7 @@ from core.scope import brand_scope  # noqa: E402
 # Routers
 from routers import crm_analytics
 from routers import data_management
-from routers import admin, admin_loyalty, admin_ops, ai, ai_agent, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
+from routers import admin, admin_loyalty, admin_ops, ai, ai_agent, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics, smart_import, menu_master  # noqa: E402
 
 # Configure structured JSON logging EARLY (before any logger.info calls)
 configure_logging()
@@ -278,6 +278,8 @@ app.include_router(approval_matrix.router)  # Phase 15: visual workflow builder
 app.include_router(bulk_import.router)  # Sprint D: Bulk Excel Import
 app.include_router(ai.router)
 app.include_router(ai_agent.router)    # Asisten AI agentic (docs/ai/AGENTIC_AI_PLAN_2026-11-25.md)
+app.include_router(smart_import.router)  # Impor Cerdas (penjualan detail, mutasi bank)
+app.include_router(menu_master.router)   # Master menu + alias per sumber
 app.include_router(finance.router)
 app.include_router(payments.router)
 app.include_router(payment_runs.router)

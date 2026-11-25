@@ -93,6 +93,26 @@ DATASETS: dict[str, Dataset] = {d.id: d for d in [
         "amount": F("payment_breakdown.amount", "num", "Nominal"),
     }, "Rincian pembayaran dari laporan penjualan harian.", "sales_date", "outlet_id", "brand_id",
         unwind="payment_breakdown"),
+    Dataset("sales_transactions", "Transaksi penjualan per struk/pesanan (hasil Impor Cerdas)", "sales_transactions", SALES_PERMS, {
+        "business_date": F("business_date", "date", "Tanggal bisnis"), "time": F("time", label="Jam"),
+        "outlet_id": _o(), "brand_id": _b(), "channel": F("channel", label="Channel"), "source": F("source", label="Sumber file"),
+        "receipt_no": F("receipt_no", label="No. struk/pesanan"), "payment_raw": F("payment_raw", label="Metode bayar (file)"),
+        "payment_method_id": F("payment_method_id", "str", "Metode bayar", "payment_methods"),
+        "gross": F("gross", "num", "Kotor"), "discount": F("discount", "num", "Diskon"), "net": F("net", "num", "Net"),
+        "service_charge": F("service_charge", "num", "Service charge"), "tax": F("tax", "num", "Pajak"),
+        "total": F("total", "num", "Total"), "commission": F("commission", "num", "Komisi platform"),
+        "payout": F("payout", "num", "Payout"), "void": F("void", "bool", "Void/batal"),
+        "hour": F("_hour", label="Jam (0–23)"),
+    }, "Detail per transaksi. Analisis jam sibuk: group_by hour. Abaikan void=true untuk penjualan.",
+        "business_date", "outlet_id", "brand_id",
+        computed={"hour": (lambda r: int(str(r.get("time") or "0")[:2] or 0) if r.get("time") else None, "Jam (0–23)")}),
+    Dataset("sales_lines", "Penjualan per menu/item (hasil Impor Cerdas)", "sales_lines", SALES_PERMS, {
+        "business_date": F("business_date", "date", "Tanggal bisnis"), "outlet_id": _o(), "brand_id": _b(),
+        "channel": F("channel", label="Channel"), "menu_item_id": F("menu_item_id", "str", "Menu", "menu_items"),
+        "name": F("name", label="Nama item di file"), "category": F("category", label="Kategori"),
+        "bucket": F("bucket", label="food/beverage/other"), "qty": F("qty", "num", "Qty"), "amount": F("amount", "num", "Nominal"),
+        "void": F("void", "bool", "Void"),
+    }, "Menu terlaris, mix food/beverage, menu per channel. Abaikan void=true.", "business_date", "outlet_id", "brand_id"),
     Dataset("journal_lines", "Baris jurnal GL (semua akun)", "journal_entries", GL_PERMS, {
         "entry_date": F("entry_date", "date", "Tanggal"), "period": F("period", label="Periode"),
         "doc_no": F("doc_no", label="No. jurnal"), "status": F("status", label="Status (posted = resmi)"),
@@ -426,6 +446,7 @@ async def _names(kind: str, ids: list) -> dict:
         "employees": ("employees", lambda r: r.get("full_name")),
         "categories": ("categories", lambda r: r.get("name")),
         "payment_methods": ("payment_methods", lambda r: r.get("name")),
+        "menu_items": ("menu_items", lambda r: r.get("name")),
         "coa": ("chart_of_accounts", lambda r: f"{r.get('code')} {r.get('name')}"),
     }[kind]
     return {r["id"]: fmt(r) async for r in db[coll].find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "name": 1, "code": 1, "full_name": 1})}
@@ -458,6 +479,8 @@ async def run(user: dict, spec: dict, *, max_rows: int = ROWS_TO_MODEL, for_expo
             raise ValidationError(f"Field tidak dikenal untuk {d.id}: {n}. Lihat data_catalog(dataset).")
     if "net" in needed and "net" in d.computed:
         needed |= {"dr", "cr"}
+    if "hour" in needed and "hour" in d.computed:
+        needed.add("time")
     if needed & {"coa_type", "coa_code"}:
         needed.add("coa_id")
 
