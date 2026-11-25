@@ -102,13 +102,15 @@ export function useAgentChat(initialSessionId = null) {
 
   useEffect(() => { if (initialSessionId) open(initialSessionId); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const send = useCallback(async ({ message, files = [], context, scope }) => {
+  // fresh: true → selalu percakapan baru (mis. tombol "Tanya AI" dari halaman lain)
+  const send = useCallback(async ({ message, files = [], context, scope, fresh = false }) => {
     setError("");
     setPending({ text: message, files: files.map((f) => f.name) });
     try {
       const attachments = [];
       for (const f of files) attachments.push((await uploadAttachment(f)).id);
-      const res = unwrap(await api.post("/ai/agent/chat", { message, session_id: sessionId, attachments, context, scope }, { timeout: 60000 }));
+      const sid = fresh ? null : sessionId;
+      const res = unwrap(await api.post("/ai/agent/chat", { message, session_id: sid, attachments, context, scope }, { timeout: 60000 }));
       if (res.session_id !== sessionId) setSessionId(res.session_id);
       poll(res.run_id, res.session_id);
       await loadSession(res.session_id);

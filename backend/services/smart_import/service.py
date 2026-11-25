@@ -35,6 +35,10 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _rp(v: Any) -> str:
+    return f"{float(v or 0):,.0f}".replace(",", ".")
+
+
 def _perms(user: dict) -> set[str]:
     return set(user.get("permissions") or [])
 
@@ -219,7 +223,7 @@ async def update_batch(batch_id: str, user: dict, *, mapping: Optional[dict] = N
     return await view(batch_id, user)
 
 
-async def _resolve(b: dict, ex: dict, user: dict) -> dict:
+async def _resolve(b: dict, ex: dict, user: dict, *, exclude_batch: Optional[str] = None) -> dict:
     """Pemetaan nilai (toko, metode bayar) + cek duplikasi + rekap per toko/hari. Tidak menulis apa pun."""
     db = get_db()
     opts = b.get("options") or {}
@@ -268,8 +272,9 @@ async def _resolve(b: dict, ex: dict, user: dict) -> dict:
                 t["dup"] = "baris ganda di file"
             by_fp.setdefault(t["fingerprint"], t)
     fps = [f for f in by_fp if f]
+    own = {"batch_id": {"$ne": exclude_batch}} if exclude_batch else {}
     existing = {r["fingerprint"]: r async for r in db.sales_transactions.find(
-        {"fingerprint": {"$in": fps}, "deleted_at": None}, {"_id": 0, "fingerprint": 1, "batch_id": 1, "source": 1})} if fps else {}
+        {"fingerprint": {"$in": fps}, "deleted_at": None, **own}, {"_id": 0, "fingerprint": 1, "batch_id": 1, "source": 1})} if fps else {}
     for t in txs:
         if t["fingerprint"] in existing and not t["dup"]:
             t["dup"] = "sudah diimpor"
@@ -278,7 +283,7 @@ async def _resolve(b: dict, ex: dict, user: dict) -> dict:
         days = {(t["outlet_id"], t["business_date"]) for t in deliveries}
         others = await db.sales_transactions.find(
             {"$or": [{"outlet_id": o, "business_date": d} for o, d in days], "deleted_at": None,
-             "source": {"$ne": b.get("source")}, "channel": {"$in": list(DELIVERY)}},
+             "source": {"$ne": b.get("source")}, "channel": {"$in": list(DELIVERY)}, **own},
             {"_id": 0, "outlet_id": 1, "business_date": 1, "time": 1, "total": 1, "net": 1, "receipt_no": 1, "source": 1, "channel": 1}).to_list(20000)
         for t in deliveries:
             for o in others:
@@ -311,8 +316,8 @@ async def _resolve(b: dict, ex: dict, user: dict) -> dict:
                      "action": act, "existing": ({"id": ds["id"], "status": ds["status"], "grand_total": ds.get("grand_total"),
                                                   "import_managed": bool(ds.get("import_managed"))} if ds else None)})
         if recap["paid"] and abs(recap["paid"] - recap["grand_total"]) > max(1000, 0.01 * recap["grand_total"]):
-            issues.append({"level": "warning", "row": None, "pesan": f"{d} {days[-1]['outlet']}: total pembayaran {recap['paid']:,.0f} ≠ "
-                                                                     f"grand total {recap['grand_total']:,.0f}"})
+            issues.append({"level": "warning", "row": None, "pesan": f"{d} {days[-1]['outlet']}: total pembayaran {_rp(recap['paid'])} ≠ "
+                                                                     f"grand total {_rp(recap['grand_total'])}"})
     dup_count = sum(1 for t in txs if t["dup"])
     if dup_count:
         issues.append({"level": "info", "row": None, "pesan": f"{dup_count} transaksi duplikat/kemungkinan ganda tidak akan dihitung"})
@@ -377,19 +382,19 @@ def _classify(ds: Optional[dict], recap: dict, fresh: list[dict]) -> tuple[str, 
     same = abs((ds.get("grand_total") or 0) - recap["grand_total"]) <= max(1.0, 0.001 * recap["grand_total"])
     if ds.get("status") in LOCKED:
         return ("sama", "Sudah ada & sudah disubmit/divalidasi dengan total yang sama") if same else \
-            ("terkunci", f"Daily Sales sudah {ds['status']} (total {ds.get('grand_total', 0):,.0f}) — tidak diubah; "
+            ("terkunci", f"Daily Sales sudah {ds['status']} (total {_rp(ds.get('grand_total'))}) — tidak diubah; "
                          "tolak/buka dulu bila perlu diganti")
     if ds.get("import_managed"):
         return "gabung", "Draf dari impor sebelumnya — dihitung ulang dari semua transaksi tersimpan + file ini"
     old_ch = {c.get("channel") for c in ds.get("channels") or [] if (c.get("net") or c.get("gross"))}
     new_ch = {c["channel"] for c in recap["channels"] if c["net"] or c["gross"]}
     if same:
-        return "sama", f"Draf manual dengan total sama ({ds.get('grand_total', 0):,.0f})"
+        return "sama", f"Draf manual dengan total sama ({_rp(ds.get('grand_total'))})"
     if old_ch and new_ch and not (old_ch & new_ch):
         return "gabung", f"Draf manual berisi channel lain ({', '.join(sorted(old_ch))}) — file ini melengkapi ({', '.join(sorted(new_ch))})"
     if (ds.get("grand_total") or 0) < recap["grand_total"] and old_ch <= new_ch:
-        return "ganti", f"File ini lebih lengkap ({recap['grand_total']:,.0f} vs draf {ds.get('grand_total', 0):,.0f})"
-    return "konflik", f"Draf manual {ds.get('grand_total', 0):,.0f} vs file {recap['grand_total']:,.0f} — pilih ganti/gabung/lewati"
+        return "ganti", f"File ini lebih lengkap ({_rp(recap['grand_total'])} vs draf {_rp(ds.get('grand_total'))})"
+    return "konflik", f"Draf manual {_rp(ds.get('grand_total'))} vs file {_rp(recap['grand_total'])} — pilih ganti/gabung/lewati"
 
 
 async def view(batch_id: str, user: dict) -> dict:
@@ -408,7 +413,15 @@ async def view(batch_id: str, user: dict) -> dict:
         res.update({"summary": engine.summarize_bank(ex["rows"]), "issues": ex["issues"] + dup["issues"],
                     "preview": ex["rows"][:PREVIEW_TX], "duplicates": dup["count"]})
         return res
-    r = await _resolve(b, ex, user)
+    r = await _resolve(b, ex, user, exclude_batch=b["id"] if b["status"] != "draft" else None)
+    if b["status"] != "draft":       # tampilkan keputusan saat impor, bukan hitung ulang terhadap data yang kini sudah ada
+        done = {(d["outlet_id"], d["date"]): d for d in (b.get("result") or {}).get("days") or []}
+        for d in r["days"]:
+            st = done.get((d["outlet_id"], d["date"]))
+            if st:
+                d.update({"verdict": st.get("verdict", d["verdict"]), "action": st.get("action", d["action"]),
+                          "alasan": f"{st.get('status')}" + (f" — {st['alasan']}" if st.get("alasan") else "") +
+                                    (f" — {st['error']}" if st.get("error") else "")})
     res.update({
         "summary": engine.summarize_sales(ex["transactions"]), "issues": r["issues"], "days": r["days"],
         "value_maps_resolved": {
@@ -469,7 +482,12 @@ async def _commit_sales(b: dict, ex: dict, user: dict) -> dict:
     from services import outlet_service
     db = get_db()
     r = await _resolve(b, ex, user)
-    txs = [t for t in ex["transactions"] if t.get("outlet_id") and not t["dup"]]
+    # simpan detail hanya untuk hari yang diimpor (buat/ganti/gabung) atau yang totalnya sama dengan Daily Sales resmi —
+    # hari terkunci/konflik/dilewati tidak menambah detail yang bertentangan dengan angka resmi
+    keep_days = {(d["outlet_id"], d["date"]) for d in r["days"] if d["action"] != "skip" or d["verdict"] == "sama"}
+    all_ok = [t for t in ex["transactions"] if t.get("outlet_id") and not t["dup"]]
+    txs = [t for t in all_ok if (t["outlet_id"], t["business_date"]) in keep_days]
+    skipped_days_tx = len(all_ok) - len(txs)
     brand_of = {o["id"]: o.get("brand_id") for o in r["outlets"]}
     menu_cache: dict[tuple, str] = {}
     now = _now()
@@ -507,6 +525,7 @@ async def _commit_sales(b: dict, ex: dict, user: dict) -> dict:
             res.update({"status": "gagal", "error": str(e)[:300]})
         days_out.append(res)
     return {"transactions": len(tx_docs), "lines": len(line_docs), "skipped_duplicates": sum(1 for t in ex["transactions"] if t["dup"]),
+            "skipped_day_transactions": skipped_days_tx,
             "void": sum(1 for t in txs if t["void"]), "menu_items_created": sum(1 for v in menu_cache.values() if v.startswith("new:")),
             "days": days_out}
 

@@ -161,6 +161,16 @@
    "tours": []
   },
   {
+   "label": "Impor Cerdas",
+   "path": "/ai/import",
+   "perms": [
+    "import.smart.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Impor Cerdas",
+   "tours": []
+  },
+  {
    "label": "Persetujuan AI",
    "path": "/ai/approvals",
    "perms": [
@@ -963,6 +973,9 @@
   ],
   "/ai/dashboard": [
    "ai.agent.use"
+  ],
+  "/ai/import": [
+   "import.smart.use"
   ],
   "/ai/settings": [
    "ai.agent.admin"

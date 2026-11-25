@@ -8,6 +8,7 @@ import AIChatPage from "@/portals/ai/AIChatPage";
 import AIActionsPage from "@/portals/ai/AIActionsPage";
 import AISettingsPage from "@/portals/ai/AISettingsPage";
 import AIDashboardPage from "@/portals/ai/AIDashboardPage";
+import AIImportPage from "@/portals/ai/AIImportPage";
 
 export default function AIPortal() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function AIPortal() {
       <Routes>
         <Route index element={g("ai.agent.use", <AIChatPage />)} />
       <Route path="dashboard" element={g("ai.agent.use", <AIDashboardPage />)} />
+      <Route path="import" element={g("import.smart.use", <AIImportPage />)} />
       <Route path="approvals" element={g("ai.agent.use", <AIActionsPage />)} />
       <Route path="settings" element={g("ai.agent.admin", <AISettingsPage />)} />
       <Route path="*" element={<Navigate to="/ai" replace />} />

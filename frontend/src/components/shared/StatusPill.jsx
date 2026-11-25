@@ -107,6 +107,18 @@ const STATUS = {
   risk_sedang: ["Risiko Sedang", "info"],
   risk_tinggi: ["Risiko Tinggi", "warning"],
   risk_kritis: ["Risiko Kritis", "danger"],
+  // Impor Cerdas: status batch & verdict per toko/hari
+  committing: ["Sedang Diimpor", "info"],
+  committed: ["Diimpor", "success"],
+  rolled_back: ["Dibatalkan", "neutral"],
+  baru: ["Baru", "info"],
+  sama: ["Sudah Ada (Sama)", "neutral"],
+  ganti: ["Ganti", "warning"],
+  gabung: ["Gabung", "accent"],
+  konflik: ["Konflik", "danger"],
+  terkunci: ["Terkunci", "danger"],
+  kosong: ["Semua Duplikat", "neutral"],
+  dup: ["Duplikat", "warning"],
 };
 
 

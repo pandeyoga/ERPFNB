@@ -75,6 +75,9 @@ export const ROUTE_PERMS = {
   "/ai/dashboard": [
     "ai.agent.use"
   ],
+  "/ai/import": [
+    "import.smart.use"
+  ],
   "/ai/settings": [
     "ai.agent.admin"
   ],
