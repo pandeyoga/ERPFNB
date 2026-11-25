@@ -213,19 +213,3 @@ async def export_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename=market_list_{year}.xlsx"},
     )
-
-
-# =================== PRICE INTELLIGENCE ===================
-
-@router.get("/intelligence")
-async def price_intelligence(
-    quarter_id: Optional[str] = None,
-    category_id: Optional[str] = None,
-    top_n: int = Query(20, ge=5, le=100),
-    user: dict = Depends(require_perm("inventory.view")),
-):
-    return ok_envelope(await vendor_item_service.get_price_intelligence(
-        quarter_id=quarter_id,
-        category_id=category_id,
-        top_n=top_n,
-    ))

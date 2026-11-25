@@ -23,12 +23,12 @@ GRANTS: dict[str, list[str]] = {
     "FINANCE_STAFF": ["tax.efaktur.read", "tax.ebupot.read"],
     "HR_MANAGER": ["hr.read", "hr.write", "hr.payroll.read", "hr.payroll.manage", "hr.payroll.approve", "hr.employee.read"],
     "HR_OFFICER": ["hr.read", "hr.payroll.read", "hr.payroll.manage", "hr.employee.read"],
-    "INVENTORY_MANAGER": ["inventory.item.read", "inventory.item.update"],
+    "INVENTORY_MANAGER": ["inventory.item.read", "inventory.item.update", "procurement.sourcing.read"],
     "INVENTORY_STAFF": ["inventory.item.read"],
     "PROCUREMENT_MANAGER": ["inventory.item.read", "procurement.sourcing.read", "procurement.price_list.manage",
                             "procurement.sourcing.settings"],
     "PROCUREMENT_STAFF": ["inventory.item.read", "procurement.sourcing.read", "procurement.price_list.manage"],
-    "OUTLET_MANAGER": ["inventory.item.read", "reservations.reports"],
+    "OUTLET_MANAGER": ["inventory.item.read", "reservations.reports", "procurement.sourcing.read"],
 }
 
 _LEDGER_KEY = "rbac_grants_applied"

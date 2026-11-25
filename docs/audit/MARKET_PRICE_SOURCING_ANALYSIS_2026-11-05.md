@@ -330,8 +330,8 @@ Izin Sourcing baru: `procurement.sourcing.read`, `procurement.price_list.manage`
 (+ `procurement.market_list.manage` untuk harga acuan). Default: Procurement Manager semua; Procurement Staff
 read + price list; Executive / Owner / GM / Finance Manager read.
 
-> Catatan: Outlet Manager dan Inventory Manager **tidak** mendapat `procurement.sourcing.read` secara default.
-> Bila perlu, beri lewat layar Peran.
+> Sejak 25 Nov 2026 (keputusan): Outlet Manager dan Inventory Manager juga mendapat `procurement.sourcing.read`
+> secara default (diberikan sekali lewat `rbac_sync`; bisa dicabut di layar Peran).
 
 ### 8.4 Tahap 2 — kualitas di GR & cek harga di titik keputusan (8 Nov 2026)
 
@@ -353,8 +353,10 @@ read + price list; Executive / Owner / GM / Finance Manager read.
 ### 8.5 Belum dikerjakan
 
 - Benchmark PIHPS/Bapanas, resep/BOM & dampak HPP (ditunda sesuai keputusan).
-- **Perlu keputusan**: harga PO di atas acuan cukup peringatan (sekarang), atau wajib alasan / approval tambahan?
-- **Perlu keputusan**: koleksi `item_pricings` (API `/api/inventory/items/{id}/pricing`, tanpa UI) dan endpoint lama
-  `/market-list/intelligence` — dihapus, atau dialihkan ke penawaran supplier?
+- Keputusan 25 Nov 2026:
+  - harga PO di atas acuan **tetap peringatan saja** (tidak wajib alasan/approval tambahan);
+  - API lama **dihapus**: `/api/inventory/items/{id}/pricing*` + `/api/finance/item-pricing` (koleksi `item_pricings`,
+    tanpa UI) dan `/api/market-list/intelligence`. Data lama di koleksi `item_pricings` tidak disentuh (tidak di-drop);
+  - akses lihat Sourcing untuk Outlet Manager & Inventory Manager: **ya** (lihat §8.3).
 - Konversi satuan (kg ↔ pack 500 g) dan spesifikasi/grade item belum ada; harga beda satuan tidak dibandingkan.
 - Upload foto memakai object storage; di lingkungan lokal tanpa akses storage, upload gagal (perilaku lama).

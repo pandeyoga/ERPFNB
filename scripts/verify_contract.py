@@ -64,7 +64,7 @@ CANONICAL_COLLECTIONS = {
     "cash_accounts", "cash_balance_snapshots", "digest_subscriptions",
     "digest_logs", "outlet_budgets", "budget_increase_requests",
     # Other
-    "reservations", "ocr_receipt_cache", "item_pricings",
+    "reservations", "ocr_receipt_cache",
     # CRM / Loyalty
     "customers", "loyalty_transactions", "redemptions",
     # AR

@@ -238,28 +238,6 @@ async def chart_of_accounts_alias(
     return ok_envelope(rows)
 
 
-@router.get("/item-pricing")
-async def item_pricing_alias(
-    item_id: Optional[str] = None,
-    is_active: Optional[bool] = None,
-    page: int = Query(1, ge=1),
-    per_page: int = Query(50, ge=1, le=200),
-    user: dict = Depends(require_perm("finance.journal_entry.read")),
-):
-    """Alias for /api/inventory/items/pricing/list — Phase 2 multi-period pricing."""
-    from core.db import get_db
-    db = get_db()
-    q: dict = {}
-    if item_id:
-        q["item_id"] = item_id
-    if is_active is not None:
-        q["is_active"] = is_active
-    total = await db.item_pricings.count_documents(q)
-    skip = (page - 1) * per_page
-    rows = await db.item_pricings.find(q, {"_id": 0}).sort("effective_from", -1).skip(skip).limit(per_page).to_list(per_page)
-    return ok_envelope(rows, {"page": page, "per_page": per_page, "total": total})
-
-
 # ---------------- BALANCE SHEET / CASHFLOW ----------------
 @router.get("/balance-sheet")
 async def balance_sheet(
