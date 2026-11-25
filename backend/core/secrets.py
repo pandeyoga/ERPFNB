@@ -2,7 +2,8 @@
 
 Resolves the encryption key from these sources, in order:
   1. `SECRETS_ENCRYPTION_KEY` env var (must be 32 url-safe base64 bytes)
-  2. Persisted key file at `/app/.app_secret` (auto-generated on first boot)
+  2. Persisted key file: `SECRETS_KEY_FILE`, else an existing `/app/.app_secret` (old
+     deployments), else `<repo>/.app_secret` (auto-generated on first boot)
   3. Throws RuntimeError if neither available (should never happen due to step 2)
 
 Design:
@@ -26,7 +27,12 @@ from cryptography.fernet import Fernet, InvalidToken
 logger = logging.getLogger("aurora.secrets")
 
 PREFIX = "enc_v1::"
-_DEFAULT_KEY_FILE = Path("/app/.app_secret")
+_REPO_KEY_FILE = Path(__file__).resolve().parents[2] / ".app_secret"
+_LEGACY_KEY_FILE = Path("/app/.app_secret")  # lokasi di platform lama; tetap dipakai bila ada
+
+
+def _default_key_file() -> Path:
+    return _LEGACY_KEY_FILE if _LEGACY_KEY_FILE.exists() else _REPO_KEY_FILE
 
 _fernet: Optional[Fernet] = None
 
@@ -44,7 +50,7 @@ def _resolve_key_bytes() -> bytes:
                 "SECRETS_ENCRYPTION_KEY is set but invalid (%s); falling back to file-based key",
                 e,
             )
-    key_file = Path(os.environ.get("SECRETS_KEY_FILE", str(_DEFAULT_KEY_FILE)))
+    key_file = Path(os.environ.get("SECRETS_KEY_FILE") or _default_key_file())
     if key_file.exists():
         try:
             data = key_file.read_bytes().strip()
@@ -65,7 +71,9 @@ def _resolve_key_bytes() -> bytes:
         logger.info("Generated new secrets encryption key at %s", key_file)
     except Exception:  # noqa: BLE001
         logger.exception(
-            "Could not persist encryption key; will only live for this process"
+            "Could not persist encryption key to %s; it will only live for this process and "
+            "secrets saved now become unreadable after a restart. Set SECRETS_ENCRYPTION_KEY.",
+            key_file,
         )
     return new_key
 

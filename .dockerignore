@@ -1,0 +1,18 @@
+# Konteks build docker = root repo. Hanya backend/, frontend/, scripts/, deploy/ yang dipakai.
+.git
+**/node_modules
+**/__pycache__
+**/.venv
+**/.pytest_cache
+frontend/build
+**/.env
+**/.env.*
+.app_secret
+uploads
+backend/uploads
+docs
+memory
+test_reports
+tests
+scripts/artifacts
+scripts/ui_metrics/out

@@ -3,7 +3,8 @@ import { requestQueue } from "./requestQueue";
 import { perfMonitor } from "./perfMonitor";
 import { logger } from "./logger";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Kosong = same-origin (/api diteruskan proxy ke backend). Jangan biarkan undefined → "undefined/api".
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export const API_BASE = `${BACKEND_URL}/api`;
 
 // FE-06: session rides on httpOnly cookies (aurora_at / aurora_rt) — no token in JS storage

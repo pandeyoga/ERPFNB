@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 
 const LoyaltyAuthContext = createContext(null);
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 export function LoyaltyAuthProvider({ children }) {
   const [customer, setCustomer] = useState(null);

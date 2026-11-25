@@ -1,0 +1,29 @@
+# Web server produksi: menyajikan build React dan meneruskan /api + /uploads ke backend dalam SATU origin.
+# SITE_ADDRESS = nama domain (mis. erp.contoh.com) → HTTPS Let's Encrypt otomatis (port 80 & 443 harus terbuka).
+# SITE_ADDRESS = :80 → HTTP saja (uji lokal, atau bila TLS sudah ditangani proxy/load balancer lain di depan).
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	@backend path /api/* /uploads/*
+	handle @backend {
+		# Host asli diteruskan apa adanya (dipakai cek same-origin backend); X-Forwarded-For diisi Caddy.
+		reverse_proxy backend:8001
+	}
+
+	handle {
+		root * /srv/www
+		@immutable path /static/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+		@html not path /static/*
+		header @html Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+}

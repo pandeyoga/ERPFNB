@@ -81,7 +81,7 @@ function ImportTab({ collections, onSuccess }) {
         : "/api/admin/data/import";
 
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}${endpoint}`,
+        `${process.env.REACT_APP_BACKEND_URL || ""}${endpoint}`,
         {
           method: "POST",
           credentials: "include",

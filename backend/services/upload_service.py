@@ -1,7 +1,6 @@
 """File Upload Service — Phase 8B foundation.
 
-Stores uploaded files on local disk under /app/uploads/{category}/{yyyy-mm}/{uuid}.{ext}
-and creates an `attachments` Mongo doc per upload for retrieval + RBAC.
+Stores uploaded files via core.object_storage (local disk under UPLOAD_DIR, or S3) and creates an `attachments` Mongo doc per upload for retrieval + RBAC.
 
 Design goals:
 - Pragmatic local-disk storage (per PRD): no S3/GCS yet. Easy to swap later.
@@ -26,11 +25,12 @@ from core.exceptions import ForbiddenError, NotFoundError, ValidationError
 
 logger = logging.getLogger("aurora.uploads")
 
-UPLOAD_ROOT = Path("/app/uploads")
-UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
-
 # Configuration
 from core.config import settings as _settings
+
+# File lokal lama (sebelum object storage) disimpan relatif terhadap folder upload. Dicari di
+# UPLOAD_DIR dulu, lalu /app/uploads (lokasi di platform lama) — hanya dibaca, tidak dibuat.
+LEGACY_UPLOAD_ROOTS = (Path(_settings.upload_dir), Path("/app/uploads"))
 MAX_BYTES = _settings.max_upload_mb * 1024 * 1024  # B6: single size limit (MAX_UPLOAD_SIZE_MB)
 
 # Magic bytes (first bytes) yang valid per tipe file — A17 fix: SEC-014
@@ -274,8 +274,11 @@ async def get_attachment_bytes(file_id: str, *, user: Optional[dict] = None) -> 
         from core.object_storage import get_object
         data, _ = await get_object(a["storage_path"])
         return data
-    p = Path(a.get("absolute_path") or (UPLOAD_ROOT / a["storage_path"]))  # legacy local files
-    if not p.exists():
+    # legacy local files
+    candidates = [Path(a["absolute_path"])] if a.get("absolute_path") else []
+    candidates += [root / a["storage_path"] for root in LEGACY_UPLOAD_ROOTS]
+    p = next((c for c in candidates if c.exists()), None)
+    if p is None:
         raise NotFoundError("File hilang dari storage")
     return p.read_bytes()
 

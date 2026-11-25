@@ -64,7 +64,7 @@ function ExportTab({ collections }) {
    *  (sebelumnya Quick Export tidak mengecek response.ok dan mengunduh JSON error). */
   const downloadExport = async (colls, format) => {
     const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/api/admin/data/export`,
+      `${process.env.REACT_APP_BACKEND_URL || ""}/api/admin/data/export`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

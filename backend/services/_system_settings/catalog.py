@@ -13,7 +13,7 @@ KNOWN_SETTINGS: dict[str, dict] = {
     "AI_MODEL": {"label": "Model Claude", "description": "Model untuk semua fitur AI. Default claude-opus-5-5.", "is_secret": False, "category": "ai", "placeholder": "claude-opus-5-5"},
     # Penyimpanan file (upload, foto struk, lampiran, gambar CMS)
     "STORAGE_BACKEND": {"label": "Penyimpanan File", "description": "local (disk server; default) | s3 (S3-compatible: AWS S3, Cloudflare R2, MinIO, dll.).", "is_secret": False, "category": "storage", "placeholder": "local"},
-    "UPLOAD_DIR": {"label": "Folder Upload (local)", "description": "Folder di server untuk STORAGE_BACKEND=local. Pastikan volume persisten.", "is_secret": False, "category": "storage", "placeholder": "/app/backend/uploads"},
+    "UPLOAD_DIR": {"label": "Folder Upload (local)", "description": "Folder di server untuk STORAGE_BACKEND=local. Pastikan volume persisten.", "is_secret": False, "category": "storage", "placeholder": "/data/uploads"},
     "S3_BUCKET": {"label": "S3 Bucket", "description": "Nama bucket untuk STORAGE_BACKEND=s3.", "is_secret": False, "category": "storage", "placeholder": "erp-uploads"},
     "S3_ENDPOINT_URL": {"label": "S3 Endpoint URL", "description": "Kosongkan untuk AWS; isi untuk R2/MinIO (mis. https://<akun>.r2.cloudflarestorage.com).", "is_secret": False, "category": "storage", "placeholder": "https://..."},
     "S3_REGION": {"label": "S3 Region", "description": "Region bucket (R2: auto).", "is_secret": False, "category": "storage", "placeholder": "ap-southeast-1"},

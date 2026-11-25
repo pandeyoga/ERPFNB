@@ -1,5 +1,7 @@
 # Menjalankan FnB Group ERP di komputer lokal
 
+> Untuk deploy ke server produksi, lihat [DEPLOY.md](DEPLOY.md).
+
 Hasil akhirnya: frontend di **http://localhost:3000**, backend di **http://localhost:8001**, MongoDB di
 `localhost:27017`, berisi data demo.
 
@@ -26,7 +28,6 @@ Windows: jalankan semua perintah di **WSL2** (Ubuntu) atau Git Bash. Script seed
 ```bash
 git clone https://github.com/pandeyoga/ERPFNB.git
 cd ERPFNB
-git checkout claude/bold-newton-uplp38
 ```
 
 ## 3. MongoDB
@@ -114,6 +115,5 @@ Akun peran lain (HR, outlet, inventory) bisa dilihat di Admin › Users & Roles.
 | Setelah login kembali ke halaman login | `COOKIE_SECURE` belum `false` di `backend/.env` (cookie Secure tidak dikirim lewat http). Ubah lalu restart backend. |
 | Backend gagal start: `KeyError: 'JWT_SECRET'` | `backend/.env` belum dibuat atau `JWT_SECRET` kosong. |
 | Backend gagal start: `ServerSelectionTimeoutError` | MongoDB belum berjalan atau `MONGO_URL` salah. |
-| `yarn install` gagal di `@emergentbase/visual-edits` | Paket editor visual Emergent. Hapus baris itu dari `devDependencies` di `frontend/package.json`; aplikasi tetap jalan tanpa paket ini. |
 | Port 3000 / 8001 dipakai aplikasi lain | Frontend: `PORT=3001 yarn start`. Backend di port lain: jalankan uvicorn dengan `--port 8002` dan isi `LOCAL_BACKEND_URL=http://localhost:8002` di `frontend/.env`. |
 | Fitur AI menjawab "AI tidak aktif" | Isi `ANTHROPIC_API_KEY` di `backend/.env` atau Admin → Integrations → AI (Claude). |

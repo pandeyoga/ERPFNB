@@ -125,7 +125,7 @@ export default function FileDropZone({
   if (att) {
     const isImage = (att.content_type || "").startsWith("image/");
     const fileUrl = att.url
-      ? `${process.env.REACT_APP_BACKEND_URL}${att.url}`
+      ? `${process.env.REACT_APP_BACKEND_URL || ""}${att.url}`
       : null;
     return (
       <div

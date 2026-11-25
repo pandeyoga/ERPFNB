@@ -6,7 +6,7 @@
  * satu origin, sehingga cookie login dan cek CSRF same-origin backend tetap lolos:
  * xfwd mengirim X-Forwarded-Host = localhost:3000, yang dibandingkan dengan header Origin.
  *
- * Di deployment, /api dirutekan ingress langsung ke backend — file ini tidak dipakai.
+ * Di produksi, Caddy meneruskan /api ke backend (deploy/Caddyfile) — file ini tidak dipakai.
  */
 const { createProxyMiddleware } = require("http-proxy-middleware");
 

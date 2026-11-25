@@ -214,7 +214,7 @@ export default function DailyClose({ embedded = false }) {
             </div>
             {closed && status.record?.deposit_slip_url && (
               <a
-                href={`${process.env.REACT_APP_BACKEND_URL}${status.record.deposit_slip_url}`}
+                href={`${process.env.REACT_APP_BACKEND_URL || ""}${status.record.deposit_slip_url}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs h-8 px-3 rounded-md border border-input hover:bg-accent inline-flex items-center gap-1.5"
@@ -392,7 +392,7 @@ export default function DailyClose({ embedded = false }) {
               key: "slip", label: "Slip",
               render: r => r.deposit_slip_url
                 ? <a
-                    href={`${process.env.REACT_APP_BACKEND_URL}${r.deposit_slip_url}`}
+                    href={`${process.env.REACT_APP_BACKEND_URL || ""}${r.deposit_slip_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-foreground hover:underline inline-flex items-center gap-1"

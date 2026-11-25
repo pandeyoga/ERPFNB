@@ -452,7 +452,7 @@ function PettyCashForm({ open, outletId, coas, onClose, onSaved }) {
               <ReceiptCapture
                 onExtracted={handleOCRExtracted}
                 onImage={(dataUrl) => setForm(f => ({ ...f, receipt_url: dataUrl }))}
-                onUploaded={(att) => setForm(f => ({ ...f, attachment_id: att.id, receipt_url: `${process.env.REACT_APP_BACKEND_URL}${att.url}` }))}
+                onUploaded={(att) => setForm(f => ({ ...f, attachment_id: att.id, receipt_url: `${process.env.REACT_APP_BACKEND_URL || ""}${att.url}` }))}
                 sourceType="petty_cash"
                 compact
               />
