@@ -19,6 +19,7 @@ ANOMALY_TYPES: list[str] = [
     # AI Auditor (services/ai_audit/auditor.py)
     "duplicate_invoice", "duplicate_evidence", "split_purchase", "maker_checker", "journal_off_hours", "round_journal",
     "reversal_near_close", "benford_deviation", "amount_outlier", "po_above_benchmark",
+    "vendor_bank_changed", "new_vendor_large_payment", "invoice_mismatch", "opname_recurring_loss", "sensitive_account_journal",
 ]
 
 ANOMALY_TYPE_LABELS: dict[str, str] = {
@@ -31,6 +32,9 @@ ANOMALY_TYPE_LABELS: dict[str, str] = {
     "journal_off_hours": "Jurnal di Luar Jam Kerja", "round_journal": "Jurnal Angka Bulat Tanpa Bukti",
     "reversal_near_close": "Reversal Menjelang Tutup Buku", "benford_deviation": "Pola Angka Tidak Wajar (Benford)",
     "amount_outlier": "Nominal Menyimpang", "po_above_benchmark": "Harga PO di Atas Acuan",
+    "vendor_bank_changed": "Rekening Supplier Berubah lalu Dibayar", "new_vendor_large_payment": "Supplier Baru Dibayar Besar",
+    "invoice_mismatch": "Invoice/GR Tidak Sesuai PO", "opname_recurring_loss": "Selisih Opname Berulang",
+    "sensitive_account_journal": "Jurnal Manual Akun Sensitif",
 }
 
 VALID_STATUSES = ("open", "acknowledged", "investigating", "resolved", "false_positive")

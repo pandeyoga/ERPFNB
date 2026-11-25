@@ -34,7 +34,16 @@ TYPES = {
     "journal_off_hours": "Jurnal manual di luar jam kerja", "round_journal": "Jurnal angka bulat tanpa bukti",
     "reversal_near_close": "Reversal menjelang tutup buku", "benford_deviation": "Pola angka tidak wajar (Benford)",
     "amount_outlier": "Nominal menyimpang dari pola", "po_above_benchmark": "Harga PO di atas acuan pasar",
+    "vendor_bank_changed": "Rekening supplier berubah lalu dibayar", "new_vendor_large_payment": "Supplier baru langsung dibayar besar",
+    "invoice_mismatch": "Invoice/GR tidak sesuai PO", "opname_recurring_loss": "Selisih opname berulang",
+    "sensitive_account_journal": "Jurnal manual ke akun sensitif",
 }
+NEW_VENDOR_LIMIT = 10_000_000
+BANK_FIELDS = ("bank_account", "bank_account_number", "bank_account_no", "account_number", "bank_name", "rekening", "no_rekening",
+               "bank_account_name", "account_name")
+SENSITIVE = ("retained_earnings", "income_summary", "cash_on_hand", "bank_default", "inventory", "accounts_payable",
+             "cards_receivable", "marketplace_receivable", "petty_cash", "salary_payable")
+TRUSTED_SOURCES = ("bank_recon", "ocr", "accrual", "accrual_reversal")
 SPLIT_LIMIT = 10_000_000
 
 
@@ -238,8 +247,153 @@ async def _po_prices(since: str) -> list[dict]:
     return out
 
 
+async def _vendor_payments(since: str) -> list[dict]:
+    """Pembayaran ke supplier: pembayaran di hutang (AP) + Payments (payment_requests) berstatus paid."""
+    db = get_db()
+    out = []
+    async for a in db.ap_ledgers.find({"deleted_at": None, "payments.0": {"$exists": True}}, {"_id": 0, "vendor_id": 1, "payments": 1, "outlet_id": 1}):
+        for p in a.get("payments") or []:
+            d = str(p.get("date") or p.get("paid_at") or "")[:10]
+            if d >= since:
+                out.append({"vendor_id": a["vendor_id"], "amount": float(p.get("amount") or 0), "date": d, "ref": p.get("ref"),
+                            "outlet_id": a.get("outlet_id")})
+    async for p in db.payment_requests.find({"deleted_at": None, "status": "paid", "payee_type": "vendor"},
+                                            {"_id": 0, "payee_id": 1, "amount": 1, "paid_at": 1, "payment_date": 1, "doc_no": 1, "outlet_id": 1}):
+        d = str(p.get("payment_date") or p.get("paid_at") or "")[:10]
+        if d >= since and p.get("payee_id"):
+            out.append({"vendor_id": p["payee_id"], "amount": float(p.get("amount") or 0), "date": d, "ref": p.get("doc_no"),
+                        "outlet_id": p.get("outlet_id")})
+    return out
+
+
+async def _vendor_risk(since: str) -> list[dict]:
+    """Rekening supplier diubah lalu dibayar ≤ 30 hari (pola penipuan klasik), dan supplier baru (≤ 30 hari) langsung dibayar besar."""
+    db = get_db()
+    pays = await _vendor_payments(since)
+    if not pays:
+        return []
+    by_v = defaultdict(list)
+    for p in pays:
+        by_v[p["vendor_id"]].append(p)
+    vendors = {v["id"]: v async for v in db.vendors.find({"id": {"$in": list(by_v)}}, {"_id": 0, "id": 1, "name": 1, "created_at": 1})}
+    out = []
+    async for log in db.audit_log.find({"entity_type": {"$in": ["vendors", "vendor"]}, "entity_id": {"$in": list(by_v)},
+                                        "action": {"$in": ["update", "patch"]}}, {"_id": 0}):
+        before, after = log.get("before") or {}, log.get("after") or {}
+        changed = [f for f in BANK_FIELDS if f in after and str(after.get(f) or "") != str(before.get(f) or "")]
+        if not changed:
+            continue
+        cdate = str(log.get("timestamp") or "")[:10]
+        hits = [p for p in by_v[log["entity_id"]] if cdate <= p["date"] <= (datetime.fromisoformat(cdate) + timedelta(days=30)).date().isoformat()] if cdate else []
+        if hits:
+            tot = sum(p["amount"] for p in hits)
+            out.append({"type": "vendor_bank_changed", "source_type": "vendor", "source_id": f"{log['entity_id']}:{cdate}",
+                        "vendor_id": log["entity_id"], "severity": "severe", "amount": tot,
+                        "title": f"Rekening {vendors.get(log['entity_id'], {}).get('name', 'supplier')} diubah {cdate}, lalu dibayar {_rp(tot)}",
+                        "description": f"Field berubah: {', '.join(changed)}; {len(hits)} pembayaran ≤ 30 hari setelahnya.",
+                        "details": {"changed_by": log.get("user_id"), "fields": changed, "payments": hits[:10]},
+                        "recommended_action": "Konfirmasi perubahan rekening langsung ke supplier lewat kontak lama sebelum pembayaran berikutnya."})
+    for vid, ps in by_v.items():
+        v = vendors.get(vid) or {}
+        created = str(v.get("created_at") or "")[:10]
+        if not created or created < since:
+            continue
+        early = [p for p in ps if p["date"] <= (datetime.fromisoformat(created) + timedelta(days=30)).date().isoformat()]
+        tot = sum(p["amount"] for p in early)
+        if tot >= NEW_VENDOR_LIMIT:
+            out.append({"type": "new_vendor_large_payment", "source_type": "vendor", "source_id": vid, "vendor_id": vid,
+                        "severity": "severe" if tot >= 5 * NEW_VENDOR_LIMIT else "mild", "amount": tot,
+                        "title": f"Supplier baru {v.get('name')} (dibuat {created}) dibayar {_rp(tot)} dalam 30 hari",
+                        "description": f"{len(early)} pembayaran; verifikasi legalitas, NPWP & rekening atas nama perusahaan.",
+                        "details": {"payments": early[:10]}, "recommended_action": "Pastikan due diligence supplier & approval pembayaran sudah sesuai."})
+    return out
+
+
+async def _invoice_mismatch(since: str) -> list[dict]:
+    from services.ai_finance import reconcile
+    days = max(1, (datetime.now(WIB).date() - datetime.fromisoformat(since).date()).days)
+    res = await reconcile.three_way({"id": "ai_auditor"}, days=days)
+    out = []
+    for r in res["rows"]:
+        if r["status"] != "selisih" or not r.get("gr_id"):
+            continue
+        k = r["keterangan"]
+        if not any(w in k for w in ("harga GR", "diterima", "≠ nilai GR", "tidak ada di PO")):
+            continue
+        out.append({"type": "invoice_mismatch", "source_type": "goods_receipt", "source_id": r["gr_id"],
+                    "severity": "severe" if "≠ nilai GR" in k or "harga GR" in k else "mild", "amount": r.get("nilai_gr"),
+                    "title": f"{r['gr']} ({r.get('vendor') or '-'}) tidak sesuai PO {r.get('po') or ''}".strip(), "description": k,
+                    "recommended_action": "Cek dokumen penerimaan & invoice; minta nota kredit bila harga/qty melebihi PO."})
+    return out
+
+
+async def _opname_recurring(since: str) -> list[dict]:
+    db = get_db()
+    start = (datetime.now(WIB).date() - timedelta(days=120)).isoformat()
+    losses = defaultdict(list)
+    async for sess in db.opname_sessions.find({"deleted_at": None, "opname_date": {"$gte": start},
+                                               "status": {"$in": ["submitted", "approved", "posted", "completed"]}}, {"_id": 0}):
+        for ln in sess.get("lines") or []:
+            vv = float(ln.get("variance_value") or 0)
+            if vv < 0:
+                losses[(sess.get("outlet_id"), ln.get("item_id"))].append({"doc": sess.get("doc_no"), "date": sess.get("opname_date"),
+                                                                          "qty": ln.get("variance"), "value": vv, "item": ln.get("item_name")})
+    out = []
+    for (oid, iid), ls in losses.items():
+        tot = -sum(x["value"] for x in ls)
+        if len({x["doc"] for x in ls}) >= 2 and tot >= 100_000:
+            out.append({"type": "opname_recurring_loss", "source_type": "item", "source_id": f"{oid}:{iid}", "outlet_id": oid,
+                        "severity": "severe" if tot >= 1_000_000 or len(ls) >= 3 else "mild", "amount": tot,
+                        "title": f"{ls[0].get('item') or iid}: kurang di {len(ls)} opname berturut ({_rp(tot)})",
+                        "description": "; ".join(f"{x['date']} {x['qty']}" for x in ls[:6]),
+                        "recommended_action": "Telusuri resep/porsi, penerimaan, penyimpanan & akses gudang untuk item ini."})
+    return out
+
+
+async def _sensitive_journals(since: str) -> list[dict]:
+    from services import gl_mapping
+    db = get_db()
+    m = await gl_mapping.get_mapping()
+    sens: dict[str, str] = {}
+    for k in SENSITIVE:
+        v = m.get(k)
+        for cid in ([v] if isinstance(v, str) else list((v or {}).values()) if isinstance(v, dict) else []):
+            if isinstance(cid, str):
+                sens[cid] = k
+    for k, v in m.items():                       # pemetaan per toko: inventory.<outlet_id>
+        if "." in k and k.split(".")[0] in SENSITIVE and isinstance(v, str):
+            sens[v] = k.split(".")[0]
+    if not sens:
+        return []
+    groups: dict[tuple, list] = defaultdict(list)
+    async for je in db.journal_entries.find({"deleted_at": None, "status": "posted", "entry_date": {"$gte": since},
+                                             "source_type": {"$in": [None, "manual"]}}, {"_id": 0}):
+        if (je.get("reference") or {}).get("source") in TRUSTED_SOURCES:
+            continue
+        for ln in je.get("lines") or []:
+            if ln.get("coa_id") in sens:
+                amt = max(float(ln.get("dr") or 0), float(ln.get("cr") or 0))
+                groups[(sens[ln["coa_id"]], ln.get("dim_outlet") or je.get("outlet_id"), str(je.get("entry_date"))[:7])].append(
+                    {"id": je["id"], "doc_no": je.get("doc_no"), "date": je.get("entry_date"), "amount": amt,
+                     "desc": (je.get("description") or "")[:80]})
+    out = []
+    for (acct, oid, month), js in groups.items():
+        tot = sum(x["amount"] for x in js)
+        top = sorted(js, key=lambda x: -x["amount"])
+        out.append({"type": "sensitive_account_journal", "source_type": "journal_group", "source_id": f"{acct}:{oid}:{month}",
+                    "outlet_id": oid, "severity": "severe" if top[0]["amount"] >= 50_000_000 or len(js) >= 20 else "mild", "amount": tot,
+                    "title": f"{len(js)} jurnal manual ke akun {acct} ({month}) · {_rp(tot)}",
+                    "description": "; ".join(f"{x['doc_no'] or x['id'][:8]} {_rp(x['amount'])} {x['desc']}" for x in top[:5]),
+                    "details": {"journals": [x["id"] for x in top[:50]]},
+                    "recommended_action": "Pastikan ada dokumen pendukung & persetujuan; akun kas/bank/persediaan/hutang biasanya diisi "
+                                          "otomatis oleh transaksi — jurnal manual rutin ke akun ini tanda proses yang belum otomatis."})
+    return out
+
+
 CHECKS = {"duplicate_invoice": _dup_invoices, "duplicate_evidence": _dup_evidence, "split_purchase": _split_purchases,
-          "maker_checker": _maker_checker, "journals": _journals, "petty": _petty_patterns, "po_prices": _po_prices}
+          "maker_checker": _maker_checker, "journals": _journals, "petty": _petty_patterns, "po_prices": _po_prices,
+          "vendor_risk": _vendor_risk, "invoice_mismatch": _invoice_mismatch, "opname_recurring": _opname_recurring,
+          "sensitive_journals": _sensitive_journals}
 
 
 async def run(*, days: int = 60, user_id: Optional[str] = None, split_limit: float = SPLIT_LIMIT,
