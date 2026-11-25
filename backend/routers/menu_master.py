@@ -123,3 +123,31 @@ async def delete_item(item_id: str, user: dict = Depends(require_perm("menu.item
         raise NotFoundError("Menu")
     await audit_log(user_id=user["id"], entity_type="menu_item", entity_id=item_id, action="delete")
     return ok_envelope({"deleted": True})
+
+
+# ---------------- Resep (BOM) & HPP ----------------
+
+@router.get("/costing", summary="Ringkasan HPP & food cost % semua menu")
+async def costing(brand_id: Optional[str] = Query(None), user: dict = Depends(require_perm("menu.item.read"))):
+    from services import menu_recipe_service as svc
+    return ok_envelope(await svc.costing_overview(brand_id))
+
+
+@router.get("/items/{item_id}/recipe", summary="Resep menu + perhitungan HPP")
+async def get_recipe(item_id: str, user: dict = Depends(require_perm("menu.item.read"))):
+    from services import menu_recipe_service as svc
+    return ok_envelope(await svc.get_recipe(item_id))
+
+
+@router.put("/items/{item_id}/recipe", summary="Simpan resep menu (versi baru)")
+async def save_recipe(item_id: str, payload: dict = Body(...), user: dict = Depends(require_perm("menu.item.manage"))):
+    """{yield_qty: porsi, lines: [{item_id, qty, unit (g/kg/ml/l/pcs), waste_pct, note}], instructions?, price?}"""
+    from services import menu_recipe_service as svc
+    return ok_envelope(await svc.save_recipe(item_id, payload, user=user))
+
+
+@router.post("/recipe/simulate", summary="Simulasi HPP resep (what-if, tanpa menyimpan)")
+async def simulate(payload: dict = Body(...), user: dict = Depends(require_perm("menu.item.read"))):
+    """{lines: [...], yield_qty, price} — untuk riset/variasi resep, ganti bahan, atau uji harga jual."""
+    from services import menu_recipe_service as svc
+    return ok_envelope(await svc.cost_recipe(payload.get("lines") or [], float(payload.get("yield_qty") or 1), payload.get("price")))

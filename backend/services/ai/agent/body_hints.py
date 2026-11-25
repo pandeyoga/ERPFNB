@@ -107,6 +107,11 @@ BODY_HINTS: dict[str, str] = {
         '{"name": "", "category": "", "bucket": "food|beverage|other", "price": 0, "needs_review": false,'
         ' "add_aliases": [], "remove_aliases": []} — kirim hanya yang diubah.'),
     "POST /api/menu/items/{item_id}/merge": '{"source_ids": ["<id menu duplikat>"]}',
+    "PUT /api/menu/items/{item_id}/recipe": (
+        '{"yield_qty": 1, "lines": [{"item_id": "<id bahan di master item>", "qty": 150, "unit": "g", "waste_pct": 5,'
+        ' "note": ""}], "instructions": "langkah memasak", "price": 45000} — satuan bahan boleh g/kg/ml/l/pcs; '
+        'bahan yang belum ada di master item tambahkan dulu (POST /api/master/items).'),
+    "POST /api/menu/recipe/simulate": '{"yield_qty": 1, "price": 45000, "lines": [{"item_id": "", "qty": 150, "unit": "g", "waste_pct": 5}]}',
     "PATCH /api/master/{entity}/{id_}": (
         'Kirim HANYA field yang diubah. Baca dokumen saat ini dulu (GET /api/master/{entity}) agar tahu nama field.'),
 }
