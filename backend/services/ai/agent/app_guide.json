@@ -1,0 +1,4014 @@
+{
+ "_generated_by": "scripts/gen_ai_guide.py — jangan edit manual",
+ "pages": [
+  {
+   "label": "Overview",
+   "path": "/admin",
+   "perms": [],
+   "portal": "Admin Portal",
+   "section": "Overview",
+   "tours": [
+    "admin-home"
+   ]
+  },
+  {
+   "label": "Users & Roles",
+   "path": "/admin/user-management",
+   "perms": [
+    "admin.audit_log",
+    "admin.user"
+   ],
+   "portal": "Admin Portal",
+   "section": "Users & Roles",
+   "tours": [
+    "admin-user-management"
+   ]
+  },
+  {
+   "label": "Master Data",
+   "path": "/admin/master-data",
+   "perms": [],
+   "portal": "Admin Portal",
+   "section": "Master Data",
+   "tours": []
+  },
+  {
+   "label": "Business Rules",
+   "path": "/admin/configuration",
+   "perms": [
+    "admin.business_rules"
+   ],
+   "portal": "Admin Portal",
+   "section": "Configuration",
+   "tours": [
+    "admin-configuration"
+   ]
+  },
+  {
+   "label": "Approval Matrix",
+   "path": "/admin/approvals",
+   "perms": [
+    "admin.business_rules"
+   ],
+   "portal": "Admin Portal",
+   "section": "Configuration",
+   "tours": [
+    "admin-approval-builder"
+   ]
+  },
+  {
+   "label": "Integrations",
+   "path": "/admin/integrations",
+   "perms": [
+    "admin.business_rules"
+   ],
+   "portal": "Admin Portal",
+   "section": "Configuration",
+   "tours": [
+    "admin-integrations"
+   ]
+  },
+  {
+   "label": "Setup & Numbering",
+   "path": "/admin/setup",
+   "perms": [
+    "admin.business_rules"
+   ],
+   "portal": "Admin Portal",
+   "section": "Configuration",
+   "tours": [
+    "admin-setup"
+   ]
+  },
+  {
+   "label": "Loyalty Program",
+   "path": "/admin/loyalty",
+   "perms": [
+    "admin.loyalty"
+   ],
+   "portal": "Admin Portal",
+   "section": "Loyalty Program",
+   "tours": [
+    "admin-loyalty-overview"
+   ]
+  },
+  {
+   "label": "CMS Studio",
+   "path": "/admin/cms/brands",
+   "perms": [
+    "admin.cms"
+   ],
+   "portal": "Admin Portal",
+   "section": "CMS Studio",
+   "tours": [
+    "admin-cms-studio"
+   ]
+  },
+  {
+   "label": "Smart SEO",
+   "path": "/admin/smart-seo",
+   "perms": [
+    "admin.cms"
+   ],
+   "portal": "Admin Portal",
+   "section": "Smart SEO",
+   "tours": [
+    "admin-smart-seo"
+   ]
+  },
+  {
+   "label": "Monitoring",
+   "path": "/admin/operations",
+   "perms": [],
+   "portal": "Admin Portal",
+   "section": "Monitoring",
+   "tours": [
+    "admin-operations"
+   ]
+  },
+  {
+   "label": "System Settings",
+   "path": "/admin/settings",
+   "perms": [
+    "admin.system_settings"
+   ],
+   "portal": "Admin Portal",
+   "section": "System Settings",
+   "tours": [
+    "admin-settings"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/executive",
+   "perms": [],
+   "portal": "Executive Portal",
+   "section": "Overview",
+   "tours": [
+    "executive-owner-home"
+   ]
+  },
+  {
+   "label": "Sales Analytics",
+   "path": "/executive/analytics",
+   "perms": [],
+   "portal": "Executive Portal",
+   "section": "Analytics",
+   "tours": [
+    "executive-home"
+   ]
+  },
+  {
+   "label": "Performance Analytics",
+   "path": "/executive/analytics-hub",
+   "perms": [],
+   "portal": "Executive Portal",
+   "section": "Analytics",
+   "tours": [
+    "executive-analytics-hub"
+   ]
+  },
+  {
+   "label": "Budget Allocation",
+   "path": "/executive/outlet-budgets",
+   "perms": [
+    "outlet_budget.read"
+   ],
+   "portal": "Executive Portal",
+   "section": "Outlet Budget",
+   "tours": [
+    "executive-outlet-budgets"
+   ]
+  },
+  {
+   "label": "Budget Monitor",
+   "path": "/executive/budget-monitor",
+   "perms": [
+    "outlet_budget.monitor"
+   ],
+   "portal": "Executive Portal",
+   "section": "Outlet Budget",
+   "tours": [
+    "executive-budget-monitor"
+   ]
+  },
+  {
+   "label": "Budget Approvals",
+   "path": "/executive/budget-approvals",
+   "perms": [
+    "executive.budget.approve"
+   ],
+   "portal": "Executive Portal",
+   "section": "Outlet Budget",
+   "tours": [
+    "executive-budget-approvals"
+   ]
+  },
+  {
+   "label": "Increase Requests",
+   "path": "/executive/budget-increase-requests",
+   "perms": [
+    "executive.budget.approve"
+   ],
+   "portal": "Executive Portal",
+   "section": "Outlet Budget",
+   "tours": [
+    "executive-budget-increase"
+   ]
+  },
+  {
+   "label": "Executive Q&A",
+   "path": "/executive/ai-qa",
+   "perms": [
+    "ai.exec_qa.use"
+   ],
+   "portal": "Executive Portal",
+   "section": "AI Insights",
+   "tours": [
+    "executive-ai-qa"
+   ]
+  },
+  {
+   "label": "Anomaly Detection",
+   "path": "/executive/anomaly",
+   "perms": [],
+   "portal": "Executive Portal",
+   "section": "AI Insights",
+   "tours": [
+    "executive-anomaly"
+   ]
+  },
+  {
+   "label": "Reservations",
+   "path": "/executive/reservations",
+   "perms": [],
+   "portal": "Executive Portal",
+   "section": "Reservations",
+   "tours": [
+    "executive-reservations"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/finance",
+   "perms": [],
+   "portal": "Finance Portal",
+   "section": "Overview",
+   "tours": [
+    "finance-home"
+   ]
+  },
+  {
+   "label": "Sales Validation",
+   "path": "/finance/validation",
+   "perms": [
+    "finance.sales.validate"
+   ],
+   "portal": "Finance Portal",
+   "section": "Transactions",
+   "tours": [
+    "finance-validation"
+   ]
+  },
+  {
+   "label": "Journals",
+   "path": "/finance/journals",
+   "perms": [
+    "finance.journal_entry"
+   ],
+   "portal": "Finance Portal",
+   "section": "Transactions",
+   "tours": [
+    "finance-journals"
+   ]
+  },
+  {
+   "label": "Manual Journal",
+   "path": "/finance/manual-journal",
+   "perms": [
+    "finance.journal_entry.create"
+   ],
+   "portal": "Finance Portal",
+   "section": "Transactions",
+   "tours": [
+    "finance-manual-journal"
+   ]
+  },
+  {
+   "label": "Payments",
+   "path": "/finance/payments-hub",
+   "perms": [
+    "finance.ap.read",
+    "finance.ar",
+    "finance.bank_reconciliation",
+    "finance.cash.read",
+    "finance.payment"
+   ],
+   "portal": "Finance Portal",
+   "section": "Payments",
+   "tours": [
+    "finance-payments-hub"
+   ]
+  },
+  {
+   "label": "Fixed Assets",
+   "path": "/finance/assets",
+   "perms": [
+    "finance.asset"
+   ],
+   "portal": "Finance Portal",
+   "section": "Assets & Budget",
+   "tours": [
+    "finance-assets"
+   ]
+  },
+  {
+   "label": "Budget",
+   "path": "/finance/budget-hub",
+   "perms": [
+    "finance.budget"
+   ],
+   "portal": "Finance Portal",
+   "section": "Assets & Budget",
+   "tours": [
+    "finance-budget-hub"
+   ]
+  },
+  {
+   "label": "Tax & Compliance",
+   "path": "/finance/tax",
+   "perms": [
+    "finance.journal_entry",
+    "finance.report"
+   ],
+   "portal": "Finance Portal",
+   "section": "Tax & Compliance",
+   "tours": [
+    "finance-tax-hub"
+   ]
+  },
+  {
+   "label": "Period Closing",
+   "path": "/finance/period-closing",
+   "perms": [
+    "finance.journal_entry.read",
+    "finance.period.lock"
+   ],
+   "portal": "Finance Portal",
+   "section": "Period Closing",
+   "tours": [
+    "finance-period-closing"
+   ]
+  },
+  {
+   "label": "Reports",
+   "path": "/finance/reports",
+   "perms": [
+    "finance.report"
+   ],
+   "portal": "Finance Portal",
+   "section": "Reports",
+   "tours": [
+    "finance-reports-hub"
+   ]
+  },
+  {
+   "label": "Chart of Accounts",
+   "path": "/finance/coa",
+   "perms": [
+    "finance.journal_entry.read"
+   ],
+   "portal": "Finance Portal",
+   "section": "Chart of Accounts",
+   "tours": [
+    "finance-coa"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/hr",
+   "perms": [],
+   "portal": "HR Portal",
+   "section": "Overview",
+   "tours": [
+    "hr-home"
+   ]
+  },
+  {
+   "label": "Leave Requests",
+   "path": "/hr/leaves",
+   "perms": [],
+   "portal": "HR Portal",
+   "section": "Leave Requests",
+   "tours": [
+    "hr-leaves"
+   ]
+  },
+  {
+   "label": "Compensation",
+   "path": "/hr/compensation",
+   "perms": [
+    "hr.advance",
+    "hr.foc",
+    "hr.incentive",
+    "hr.lb_fund",
+    "hr.read",
+    "hr.service_charge",
+    "hr.voucher",
+    "hr.write"
+   ],
+   "portal": "HR Portal",
+   "section": "Compensation",
+   "tours": [
+    "hr-compensation"
+   ]
+  },
+  {
+   "label": "Job Listings",
+   "path": "/hr/job-listings",
+   "perms": [
+    "hr.read",
+    "hr.write"
+   ],
+   "portal": "HR Portal",
+   "section": "Recruitment",
+   "tours": [
+    "hr-job-listings"
+   ]
+  },
+  {
+   "label": "Job Applications",
+   "path": "/hr/job-applications",
+   "perms": [
+    "hr.read",
+    "hr.write"
+   ],
+   "portal": "HR Portal",
+   "section": "Recruitment",
+   "tours": [
+    "hr-job-applications"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/inventory",
+   "perms": [],
+   "portal": "Inventory Portal",
+   "section": "Overview",
+   "tours": [
+    "inventory-home"
+   ]
+  },
+  {
+   "label": "Stock Balance",
+   "path": "/inventory/balance",
+   "perms": [
+    "inventory.balance.read",
+    "inventory.view"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": [
+    "inventory-balance"
+   ]
+  },
+  {
+   "label": "Stock Movements",
+   "path": "/inventory/movements-hub",
+   "perms": [
+    "inventory.adjustment",
+    "inventory.movement.read",
+    "inventory.transfer",
+    "inventory.view"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": [
+    "inventory-movements-hub"
+   ]
+  },
+  {
+   "label": "Low Stock Alert",
+   "path": "/inventory/low-stock",
+   "perms": [
+    "inventory.balance.read",
+    "inventory.view"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": [
+    "inventory-low-stock"
+   ]
+  },
+  {
+   "label": "Stock Opname",
+   "path": "/inventory/opname",
+   "perms": [
+    "inventory.opname"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": [
+    "inventory-opname"
+   ]
+  },
+  {
+   "label": "Stock Valuation",
+   "path": "/inventory/valuation",
+   "perms": [
+    "inventory.valuation.read"
+   ],
+   "portal": "Inventory Portal",
+   "section": "Stock",
+   "tours": [
+    "inventory-valuation"
+   ]
+  },
+  {
+   "label": "Item Catalog",
+   "path": "/admin/master/items",
+   "perms": [],
+   "portal": "Inventory Portal",
+   "section": "Item Catalog",
+   "tours": []
+  },
+  {
+   "label": "Overview",
+   "path": "/outlet",
+   "perms": [],
+   "portal": "Outlet Portal",
+   "section": "Overview",
+   "tours": [
+    "outlet-home"
+   ]
+  },
+  {
+   "label": "Daily Sales",
+   "path": "/outlet/daily-sales",
+   "perms": [
+    "outlet.daily_sales.read"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Daily Operations",
+   "tours": [
+    "outlet-daily-sales"
+   ]
+  },
+  {
+   "label": "Daily Orders",
+   "path": "/outlet/daily-orders",
+   "perms": [
+    "outlet.bdo.create",
+    "outlet.fdo.create",
+    "outlet.kdo.create"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Daily Operations",
+   "tours": [
+    "outlet-daily-orders"
+   ]
+  },
+  {
+   "label": "Petty Cash",
+   "path": "/outlet/petty-cash",
+   "perms": [
+    "finance.cash.read",
+    "finance.cash.update",
+    "outlet.daily_close.execute"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Daily Operations",
+   "tours": [
+    "outlet-petty-cash"
+   ]
+  },
+  {
+   "label": "Urgent Purchase",
+   "path": "/outlet/urgent-purchase",
+   "perms": [
+    "procurement.pr.create"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Daily Operations",
+   "tours": [
+    "outlet-urgent-purchase"
+   ]
+  },
+  {
+   "label": "End of Day",
+   "path": "/outlet/end-of-day",
+   "perms": [
+    "outlet.daily_close.execute"
+   ],
+   "portal": "Outlet Portal",
+   "section": "End of Day",
+   "tours": [
+    "outlet-end-of-day"
+   ]
+  },
+  {
+   "label": "Outlet Budget",
+   "path": "/outlet/budget",
+   "perms": [],
+   "portal": "Outlet Portal",
+   "section": "Outlet Budget",
+   "tours": [
+    "outlet-budget-tracker"
+   ]
+  },
+  {
+   "label": "CRM & Reservations",
+   "path": "/outlet/crm",
+   "perms": [
+    "crm.view",
+    "reservations.read"
+   ],
+   "portal": "Outlet Portal",
+   "section": "CRM & Reservations",
+   "tours": [
+    "outlet-crm-hub"
+   ]
+  },
+  {
+   "label": "Stock Check",
+   "path": "/outlet/inventory/stock-check",
+   "perms": [
+    "inventory.balance.read",
+    "inventory.view"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Outlet Inventory",
+   "tours": [
+    "outlet-stock-check"
+   ]
+  },
+  {
+   "label": "Stock Transfers",
+   "path": "/outlet/inventory/transfers",
+   "perms": [
+    "inventory.transfer"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Outlet Inventory",
+   "tours": [
+    "outlet-stock-transfers"
+   ]
+  },
+  {
+   "label": "Usage Log",
+   "path": "/outlet/inventory/usage",
+   "perms": [
+    "inventory.movement.read",
+    "inventory.view"
+   ],
+   "portal": "Outlet Portal",
+   "section": "Outlet Inventory",
+   "tours": [
+    "outlet-usage-log"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/owner",
+   "perms": [
+    "owner.cockpit.access"
+   ],
+   "portal": "Owner Portal",
+   "section": "Cockpit",
+   "tours": [
+    "owner-home"
+   ]
+  },
+  {
+   "label": "AI Daily Briefing",
+   "path": "/owner/briefing",
+   "perms": [
+    "owner.cockpit.access"
+   ],
+   "portal": "Owner Portal",
+   "section": "Cockpit",
+   "tours": [
+    "owner-briefing"
+   ]
+  },
+  {
+   "label": "Cash Position",
+   "path": "/owner/cash",
+   "perms": [
+    "finance.cash.read",
+    "owner.cockpit.access"
+   ],
+   "portal": "Owner Portal",
+   "section": "Cash Position",
+   "tours": [
+    "owner-cash"
+   ]
+  },
+  {
+   "label": "Alert Settings",
+   "path": "/owner/digest-settings",
+   "perms": [
+    "owner.digest.manage"
+   ],
+   "portal": "Owner Portal",
+   "section": "Alert Settings",
+   "tours": [
+    "owner-digest-settings"
+   ]
+  },
+  {
+   "label": "Overview",
+   "path": "/procurement",
+   "perms": [],
+   "portal": "Procurement Portal",
+   "section": "Overview",
+   "tours": [
+    "procurement-home"
+   ]
+  },
+  {
+   "label": "Purchase Requests",
+   "path": "/procurement/pr",
+   "perms": [
+    "procurement.pr"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Requests",
+   "tours": [
+    "procurement-pr-list"
+   ]
+  },
+  {
+   "label": "PR Consolidation",
+   "path": "/procurement/consolidation",
+   "perms": [
+    "procurement.pr"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Requests",
+   "tours": [
+    "procurement-consolidation"
+   ]
+  },
+  {
+   "label": "RFQ",
+   "path": "/procurement/rfq",
+   "perms": [
+    "procurement.rfq"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Requests",
+   "tours": [
+    "procurement-rfq"
+   ]
+  },
+  {
+   "label": "Purchase Orders",
+   "path": "/procurement/po",
+   "perms": [
+    "procurement.po"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Orders",
+   "tours": [
+    "procurement-po-list"
+   ]
+  },
+  {
+   "label": "Procurement Kanban",
+   "path": "/procurement/kanban",
+   "perms": [
+    "procurement.po",
+    "procurement.pr",
+    "procurement.view"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Orders",
+   "tours": [
+    "procurement-kanban"
+   ]
+  },
+  {
+   "label": "Vendor Comparison",
+   "path": "/procurement/vendor-comparison",
+   "perms": [
+    "procurement.po",
+    "procurement.vendor.read",
+    "procurement.view"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Orders",
+   "tours": [
+    "procurement-vendor-compare"
+   ]
+  },
+  {
+   "label": "Goods Receipt",
+   "path": "/procurement/gr",
+   "perms": [
+    "procurement.gr"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Goods Receipt",
+   "tours": [
+    "procurement-gr"
+   ]
+  },
+  {
+   "label": "Vendors",
+   "path": "/procurement/vendors",
+   "perms": [
+    "procurement.vendor.read",
+    "procurement.view"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Vendors",
+   "tours": [
+    "procurement-vendors"
+   ]
+  },
+  {
+   "label": "Sourcing",
+   "path": "/procurement/sourcing",
+   "perms": [
+    "procurement.sourcing.read"
+   ],
+   "portal": "Procurement Portal",
+   "section": "Sourcing",
+   "tours": [
+    "procurement-sourcing"
+   ]
+  },
+  {
+   "label": "Report Center",
+   "path": "/reports",
+   "perms": [],
+   "portal": "Report Center",
+   "section": "Report Center",
+   "tours": []
+  }
+ ],
+ "route_perms": {
+  "/admin/approvals": [
+   "admin.business_rules"
+  ],
+  "/admin/cms/analytics": [
+   "admin.cms"
+  ],
+  "/admin/cms/brands": [
+   "admin.cms"
+  ],
+  "/admin/cms/careers": [
+   "admin.cms"
+  ],
+  "/admin/cms/media": [
+   "admin.cms"
+  ],
+  "/admin/cms/menu": [
+   "admin.cms"
+  ],
+  "/admin/cms/news": [
+   "admin.cms"
+  ],
+  "/admin/cms/outlets": [
+   "admin.cms"
+  ],
+  "/admin/cms/pages": [
+   "admin.cms"
+  ],
+  "/admin/cms/reviews": [
+   "admin.cms"
+  ],
+  "/admin/configuration": [
+   "admin.business_rules"
+  ],
+  "/admin/integrations": [
+   "admin.business_rules"
+  ],
+  "/admin/integrations/:tab": [
+   "admin.business_rules"
+  ],
+  "/admin/loyalty": [
+   "admin.loyalty"
+  ],
+  "/admin/loyalty/customers/:customerId": [
+   "admin.loyalty"
+  ],
+  "/admin/master/:entity": [
+   "admin.master_data"
+  ],
+  "/admin/operations/*": [
+   "admin.audit_log"
+  ],
+  "/admin/settings": [
+   "admin.system_settings"
+  ],
+  "/admin/setup": [
+   "admin.business_rules"
+  ],
+  "/admin/smart-seo": [
+   "admin.cms"
+  ],
+  "/admin/user-management": [
+   "admin.audit_log",
+   "admin.user"
+  ],
+  "/executive/ai-qa": [
+   "ai.exec_qa.use"
+  ],
+  "/executive/budget-approvals": [
+   "executive.budget.approve"
+  ],
+  "/executive/budget-increase-requests": [
+   "executive.budget.approve"
+  ],
+  "/executive/budget-monitor": [
+   "outlet_budget.monitor"
+  ],
+  "/executive/outlet-budgets": [
+   "outlet_budget.read"
+  ],
+  "/finance/assets": [
+   "finance.asset"
+  ],
+  "/finance/assets/:id": [
+   "finance.asset"
+  ],
+  "/finance/budget-hub": [
+   "finance.budget"
+  ],
+  "/finance/coa": [
+   "finance.journal_entry.read"
+  ],
+  "/finance/journals": [
+   "finance.journal_entry"
+  ],
+  "/finance/journals/:id": [
+   "finance.journal_entry"
+  ],
+  "/finance/manual-journal": [
+   "finance.journal_entry.create"
+  ],
+  "/finance/payment-run-templates/:id": [
+   "finance.payment"
+  ],
+  "/finance/payment-runs/:id": [
+   "finance.payment"
+  ],
+  "/finance/payments-hub": [
+   "finance.ap.read",
+   "finance.ar",
+   "finance.bank_reconciliation",
+   "finance.cash.read",
+   "finance.payment"
+  ],
+  "/finance/payments/:id": [
+   "finance.payment"
+  ],
+  "/finance/payments/new": [
+   "finance.payment.create"
+  ],
+  "/finance/period-closing": [
+   "finance.journal_entry.read",
+   "finance.period.lock"
+  ],
+  "/finance/period-closing/:period": [
+   "finance.period.lock"
+  ],
+  "/finance/reports": [
+   "finance.report"
+  ],
+  "/finance/tax": [
+   "finance.journal_entry",
+   "finance.report"
+  ],
+  "/finance/validation": [
+   "finance.sales.validate"
+  ],
+  "/finance/vendor-scorecard": [
+   "finance.ap.read"
+  ],
+  "/hr/compensation": [
+   "hr.advance",
+   "hr.foc",
+   "hr.incentive",
+   "hr.lb_fund",
+   "hr.read",
+   "hr.service_charge",
+   "hr.voucher",
+   "hr.write"
+  ],
+  "/hr/job-applications": [
+   "hr.read",
+   "hr.write"
+  ],
+  "/hr/job-listings": [
+   "hr.read",
+   "hr.write"
+  ],
+  "/inventory/balance": [
+   "inventory.balance.read",
+   "inventory.view"
+  ],
+  "/inventory/low-stock": [
+   "inventory.balance.read",
+   "inventory.view"
+  ],
+  "/inventory/movements-hub": [
+   "inventory.adjustment",
+   "inventory.movement.read",
+   "inventory.transfer",
+   "inventory.view"
+  ],
+  "/inventory/opname": [
+   "inventory.opname"
+  ],
+  "/inventory/opname/:id": [
+   "inventory.opname"
+  ],
+  "/inventory/transfers/:id": [
+   "inventory.transfer"
+  ],
+  "/inventory/valuation": [
+   "inventory.valuation.read"
+  ],
+  "/outlet/crm": [
+   "crm.view",
+   "reservations.read"
+  ],
+  "/outlet/daily-orders": [
+   "outlet.bdo.create",
+   "outlet.fdo.create",
+   "outlet.kdo.create"
+  ],
+  "/outlet/daily-sales": [
+   "outlet.daily_sales.read"
+  ],
+  "/outlet/daily-sales/:id": [
+   "outlet.daily_sales.read"
+  ],
+  "/outlet/daily-sales/:id/edit": [
+   "outlet.daily_sales.read"
+  ],
+  "/outlet/daily-sales/new": [
+   "outlet.daily_sales.read"
+  ],
+  "/outlet/end-of-day": [
+   "outlet.daily_close.execute"
+  ],
+  "/outlet/inventory/stock-check": [
+   "inventory.balance.read",
+   "inventory.view"
+  ],
+  "/outlet/inventory/transfers": [
+   "inventory.transfer"
+  ],
+  "/outlet/inventory/usage": [
+   "inventory.movement.read",
+   "inventory.view"
+  ],
+  "/outlet/petty-cash": [
+   "finance.cash.read",
+   "finance.cash.update",
+   "outlet.daily_close.execute"
+  ],
+  "/outlet/urgent-purchase": [
+   "procurement.pr.create"
+  ],
+  "/owner": [
+   "owner.cockpit.access"
+  ],
+  "/owner/briefing": [
+   "owner.cockpit.access"
+  ],
+  "/owner/cash": [
+   "finance.cash.read",
+   "owner.cockpit.access"
+  ],
+  "/owner/digest-settings": [
+   "owner.digest.manage"
+  ],
+  "/procurement/consolidation": [
+   "procurement.pr"
+  ],
+  "/procurement/gr": [
+   "procurement.gr"
+  ],
+  "/procurement/gr/new": [
+   "procurement.gr.create"
+  ],
+  "/procurement/kanban": [
+   "procurement.po",
+   "procurement.pr",
+   "procurement.view"
+  ],
+  "/procurement/po": [
+   "procurement.po"
+  ],
+  "/procurement/po/:id": [
+   "procurement.po"
+  ],
+  "/procurement/po/new": [
+   "procurement.po.create"
+  ],
+  "/procurement/pr": [
+   "procurement.pr"
+  ],
+  "/procurement/pr/:id": [
+   "procurement.pr"
+  ],
+  "/procurement/pr/new": [
+   "procurement.pr.create"
+  ],
+  "/procurement/rfq": [
+   "procurement.rfq"
+  ],
+  "/procurement/rfq/:id": [
+   "procurement.rfq"
+  ],
+  "/procurement/rfq/new": [
+   "procurement.rfq.create"
+  ],
+  "/procurement/sourcing": [
+   "procurement.sourcing.read"
+  ],
+  "/procurement/sourcing/items/:id": [
+   "procurement.sourcing.read"
+  ],
+  "/procurement/vendor-catalog": [
+   "procurement.vendor.read",
+   "procurement.view"
+  ],
+  "/procurement/vendor-comparison": [
+   "procurement.po",
+   "procurement.vendor.read",
+   "procurement.view"
+  ],
+  "/procurement/vendor-recommend": [
+   "procurement.vendor.read",
+   "procurement.view"
+  ],
+  "/procurement/vendor-scorecard": [
+   "procurement.vendor.read",
+   "procurement.view"
+  ],
+  "/procurement/vendors": [
+   "procurement.vendor.read",
+   "procurement.view"
+  ]
+ },
+ "tours": [
+  {
+   "description": "Cara memulai hari kerja outlet: tasks, quick actions, dan KPI.",
+   "id": "outlet-home",
+   "name": "Outlet — Workbench Harian",
+   "steps": [
+    {
+     "content": "Pusat operasional harian Anda. Dari sini Anda bisa akses daily sales, petty cash, reservasi, dan penutupan hari.",
+     "title": "Selamat Datang di Outlet Portal"
+    },
+    {
+     "content": "Ringkasan performa outlet: Omzet, Total Tamu, Reservasi, dan Petty Cash Balance. Update real-time.",
+     "title": "KPI Hari Ini"
+    },
+    {
+     "content": "Daftar task yang perlu diselesaikan hari ini. Centang untuk mark done. End-of-Day tidak bisa disubmit jika ada task yang belum selesai.",
+     "title": "Tugas Hari Ini"
+    },
+    {
+     "content": "Akses cepat ke halaman yang sering digunakan:\n\n• Daily Sales — input penjualan\n• Petty Cash — catat pengeluaran\n• Reservasi — kelola tamu\n• End-of-Day — penutupan harian",
+     "title": "Quick Actions"
+    }
+   ]
+  },
+  {
+   "description": "Kelola semua purchase orders harian dari satu tempat.",
+   "id": "outlet-daily-orders",
+   "name": "Daily Orders Hub (KDO, BDO, FDO)",
+   "steps": [
+    {
+     "content": "Satu halaman untuk semua jenis order harian:\n\n• KDO (Kitchen Daily Order) — bahan baku dari gudang\n• BDO (Bar Daily Order) — minuman & supplies bar\n• FDO (F&B Daily Order) — order ke vendor eksternal",
+     "title": "Daily Orders Hub"
+    },
+    {
+     "content": "Klik tab KDO, BDO, atau FDO untuk beralih. Masing-masing tab memiliki list dan form sendiri sesuai kebutuhan outlet.",
+     "title": "Navigasi Antar Jenis Order"
+    },
+    {
+     "content": "Di setiap tab:\n\n• Klik + Buat untuk order baru\n• Isi item, qty, dan catatan\n• Submit → otomatis jadi PR di sistem procurement\n\nSemua order tercatat dan bisa di-track.",
+     "title": "Isi Form Order"
+    },
+    {
+     "content": "Buat order sebelum jam 9 pagi agar procurement bisa proses di hari yang sama. Untuk order darurat, gunakan Urgent Purchase di menu Petty Cash.",
+     "title": "Tips Penggunaan"
+    }
+   ]
+  },
+  {
+   "description": "Alur penutupan harian outlet dengan 4 langkah berurutan.",
+   "id": "outlet-end-of-day",
+   "name": "End-of-Day Workflow (Tutup Hari)",
+   "steps": [
+    {
+     "content": "Penutupan harian dilakukan dalam 4 langkah berurutan. Semua langkah harus selesai sebelum laporan disubmit ke finance.",
+     "title": "End-of-Day Workflow"
+    },
+    {
+     "content": "Progress bar di atas menunjukkan posisi Anda. Langkah terkunci sampai langkah sebelumnya selesai — ini memastikan urutan yang benar.",
+     "title": "Stepper Visual"
+    },
+    {
+     "content": "Pastikan semua transaksi penjualan hari ini sudah diinput. Daily sales harus dalam status Diajukan sebelum bisa lanjut.",
+     "title": "Langkah 1: Tutup Sales"
+    },
+    {
+     "content": "Cek saldo kas kecil: uang fisik = saldo sistem. Jika ada selisih, catat sebagai adjustment sebelum close.",
+     "title": "Langkah 2: Rekonsiliasi Petty Cash"
+    },
+    {
+     "content": "Tombol Selesai hanya aktif jika semua langkah sudah done. Setelah submit, laporan dikirim ke Finance untuk validasi keesokan paginya.",
+     "title": "Submit Laporan"
+    }
+   ]
+  },
+  {
+   "description": "Kelola reservasi dan loyalty member dari satu dashboard.",
+   "id": "outlet-crm-hub",
+   "name": "CRM & Reservasi Hub",
+   "steps": [
+    {
+     "content": "Pusat pengelolaan reservasi tamu dan loyalty member. Monitor KPI, buat reservasi baru, dan pantau status membership.",
+     "title": "CRM Hub"
+    },
+    {
+     "content": "4 KPI utama: Reservasi hari ini, Tamu hadir, Total loyalty members, dan Redemption bulan ini.",
+     "title": "KPI Reservasi & Loyalty"
+    },
+    {
+     "content": "Akses cepat ke:\n\n• Buat Reservasi — new reservation\n• Scan Poin — akumulasi poin member\n• Redeem — tukar poin/voucher\n• Daftar Reservasi — lihat semua",
+     "title": "Quick Actions"
+    },
+    {
+     "content": "Timeline reservasi diurutkan per jam. Status warna:\n\n• Hijau — confirmed\n• Kuning — pending/waitlist\n• Merah — no-show/cancelled",
+     "title": "Timeline Hari Ini"
+    }
+   ]
+  },
+  {
+   "description": "7 status reservasi, downpayment tracking, dan filter.",
+   "id": "outlet-reservation-list",
+   "name": "Daftar Reservasi",
+   "steps": [
+    {
+     "content": "Pusat manajemen reservasi meja lintas outlet. Pantau status, deposit, dan detail tamu dari satu halaman.",
+     "title": "Daftar Reservasi"
+    },
+    {
+     "content": "Filter berdasarkan tanggal, status, atau kata kunci (nama tamu / nomor telepon). Gunakan kombinasi filter untuk cari reservasi spesifik.",
+     "title": "Filter Reservasi"
+    },
+    {
+     "content": "Status reservasi: Pending, Confirmed, Waitlist, Rescheduled, Completed, Cancelled, No-Show. KPI strip merangkum jumlah per status dan total deposit — DP otomatis terekap di Finance.",
+     "title": "7 Status & Downpayment"
+    }
+   ]
+  },
+  {
+   "description": "Cara membuat & mengedit reservasi dengan detail lengkap.",
+   "id": "outlet-reservation-form",
+   "name": "Form Reservasi",
+   "steps": [
+    {
+     "content": "Form lengkap untuk buat atau edit reservasi. Isi semua field wajib sebelum submit.",
+     "title": "Form Reservasi"
+    },
+    {
+     "content": "Pilih outlet dan jumlah tamu (pax). Kapasitas outlet ditampilkan sebagai referensi.",
+     "title": "Info Outlet"
+    },
+    {
+     "content": "Set tanggal dan jam kedatangan. Jika slot penuh, sistem akan sarankan status Waitlist.",
+     "title": "Tanggal & Waktu"
+    },
+    {
+     "content": "Isi DP jika diminta:\n\n• Jumlah DP\n• Deadline konfirmasi\n• Metode (transfer/tunai/OVO)\n• Nomor referensi (jika transfer)",
+     "title": "Downpayment"
+    },
+    {
+     "content": "Klik Simpan untuk menyimpan. Status default adalah Dikonfirmasi kecuali slot penuh (otomatis jadi Waitlist).",
+     "title": "Submit Reservasi"
+    }
+   ]
+  },
+  {
+   "description": "Input dan monitor penjualan harian per channel.",
+   "id": "outlet-daily-sales",
+   "name": "Daily Sales",
+   "steps": [
+    {
+     "content": "Catat penjualan harian per channel (Dine-In, Takeaway, Delivery, Online). Setiap daily sales harus divalidasi Finance sebelum masuk laporan.",
+     "title": "Daily Sales"
+    },
+    {
+     "content": "• Submit sebelum jam 23.59 hari yang sama\n• Pisahkan per channel untuk analitik akurat\n• Lampirkan Z-report kasir jika tersedia\n• Cek total match dengan struk mesin EDC",
+     "title": "Tips Daily Sales"
+    }
+   ]
+  },
+  {
+   "description": "Wizard terstruktur untuk input daily sales per channel & payment.",
+   "id": "outlet-sales-wizard",
+   "name": "Sales Wizard 5-Langkah",
+   "steps": [
+    {
+     "content": "Wizard 5 langkah untuk input daily sales secara lengkap dan terstruktur. Lebih mudah dari form biasa, cocok untuk staf baru.",
+     "title": "Sales Wizard"
+    },
+    {
+     "content": "1. Outlet & Tanggal — pilih konteks\n2. Channel Sales — dine-in, takeaway, delivery\n3. Payment Method — cash, debit, QRIS, OVO\n4. Rekap — review semua input\n5. Submit — kirim ke finance",
+     "title": "Langkah Wizard"
+    }
+   ]
+  },
+  {
+   "description": "Penutupan harian outlet dengan validasi lengkap.",
+   "id": "outlet-daily-close",
+   "name": "Daily Close",
+   "steps": [
+    {
+     "content": "Halaman konfirmasi akhir hari. Semua daily sales, petty cash, dan orders harus selesai sebelum bisa close.",
+     "title": "Daily Close"
+    },
+    {
+     "content": "• Setelah close, Anda tidak bisa edit daily sales hari itu\n• Finance menerima notifikasi untuk validasi esok pagi\n• Gunakan tombol End-of-Day Workflow untuk panduan step-by-step",
+     "title": "Catatan Penting"
+    }
+   ]
+  },
+  {
+   "description": "Kelola kas kecil outlet: catat, rekonsiliasi, dan top-up.",
+   "id": "outlet-petty-cash",
+   "name": "Petty Cash",
+   "steps": [
+    {
+     "content": "Catat pengeluaran kas kecil outlet. Setiap transaksi membutuhkan kategori dan foto nota/struk sebagai bukti.",
+     "title": "Petty Cash"
+    },
+    {
+     "content": "Kategori yang tersedia:\n\n• Operasional — sabun, tisu, dll\n• Darurat — pembelian mendadak\n• Transport — ongkir\n• Lain-lain — wajib ada keterangan\n\nSelalu upload foto nota!",
+     "title": "Kategori & Bukti"
+    }
+   ]
+  },
+  {
+   "description": "Scan struk untuk akumulasi poin member.",
+   "id": "outlet-loyalty-scan",
+   "name": "Input Poin Loyalty",
+   "steps": [
+    {
+     "content": "Scan atau input nomor transaksi untuk berikan poin loyalty ke member. Poin otomatis dihitung dari total transaksi.",
+     "title": "Input Poin Loyalty"
+    }
+   ]
+  },
+  {
+   "description": "Scan struk untuk akumulasi poin member.",
+   "id": "outlet-loyalty-redeem",
+   "name": "Input Poin Loyalty",
+   "steps": [
+    {
+     "content": "Scan atau input nomor transaksi untuk berikan poin loyalty ke member. Poin otomatis dihitung dari total transaksi.",
+     "title": "Input Poin Loyalty"
+    }
+   ]
+  },
+  {
+   "description": "Pembelian mendesak di luar siklus PR normal — tetap terkontrol budget.",
+   "id": "outlet-urgent-purchase",
+   "name": "Urgent Purchase",
+   "steps": [
+    {
+     "content": "Untuk kebutuhan mendesak yang tak bisa menunggu siklus PR biasa. Tetap tercatat & potong budget outlet.",
+     "title": "Urgent Purchase"
+    },
+    {
+     "content": "Klik untuk input item, jumlah, dan alasan urgensi. Sistem mengecek sisa budget sebelum menyimpan.",
+     "title": "Buat Pembelian Mendesak"
+    }
+   ]
+  },
+  {
+   "description": "Pantau sisa budget operasional outlet & ajukan penambahan bila perlu.",
+   "id": "outlet-budget-tracker",
+   "name": "Budget Saya",
+   "steps": [
+    {
+     "content": "Lihat plafon vs realisasi budget operasional outlet Anda (KDO/FDO/BDO) per periode.",
+     "title": "Budget Saya"
+    },
+    {
+     "content": "Ringkasan total plafon & serapan periode aktif — cepat tahu sisa yang tersedia.",
+     "title": "Total Budget Periode"
+    },
+    {
+     "content": "Pindah antara tampilan mingguan dan bulanan sesuai cara alokasi budget Anda.",
+     "title": "Mingguan / Bulanan"
+    }
+   ]
+  },
+  {
+   "description": "Cek stok outlet real-time dan mulai opname dari sini.",
+   "id": "outlet-stock-check",
+   "name": "Stock Check",
+   "steps": [
+    {
+     "content": "Lihat posisi stok outlet Anda real-time — item mana yang menipis di bawah par level.",
+     "title": "Stock Check"
+    },
+    {
+     "content": "KPI Low Stock menyorot item di bawah par — prioritas untuk re-order.",
+     "title": "Item Menipis"
+    },
+    {
+     "content": "Klik untuk memulai stok opname (hitung fisik) dengan analisis selisih otomatis.",
+     "title": "Mulai Opname"
+    }
+   ]
+  },
+  {
+   "description": "Kirim & terima transfer stok antar outlet dengan traceability.",
+   "id": "outlet-stock-transfers",
+   "name": "Stock Transfers",
+   "steps": [
+    {
+     "content": "Pindahkan stok antar outlet. Tiap transfer punya status kirim → in-transit → terima.",
+     "title": "Stock Transfers"
+    },
+    {
+     "content": "KPI In-Transit menunjukkan transfer yang sudah dikirim tapi belum diterima outlet tujuan.",
+     "title": "Dalam Perjalanan"
+    },
+    {
+     "content": "Klik untuk transfer baru — pilih outlet asal/tujuan & item. Guard mencegah stok minus.",
+     "title": "Buat Transfer"
+    }
+   ]
+  },
+  {
+   "description": "Catat pemakaian & waste bahan baku outlet.",
+   "id": "outlet-usage-log",
+   "name": "Usage Log",
+   "steps": [
+    {
+     "content": "Catatan pemakaian bahan dan waste outlet — basis untuk analisis efisiensi & COGS.",
+     "title": "Usage Log"
+    },
+    {
+     "content": "KPI Waste menyoroti nilai bahan terbuang — target untuk ditekan tiap periode.",
+     "title": "Waste"
+    }
+   ]
+  },
+  {
+   "description": "Tambah poin loyalty member dari kasir berdasarkan nilai transaksi.",
+   "id": "outlet-loyalty-points",
+   "name": "Input Poin Loyalty",
+   "steps": [
+    {
+     "content": "Masukkan nomor HP member lalu cari — sistem menampilkan data & saldo poin member.",
+     "title": "Cari Member"
+    },
+    {
+     "content": "Isi nominal belanja — preview poin yang akan didapat muncul otomatis sesuai rule.",
+     "title": "Nilai Transaksi"
+    },
+    {
+     "content": "Klik untuk akumulasi poin ke akun member. Konfirmasi sukses akan ditampilkan.",
+     "title": "Tambah Poin"
+    }
+   ]
+  },
+  {
+   "description": "Tour cepat halaman utama admin portal.",
+   "id": "admin-home",
+   "name": "Admin Home",
+   "steps": [
+    {
+     "content": "Pusat konfigurasi sistem ERP: users, roles, master data, CMS, dan settings. Hanya accessible oleh Super Admin.",
+     "title": "Admin Portal"
+    },
+    {
+     "content": "KPI admin: jumlah user aktif, roles, items master, dan audit log terbaru.",
+     "title": "Dashboard Overview"
+    },
+    {
+     "content": "Monitor kesehatan sistem: User count, Role count, Pending requests, dan Last audit event.",
+     "title": "KPI System"
+    },
+    {
+     "content": "Tile cepat ke modul admin utama. Klik untuk masuk langsung.",
+     "title": "Quick Access Tiles"
+    }
+   ]
+  },
+  {
+   "description": "Kelola semua master data dari satu halaman dengan tab navigation.",
+   "id": "admin-master-data",
+   "name": "Master Data Hub",
+   "steps": [
+    {
+     "content": "Semua master data dalam satu halaman dengan tab terorganisir:\n\n• Items — katalog bahan/produk\n• Vendors — data pemasok\n• Employees — data karyawan\n• COA — chart of accounts\n• Tax Codes, Payment Methods, Bank Accounts",
+     "title": "Master Data Hub"
+    },
+    {
+     "content": "Gunakan tab horizontal di atas untuk beralih antar entitas master. Data di-load fresh setiap ganti tab.",
+     "title": "Navigasi Antar Master"
+    },
+    {
+     "content": "Setiap tab memiliki:\n\n• Search & Filter — cari data cepat\n• Tambah — tambah entri baru\n• Edit — klik baris untuk edit\n• Soft Delete — tidak permanent, bisa dipulihkan\n• Import — bulk upload via CSV/Excel",
+     "title": "CRUD Operations"
+    }
+   ]
+  },
+  {
+   "description": "9 entitas CMS website public dalam satu workspace.",
+   "id": "admin-cms-studio",
+   "name": "CMS Studio — Kelola Konten Website",
+   "steps": [
+    {
+     "content": "Pusat pengelolaan konten website public FnB Group. 9 entitas CMS tersedia dalam satu workspace.",
+     "title": "CMS Studio"
+    },
+    {
+     "content": "Tab yang tersedia:\n\n• Brands — profil brand\n• Menu — menu makanan/minuman\n• News — artikel & blog\n• Outlets — lokasi & info outlet\n• Gallery — foto-foto\n• Careers — lowongan kerja\n• About — profil perusahaan\n• Testimonials — ulasan tamu\n• Promos — promosi aktif",
+     "title": "9 Entitas CMS"
+    },
+    {
+     "content": "Di setiap tab: klik + Tambah untuk konten baru, atau klik baris untuk edit. Perubahan langsung live di website public.",
+     "title": "Edit Konten"
+    },
+    {
+     "content": "• Upload foto berkualitas tinggi (min. 1200×800px)\n• Gunakan tab Menu untuk update harga dan foto menu\n• Tab News untuk publish artikel promo\n• Tab Careers ter-link langsung ke form lamaran publik",
+     "title": "Tips CMS"
+    }
+   ]
+  },
+  {
+   "description": "Kelola menu digital: CRUD items, upload foto, buat kategori.",
+   "id": "admin-menu-cms",
+   "name": "E-Menu CMS",
+   "steps": [
+    {
+     "content": "Setiap brand punya menu terpisah: The Coffeeshop, The Bakery, The Bistro, The Restaurant, The Lounge. Pilih brand yang ingin diedit.",
+     "title": "Pilih Brand"
+    },
+    {
+     "content": "Menu Items — daftar makanan/minuman\nKategori — kelompokkan menu (Appetizer, Main Course, dll)",
+     "title": "Tab Menu vs Kategori"
+    },
+    {
+     "content": "• + Item — tambah menu baru\n• Upload PDF — menu PDF fallback\n• Preview — lihat tampilan di website",
+     "title": "Toolbar Actions"
+    },
+    {
+     "content": "Cari menu berdasarkan nama. Filter by kategori untuk edit kategori tertentu.",
+     "title": "Search & Filter"
+    },
+    {
+     "content": "Upload foto menu berkualitas tinggi. Foto yang bagus meningkatkan order. Rekomendasi: rasio 4:3, pencahayaan natural, background bersih.",
+     "title": "Tips Upload Foto"
+    }
+   ]
+  },
+  {
+   "description": "9 entitas CMS website public dalam satu workspace.",
+   "id": "admin-cms-brands",
+   "name": "CMS Studio — Kelola Konten Website",
+   "steps": [
+    {
+     "content": "Pusat pengelolaan konten website public FnB Group. 9 entitas CMS tersedia dalam satu workspace.",
+     "title": "CMS Studio"
+    },
+    {
+     "content": "Tab yang tersedia:\n\n• Brands — profil brand\n• Menu — menu makanan/minuman\n• News — artikel & blog\n• Outlets — lokasi & info outlet\n• Gallery — foto-foto\n• Careers — lowongan kerja\n• About — profil perusahaan\n• Testimonials — ulasan tamu\n• Promos — promosi aktif",
+     "title": "9 Entitas CMS"
+    },
+    {
+     "content": "Di setiap tab: klik + Tambah untuk konten baru, atau klik baris untuk edit. Perubahan langsung live di website public.",
+     "title": "Edit Konten"
+    },
+    {
+     "content": "• Upload foto berkualitas tinggi (min. 1200×800px)\n• Gunakan tab Menu untuk update harga dan foto menu\n• Tab News untuk publish artikel promo\n• Tab Careers ter-link langsung ke form lamaran publik",
+     "title": "Tips CMS"
+    }
+   ]
+  },
+  {
+   "description": "9 entitas CMS website public dalam satu workspace.",
+   "id": "admin-cms-news",
+   "name": "CMS Studio — Kelola Konten Website",
+   "steps": [
+    {
+     "content": "Pusat pengelolaan konten website public FnB Group. 9 entitas CMS tersedia dalam satu workspace.",
+     "title": "CMS Studio"
+    },
+    {
+     "content": "Tab yang tersedia:\n\n• Brands — profil brand\n• Menu — menu makanan/minuman\n• News — artikel & blog\n• Outlets — lokasi & info outlet\n• Gallery — foto-foto\n• Careers — lowongan kerja\n• About — profil perusahaan\n• Testimonials — ulasan tamu\n• Promos — promosi aktif",
+     "title": "9 Entitas CMS"
+    },
+    {
+     "content": "Di setiap tab: klik + Tambah untuk konten baru, atau klik baris untuk edit. Perubahan langsung live di website public.",
+     "title": "Edit Konten"
+    },
+    {
+     "content": "• Upload foto berkualitas tinggi (min. 1200×800px)\n• Gunakan tab Menu untuk update harga dan foto menu\n• Tab News untuk publish artikel promo\n• Tab Careers ter-link langsung ke form lamaran publik",
+     "title": "Tips CMS"
+    }
+   ]
+  },
+  {
+   "description": "Buat user, atur role, dan reset password.",
+   "id": "admin-users",
+   "name": "Manajemen User",
+   "steps": [
+    {
+     "content": "Kelola semua akun user ERP. Buat user baru, assign role, dan reset password jika diperlukan.",
+     "title": "Manajemen User"
+    },
+    {
+     "content": "Setiap user harus punya minimal 1 role. Role menentukan portal dan fitur yang bisa diakses.\n\nContoh: role Outlet Manager hanya bisa akses Outlet Portal.",
+     "title": "Cara Assign Role"
+    },
+    {
+     "content": "• Assign role sesempit mungkin (least privilege)\n• Audit log mencatat semua login & perubahan\n• Nonaktifkan user yang sudah resign, jangan hapus (untuk audit trail)",
+     "title": "Tips Keamanan"
+    }
+   ]
+  },
+  {
+   "description": "Atur peran dan izin akses tiap user secara rinci.",
+   "id": "admin-roles",
+   "name": "Peran & Hak Akses",
+   "steps": [
+    {
+     "content": "Setiap user punya satu atau beberapa peran; izinnya digabung. Peran bawaan bisa diubah dan dikembalikan ke bawaan kapan saja, peran kustom bisa dibuat sebanyak perlu.",
+     "title": "Peran & Hak Akses"
+    },
+    {
+     "content": "Klik peran untuk membuka editornya. Label BAWAAN / KUSTOM / DIUBAH dan jumlah user terlihat di tiap baris. Super Admin selalu akses penuh dan tidak bisa diubah.",
+     "title": "Daftar Peran"
+    },
+    {
+     "content": "Buat peran baru dari kosong atau salin dari peran yang mirip, lalu sesuaikan izinnya.",
+     "title": "Tambah Peran"
+    },
+    {
+     "content": "Izin dikelompokkan per portal → modul. Pilih tingkat cepat (Tidak ada / Lihat / Penuh) atau klik izin satu per satu. Mengaktifkan aksi otomatis menyalakan izin lihatnya; ikon perisai menandai izin sensitif.",
+     "title": "Matriks Izin"
+    }
+   ]
+  },
+  {
+   "description": "Bangun workflow approval multi-tier secara visual.",
+   "id": "admin-approval-builder",
+   "name": "Approval Matrix Builder",
+   "steps": [
+    {
+     "content": "Bangun alur approval multi-tier secara visual. Tentukan siapa yang harus approve apa, dan sampai nominal berapa.",
+     "title": "Approval Matrix Builder"
+    },
+    {
+     "content": "Pilih jenis dokumen yang akan diatur approvalnya:\n\n• PR — Purchase Request\n• PO — Purchase Order\n• Payment — Payment Request\n• Adjustment — Stock Adjustment",
+     "title": "Pilih Entitas"
+    },
+    {
+     "content": "Di tab Builder: tambah tier approval, set approver per tier, dan atur threshold nominal. Tier berjalan berurutan dari bawah ke atas.",
+     "title": "Builder Tab"
+    },
+    {
+     "content": "Tab Preview: masukkan nominal test untuk lihat siapa yang akan di-notify. Sangat berguna sebelum deploy workflow ke production.",
+     "title": "Preview & Test"
+    },
+    {
+     "content": "Klik Simpan untuk aktifkan workflow. Semua dokumen baru akan mengikuti workflow ini. Perubahan tidak mempengaruhi dokumen yang sudah dalam proses.",
+     "title": "Simpan Workflow"
+    }
+   ]
+  },
+  {
+   "description": "Import ratusan data sekaligus via CSV/Excel dengan validasi baris per baris.",
+   "id": "admin-bulk-import",
+   "name": "Bulk Excel Import",
+   "steps": [
+    {
+     "content": "Import ratusan data sekaligus via CSV/Excel. Cocok untuk migrasi awal atau update massal items, vendors, employees, dan COA.",
+     "title": "Bulk Excel Import"
+    },
+    {
+     "content": "Proses import dalam 3 langkah:\n\n1. Pilih entitas — pilih jenis data\n2. Unduh template — gunakan template Excel yang tersedia\n3. Unggah & pratinjau — unggah file, validasi, lalu import",
+     "title": "3 Langkah Import"
+    },
+    {
+     "content": "Pilih entitas data yang akan diimport. Setiap entitas punya template berbeda — jangan gunakan template yang salah untuk menghindari error.",
+     "title": "Langkah 1: Pilih entitas"
+    },
+    {
+     "content": "Download template Excel → isi data → upload kembali. Jangan ubah nama kolom karena sistem membaca header secara exact match.",
+     "title": "Langkah 2: Unduh template"
+    },
+    {
+     "content": "Upload file → sistem validasi setiap baris. Baris error ditampilkan dengan detail pesan. Anda bisa import baris valid dan perbaiki baris error secara terpisah.",
+     "title": "Langkah 3: Upload & Validasi"
+    }
+   ]
+  },
+  {
+   "description": "Atur format nomor otomatis untuk semua jenis dokumen.",
+   "id": "admin-number-series",
+   "name": "Number Series — Format Nomor Dokumen",
+   "steps": [
+    {
+     "content": "Atur format nomor otomatis untuk semua dokumen: PR, PO, GR, Journal, Payment. Nomor di-generate otomatis saat dokumen dibuat.",
+     "title": "Number Series"
+    },
+    {
+     "content": "Setiap jenis dokumen punya series sendiri. Format konfigurasi:\n\n• Prefix — misal `PR-` atau `CFS-PO-`\n• Year/Month — auto-include tanggal\n• Digit — panjang angka sekuensial\n• Reset — per tahun atau per bulan",
+     "title": "Konfigurasi per Dokumen"
+    },
+    {
+     "content": "• Gunakan prefix brand/outlet untuk identifikasi mudah\n• Contoh: `CFS-PR-2026-001` = The Coffeeshop, Purchase Request, 2026\n• Perubahan hanya berlaku untuk dokumen baru, tidak retroaktif",
+     "title": "Tips Number Series"
+    }
+   ]
+  },
+  {
+   "description": "Atur tax codes dan rate PPN/service charge untuk transaksi.",
+   "id": "admin-tax-config",
+   "name": "Tax Configuration",
+   "steps": [
+    {
+     "content": "Kelola tax codes yang digunakan dalam transaksi. Tax code ter-link ke COA GL untuk posting journal otomatis.",
+     "title": "Tax Configuration"
+    },
+    {
+     "content": "Klik card tax untuk toggle aktif/nonaktif. Tax yang aktif akan muncul sebagai pilihan di form transaksi (PO, Invoice, Payment).",
+     "title": "Daftar Tax Code"
+    },
+    {
+     "content": "Untuk konfigurasi detail COA mapping per tax code, klik link Full Tax Config yang tersedia. Tax rate tidak bisa diubah jika sudah ada transaksi yang menggunakannya.",
+     "title": "Catatan Konfigurasi"
+    }
+   ]
+  },
+  {
+   "description": "Pantau kesehatan sistem: metrics, logs, scheduler, dan rate limits.",
+   "id": "admin-operations",
+   "name": "System Operations — Monitoring",
+   "steps": [
+    {
+     "content": "Monitoring dan administrasi sistem. Hanya untuk Super Admin teknis.",
+     "title": "System Operations"
+    },
+    {
+     "content": "• Metrics — CPU, memory, query latency real-time\n• Logs — application logs dengan filter level\n• Scheduler — cron jobs (digest, archival, anomaly scan)\n• Archival — backup dan cold storage management\n• Rate Limits — lihat & reset rate limit counter",
+     "title": "Tab Monitoring"
+    },
+    {
+     "content": "• Cek Metrics jika app terasa lambat (lihat slow queries)\n• Scheduler menjalankan digest harian jam 07.00 WIB\n• Log level ERROR/CRITICAL harus di-investigate segera",
+     "title": "Tips Monitoring"
+    }
+   ]
+  },
+  {
+   "description": "Konfigurasi global sistem: timezone, branding, dan parameter global.",
+   "id": "admin-settings",
+   "name": "System Settings",
+   "steps": [
+    {
+     "content": "Konfigurasi parameter global sistem: timezone, nama perusahaan, logo, mata uang, dan lainnya.",
+     "title": "System Settings"
+    },
+    {
+     "content": "• Timezone — pastikan sesuai WIB/WITA/WIT\n• Fiscal Year Start — bulan mulai tahun fiskal\n• Currency — IDR (tidak bisa diubah setelah ada data)\n• Company Logo — muncul di header semua laporan",
+     "title": "Pengaturan Penting"
+    },
+    {
+     "content": "Perubahan settings seperti timezone dan fiscal year dapat mempengaruhi semua laporan historis. Konsultasikan dengan Finance Manager sebelum mengubah.",
+     "title": "Perubahan Kritis"
+    }
+   ]
+  },
+  {
+   "description": "Dashboard overview program loyalty: member, poin, dan rewards.",
+   "id": "admin-loyalty-overview",
+   "name": "Loyalty Admin — Overview",
+   "steps": [
+    {
+     "content": "Overview program loyalty FnB Group: jumlah member, poin beredar, rewards aktif, dan redemption terbaru.",
+     "title": "Loyalty Admin Dashboard"
+    },
+    {
+     "content": "Klik Customers untuk lihat semua member loyalty. Bisa filter berdasarkan tier (Bronze/Silver/Gold/Platinum) dan status.",
+     "title": "Kelola Member"
+    },
+    {
+     "content": "Klik Rewards untuk kelola katalog hadiah. Atur poin yang diperlukan, stok voucher, dan masa berlaku.",
+     "title": "Rewards Catalog"
+    },
+    {
+     "content": "Monitor semua penukaran poin yang terjadi. Bisa filter per tanggal, member, atau reward.",
+     "title": "Redemption History"
+    }
+   ]
+  },
+  {
+   "description": "Kelola daftar member loyalty: lihat profil, tier, dan riwayat poin.",
+   "id": "admin-loyalty-customers",
+   "name": "Loyalty Customers",
+   "steps": [
+    {
+     "content": "Daftar semua member loyalty FnB Group. Setiap member bisa lihat saldo poin, tier, dan history transaksi mereka.",
+     "title": "Loyalty Customers"
+    },
+    {
+     "content": "Cari berdasarkan nama, nomor member, atau nomor HP. Filter tambahan: tier (Bronze/Silver/Gold/Platinum) dan status aktif.",
+     "title": "Cari Member"
+    },
+    {
+     "content": "Klik baris member untuk lihat detail: poin balance, tier, history transaksi. Admin bisa adjust poin secara manual jika ada keluhan.",
+     "title": "Detail Member"
+    }
+   ]
+  },
+  {
+   "description": "Kelola katalog rewards: buat voucher, set poin, atur stok.",
+   "id": "admin-loyalty-rewards",
+   "name": "Loyalty Rewards Catalog",
+   "steps": [
+    {
+     "content": "Kelola katalog rewards program loyalty. Member bisa tukar poin dengan rewards di sini.",
+     "title": "Rewards Catalog"
+    },
+    {
+     "content": "• Voucher Diskon — misal 20% off\n• Free Item — item gratis tertentu\n• Birthday Reward — reward otomatis di ulang tahun\n• Tier Upgrade — bonus saat naik tier",
+     "title": "Jenis Rewards"
+    },
+    {
+     "content": "• Set minimum poin yang realistis (tidak terlalu mudah/sulit)\n• Beri reward time-limited untuk mendorong redemption\n• Review top performers setiap bulan untuk adjust program",
+     "title": "Tips Program Loyalty"
+    }
+   ]
+  },
+  {
+   "description": "Atur parameter bisnis: sales schema, petty cash policy, dan lainnya.",
+   "id": "admin-configuration",
+   "name": "Business Rules Configuration",
+   "steps": [
+    {
+     "content": "Konfigurasi parameter bisnis yang bisa disesuaikan per outlet: sales input schema, petty cash policy, service charge, dan incentive scheme.",
+     "title": "Business Rules Configuration"
+    },
+    {
+     "content": "• Sales Schemas — field custom di daily sales per brand\n• Petty Cash Policies — limit, kategori, approval threshold\n• Service Charge Policies — rate SC per outlet\n• Incentive Schemes — formula bonus per jabatan\n• Anomaly Thresholds — batas deteksi anomali",
+     "title": "Modul Konfigurasi"
+    },
+    {
+     "content": "Setiap perubahan konfigurasi menggunakan effective date. Perubahan hanya berlaku mulai tanggal yang ditetapkan — historis tidak terpengaruh.",
+     "title": "Effective Dating"
+    }
+   ]
+  },
+  {
+   "description": "Atur laporan yang dikirim otomatis via Email/WhatsApp/Telegram.",
+   "id": "admin-report-schedules",
+   "name": "Laporan Terjadwal",
+   "steps": [
+    {
+     "content": "Jadwalkan laporan otomatis yang dikirim via email, WhatsApp, atau Telegram. Cocok untuk laporan harian/mingguan ke manajemen.",
+     "title": "Laporan Terjadwal"
+    },
+    {
+     "content": "Klik Tambah Jadwal untuk buat jadwal baru. Pilih jenis laporan, frekuensi (harian/mingguan/bulanan), dan penerima.",
+     "title": "Buat Jadwal Baru"
+    },
+    {
+     "content": "Toggle on/off tiap jadwal tanpa menghapus. Klik Preview untuk test kirim laporan sekarang. Klik Jalankan untuk trigger manual.",
+     "title": "Kelola Jadwal"
+    },
+    {
+     "content": "Tab Riwayat Kirim menampilkan log semua laporan yang sudah dikirim, termasuk status (berhasil/gagal) dan waktu pengiriman.",
+     "title": "Riwayat Pengiriman"
+    }
+   ]
+  },
+  {
+   "description": "Export, import, dan hapus data dalam jumlah besar.",
+   "id": "admin-data-management",
+   "name": "Manajemen Data",
+   "steps": [
+    {
+     "content": "Tool untuk manajemen data skala besar: export snapshot, import massal, atau hapus data lama. Hanya untuk Super Admin.",
+     "title": "Manajemen Data"
+    },
+    {
+     "content": "• Export — export semua data ke CSV/Excel untuk backup atau analisis eksternal\n• Import — import data yang sudah disiapkan\n• Delete — hapus data lama (soft-delete by default)",
+     "title": "3 Tab Utama"
+    },
+    {
+     "content": "Operasi Delete bersifat permanen untuk data yang sudah melewati periode retensi. Selalu Export terlebih dahulu sebelum delete sebagai backup.",
+     "title": "Peringatan Penting"
+    }
+   ]
+  },
+  {
+   "description": "Optimalkan SEO website public dengan bantuan AI.",
+   "id": "admin-smart-seo",
+   "name": "Smart SEO AI",
+   "steps": [
+    {
+     "content": "Optimalkan SEO website public FnB Group dengan bantuan AI. Atur meta title, description, keywords, dan Open Graph per halaman.",
+     "title": "Smart SEO AI"
+    },
+    {
+     "content": "Pilih halaman yang ingin dioptimasi dari daftar (Home, Brands, Menu, News, Careers, dll). Setiap halaman punya SEO config terpisah.",
+     "title": "Pilih Halaman"
+    },
+    {
+     "content": "Klik Analyze untuk AI generate rekomendasi SEO otomatis berdasarkan konten halaman. AI akan suggest keywords yang relevan untuk F&B industri.",
+     "title": "Analisis AI"
+    },
+    {
+     "content": "Klik Generate untuk AI auto-fill meta title dan description berdasarkan konten aktual halaman. Review sebelum save.",
+     "title": "Generate Meta"
+    },
+    {
+     "content": "Setelah review, klik Simpan. Perubahan langsung live di website dan bisa diindeks oleh search engine.",
+     "title": "Simpan & Deploy"
+    }
+   ]
+  },
+  {
+   "description": "Konfigurasi API key dan layanan eksternal.",
+   "id": "admin-integrations",
+   "name": "Integrations",
+   "steps": [
+    {
+     "content": "Konfigurasi layanan eksternal: LLM/AI, Email SMTP, WhatsApp/Twilio, dan lainnya. Semua API key disimpan terenkripsi.",
+     "title": "Integrations"
+    },
+    {
+     "content": "Tab tersedia:\n\n• LLM/AI — untuk AI Variance Explainer & Executive Q&A\n• Email — SMTP untuk notifikasi & PO email\n• Messaging — WhatsApp/SMS alerts",
+     "title": "Tabs Integrasi"
+    },
+    {
+     "content": "API key hanya muncul sekali saat input. Simpan di password manager. Jangan share atau commit ke git.",
+     "title": "Tips Keamanan API Key"
+    }
+   ]
+  },
+  {
+   "description": "Jejak audit semua aktivitas & mutasi data di sistem.",
+   "id": "admin-audit-log",
+   "name": "Audit Log",
+   "steps": [
+    {
+     "content": "Jejak audit semua aktivitas sistem: siapa, kapan, dan apa yang diubah. Penting untuk keamanan & kepatuhan.",
+     "title": "Audit Log"
+    },
+    {
+     "content": "Saring log per jenis entitas (User, Journal, PO, Payment, dll.) dan per aksi untuk investigasi cepat.",
+     "title": "Filter Entitas"
+    },
+    {
+     "content": "Klik Terapkan & muat ulang untuk memuat event terbaru. Gunakan navigasi halaman untuk menelusuri histori lama.",
+     "title": "Muat Ulang"
+    }
+   ]
+  },
+  {
+   "description": "Monitor penggunaan dan efektivitas Help & Tour.",
+   "id": "admin-tour-analytics",
+   "name": "Tour Analytics Dashboard",
+   "steps": [
+    {
+     "content": "Dashboard untuk melihat seberapa efektif Help & Tour digunakan oleh user. Berguna untuk identifikasi fitur yang membingungkan.",
+     "title": "Tour Analytics"
+    },
+    {
+     "content": "• Starts — berapa kali tour dimulai\n• Completion Rate — persentase user yang selesai\n• Skip Rate — tour yang di-skip\n• Unique Users — berapa user berbeda",
+     "title": "KPI Tour"
+    },
+    {
+     "content": "• Completion Rate <50% → tour terlalu panjang atau konten kurang relevan\n• Skip Rate >70% → user sudah familiar, pertimbangkan hapus tour\n• High Starts tapi Low Completion → identifikasi step yang menyebabkan user exit",
+     "title": "Interpretasi Data"
+    }
+   ]
+  },
+  {
+   "description": "All Users, Roles & Permissions, dan Activity Log dalam satu workspace.",
+   "id": "admin-user-management",
+   "name": "User Management Hub",
+   "steps": [
+    {
+     "content": "Kelola user, role, dan audit log dari satu halaman bertab — tidak lagi menu terpisah.",
+     "title": "User Management"
+    },
+    {
+     "content": "Buat user, atur role & outlet, dan reset password dari tab ini.",
+     "title": "All Users"
+    },
+    {
+     "content": "Definisikan peran dan izin granular per modul. Tab Activity Log untuk jejak audit.",
+     "title": "Roles & Permissions"
+    }
+   ]
+  },
+  {
+   "description": "Number Series, Tax Config, dan Bulk Import dalam satu tempat.",
+   "id": "admin-setup",
+   "name": "Setup & Numbering Hub",
+   "steps": [
+    {
+     "content": "Konfigurasi teknis sistem: format nomor dokumen, pajak, dan import massal — kini satu hub.",
+     "title": "Setup & Numbering"
+    },
+    {
+     "content": "Atur format penomoran otomatis (PR/PO/PAY/JAE) beserta reset periodik.",
+     "title": "Number Series"
+    },
+    {
+     "content": "Tab Tax Config untuk kode & rate pajak; Bulk Import untuk unggah data massal via Excel/CSV.",
+     "title": "Tax & Bulk Import"
+    }
+   ]
+  },
+  {
+   "description": "Lihat kapan tiap konfigurasi berlaku (timeline versi aturan).",
+   "id": "admin-effective-dating",
+   "name": "Effective Dating Timeline",
+   "steps": [
+    {
+     "content": "Timeline kapan tiap aturan/konfigurasi berlaku — penting agar perubahan kebijakan tidak retroaktif keliru.",
+     "title": "Effective Dating"
+    },
+    {
+     "content": "Saring per jenis konfigurasi untuk fokus ke aturan tertentu.",
+     "title": "Filter Timeline"
+    },
+    {
+     "content": "Garis hari ini memperjelas mana aturan aktif vs terjadwal. Warning muncul bila ada overlap periode.",
+     "title": "Penanda Hari Ini"
+    }
+   ]
+  },
+  {
+   "description": "Pantau & proses penukaran reward member loyalty.",
+   "id": "admin-loyalty-redemptions",
+   "name": "Loyalty Redemptions",
+   "steps": [
+    {
+     "content": "Daftar penukaran reward oleh member — pantau status dari requested hingga fulfilled.",
+     "title": "Redemptions"
+    },
+    {
+     "content": "Saring per status untuk proses penukaran yang masih pending.",
+     "title": "Filter Status"
+    },
+    {
+     "content": "Export data redemption untuk rekonsiliasi & analisis program loyalty.",
+     "title": "Export"
+    }
+   ]
+  },
+  {
+   "description": "Overview pembelian: PR → PO → GR.",
+   "id": "procurement-home",
+   "name": "Procurement Home",
+   "steps": [
+    {
+     "content": "Pusat pengelolaan pembelian dari outlet ke vendor. Alur utama: PR → PO → GR.",
+     "title": "Procurement Overview"
+    },
+    {
+     "content": "Drag & drop untuk pindahkan PR/PO antar status. Cocok untuk view operational sehari-hari.",
+     "title": "Workboard Kanban"
+    },
+    {
+     "content": "Pilih item, bandingkan vendor berdasarkan harga, lead time, on-time delivery, defect rate. Rekomendasi vendor terbaik otomatis.",
+     "title": "Bandingkan Vendor"
+    },
+    {
+     "content": "Ringkasan: PR Pending, PO Open, GR Posted. Quick Action di kanan untuk buat PR baru.",
+     "title": "KPI Procurement"
+    }
+   ]
+  },
+  {
+   "description": "Drag & drop PR/PO antar status dengan visual pipeline.",
+   "id": "procurement-kanban",
+   "name": "Workboard Kanban",
+   "steps": [
+    {
+     "content": "7 kolom pipeline dari PR Draft → PR Approved → PO Sent → PO Received. Drag card antar kolom untuk approve/send/post GR.",
+     "title": "Kanban Workboard"
+    },
+    {
+     "content": "Fokus ke outlet atau vendor tertentu. Cocok untuk manager outlet yang punya scope terbatas.",
+     "title": "Filter Outlet & Vendor"
+    },
+    {
+     "content": "Default 60 hari terakhir. Kurangi range untuk performa lebih cepat di koneksi lambat.",
+     "title": "Filter Periode"
+    },
+    {
+     "content": "• Drag card dari kolom status satu ke berikutnya\n• Sistem otomatis update status dan buat JE jika diperlukan\n• Card berwarna = prioritas (merah = overdue)",
+     "title": "Cara Drag & Drop"
+    }
+   ]
+  },
+  {
+   "description": "Kelola permintaan pembelian: buat, review, approve.",
+   "id": "procurement-pr-list",
+   "name": "Purchase Requests — Daftar PR",
+   "steps": [
+    {
+     "content": "Daftar semua Purchase Request (PR) dari outlet, inventory alert, dan manual procurement. PR harus di-approve sebelum bisa dibuatkan PO.",
+     "title": "Purchase Requests"
+    },
+    {
+     "content": "Filter berdasarkan outlet dan sumber (outlet request, auto-inventory, manual). Lihat PR dari outlet tertentu saja.",
+     "title": "Filter PR"
+    },
+    {
+     "content": "Status PR:\n\n• Draft — belum disubmit\n• Menunggu — menunggu approval\n• Disetujui — siap dibuatkan PO\n• Ditolak — ditolak",
+     "title": "Status PR"
+    },
+    {
+     "content": "Klik + PR untuk buat permintaan pembelian baru. Isi item, qty, dan outlet yang membutuhkan.",
+     "title": "Buat PR Manual"
+    },
+    {
+     "content": "Klik baris PR untuk detail. Dari detail: Setujui PR lalu klik Buat PO dari PR untuk buat PO ke vendor yang dipilih.",
+     "title": "Approve & Convert ke PO"
+    }
+   ]
+  },
+  {
+   "description": "Buat, kirim, dan pantau purchase orders ke vendor.",
+   "id": "procurement-po-list",
+   "name": "Purchase Orders — Daftar PO",
+   "steps": [
+    {
+     "content": "Daftar semua Purchase Order (PO). PO bisa dibuat dari PR yang sudah approved, atau langsung tanpa PR.",
+     "title": "Purchase Orders"
+    },
+    {
+     "content": "Filter berdasarkan outlet dan vendor. Berguna untuk cek semua PO ke satu vendor atau dari satu outlet.",
+     "title": "Filter PO"
+    },
+    {
+     "content": "Status PO:\n\n• Draft — belum dikirim\n• Terkirim — sudah dikirim ke vendor\n• Sebagian — GR sebagian item\n• Diterima — semua item sudah diterima",
+     "title": "Status PO"
+    },
+    {
+     "content": "Klik + PO untuk buat purchase order baru. Pilih vendor, isi item dan harga. Setelah sent, vendor menerima notifikasi.",
+     "title": "Buat PO Baru"
+    },
+    {
+     "content": "Dari detail PO: klik Kirim ke Vendor untuk update status. Saat barang tiba, buat GR (Goods Receipt) untuk konfirmasi penerimaan.",
+     "title": "Kirim & GR"
+    }
+   ]
+  },
+  {
+   "description": "Posting penerimaan barang dari PO dan auto-journal AP.",
+   "id": "procurement-gr",
+   "name": "Goods Receipt — Penerimaan Barang",
+   "steps": [
+    {
+     "content": "Konfirmasi penerimaan barang dari vendor. GR ter-link ke PO dan otomatis buat journal AP dan update stok inventory.",
+     "title": "Goods Receipt (GR)"
+    },
+    {
+     "content": "Klik + GR lalu pilih PO yang diterima. Isi qty aktual yang diterima (boleh berbeda dengan PO jika barang partial).",
+     "title": "Posting GR Baru"
+    },
+    {
+     "content": "Di form GR, kolom Kondisi mencatat barang yang ditolak saat diterima: qty, alasan (busuk, rusak, tidak sesuai spesifikasi, …), dan foto bukti.\n\n• Barang ditolak tidak masuk stok & tagihan\n• Sisa PO tetap terbuka untuk kiriman ulang\n• Datanya menjadi skor kualitas supplier di Sourcing",
+     "title": "Barang Ditolak"
+    },
+    {
+     "content": "Setelah GR di-post:\n\n• Stok di inventory otomatis bertambah\n• AP ke vendor otomatis tercatat\n• Journal entry Dr: Persediaan/Beban | Cr: AP",
+     "title": "Auto-Journal dari GR"
+    },
+    {
+     "content": "Ikon jurnal di kolom kanan menunjukkan GR sudah ter-journalkan. Klik untuk lihat detail JE yang dibuat otomatis.",
+     "title": "Link ke JE"
+    }
+   ]
+  },
+  {
+   "description": "Satu tempat perbandingan harga: per item lintas vendor atau per PO.",
+   "id": "procurement-vendor-compare",
+   "name": "Bandingkan Vendor",
+   "steps": [
+    {
+     "content": "Satu tempat perbandingan harga:\n\n• Per item — pilih maksimal 10 item, lihat matrix harga per vendor & skor komposit (harga 60% + recency 40%)\n• Per PO — bandingkan hingga 4 PO berdampingan",
+     "title": "Vendor Comparison"
+    },
+    {
+     "content": "1. Cari item yang ingin dibandingkan\n2. Atur periode pembelian di kanan atas\n3. Review matrix harga per vendor (klik ikon riwayat untuk histori harga)",
+     "title": "Pilih Item"
+    },
+    {
+     "content": "Lead time, on-time delivery, defect, dan skor vendor ada di Vendor Scorecard — satu sumber untuk performa vendor.",
+     "title": "Performa Vendor"
+    }
+   ]
+  },
+  {
+   "description": "Lihat dan kelola semua vendor terdaftar.",
+   "id": "procurement-vendors",
+   "name": "All Vendors — Daftar Vendor",
+   "steps": [
+    {
+     "content": "Daftar semua vendor terdaftar di sistem. Lihat profil vendor, riwayat transaksi, dan quick links ke tools analitik.",
+     "title": "All Vendors"
+    },
+    {
+     "content": "Cari vendor berdasarkan nama, kode, atau kategori. Hasil pencarian real-time.",
+     "title": "Cari Vendor"
+    },
+    {
+     "content": "Akses cepat ke tool analitik vendor:\n\n• Comparison — bandingkan harga antar vendor\n• Scorecard — performa vendor berdasarkan historis\n• AI Recommend — rekomendasi vendor terbaik AI\n• Catalog — katalog item per vendor",
+     "title": "Quick Links"
+    },
+    {
+     "content": "Klik + Vendor untuk registrasi vendor baru. Isi nama, kontak, alamat, dan rekening bank. Vendor aktif langsung bisa dipilih di PO.",
+     "title": "Tambah Vendor Baru"
+    }
+   ]
+  },
+  {
+   "description": "Peringkat performa vendor berdasarkan historis transaksi.",
+   "id": "procurement-vendor-scorecard",
+   "name": "Vendor Scorecard",
+   "steps": [
+    {
+     "content": "Peringkat performa semua vendor berdasarkan historis: nilai transaksi, ketepatan waktu, kualitas barang, dan harga kompetitif.",
+     "title": "Vendor Scorecard"
+    },
+    {
+     "content": "Pilih periode analisis (3 bulan / 6 bulan / 1 tahun). Periode lebih panjang memberikan gambaran lebih akurat.",
+     "title": "Pilih Periode"
+    },
+    {
+     "content": "• Rank — peringkat keseluruhan\n• PO Count — jumlah PO\n• Total Value — nilai transaksi\n• On-Time % — persentase pengiriman tepat waktu\n• Score — skor komposit (0–100)",
+     "title": "Baca Scorecard"
+    }
+   ]
+  },
+  {
+   "description": "AI merekomendasikan vendor terbaik untuk item tertentu.",
+   "id": "procurement-vendor-recommend",
+   "name": "AI Vendor Recommendation",
+   "steps": [
+    {
+     "content": "AI merekomendasikan vendor terbaik untuk item yang Anda cari, berdasarkan historis harga, ketepatan waktu, dan kualitas.",
+     "title": "AI Vendor Recommendation"
+    },
+    {
+     "content": "Ketik nama item yang ingin diorder. AI akan mencari vendor yang pernah supply item tersebut dan menghitung skor terbaik.",
+     "title": "Cari Item"
+    },
+    {
+     "content": "Vendor diurutkan berdasarkan skor AI: kombinasi harga historis, on-time delivery, dan recency order terakhir. Klik untuk buat PO langsung.",
+     "title": "Kandidat Vendor"
+    }
+   ]
+  },
+  {
+   "description": "Kirim permintaan penawaran harga ke vendor dan bandingkan respons.",
+   "id": "procurement-rfq",
+   "name": "RFQ — Request for Quotation",
+   "steps": [
+    {
+     "content": "Kirim RFQ ke beberapa vendor sekaligus untuk item yang sama, lalu bandingkan penawaran harga yang masuk.",
+     "title": "Request for Quotation (RFQ)"
+    },
+    {
+     "content": "Filter berdasarkan status (Draft/Sent/Closed) dan cari berdasarkan nomor atau item. Lihat RFQ aktif yang menunggu respons vendor.",
+     "title": "Filter RFQ"
+    },
+    {
+     "content": "Klik + Buat RFQ. Isi item yang dibutuhkan, qty, dan pilih vendor-vendor yang ingin di-invite. RFQ otomatis dikirim via email.",
+     "title": "Buat RFQ Baru"
+    },
+    {
+     "content": "Setelah vendor merespons, buka RFQ dan lihat tabel perbandingan harga. Pilih vendor terbaik dan konvert ke PO dengan satu klik.",
+     "title": "Bandingkan Penawaran"
+    }
+   ]
+  },
+  {
+   "description": "Gabungkan banyak Purchase Request jadi PO efisien per vendor.",
+   "id": "procurement-consolidation",
+   "name": "PR Consolidation",
+   "steps": [
+    {
+     "content": "Gabungkan beberapa Purchase Request menjadi PO yang efisien — kurangi PO kecil-kecil ke vendor sama.",
+     "title": "PR Consolidation"
+    },
+    {
+     "content": "Centang PR yang ingin digabung. Toggle All untuk pilih semua dalam filter aktif.",
+     "title": "Pilih PR"
+    },
+    {
+     "content": "Panel kanan menunjukkan item ter-konsolidasi & total. Klik Generate PO untuk membuat PO.",
+     "title": "Preview & Generate"
+    }
+   ]
+  },
+  {
+   "description": "Bandingkan beberapa PO berdampingan (tab Per PO di Vendor Comparison).",
+   "id": "procurement-po-comparison",
+   "name": "PO Comparison",
+   "steps": [
+    {
+     "content": "Pilih hingga 4 Purchase Order untuk item serupa dan bandingkan harga & total berdampingan.",
+     "title": "Perbandingan per PO"
+    },
+    {
+     "content": "Filter vendor/status, lalu klik Bandingkan pada PO yang ingin dibandingkan. Tabel perbandingan muncul di bawah — sel hijau = harga terbaik per item.",
+     "title": "Pilih PO"
+    }
+   ]
+  },
+  {
+   "description": "Harga acuan per periode & wilayah, penawaran supplier, dan analisis harga per item.",
+   "id": "procurement-sourcing",
+   "name": "Sourcing",
+   "steps": [
+    {
+     "content": "Satu tempat untuk keputusan beli: harga acuan pasar, penawaran supplier, dan harga yang benar-benar dibayar (GR).",
+     "title": "Sourcing"
+    },
+    {
+     "content": "Potensi hemat, item di atas acuan, item dengan 1 supplier, dan item yang belum punya acuan. Klik kartu untuk menyaring tabel.",
+     "title": "Ringkasan"
+    },
+    {
+     "content": "Satu baris per item: acuan, penawaran terbaik, harga terakhir, jumlah supplier. Klik baris untuk analisis item (perbandingan supplier & tren harga).",
+     "title": "Semua item"
+    },
+    {
+     "content": "Harga acuan: lembar kerja per periode (mingguan/bulanan/kuartalan) & wilayah. Penawaran supplier: harga berlaku, MOQ, lead time — RFQ masuk otomatis. Pengaturan: periode & ambang.",
+     "title": "Harga acuan, penawaran, pengaturan"
+    }
+   ]
+  },
+  {
+   "description": "Katalog item per vendor + riwayat harga untuk referensi pembelian.",
+   "id": "procurement-vendor-catalog",
+   "name": "Vendor Catalog",
+   "steps": [
+    {
+     "content": "Telusuri item yang ditawarkan tiap vendor beserta harga terakhir — referensi cepat saat membuat PR/PO.",
+     "title": "Vendor Catalog"
+    },
+    {
+     "content": "Cari & pilih vendor dari daftar kiri untuk melihat katalog item-nya.",
+     "title": "Pilih Vendor"
+    },
+    {
+     "content": "Cari item dalam katalog vendor terpilih; bandingkan harga antar vendor sebelum order.",
+     "title": "Cari Item"
+    }
+   ]
+  },
+  {
+   "description": "Validasi sales, AP ledger, journals, dan approvals.",
+   "id": "finance-home",
+   "name": "Finance Home",
+   "steps": [
+    {
+     "content": "Pusat kontrol finansial: validasi sales, AP ledger, journal entries, payments. Periode aktif ditunjukkan di header.",
+     "title": "Finance Overview"
+    },
+    {
+     "content": "4 KPI utama:\n\n• Pending Validation — daily sales menunggu finance\n• Journal This Period — JAE bulan aktif\n• AP Exposure — total hutang ke vendor\n• Rejected DS — daily sales yang perlu fix",
+     "title": "KPI Finance"
+    },
+    {
+     "content": "Klik untuk masuk queue validasi daily sales dari outlet. Validasi cepat menjaga TB akurat.",
+     "title": "Validate Sales Queue"
+    },
+    {
+     "content": "Buat JAE manual untuk koreksi/penyesuaian. Sistem enforce Dr = Cr sebelum post.",
+     "title": "Manual Journal Entry"
+    },
+    {
+     "content": "Laporan P&L matrix bulan x periode YTD. Drill-down ke transaksi level dari tiap cell.",
+     "title": "Profit & Loss"
+    }
+   ]
+  },
+  {
+   "description": "Review dan validasi daily sales dari semua outlet.",
+   "id": "finance-validation",
+   "name": "Sales Validation Queue",
+   "steps": [
+    {
+     "content": "Antrian validasi daily sales dari semua outlet. Finance Manager harus validasi setiap laporan sebelum journal entries di-post.",
+     "title": "Sales Validation Queue"
+    },
+    {
+     "content": "Filter berdasarkan outlet dan tanggal. Klik Validate untuk approve laporan — journal entries otomatis ter-post ke GL.",
+     "title": "Filter & Actions"
+    },
+    {
+     "content": "Setiap baris = satu daily sales report dari outlet. Klik View untuk lihat breakdown per channel dan payment method sebelum validasi.",
+     "title": "Detail Laporan"
+    },
+    {
+     "content": "Jika laporan tidak akurat, klik Reject dan tulis alasan. Outlet manager akan di-notifikasi untuk perbaikan dan submit ulang.",
+     "title": "Reject & Feedback"
+    }
+   ]
+  },
+  {
+   "description": "Buat jurnal akuntansi manual dengan validasi Dr=Cr.",
+   "id": "finance-manual-journal",
+   "name": "Manual Journal Entry",
+   "steps": [
+    {
+     "content": "Buat jurnal akuntansi manual untuk koreksi, penyesuaian, atau transaksi yang tidak masuk via auto-journal.",
+     "title": "Manual Journal Entry"
+    },
+    {
+     "content": "Pilih tanggal posting (harus dalam periode aktif). Isi deskripsi yang jelas untuk audit trail.",
+     "title": "Tanggal & Deskripsi"
+    },
+    {
+     "content": "Tambah baris dengan tombol + Baris. Setiap baris: pilih COA, isi Debit atau Kredit (tidak keduanya), tambah memo dan outlet.",
+     "title": "Baris Debit/Kredit"
+    },
+    {
+     "content": "Post hanya aktif jika Dr = Cr (balanced). JE yang sudah dipost bisa di-reverse jika ada kesalahan — system buat JE kebalikan otomatis.",
+     "title": "Posting JE"
+    }
+   ]
+  },
+  {
+   "description": "Pantau dan kelola hutang ke vendor dengan aging analysis.",
+   "id": "finance-ap",
+   "name": "AP Aging — Hutang Dagang",
+   "steps": [
+    {
+     "content": "Monitor hutang dagang ke semua vendor. Aging mengelompokkan hutang berdasarkan umur: Current, 1-30hr, 31-60hr, dan >60hr.",
+     "title": "AP Aging Ledger"
+    },
+    {
+     "content": "Set As of Date untuk lihat posisi AP di tanggal tertentu. Klik Export untuk download CSV untuk rekonsiliasi eksternal.",
+     "title": "Filter & Export"
+    },
+    {
+     "content": "5 bucket aging:\n\n• Current — belum jatuh tempo\n• 1–30 hr — lewat 1-30 hari\n• 31–60 hr — risiko medium\n• >60 hr — butuh tindakan segera\n\nKlik bucket untuk filter tabel otomatis.",
+     "title": "Aging Buckets"
+    },
+    {
+     "content": "Setiap baris = satu vendor. Klik baris untuk lihat GR/PO detail yang belum dibayar. Siapkan Payment Request dari sini.",
+     "title": "Detail per Vendor"
+    },
+    {
+     "content": "Total hutang ke semua vendor pada tanggal yang dipilih. Angka ini harus match dengan saldo COA AP di Balance Sheet.",
+     "title": "Grand Total AP"
+    }
+   ]
+  },
+  {
+   "description": "Lihat, filter, dan buat journal entries akuntansi.",
+   "id": "finance-journals",
+   "name": "Journal Entries — Daftar JAE",
+   "steps": [
+    {
+     "content": "Daftar semua journal entries — auto-generated (dari DS, GR, payroll) maupun manual. Double-entry accounting terjamin.",
+     "title": "Journal Entries"
+    },
+    {
+     "content": "Filter berdasarkan:\n\n• Periode (bulan akuntansi)\n• Source (DS/PROC/INV/MANUAL/PAYROLL)\n• Search (doc no / deskripsi)",
+     "title": "Filter Jurnal"
+    },
+    {
+     "content": "Source menunjukkan asal auto-journal:\n\n• DS — dari daily sales\n• PROC — dari GR procurement\n• INV — dari movement inventory\n• MANUAL — input finance",
+     "title": "Source Journal"
+    },
+    {
+     "content": "Klik + JAE Manual untuk jurnal koreksi/penyesuaian. Sistem enforce Dr = Cr sebelum bisa di-post.",
+     "title": "Buat Manual JAE"
+    },
+    {
+     "content": "Klik baris journal untuk lihat detail baris Dr/Cr lengkap. Dari detail, bisa reverse journal jika ada kesalahan input.",
+     "title": "Klik Baris untuk Detail"
+    }
+   ]
+  },
+  {
+   "description": "Daftar pembayaran (PAY) dari pengajuan sampai dibayar.",
+   "id": "finance-payment-requests",
+   "name": "Payments — Pembayaran ke Vendor",
+   "steps": [
+    {
+     "content": "Daftar semua payment (PAY) ke vendor/karyawan. Finance memproses pembayaran setelah PAY disetujui.",
+     "title": "Payments"
+    },
+    {
+     "content": "Ringkasan jumlah PAY per status: menunggu approval, siap bayar, dan nominal yang sudah dibayar.",
+     "title": "Ringkasan"
+    },
+    {
+     "content": "Filter berdasarkan status dan cari nomor dokumen/payee. Berguna untuk rekonsiliasi harian.",
+     "title": "Filter"
+    },
+    {
+     "content": "Klik Buat Payment untuk pembayaran baru. Tautkan ke GR/AP untuk traceability penuh; PAY masuk approval sebelum dibayar.",
+     "title": "Buat Payment"
+    }
+   ]
+  },
+  {
+   "description": "Kelola payment request: dari draft → approval → paid.",
+   "id": "finance-payments",
+   "name": "Payment Requests — Workflow Pembayaran",
+   "steps": [
+    {
+     "content": "Workflow pembayaran ke vendor. Setiap payment harus melalui request → approval → paid sebelum JE otomatis dibuat.",
+     "title": "Payment Requests"
+    },
+    {
+     "content": "Ringkasan: Total Pending, Approved (siap bayar), Paid MTD, dan Total Outstanding.",
+     "title": "KPI Payments"
+    },
+    {
+     "content": "Tab status:\n\n• Menunggu — menunggu approval\n• Disetujui — siap dibayarkan\n• Dibayar — sudah dibayar\n• Ditolak — ditolak, perlu revisi",
+     "title": "Filter by Status"
+    },
+    {
+     "content": "Klik New Payment untuk buat payment request baru. Link ke GR/AP aging untuk traceability lengkap.",
+     "title": "Buat Payment Request"
+    },
+    {
+     "content": "Di tabel: klik Setujui (jika punya izin) atau Lihat detail. Setelah paid, JE otomatis ter-post di accounts payable.",
+     "title": "Aksi per Payment"
+    }
+   ]
+  },
+  {
+   "description": "Upload mutasi rekening dan cocokkan dengan journal entries.",
+   "id": "finance-bank-recon",
+   "name": "Bank Reconciliation",
+   "steps": [
+    {
+     "content": "Cocokkan mutasi rekening bank dengan journal entries di sistem. Identifikasi transaksi yang belum ter-posting atau ada discrepancy.",
+     "title": "Bank Reconciliation"
+    },
+    {
+     "content": "Upload file CSV mutasi rekening dari internet banking. Sistem auto-parse format standar bank Indonesia.",
+     "title": "Upload Mutasi"
+    },
+    {
+     "content": "Sistem otomatis match berdasarkan jumlah dan tanggal (toleransi ±3 hari). Klik Match manual untuk transaksi yang tidak ter-match otomatis.",
+     "title": "Proses Matching"
+    },
+    {
+     "content": "Klik Commit setelah semua match selesai. Transaksi unmatched bisa di-mark sebagai exception dengan catatan alasan.",
+     "title": "Commit Rekonsiliasi"
+    }
+   ]
+  },
+  {
+   "description": "Kelola invoice ke customer B2B dan aging piutang.",
+   "id": "finance-ar",
+   "name": "AR Invoices — Piutang Dagang",
+   "steps": [
+    {
+     "content": "Kelola piutang dagang dari customer B2B (katering, event, dll). Track invoice yang belum dibayar dengan aging analysis.",
+     "title": "AR Invoices"
+    },
+    {
+     "content": "• Total Invoices — jumlah invoice aktif\n• Outstanding — total piutang belum dibayar\n• Terlambat — piutang lewat jatuh tempo\n• Paid MTD — pembayaran diterima bulan ini",
+     "title": "KPI AR"
+    },
+    {
+     "content": "• Invoices — daftar invoice dengan status\n• Customers — master customer B2B\n• Aging Report — aging analysis piutang\n• Rekonsiliasi — cocokkan pembayaran yang diterima",
+     "title": "4 Tab AR"
+    },
+    {
+     "content": "Klik + Invoice untuk buat invoice ke customer. Isi detail, nominal, dan jatuh tempo. Invoice otomatis ter-journal sebagai piutang.",
+     "title": "Buat Invoice"
+    }
+   ]
+  },
+  {
+   "description": "Neraca saldo semua akun COA untuk cek keseimbangan buku.",
+   "id": "finance-trial-balance",
+   "name": "Trial Balance",
+   "steps": [
+    {
+     "content": "Neraca Saldo semua akun COA per periode. Jumlah total Debit harus sama dengan total Kredit — jika tidak, ada error di jurnal.",
+     "title": "Trial Balance"
+    },
+    {
+     "content": "Pilih periode (bulan akuntansi) dan outlet (All atau spesifik). Export ke CSV untuk rekonsiliasi eksternal dengan akuntan.",
+     "title": "Filter & Export"
+    },
+    {
+     "content": "Hijau = TB balance (Dr = Cr). Amber/Merah = ada discrepancy yang perlu diselidiki. Investigasi journal entries untuk temukan sumber masalah.",
+     "title": "Status Balance"
+    },
+    {
+     "content": "Klik baris akun untuk drill-down ke semua jurnal yang mempengaruhi akun tersebut di periode yang dipilih.",
+     "title": "Baca TB"
+    }
+   ]
+  },
+  {
+   "description": "Laporan posisi keuangan: Aset, Kewajiban, dan Ekuitas.",
+   "id": "finance-balance-sheet",
+   "name": "Balance Sheet — Neraca Keuangan",
+   "steps": [
+    {
+     "content": "Laporan posisi keuangan FnB Group. Menampilkan Aset = Kewajiban + Ekuitas per tanggal yang dipilih.",
+     "title": "Balance Sheet"
+    },
+    {
+     "content": "Pilih tanggal untuk lihat posisi keuangan di titik waktu tertentu. Berguna untuk laporan bulanan, kuartalan, atau tahunan.",
+     "title": "As of Date"
+    },
+    {
+     "content": "Hijau = neraca seimbang (Aset = Kewajiban + Ekuitas). Jika tidak seimbang, ada jurnal yang salah atau belum ter-posting.",
+     "title": "Status Balanced"
+    },
+    {
+     "content": "Aset (kiri atas) — Kewajiban (kanan atas) — Ekuitas (kanan bawah). Klik akun untuk drill-down ke jurnal pendukungnya.",
+     "title": "3 Seksi Neraca"
+    }
+   ]
+  },
+  {
+   "description": "Laporan arus kas: operasional, investasi, dan pendanaan.",
+   "id": "finance-cashflow",
+   "name": "Cashflow Statement — Arus Kas",
+   "steps": [
+    {
+     "content": "Laporan arus kas FnB Group per periode. Menampilkan kas masuk dan keluar dari aktivitas operasional, investasi, dan pendanaan.",
+     "title": "Cashflow Statement"
+    },
+    {
+     "content": "Pilih bulan untuk laporan arus kas. Export ke CSV untuk laporan ke stakeholder atau auditor.",
+     "title": "Pilih Periode"
+    },
+    {
+     "content": "• Kas Masuk — total pemasukan\n• Kas Keluar — total pengeluaran\n• Net Cashflow — selisih masuk-keluar\n• Closing Balance — saldo kas akhir periode",
+     "title": "KPI Arus Kas"
+    },
+    {
+     "content": "Chart arus kas harian untuk lihat pola cash flow dalam sebulan. Berguna identifikasi hari-hari dengan cash crunch.",
+     "title": "Chart Harian"
+    }
+   ]
+  },
+  {
+   "description": "Browse dan manage akun-akun buku besar.",
+   "id": "finance-coa",
+   "name": "Chart of Accounts (COA)",
+   "steps": [
+    {
+     "content": "Daftar lengkap akun buku besar (COA) FnB Group. Setiap transaksi akuntansi di-posting ke salah satu akun ini.",
+     "title": "Chart of Accounts"
+    },
+    {
+     "content": "Filter berdasarkan tipe akun (Aset/Kewajiban/Ekuitas/Pendapatan/Beban). Toggle Postable Only untuk lihat akun yang bisa digunakan di jurnal.",
+     "title": "Filter COA"
+    },
+    {
+     "content": "COA memiliki hierarki: group account → sub-account → detail account. Hanya detail account (postable) yang bisa digunakan di jurnal.",
+     "title": "Struktur COA"
+    },
+    {
+     "content": "Untuk tambah atau edit akun COA, klik link Edit di Master Data. Perubahan COA harus dikonsultasikan dengan Finance Manager — salah COA bisa merusak laporan.",
+     "title": "Edit COA"
+    }
+   ]
+  },
+  {
+   "description": "Baca dan drill-down laporan P&L per periode dan outlet.",
+   "id": "finance-profit-loss",
+   "name": "Profit & Loss — Laporan Laba Rugi",
+   "steps": [
+    {
+     "content": "Laporan Laba Rugi menampilkan Revenue − COGS − Opex = Net Profit. Pilih periode dan outlet untuk filter yang spesifik.",
+     "title": "Laporan P&L"
+    },
+    {
+     "content": "• Hijau — nilai positif (revenue/profit)\n• Merah — nilai negatif (expense/loss)\n• Klik sel angka untuk drill-down ke transaksi asal\n• Column = bulan, Row = akun COA",
+     "title": "Cara Membaca P&L"
+    }
+   ]
+  },
+  {
+   "description": "Review flag anomali otomatis dari seluruh data keuangan.",
+   "id": "finance-anomalies",
+   "name": "Anomaly Feed — Deteksi Keuangan",
+   "steps": [
+    {
+     "content": "Sistem secara otomatis mendeteksi anomali keuangan: jurnal tidak balance, stok negatif, sales spike, dan hutang overdue.",
+     "title": "Anomaly Feed"
+    },
+    {
+     "content": "Klik Scan Sekarang untuk jalankan deteksi anomali real-time. Scan otomatis berjalan setiap malam via scheduler.",
+     "title": "Scan Manual"
+    },
+    {
+     "content": "Filter berdasarkan:\n\n• Tipe — journal, sales, inventory, AP\n• Severity — Critical/High/Medium/Low\n• Status — Open/Resolved/Ignored",
+     "title": "Filter Anomali"
+    },
+    {
+     "content": "Klik anomali untuk lihat detail dan AI explanation penyebabnya. Klik Resolve setelah ditangani, atau Ignore jika sudah diketahui dan acceptable.",
+     "title": "Respons Anomali"
+    }
+   ]
+  },
+  {
+   "description": "Bandingkan performa keuangan antar periode.",
+   "id": "finance-comparatives",
+   "name": "Period Comparatives",
+   "steps": [
+    {
+     "content": "Bandingkan performa keuangan antar periode: bulan ini vs bulan lalu, Q1 vs Q2, atau year-over-year.",
+     "title": "Period Comparatives"
+    },
+    {
+     "content": "Pilih 2 periode untuk dibandingkan. Bisa berupa 2 bulan berbeda, 2 kuartal, atau 2 tahun berbeda.",
+     "title": "Pilih Periode Pembanding"
+    },
+    {
+     "content": "Kolom Δ (Delta) menunjukkan selisih absolut dan persentase perubahan. Hijau = membaik, Merah = memburuk.",
+     "title": "Delta & Trend"
+    }
+   ]
+  },
+  {
+   "description": "Cara kelola periode akuntansi dan enforcement locking backdated entries.",
+   "id": "finance-periods",
+   "name": "Period Locking & Enforcement",
+   "steps": [
+    {
+     "content": "Kelola periode akuntansi bulanan. Setiap periode bisa di-lock untuk mencegah perubahan retroaktif.",
+     "title": "Finance Periods"
+    },
+    {
+     "content": "Status periode:\n\n• Terbuka — bisa posting transaksi\n• Dikunci — tidak bisa posting (kecuali override permission)\n• Ditutup — full lock untuk audit trail",
+     "title": "Status Periode"
+    },
+    {
+     "content": "Klik Muat ulang untuk memuat status terbaru. Tombol Lock pada tiap baris periode mencegah backdated journal entries — enforcement aktif di seluruh sistem.",
+     "title": "Muat Ulang Periode"
+    }
+   ]
+  },
+  {
+   "description": "Workflow 4-fase penutupan periode akuntansi bulanan.",
+   "id": "finance-period-closing",
+   "name": "Period Closing Hub — Tutup Bulan",
+   "steps": [
+    {
+     "content": "Workflow 4 fase penutupan bulanan yang berurutan. Selesaikan tiap fase sebelum lanjut ke fase berikutnya.",
+     "title": "Period Closing Hub"
+    },
+    {
+     "content": "Validasi semua daily sales outlet belum ada yang pending/rejected. Semua harus Disetujui sebelum close.",
+     "title": "Fase 1: Validasi"
+    },
+    {
+     "content": "Review flag anomali otomatis:\n\n• Jurnal tidak balance\n• COA salah mapping\n• Stok negatif\n• Hutang overdue",
+     "title": "Fase 2: Cek Anomali"
+    },
+    {
+     "content": "Generate closing journal otomatis: tutup akun pendapatan/beban ke retained earnings. Cek TB Balance Sheet satu kali lagi.",
+     "title": "Fase 3: Closing Wizard"
+    },
+    {
+     "content": "Fase terakhir: lock periode agar tidak bisa di-posting lagi. Setelah lock, laporan keuangan final dan tidak bisa diubah.",
+     "title": "Fase 4: Lock Periode"
+    }
+   ]
+  },
+  {
+   "description": "Hutang (AP), Kas & Bank, dan Piutang (AR) dalam satu workspace berkelompok.",
+   "id": "finance-payments-hub",
+   "name": "Payments Hub",
+   "steps": [
+    {
+     "content": "Semua alur pembayaran & piutang digabung jadi tabs — tidak lagi menu terpisah di sidebar.",
+     "title": "Payments Hub"
+    },
+    {
+     "content": "Mulai dari pengajuan pembayaran → approve → bayar. Titik awal workflow kas keluar.",
+     "title": "Payments"
+    },
+    {
+     "content": "Pantau aging hutang ke vendor — yang jatuh tempo & overdue.",
+     "title": "AP aging"
+    },
+    {
+     "content": "Cash position dan Bank reconciliation (cocokkan mutasi rekening dengan jurnal). Kelompok Piutang (AR) untuk invoice customer & deposit reservasi.",
+     "title": "Kas & Bank"
+    }
+   ]
+  },
+  {
+   "description": "Trial Balance, P&L, Balance Sheet, Cashflow & Pivot dalam satu tempat bertab.",
+   "id": "finance-reports-hub",
+   "name": "Reports Hub",
+   "steps": [
+    {
+     "content": "Semua laporan keuangan kini jadi tabs di satu halaman — lebih cepat berpindah antar laporan.",
+     "title": "Reports Hub"
+    },
+    {
+     "content": "Neraca saldo seluruh akun COA — titik awal verifikasi pembukuan.",
+     "title": "Trial Balance"
+    },
+    {
+     "content": "Laporan laba rugi dengan drill-down per kategori pendapatan & beban.",
+     "title": "Profit & Loss"
+    },
+    {
+     "content": "Tab Balance Sheet (posisi keuangan) & Cashflow (arus kas), plus Period Compare, Custom & Pivot.",
+     "title": "Balance Sheet & Cashflow"
+    }
+   ]
+  },
+  {
+   "description": "Tax Center, e-Faktur, dan e-Bupot dalam satu workspace pajak.",
+   "id": "finance-tax-hub",
+   "name": "Tax Center Hub",
+   "steps": [
+    {
+     "content": "Pusat perpajakan: hitung PPN/PPh, lalu export ke format DJP.",
+     "title": "Tax & Compliance"
+    },
+    {
+     "content": "Tab PPN, PPh 21, PPh 23 dan PPh 4(2): aktifkan pajak, atur tarif dan hitung setoran per masa pajak.",
+     "title": "PPN & PPh"
+    },
+    {
+     "content": "Tab e-Faktur (PPN) dan e-Bupot (PPh) untuk generate file export resmi.",
+     "title": "e-Faktur & e-Bupot"
+    }
+   ]
+  },
+  {
+   "description": "Budget vs Actual, Budget Management, dan Forecasting dalam satu tempat.",
+   "id": "finance-budget-hub",
+   "name": "Budget Hub",
+   "steps": [
+    {
+     "content": "Kelola anggaran end-to-end: bandingkan vs realisasi, atur master budget, dan forecast.",
+     "title": "Budget Hub"
+    },
+    {
+     "content": "Bandingkan anggaran vs realisasi per akun/periode — temukan varians signifikan.",
+     "title": "Budget vs Actual"
+    },
+    {
+     "content": "Tab Management untuk set budget, Forecasting untuk proyeksi berbasis tren.",
+     "title": "Management & Forecasting"
+    }
+   ]
+  },
+  {
+   "description": "Kelola aset tetap, nilai buku, dan penyusutan.",
+   "id": "finance-assets",
+   "name": "Fixed Assets — Aset Tetap",
+   "steps": [
+    {
+     "content": "Register aset tetap perusahaan: harga perolehan, akumulasi penyusutan, dan nilai buku.",
+     "title": "Daftar Aset Tetap"
+    },
+    {
+     "content": "Kartu total: Harga Perolehan, Nilai Buku, dan Akumulasi Penyusutan seluruh aset.",
+     "title": "Ringkasan Nilai"
+    },
+    {
+     "content": "Saring per kategori (kendaraan, peralatan dapur, dll) dan status aset.",
+     "title": "Filter Kategori"
+    },
+    {
+     "content": "Klik untuk registrasi aset baru — isi harga, tanggal perolehan, dan metode penyusutan.",
+     "title": "Tambah Aset"
+    }
+   ]
+  },
+  {
+   "description": "Posisi kas real-time, proyeksi runway, dan rencana kas.",
+   "id": "finance-cash-position",
+   "name": "Cash Position",
+   "steps": [
+    {
+     "content": "Posisi kas group: saldo, kewajiban jatuh tempo, dan runway (berapa lama kas bertahan).",
+     "title": "Cash Position"
+    },
+    {
+     "content": "Net cash, AP jatuh tempo, kas setelah AP, dan estimasi runway dalam hari.",
+     "title": "KPI Kas"
+    },
+    {
+     "content": "Indikator cepat: aman / waspada / kritis berdasarkan runway & kewajiban.",
+     "title": "Status Kesehatan Kas"
+    },
+    {
+     "content": "Tambah proyeksi penerimaan/pengeluaran agar forecast kas lebih akurat.",
+     "title": "Catat Rencana Kas"
+    }
+   ]
+  },
+  {
+   "description": "Peringkat performa vendor dari sisi finance (nilai & ketepatan).",
+   "id": "finance-vendor-scorecard",
+   "name": "Vendor Scorecard",
+   "steps": [
+    {
+     "content": "Nilai performa vendor berdasarkan histori PO & pembayaran untuk evaluasi kemitraan.",
+     "title": "Vendor Scorecard"
+    },
+    {
+     "content": "Pilih periode evaluasi (From–To) untuk menilai vendor pada jendela waktu tertentu.",
+     "title": "Rentang Periode"
+    },
+    {
+     "content": "Export scorecard untuk review meeting procurement/finance.",
+     "title": "Export"
+    }
+   ]
+  },
+  {
+   "description": "Rekap deposit reservasi outlet sebagai kewajiban (titipan tamu).",
+   "id": "finance-reservation-deposits",
+   "name": "Deposit Reservasi",
+   "steps": [
+    {
+     "content": "Pantau deposit reservasi yang diterima outlet — diakui sebagai kewajiban hingga acara berlangsung.",
+     "title": "Deposit Reservasi"
+    },
+    {
+     "content": "Total deposit aktif & per status untuk periode terpilih.",
+     "title": "Ringkasan Deposit"
+    },
+    {
+     "content": "Saring berdasarkan periode untuk rekonsiliasi bulanan.",
+     "title": "Filter Periode"
+    }
+   ]
+  },
+  {
+   "description": "Proses pembayaran batch ke banyak vendor sekaligus.",
+   "id": "finance-payment-runs",
+   "name": "Payment Runs",
+   "steps": [
+    {
+     "content": "Jalankan pembayaran batch — gabungkan banyak tagihan jadi satu run untuk efisiensi.",
+     "title": "Payment Runs"
+    },
+    {
+     "content": "Nilai & jumlah run per status (draft, approved, paid).",
+     "title": "Ringkasan Run"
+    },
+    {
+     "content": "Buat run dari tagihan terpilih, atau dari template untuk run rutin.",
+     "title": "Buat Run Baru"
+    }
+   ]
+  },
+  {
+   "description": "Template untuk pembayaran batch berulang.",
+   "id": "finance-payment-run-templates",
+   "name": "Payment Run Templates",
+   "steps": [
+    {
+     "content": "Simpan konfigurasi run yang sering dipakai sebagai template — bayar rutin lebih cepat.",
+     "title": "Run Templates"
+    },
+    {
+     "content": "Definisikan vendor/akun & kriteria, lalu apply kapan saja untuk membuat run instan.",
+     "title": "Buat Template"
+    }
+   ]
+  },
+  {
+   "description": "Proyeksi keuangan berbasis tren historis.",
+   "id": "finance-forecasting",
+   "name": "Forecasting",
+   "steps": [
+    {
+     "content": "Proyeksi arus & performa ke depan berdasarkan tren data historis.",
+     "title": "Forecasting"
+    },
+    {
+     "content": "Pilih metode proyeksi dan jumlah hari historis yang dipakai sebagai dasar. Angka di tombol = pengaturan yang diubah dari default.",
+     "title": "Pengaturan model"
+    },
+    {
+     "content": "Grafik aktual vs proyeksi — bantu antisipasi kebutuhan kas/pembelian.",
+     "title": "Kurva Proyeksi"
+    }
+   ]
+  },
+  {
+   "description": "Bandingkan anggaran vs realisasi per akun/periode.",
+   "id": "finance-budget-vs-actual",
+   "name": "Budget vs Actual",
+   "steps": [
+    {
+     "content": "Bandingkan anggaran vs realisasi — deteksi varians signifikan lebih awal.",
+     "title": "Budget vs Actual"
+    },
+    {
+     "content": "Cakupan (Group/brand/toko) mengikuti pilihan di bagian atas layar. Di sini pilih periode, level, dan toko bila brand punya beberapa toko.",
+     "title": "Periode & Filter"
+    },
+    {
+     "content": "Lihat varians per kategori; klik untuk drill ke detail COA.",
+     "title": "Ringkasan per Kategori"
+    }
+   ]
+  },
+  {
+   "description": "Generate file e-Faktur PPN untuk DJP.",
+   "id": "finance-efaktur",
+   "name": "e-Faktur Export",
+   "steps": [
+    {
+     "content": "Buat file e-Faktur (PPN keluaran/masukan) sesuai format DJP.",
+     "title": "e-Faktur"
+    },
+    {
+     "content": "Pilih masa pajak dan jenis faktur sebelum generate.",
+     "title": "Periode & Jenis"
+    },
+    {
+     "content": "Klik Preview lalu Generate — unduh CSV/XML untuk diunggah ke aplikasi DJP.",
+     "title": "Preview & Generate"
+    }
+   ]
+  },
+  {
+   "description": "Generate bukti potong PPh (e-Bupot).",
+   "id": "finance-ebupot",
+   "name": "e-Bupot Export",
+   "steps": [
+    {
+     "content": "Buat bukti potong PPh (e-Bupot) untuk pelaporan pajak penghasilan.",
+     "title": "e-Bupot"
+    },
+    {
+     "content": "Pilih periode lalu generate file e-Bupot untuk diunggah ke DJP.",
+     "title": "Generate"
+    }
+   ]
+  },
+  {
+   "description": "Overview stok, low stock alert, transfer, dan opname.",
+   "id": "inventory-home",
+   "name": "Inventory Home",
+   "steps": [
+    {
+     "content": "Pantau stok semua outlet, lakukan transfer, adjustment, atau jalankan opname dari sini.",
+     "title": "Inventory Overview"
+    },
+    {
+     "content": "Filter inventory berdasarkan outlet. Jika user punya akses penuh, bisa lihat seluruh outlet sekaligus.",
+     "title": "Pilih Outlet"
+    },
+    {
+     "content": "Total Inventory Value (moving average), Item Count, Low Stock count, dan Opname session aktif.",
+     "title": "KPI Inventory"
+    },
+    {
+     "content": "Akses cepat ke:\n\n• Cek Stock — balance matrix\n• Low Stock — items below par\n• Transfer — pindah stok antar outlet\n• Adjustment — koreksi qty\n• Opname — stock count fisik",
+     "title": "Quick Actions"
+    },
+    {
+     "content": "Items di bawah par level. Aksi cepat: klik tombol untuk raise PR ke procurement.",
+     "title": "Low Stock Alert"
+    }
+   ]
+  },
+  {
+   "description": "Lihat stok per item per outlet dalam format list atau matrix.",
+   "id": "inventory-balance",
+   "name": "Stock Balance — Matrix Stok",
+   "steps": [
+    {
+     "content": "Lihat posisi stok real-time per item per outlet. Tersedia dua tampilan: List (per item) dan Matrix (item × outlet).",
+     "title": "Stock Balance"
+    },
+    {
+     "content": "List — lebih mudah untuk cari satu item spesifik.\nMatrix — lihat semua outlet sekaligus, ideal untuk perbandingan cepat.",
+     "title": "Toggle View: List vs Matrix"
+    },
+    {
+     "content": "Filter berdasarkan outlet dan nama item. Centang Tampilkan Low Stock Only untuk focus ke items yang perlu replenishment.",
+     "title": "Filter Stok"
+    },
+    {
+     "content": "Kolom Value = qty × harga moving average. Klik baris untuk lihat history movement item tersebut.",
+     "title": "Nilai Moving Average"
+    },
+    {
+     "content": "Qty negatif ditandai merah. Ini bisa terjadi jika sales dicatat sebelum GR masuk. Segera lakukan adjustment untuk koreksi.",
+     "title": "Stok Negatif"
+    }
+   ]
+  },
+  {
+   "description": "Timeline keluar-masuk barang per item dan outlet.",
+   "id": "inventory-movements",
+   "name": "Movement Journal — Riwayat Pergerakan",
+   "steps": [
+    {
+     "content": "Seluruh pergerakan stok tercatat di sini: masuk (GR, transfer in) dan keluar (DS usage, transfer out, adjustment).",
+     "title": "Movement Journal"
+    },
+    {
+     "content": "Filter berdasarkan:\n\n• Outlet — lokasi pergerakan\n• Tipe — IN/OUT/TRANSFER/ADJUSTMENT\n• Tanggal — rentang waktu",
+     "title": "Filter Movement"
+    },
+    {
+     "content": "Setiap baris menunjukkan:\n\n• Tipe pergerakan (masuk/keluar)\n• Qty dan unit\n• Harga saat pergerakan\n• Referensi (GR no / DS no)",
+     "title": "Baca Movement Journal"
+    }
+   ]
+  },
+  {
+   "description": "Jalankan sesi opname dan rekonsiliasi variance.",
+   "id": "inventory-opname",
+   "name": "Stock Opname — Hitung Stok Fisik",
+   "steps": [
+    {
+     "content": "Stock count fisik untuk verifikasi stok sistem vs aktual. Variance yang ditemukan otomatis dicatat sebagai adjustment.",
+     "title": "Stock Opname"
+    },
+    {
+     "content": "Klik + Opname Baru. Pilih outlet dan tanggal. Satu outlet hanya boleh punya 1 sesi opname aktif di waktu yang sama.",
+     "title": "Buat Sesi Opname Baru"
+    },
+    {
+     "content": "Status sesi:\n\n• In Progress — sedang berjalan, bisa input qty fisik\n• Diajukan — menunggu approval\n• Finalized — adjustment ter-apply ke stok",
+     "title": "Daftar Sesi Opname"
+    },
+    {
+     "content": "Setelah input qty fisik, klik Analisis AI untuk penjelasan otomatis penyebab variance. Berguna untuk laporan ke manajemen.",
+     "title": "AI Variance Explainer"
+    }
+   ]
+  },
+  {
+   "description": "Pindahkan stok dari outlet A ke B dengan traceability.",
+   "id": "inventory-transfers",
+   "name": "Transfer Stok Antar Outlet",
+   "steps": [
+    {
+     "content": "Pindahkan stok antar outlet. Setiap transfer tercatat di movement journal kedua outlet (keluar di asal, masuk di tujuan).",
+     "title": "Transfer Stok"
+    },
+    {
+     "content": "Klik + Transfer. Isi outlet asal, outlet tujuan, item, qty. Setelah submit, status menjadi Dalam Perjalanan — stok sudah dikurangi dari asal.",
+     "title": "Buat Transfer Baru"
+    },
+    {
+     "content": "Dalam Perjalanan → stok sedang dalam perjalanan.\nDiterima → outlet tujuan sudah konfirmasi penerimaan.\n\nOutlet tujuan harus klik Terima untuk finalize transfer.",
+     "title": "Status Transfer"
+    }
+   ]
+  },
+  {
+   "description": "Cara melakukan koreksi stok karena kerusakan, expired, atau koreksi fisik.",
+   "id": "inventory-adjustment",
+   "name": "Inventory Adjustment — Koreksi Stok",
+   "steps": [
+    {
+     "content": "Koreksi stok manual untuk:\n\n• Kerusakan (damage)\n• Kedaluwarsa\n• Kehilangan (loss/theft)\n• Koreksi (physical count variance)",
+     "title": "Stock Adjustment"
+    },
+    {
+     "content": "Pilih outlet tempat stok akan di-adjust.",
+     "title": "Pilih Outlet"
+    },
+    {
+     "content": "Isi item, qty, tipe (plus/minus), alasan, dan upload foto bukti. Adjustment perlu approval sebelum stok berubah.",
+     "title": "Buat Adjustment Baru"
+    },
+    {
+     "content": "Draft → Menunggu → Disetujui (stok ter-update) atau Ditolak.",
+     "title": "Status Adjustment"
+    }
+   ]
+  },
+  {
+   "description": "Satu halaman untuk semua pergerakan stok: history, transfers, adjustments.",
+   "id": "inventory-movements-hub",
+   "name": "Stock Movements Hub",
+   "steps": [
+    {
+     "content": "Satu halaman untuk semua pergerakan stok:\n\n• History — movement journal lengkap\n• Transfers — perpindahan antar outlet\n• Adjustments — koreksi stok manual",
+     "title": "Stock Movements Hub"
+    },
+    {
+     "content": "Klik tab untuk beralih antar modul. Semua data ter-refresh saat ganti tab. Filter di tiap tab independen.",
+     "title": "Navigasi Antar Modul"
+    },
+    {
+     "content": "• Gunakan tab History untuk audit trail lengkap\n• Tab Transfers untuk monitor stok dalam perjalanan\n• Tab Adjustments untuk approve koreksi yang pending",
+     "title": "Tips Penggunaan"
+    }
+   ]
+  },
+  {
+   "description": "Monitor item di bawah par level dan buat PR otomatis.",
+   "id": "inventory-low-stock",
+   "name": "Low Stock Alert",
+   "steps": [
+    {
+     "content": "Daftar semua item di bawah par level di setiap outlet. Diurutkan berdasarkan severity (Critical → High → Medium → Low).",
+     "title": "Low Stock Alert"
+    },
+    {
+     "content": "Filter berdasarkan outlet dan severity. Centang items yang ingin di-PR, lalu klik Buat PR untuk raise Purchase Request ke procurement otomatis.",
+     "title": "Filter & Aksi"
+    },
+    {
+     "content": "Klik Buat PR untuk generate PR langsung ke procurement. PR akan mengisi qty berdasarkan selisih stok saat ini vs par level.",
+     "title": "Create PR dari Low Stock"
+    }
+   ]
+  },
+  {
+   "description": "Nilai stok (asset value) per outlet pada tanggal tertentu.",
+   "id": "inventory-valuation",
+   "name": "Inventory Valuation",
+   "steps": [
+    {
+     "content": "Lihat nilai persediaan (rupiah) seluruh outlet — basis aset lancar di neraca.",
+     "title": "Inventory Valuation"
+    },
+    {
+     "content": "KPI total: nilai stok, jumlah item, dan outlet tercakup pada tanggal valuasi.",
+     "title": "Ringkasan Nilai"
+    },
+    {
+     "content": "Pilih tanggal valuasi untuk lihat nilai stok historis (mis. akhir bulan untuk closing).",
+     "title": "As-of Date"
+    },
+    {
+     "content": "Rincian nilai stok per outlet + kontribusi persentase. Klik untuk drill ke detail item.",
+     "title": "Breakdown per Outlet"
+    }
+   ]
+  },
+  {
+   "description": "Real-time KPI, trends, dan AI insights untuk seluruh group.",
+   "id": "executive-home",
+   "name": "Sales Analytics",
+   "steps": [
+    {
+     "content": "Top-level overview untuk owner & GM. KPI realtime + AI insights + drilldown ke brand/outlet.",
+     "title": "Sales Analytics"
+    },
+    {
+     "content": "Pilih periode (Today/Week/Month/Quarter/YTD/Custom), filter brand & outlet multi-select. URL akan auto-update untuk share/deep-link.",
+     "title": "Filter Bar"
+    },
+    {
+     "content": "Waterfall chart profit period-over-period. Klik untuk lihat kontribusi tiap komponen ke laba.",
+     "title": "Profit Walk"
+    },
+    {
+     "content": "Aktifkan untuk auto-refresh setiap 60 detik. Cocok untuk pantau realtime di TV display.",
+     "title": "Live Mode"
+    },
+    {
+     "content": "Export snapshot dashboard ke PDF untuk meeting. Includes filter context & timestamp.",
+     "title": "Ekspor PDF"
+    },
+    {
+     "content": "Sales Hari Ini / WTD / MTD + Inventory Value. Klik untuk drill ke source page.",
+     "title": "KPI Primary Strip"
+    }
+   ]
+  },
+  {
+   "description": "Ringkasan harian owner/GM: KPI hari ini, pintasan eksekutif, notifikasi.",
+   "id": "executive-owner-home",
+   "name": "Dashboard Eksekutif",
+   "steps": [
+    {
+     "content": "Ringkasan harian owner & GM dalam satu layar: revenue hari ini, AP exposure, anomali, dan approval tertunda. Analisis lengkap ada di Sales Analytics.",
+     "title": "Dashboard Eksekutif"
+    },
+    {
+     "content": "Revenue Hari Ini, AP Exposure, Anomali Aktif, dan Pending Approval. Klik tiap kartu untuk membuka detailnya (WTD/MTD & top outlet ada di Sales Analytics).",
+     "title": "KPI Utama"
+    },
+    {
+     "content": "Buka Sales Analytics lengkap: filter periode + brand/outlet multi-select, profit walk, brand mix, dan trend.",
+     "title": "Sales Analytics"
+    },
+    {
+     "content": "Pintasan ke halaman eksekutif — Sales & Performance Analytics, Budget, Executive Q&A, dan Reservasi. Portal lain ada di sidebar.",
+     "title": "Pintasan Eksekutif"
+    },
+    {
+     "content": "Klik Muat ulang untuk memuat angka terbaru tanpa reload halaman penuh.",
+     "title": "Segarkan Data"
+    }
+   ]
+  },
+  {
+   "description": "KPI, P&L, inventory, dan staff untuk satu outlet.",
+   "id": "executive-outlet-drilldown",
+   "name": "Detail Outlet",
+   "steps": [
+    {
+     "content": "Analisis mendalam satu outlet: performa harian, P&L, inventory, dan staff. Buka dari kartu outlet di dashboard.",
+     "title": "Detail Outlet"
+    },
+    {
+     "content": "Ringkasan revenue, GP%, net, dan transaksi outlet ini untuk periode aktif.",
+     "title": "KPI Outlet"
+    },
+    {
+     "content": "Pindah antar tab: Daily Ops, P&L, Inventory, dan Staff untuk melihat detail per area.",
+     "title": "Tab Analisis"
+    },
+    {
+     "content": "Klik Kembali untuk kembali ke halaman sebelumnya dan pilih outlet/brand lain.",
+     "title": "Kembali ke Dashboard"
+    }
+   ]
+  },
+  {
+   "description": "KPI brand, struktur biaya, outlet, dan trend.",
+   "id": "executive-brand-drilldown",
+   "name": "Detail Brand",
+   "steps": [
+    {
+     "content": "Analisis mendalam satu brand: KPI, outlet di bawahnya, struktur biaya, dan trend.",
+     "title": "Detail Brand"
+    },
+    {
+     "content": "Revenue MTD, GP%, Net, dan jumlah outlet aktif untuk brand ini.",
+     "title": "KPI Brand"
+    },
+    {
+     "content": "Pindah antar tab: Outlets, Cost Structure, dan Trends untuk detail per area.",
+     "title": "Tab Analisis"
+    },
+    {
+     "content": "Klik Kembali untuk kembali ke halaman sebelumnya dan pilih brand/outlet lain.",
+     "title": "Kembali ke Dashboard"
+    }
+   ]
+  },
+  {
+   "description": "Satu halaman tanya-jawab AI tentang performa bisnis dalam Bahasa Indonesia.",
+   "id": "executive-ai-qa",
+   "name": "Executive AI Q&A",
+   "steps": [
+    {
+     "content": "Tanya pertanyaan bisnis dalam Bahasa Indonesia — lewat teks atau suara — dan AI menjawab dari data aktual ERP. Panel Asisten AI di Sales Analytics memakai percakapan yang sama.",
+     "title": "AI Business Q&A"
+    },
+    {
+     "content": "• 'Sales The Coffeeshop bulan ini berapa?'\n• 'Vendor mana yang paling sering terlambat?'\n• 'Cash aman gak?'\n• 'Berapa AP yang jatuh tempo minggu ini?'",
+     "title": "Contoh Pertanyaan"
+    },
+    {
+     "content": "AI memilih tool yang tepat (sales, inventory, finance, procurement) dan mengambil data real-time. Pertanyaan lanjutan memakai konteks jawaban sebelumnya.",
+     "title": "AI Tool Calling"
+    }
+   ]
+  },
+  {
+   "description": "AI mendeteksi pola anomali di data bisnis dan keuangan.",
+   "id": "executive-anomaly",
+   "name": "Anomaly Detection",
+   "steps": [
+    {
+     "content": "Sistem AI secara otomatis mendeteksi anomali di data bisnis: penjualan tidak wajar, stok jeblok tiba-tiba, hutang melonjak, dan lainnya.",
+     "title": "Anomaly Detection"
+    },
+    {
+     "content": "Klik Scan untuk jalankan deteksi anomali sekarang. Scan otomatis berjalan via scheduler malam hari.",
+     "title": "Scan Manual"
+    },
+    {
+     "content": "Filter berdasarkan severity (Critical/High/Medium), status, tipe anomali, dan rentang hari.",
+     "title": "Filter Anomali"
+    },
+    {
+     "content": "Klik anomali untuk lihat AI explanation dan rekomendasi tindakan. Klik Resolve setelah ditangani atau Ignore jika sudah acceptable.",
+     "title": "Tindak Lanjut"
+    }
+   ]
+  },
+  {
+   "description": "Analisis kontribusi dan performa masing-masing brand.",
+   "id": "executive-brand-mix",
+   "name": "Brand Mix Overview",
+   "steps": [
+    {
+     "content": "Analisis kontribusi setiap brand (The Coffeeshop, The Bakery, The Bistro, The Restaurant, The Lounge) terhadap total revenue dan profit group.",
+     "title": "Brand Mix Analysis"
+    },
+    {
+     "content": "Filter per bulan untuk lihat mix brand di periode tertentu. Bandingkan dua periode berbeda untuk lihat pergeseran kontribusi.",
+     "title": "Pilih Periode"
+    },
+    {
+     "content": "• Donut chart — proporsi revenue per brand\n• Table — revenue, growth, margin per brand\n• Klik brand untuk drill-down ke detail outlet\n• Warna merah = brand underperforming",
+     "title": "Baca Brand Mix"
+    }
+   ]
+  },
+  {
+   "description": "Waterfall chart kontribusi tiap komponen ke laba bersih.",
+   "id": "executive-profit-walk",
+   "name": "Profit Walk — Analisis Laba",
+   "steps": [
+    {
+     "content": "Waterfall chart yang menunjukkan bagaimana Revenue dikurangi berbagai komponen biaya menjadi Net Profit. Cocok untuk presentasi ke investor.",
+     "title": "Profit Walk"
+    },
+    {
+     "content": "Pilih periode dan pembanding (bulan lalu atau tahun lalu). Chart menampilkan delta di tiap komponen untuk analisis mendalam.",
+     "title": "Pilih Periode & Pembanding"
+    },
+    {
+     "content": "KPI cards di atas chart: Revenue, COGS, Gross Profit, dan Net Profit dengan persentase perubahan vs pembanding.",
+     "title": "KPI Summary"
+    },
+    {
+     "content": "• Bar hijau — kontribusi positif (revenue)\n• Bar merah — komponen pengurang (biaya)\n• Klik bar untuk drill-down ke kategori beban",
+     "title": "Interpretasi Profit Walk"
+    }
+   ]
+  },
+  {
+   "description": "Bandingkan KPI bisnis antar periode secara visual.",
+   "id": "executive-period-compare",
+   "name": "Period Compare — Perbandingan Periode",
+   "steps": [
+    {
+     "content": "Bandingkan KPI bisnis antar 2 periode: sales, gross profit, COGS, opex, net profit. Berguna untuk evaluasi bulanan/kuartalan.",
+     "title": "Period Compare"
+    },
+    {
+     "content": "Pilih 2 periode untuk dibandingkan. Bisa berupa bulan berbeda, kuartal, atau year-over-year.",
+     "title": "Pilih Periode"
+    },
+    {
+     "content": "Centang metrik yang ingin ditampilkan. Bisa pilih Sales, Gross Profit, Net Profit, COGS, OPEX, dan lainnya.",
+     "title": "Pilih Metrik"
+    },
+    {
+     "content": "Kolom Delta menunjukkan selisih: positif = membaik, negatif = memburuk. Klik baris untuk drill-down ke breakdown per brand/outlet.",
+     "title": "Baca Perbandingan"
+    }
+   ]
+  },
+  {
+   "description": "Brand Mix, Profit Walk, dan Period Compare kini menyatu dalam satu workspace.",
+   "id": "executive-analytics-hub",
+   "name": "Performance Analytics Hub",
+   "steps": [
+    {
+     "content": "Tiga analisis eksekutif kini digabung jadi tabs di satu halaman, tidak lagi menu terpisah di sidebar.",
+     "title": "Performance Analytics"
+    },
+    {
+     "content": "Kontribusi tiap brand (The Coffeeshop, The Bakery, The Bistro, The Restaurant, The Lounge) ke revenue & profit group.",
+     "title": "Brand Mix"
+    },
+    {
+     "content": "Waterfall chart dari Revenue → komponen biaya → Net Profit. Cocok untuk presentasi.",
+     "title": "Profit Walk"
+    },
+    {
+     "content": "Bandingkan KPI antar 2 periode (bulan/kuartal/YoY) untuk evaluasi performa.",
+     "title": "Period Compare"
+    }
+   ]
+  },
+  {
+   "description": "Pantau reservasi & deposit lintas outlet dari sudut pandang eksekutif.",
+   "id": "executive-reservations",
+   "name": "Reservations",
+   "steps": [
+    {
+     "content": "Rekap reservasi semua outlet: jumlah booking, pax, dan nilai deposit dalam satu layar.",
+     "title": "Reservations"
+    },
+    {
+     "content": "Kartu metrik: total reservasi, tamu (pax), dan deposit terkumpul untuk periode terpilih.",
+     "title": "KPI Reservasi"
+    },
+    {
+     "content": "Saring berdasarkan rentang tanggal untuk fokus ke minggu/bulan tertentu.",
+     "title": "Filter Periode"
+    }
+   ]
+  },
+  {
+   "description": "Setujui atau tolak pengajuan budget outlet dari satu antrean.",
+   "id": "executive-budget-approvals",
+   "name": "Budget Approvals",
+   "steps": [
+    {
+     "content": "Antrean persetujuan budget outlet (KDO/FDO/BDO) yang menunggu keputusan eksekutif.",
+     "title": "Budget Approvals"
+    },
+    {
+     "content": "Tiap baris menampilkan outlet, periode, dan jumlah. Setujui untuk mengaktifkan budget, atau Tolak dengan alasan.",
+     "title": "Daftar Pengajuan"
+    },
+    {
+     "content": "Budget yang sudah disetujui terekam di sini untuk audit & referensi.",
+     "title": "Riwayat Disetujui"
+    }
+   ]
+  },
+  {
+   "description": "Alokasikan budget operasional per outlet & periode (mingguan/bulanan).",
+   "id": "executive-outlet-budgets",
+   "name": "Budget Allocation",
+   "steps": [
+    {
+     "content": "Tetapkan plafon budget operasional (KDO/FDO/BDO) untuk tiap outlet per periode.",
+     "title": "Alokasi Budget Outlet"
+    },
+    {
+     "content": "Pilih granularitas alokasi: per minggu atau per bulan sesuai kebijakan.",
+     "title": "Periode Mingguan / Bulanan"
+    },
+    {
+     "content": "Isi nominal per outlet × bucket. Gunakan Bulk untuk mengisi cepat, lalu Simpan.",
+     "title": "Matriks Budget"
+    },
+    {
+     "content": "Klik Simpan untuk mengaktifkan budget. Outlet langsung melihatnya di 'Budget Saya'.",
+     "title": "Simpan Alokasi"
+    }
+   ]
+  },
+  {
+   "description": "Pantau realisasi vs budget outlet secara visual (heatmap, pace, tabel).",
+   "id": "executive-budget-monitor",
+   "name": "Budget Monitor",
+   "steps": [
+    {
+     "content": "Lihat serapan budget tiap outlet vs plafon — deteksi over/under-spending lebih awal.",
+     "title": "Budget Monitor"
+    },
+    {
+     "content": "Visual warna: merah = mendekati/over budget, hijau = aman. Cepat lihat outlet berisiko.",
+     "title": "Heatmap"
+    },
+    {
+     "content": "Bandingkan kecepatan belanja vs sisa hari periode — apakah serapan on-track.",
+     "title": "Pace"
+    }
+   ]
+  },
+  {
+   "description": "Tinjau & putuskan permintaan penambahan budget dari outlet.",
+   "id": "executive-budget-increase",
+   "name": "Increase Requests",
+   "steps": [
+    {
+     "content": "Outlet yang budget-nya menipis dapat mengajukan penambahan — keputusan ada di sini.",
+     "title": "Increase Requests"
+    },
+    {
+     "content": "Tab Menunggu berisi pengajuan baru. Tetapkan jumlah disetujui + catatan, lalu submit.",
+     "title": "Menunggu Keputusan"
+    },
+    {
+     "content": "Tab Approved / Rejected menyimpan riwayat keputusan untuk audit.",
+     "title": "Disetujui & Ditolak"
+    }
+   ]
+  },
+  {
+   "description": "Cash, profit walk, approvals — semua di satu layar.",
+   "id": "owner-home",
+   "name": "Owner Cockpit",
+   "steps": [
+    {
+     "content": "Dashboard khusus pemilik: cash position, profit walk, period compare, approvals. Dioptimalkan untuk penggunaan mobile.",
+     "title": "Owner Cockpit"
+    },
+    {
+     "content": "KPI kritis harian: Sales Hari Ini, Cash Total, Pending Approvals, Anomalies. Klik untuk drill-down.",
+     "title": "KPI Summary"
+    },
+    {
+     "content": "Akses cepat ke modul yang paling sering digunakan owner:\n\n• Cash Position — posisi kas sekarang\n• My Approvals — approve PR/PO/Payment\n• AI Assistant — tanya AI tentang bisnis\n• Daily Briefing — ringkasan otomatis pagi hari",
+     "title": "Quick Shortcuts"
+    },
+    {
+     "content": "Klik Sales Analytics untuk analisis lengkap dengan filter periode, brand, dan outlet.",
+     "title": "Sales Analytics"
+    }
+   ]
+  },
+  {
+   "description": "Lihat posisi kas total group dan proyeksi ke depan.",
+   "id": "owner-cash",
+   "name": "Cash Position",
+   "steps": [
+    {
+     "content": "Posisi kas group secara real-time: Bank + Petty Cash semua outlet. Monitor apakah ada cash crunch dalam waktu dekat.",
+     "title": "Cash Position"
+    },
+    {
+     "content": "• Bank — saldo rekening perusahaan\n• Petty Cash — kas kecil di tiap outlet\n• E-Wallet — GoPay/OVO/QRIS business\n\nTotal otomatis diupdate dari payment + daily close.",
+     "title": "Komposisi Kas"
+    },
+    {
+     "content": "Proyeksi arus kas berdasarkan AP jatuh tempo dan penerimaan expected. Flag merah = potensi cash crunch dalam 7 hari.",
+     "title": "Proyeksi Kas"
+    }
+   ]
+  },
+  {
+   "description": "Approve PR, PO, dan Payment Request langsung dari perangkat mobile.",
+   "id": "owner-approvals",
+   "name": "My Approvals — Setujui dari Mobile",
+   "steps": [
+    {
+     "content": "Semua request yang menunggu approval dari Owner. Tersedia di mobile untuk approve kapan saja, dari mana saja.",
+     "title": "My Approvals"
+    },
+    {
+     "content": "• 🔴 Merah — sudah >2 hari atau nilai >50 juta\n• 🟡 Kuning — >1 hari atau nilai 10–50 juta\n• 🟢 Hijau — baru, nilai normal",
+     "title": "Prioritas Approval"
+    },
+    {
+     "content": "Klik Setujui atau Tolak langsung dari daftar. Bisa tambah catatan jika reject. Owner mendapat notifikasi Telegram otomatis untuk item urgent.",
+     "title": "Approve & Reject"
+    }
+   ]
+  },
+  {
+   "description": "Ringkasan bisnis harian otomatis dengan AI analysis.",
+   "id": "owner-briefing",
+   "name": "AI Daily Briefing",
+   "steps": [
+    {
+     "content": "Ringkasan bisnis harian yang di-generate AI setiap pagi. Mencakup: sales kemarin, anomali, pending approvals, dan rekomendasi tindakan.",
+     "title": "Daily Briefing"
+    },
+    {
+     "content": "• Sales Summary — total sales per brand/outlet\n• Key Highlights — performa terbaik dan terburuk\n• Anomali — hal-hal yang perlu perhatian\n• Approvals Pending — yang harus diselesaikan hari ini",
+     "title": "Isi Briefing"
+    },
+    {
+     "content": "Briefing otomatis dikirim ke Telegram setiap jam 07.00 WIB. Konfigurasi di Admin > Integrations > Telegram.",
+     "title": "Delivery via Telegram"
+    }
+   ]
+  },
+  {
+   "description": "Atur pengiriman ringkasan harian via Telegram & kelola langganan.",
+   "id": "owner-digest-settings",
+   "name": "Pengaturan Daily Briefing",
+   "steps": [
+    {
+     "content": "Konfigurasi AI Daily Briefing — ringkasan bisnis harian dikirim otomatis ke Anda.",
+     "title": "Pengaturan Briefing"
+    },
+    {
+     "content": "Sambungkan Telegram agar briefing & alert penting masuk langsung ke chat Anda.",
+     "title": "Hubungkan Telegram"
+    },
+    {
+     "content": "Atur siapa menerima briefing dan jam pengiriman. Tiap penerima bisa beda preferensi.",
+     "title": "Kelola Langganan"
+    },
+    {
+     "content": "Uji konfigurasi dengan kirim briefing sekarang — pastikan format & target sudah benar.",
+     "title": "Kirim Sekarang"
+    }
+   ]
+  },
+  {
+   "description": "Overview HR: employees, advance, service charge, dan leaves.",
+   "id": "hr-home",
+   "name": "HR Home",
+   "steps": [
+    {
+     "content": "Kelola SDM FnB Group: payroll, kasbon, service charge, cuti, dan rekrutmen.",
+     "title": "HR Portal"
+    },
+    {
+     "content": "• Active Employees — jumlah karyawan aktif\n• Open Advances — kasbon yang belum lunas\n• Voucher Liability — total kewajiban voucher\n• LB Fund — saldo loss & breakage fund",
+     "title": "KPI HR Overview"
+    },
+    {
+     "content": "Proses payroll dan service charge di awal bulan (periode bulan sebelumnya). Koordinasi dengan Finance untuk closing jurnal.",
+     "title": "Tip HR Manager"
+    }
+   ]
+  },
+  {
+   "description": "Cara kelola payroll bulanan karyawan.",
+   "id": "hr-payroll",
+   "name": "HR Payroll — Gaji Karyawan",
+   "steps": [
+    {
+     "content": "Kelola penggajian bulanan karyawan: master data gaji, adjustment, deduction, dan payment batch.",
+     "title": "Payroll Management"
+    },
+    {
+     "content": "Klik Generate Payroll, pilih bulan dan outlet. Sistem menghitung gaji karyawan aktif di periode tersebut.",
+     "title": "Generate Payroll"
+    },
+    {
+     "content": "Setiap baris = satu siklus payroll per outlet & periode:\n\n• Gross — gaji + tunjangan\n• BPJS / PPh21 — potongan\n• Take Home — net gaji\n\nKlik baris untuk rincian per karyawan.",
+     "title": "Siklus Payroll"
+    },
+    {
+     "content": "Siklus Draft disetujui lewat tombol ikon centang, siklus Disetujui diposting ke jurnal lewat tombol ikon panah di ujung baris.",
+     "title": "Setujui & Posting"
+    }
+   ]
+  },
+  {
+   "description": "Cara kelola kasbon (advance) karyawan.",
+   "id": "hr-advances",
+   "name": "HR Advances — Kasbon Karyawan",
+   "steps": [
+    {
+     "content": "Kelola kasbon karyawan: pengajuan, approval, dan pelunasan. Semua advance otomatis ter-journal di akun piutang karyawan.",
+     "title": "Employee Advances"
+    },
+    {
+     "content": "Isi form:\n\n• Karyawan — pilih dari daftar\n• Jumlah — nominal kasbon\n• Alasan — keperluan mendesak\n• Jadwal pelunasan — auto-deduct dari gaji",
+     "title": "Buat Advance Baru"
+    },
+    {
+     "content": "Track pelunasan otomatis setiap bulan. Karyawan dengan outstanding advance >3 bulan akan di-flag untuk review HR.",
+     "title": "Status & Tracking"
+    }
+   ]
+  },
+  {
+   "description": "Kelola cuti dan absensi karyawan dengan saldo otomatis.",
+   "id": "hr-leaves",
+   "name": "Leave Requests — Kelola Cuti",
+   "steps": [
+    {
+     "content": "Kelola cuti tahunan, sakit, dan khusus semua karyawan. Saldo cuti otomatis dihitung dari tanggal bergabung.",
+     "title": "Leave Requests"
+    },
+    {
+     "content": "• Tahunan — 12 hari/tahun (pro-rata)\n• Sakit — tanpa batas (surat dokter >2 hari)\n• Khusus — pernikahan, duka, dll\n\nSaldo otomatis dipotong saat cuti disetujui.",
+     "title": "Jenis Cuti"
+    },
+    {
+     "content": "Karyawan mengajukan → HR Manager approve → Notifikasi ke karyawan.\n\nCuti yang di-reject otomatis mengembalikan saldo.",
+     "title": "Alur Approve"
+    }
+   ]
+  },
+  {
+   "description": "Review lamaran kerja yang masuk dari website public.",
+   "id": "hr-job-applications",
+   "name": "Job Applications",
+   "steps": [
+    {
+     "content": "Review lamaran kerja yang masuk dari halaman Careers website FnB Group. Lamaran langsung terekam ke sistem HR.",
+     "title": "Job Applications"
+    },
+    {
+     "content": "Filter status lamaran:\n\n• New — baru masuk\n• Reviewed — sudah dibaca HR\n• Interview — dijadwalkan interview\n• Hired — diterima\n• Ditolak — ditolak",
+     "title": "Pipeline Rekrutmen"
+    },
+    {
+     "content": "Filter berdasarkan posisi dan outlet untuk focus ke kebutuhan spesifik. Download CV langsung dari detail lamaran.",
+     "title": "Tips Screening"
+    }
+   ]
+  },
+  {
+   "description": "Buat dan kelola lowongan kerja yang tampil di website public.",
+   "id": "hr-job-listings",
+   "name": "Job Listings",
+   "steps": [
+    {
+     "content": "Kelola lowongan kerja yang dipublikasikan di halaman Careers website FnB Group. Pelamar bisa apply langsung dari website.",
+     "title": "Job Listings"
+    },
+    {
+     "content": "Klik + Lowongan untuk buat posting baru. Isi:\n\n• Judul posisi — jelas dan spesifik\n• Brand/Outlet — lokasi penempatan\n• Deskripsi — tugas dan tanggung jawab\n• Kualifikasi — syarat pelamar\n• Deadline — batas waktu lamaran",
+     "title": "Buat Lowongan Baru"
+    },
+    {
+     "content": "Toggle Aktif/Nonaktif untuk kontrol kapan lowongan tampil di website. Klik lowongan untuk lihat berapa pelamar yang sudah masuk.",
+     "title": "Publikasi & Monitoring"
+    }
+   ]
+  },
+  {
+   "description": "Distribusi service charge dari penjualan ke karyawan.",
+   "id": "hr-service-charge",
+   "name": "Service Charge Distribution",
+   "steps": [
+    {
+     "content": "Distribusi service charge dari daily sales ke karyawan berdasarkan kehadiran dan level jabatan.",
+     "title": "Service Charge Distribution"
+    },
+    {
+     "content": "SC dihitung otomatis:\n\n• Rate SC — sesuai policy per outlet (misal: 5% dari sales)\n• Kehadiran — hanya karyawan hadir yang dapat\n• Level multiplier — supervisor dapat lebih banyak\n• Outlet — SC dari outlet yang bersangkutan",
+     "title": "Cara Distribusi"
+    },
+    {
+     "content": "Filter periode → hitung SC → review distribusi → submit ke payroll bulan ini. SC ter-journal otomatis ke akun beban SC.",
+     "title": "Proses & Submit"
+    }
+   ]
+  },
+  {
+   "description": "Kelola bonus dan insentif kinerja karyawan.",
+   "id": "hr-incentive",
+   "name": "Incentive Management",
+   "steps": [
+    {
+     "content": "Kelola bonus dan insentif kinerja karyawan. Insentif dihitung berdasarkan formula yang ditetapkan di Incentive Scheme.",
+     "title": "Incentive Management"
+    },
+    {
+     "content": "• Sales Achievement — bonus jika target sales tercapai\n• Upselling Bonus — insentif per upsell item\n• Attendance Bonus — bonus kehadiran penuh\n• Performance Bonus — berdasarkan KPI evaluasi",
+     "title": "Jenis Insentif"
+    },
+    {
+     "content": "Generate insentif → review oleh HR Manager → approve → masuk payroll. Konfigurasi formula insentif di Admin > Configuration > Incentive Schemes.",
+     "title": "Workflow Insentif"
+    }
+   ]
+  },
+  {
+   "description": "7 modul remunerasi karyawan dalam satu workspace.",
+   "id": "hr-compensation",
+   "name": "Compensation Hub — Remunerasi & Benefits",
+   "steps": [
+    {
+     "content": "Semua modul remunerasi karyawan dalam satu tempat:\n\n• Payroll, Service Charge, Incentive\n• Advances, Vouchers, Deductions\n• Leave Balance",
+     "title": "Compensation Hub"
+    },
+    {
+     "content": "Tab sesuai jenis kompensasi. Klik untuk beralih antar modul tanpa kehilangan context. Data di-load fresh setiap ganti tab.",
+     "title": "7 Tab Kompensasi"
+    },
+    {
+     "content": "Urutan bulanan yang direkomendasikan:\n\n1. Payroll — generate penggajian\n2. Service Charge — distribusikan SC\n3. Incentive — hitung bonus\n4. Deductions — rekap potongan\n5. Submit ke Finance untuk payment",
+     "title": "Alur Payroll Bulan Ini"
+    }
+   ]
+  },
+  {
+   "description": "Terbitkan & kelola voucher karyawan (mis. meal/benefit).",
+   "id": "hr-voucher",
+   "name": "HR Voucher",
+   "steps": [
+    {
+     "content": "Kelola voucher karyawan — penerbitan, penggunaan, dan posting jurnal terkait.",
+     "title": "HR Voucher"
+    },
+    {
+     "content": "Saring per status dan cari voucher tertentu dengan cepat.",
+     "title": "Filter & Cari"
+    },
+    {
+     "content": "Buat voucher baru: tentukan jumlah, nilai, tujuan, dan opsi posting jurnal.",
+     "title": "Terbitkan Voucher"
+    }
+   ]
+  },
+  {
+   "description": "Catat & kontrol transaksi gratis (FOC) per outlet/tipe.",
+   "id": "hr-foc",
+   "name": "FOC — Free of Charge",
+   "steps": [
+    {
+     "content": "Catat transaksi gratis (FOC) — entertainment, training, atau kompensasi — agar tetap terkontrol & teraudit.",
+     "title": "FOC Management"
+    },
+    {
+     "content": "Saring per tipe FOC dan outlet untuk analisis & kontrol budget.",
+     "title": "Filter"
+    },
+    {
+     "content": "Tambah entri FOC baru dengan tanggal, tipe, outlet, dan detail terkait.",
+     "title": "Catat FOC"
+    }
+   ]
+  },
+  {
+   "description": "Buku besar dana bersama karyawan (masuk, keluar, saldo).",
+   "id": "hr-lb-fund",
+   "name": "LB Fund Ledger",
+   "steps": [
+    {
+     "content": "Buku besar dana bersama karyawan — transparansi penerimaan, pengeluaran, dan saldo.",
+     "title": "LB Fund"
+    },
+    {
+     "content": "KPI saldo, total masuk, dan total keluar dana untuk periode berjalan.",
+     "title": "Saldo & Arus"
+    },
+    {
+     "content": "Daftar mutasi dana — sumber dan peruntukan tiap transaksi tercatat untuk audit.",
+     "title": "Riwayat Transaksi"
+    }
+   ]
+  },
+  {
+   "description": "Kenali komponen UI umum di seluruh sistem.",
+   "id": "general-navigation",
+   "name": "Navigasi Umum — ERP Portal",
+   "steps": [
+    {
+     "content": "Sistem ERP multi-brand untuk FnB Group. Mari kenali komponen UI utama.",
+     "title": "Selamat datang di FnB Group ERP"
+    },
+    {
+     "content": "Klik logo untuk kembali ke Beranda — landing modul terakhir yang Anda buka. Semua modul lain tersedia di sidebar kiri.",
+     "title": "Logo & Beranda"
+    },
+    {
+     "content": "Tekan ⌘K atau klik di sini untuk cari items, vendors, employees, transaksi (PR/PO/PAY/JAE doc no). Sangat powerful!",
+     "title": "Global Search"
+    },
+    {
+     "content": "Tombol ini — kapan saja butuh panduan, klik di sini untuk mulai tour relevan dengan halaman aktif.",
+     "title": "Help & Tour"
+    }
+   ]
+  },
+  {
+   "description": "Inbox persetujuan terpusat + delegasi untuk semua dokumen.",
+   "id": "approval-center",
+   "name": "Pusat Persetujuan",
+   "steps": [
+    {
+     "content": "Satu inbox untuk semua dokumen yang menunggu persetujuan Anda (PR, PO, Payment, Journal, Budget, dll) lintas modul.",
+     "title": "Pusat Persetujuan"
+    },
+    {
+     "content": "Tab per tipe dokumen beserta jumlahnya — klik salah satu untuk filter cepat antrean ke jenis tertentu.",
+     "title": "Ringkasan per Tipe"
+    },
+    {
+     "content": "Tab Queue berisi item menunggu. Approve/Reject langsung; reject wajib isi alasan untuk jejak audit.",
+     "title": "Antrean Persetujuan"
+    },
+    {
+     "content": "Akan cuti? Buat delegasi agar approval Anda dialihkan ke rekan untuk periode tertentu.",
+     "title": "Delegasi"
+    }
+   ]
+  },
+  {
+   "description": "Inbox persetujuan personal — approve/reject cepat tanpa buka detail.",
+   "id": "my-approvals",
+   "name": "My Approvals",
+   "steps": [
+    {
+     "content": "Satu inbox untuk semua dokumen yang menunggu keputusan Anda (PR, PO, Payment, Journal, Budget) lintas modul.",
+     "title": "My Approvals"
+    },
+    {
+     "content": "Tab per tipe dokumen beserta jumlahnya. Klik untuk filter cepat antrean ke jenis tertentu.",
+     "title": "Filter per Tipe"
+    },
+    {
+     "content": "Muat ulang antrean. Di mobile, swipe ← → pada kartu untuk approve/reject; reject wajib isi alasan (jejak audit).",
+     "title": "Refresh"
+    }
+   ]
+  }
+ ]
+}

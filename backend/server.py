@@ -28,7 +28,7 @@ from core.scope import brand_scope  # noqa: E402
 # Routers
 from routers import crm_analytics
 from routers import data_management
-from routers import admin, admin_loyalty, admin_ops, ai, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
+from routers import admin, admin_loyalty, admin_ops, ai, ai_agent, anomalies, approval_matrix, approvals, ar, auth, bank_recon, budget, bulk_import, cash, daily_close, daily_sales, efaktur, executive, finance, fixed_asset, forecasting, hr, inventory, kdo_bdo, leave, loyalty, master, notifications, outlet, outlet_budget, owner, payments, payment_requests, payment_runs, payment_run_templates, procurement, reports, rewards, search, seo, system_settings, tax, telegram, uploads, public_content, admin_cms, cms_advanced, report_schedules, rfq, ebupot, user_preferences, market_list, sourcing, vendor_items, reservations, admin_menu, public_menu, tour_analytics  # noqa: E402
 
 # Configure structured JSON logging EARLY (before any logger.info calls)
 configure_logging()
@@ -85,6 +85,9 @@ async def lifespan(_: FastAPI):
         await legacy_seed_field_names()
     except Exception:  # noqa: BLE001
         logger.exception("salary_migration_failed")
+
+    from services.ai.agent import executor as _ai_executor
+    _ai_executor.set_app(app)  # agen menjalankan aksi lewat API ini sendiri (in-process)
 
     try:
         from core.object_storage import init_storage
@@ -274,6 +277,7 @@ app.include_router(approvals.router)
 app.include_router(approval_matrix.router)  # Phase 15: visual workflow builder
 app.include_router(bulk_import.router)  # Sprint D: Bulk Excel Import
 app.include_router(ai.router)
+app.include_router(ai_agent.router)    # Asisten AI agentic (docs/ai/AGENTIC_AI_PLAN_2026-11-25.md)
 app.include_router(finance.router)
 app.include_router(payments.router)
 app.include_router(payment_runs.router)

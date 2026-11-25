@@ -42,6 +42,8 @@ DEFAULT_POLICY: dict[str, Any] = {
     "write_actions_enabled": True,  # False = agen hanya boleh membaca/mengusulkan, tidak mengeksekusi
     "monthly_budget_usd": None,     # None = tanpa anggaran
     "alert_pct": 80,                # peringatan ke admin AI saat pemakaian ≥ x% anggaran
+    "agent_effort": "high",         # effort Claude untuk agen (low|medium|high|xhigh|max)
+    "agent_max_steps": 15,          # batas langkah alat per permintaan
 }
 
 
@@ -79,6 +81,10 @@ async def update_policy(patch: dict, *, user: dict) -> dict:
         out["monthly_budget_usd"] = None if v in (None, "", 0) else max(0.0, float(v))
     if "alert_pct" in patch:
         out["alert_pct"] = min(100, max(1, int(patch["alert_pct"] or 80)))
+    if patch.get("agent_effort") in ("low", "medium", "high", "xhigh", "max"):
+        out["agent_effort"] = patch["agent_effort"]
+    if "agent_max_steps" in patch:
+        out["agent_max_steps"] = min(40, max(3, int(patch["agent_max_steps"] or 15)))
     await get_db().system_settings.update_one(
         {"key": POLICY_KEY},
         {"$set": {"key": POLICY_KEY, "value": out, "updated_at": _now(), "updated_by": user.get("id")}},
@@ -209,7 +215,7 @@ async def _ai_admin_user_ids() -> list[str]:
 # ---------------- panggilan model ----------------
 
 async def create(*, feature: str, user_id: Optional[str] = None, api_key_override: Optional[str] = None,
-                 model: Optional[str] = None, fallback: bool = True, **params: Any):
+                 model: Optional[str] = None, fallback: bool = True, betas: Optional[list[str]] = None, **params: Any):
     """`messages.create` dengan kebijakan, model default, fallback penolakan, dan pencatatan biaya.
 
     `params` diteruskan apa adanya (system, messages, tools, max_tokens, output_config, ...).
@@ -223,8 +229,10 @@ async def create(*, feature: str, user_id: Optional[str] = None, api_key_overrid
     params.setdefault("max_tokens", 8000)
     t0 = time.perf_counter()
     try:
-        if fallback:
-            resp = await client.beta.messages.create(model=mdl, betas=[FALLBACK_BETA], fallbacks="default", **params)
+        if fallback or betas:
+            extra = {"fallbacks": "default"} if fallback else {}
+            resp = await client.beta.messages.create(
+                model=mdl, betas=[*([FALLBACK_BETA] if fallback else []), *(betas or [])], **extra, **params)
         else:
             resp = await client.messages.create(model=mdl, **params)
     except Exception as e:  # noqa: BLE001
