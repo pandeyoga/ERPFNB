@@ -557,6 +557,11 @@ WhatsApp (Evolution API).
 | Agen domain | Pemilih agen di chat (Umum, Finance, Purchasing, Inventory, Outlet, HR, Analis, Pemandu). Inventory → **Pemakaian & Waste** (teoretis vs aktual, waste, saran transfer); Outlet → kartu **Briefing toko**; HR → kartu **Insight SDM** (labor cost %, cakupan cuti); Menu & Resep → **Menu engineering**. | `services/ai_domain/`, `services/ai/agent/personas.py` |
 | Impor Cerdas | 10 jenis data baru: master item/supplier/pelanggan, pembelian historis (riwayat atau posting GR), hasil opname, saldo awal GL/hutang/piutang/stok, budget — pemetaan nama+isi, padanan referensi, status per baris, rollback. | `services/smart_import/records.py` |
 
+**Ketahanan produksi**: run agen berdetak tiap 30 dtk — run tanpa detak > 3 menit (server dimulai ulang/deploy saat AI
+bekerja) ditandai *interrupted* dengan pesan di percakapan, jadi percakapan tidak terkunci; job terjadwal memakai kunci
+per tick (`scheduler_locks`) sehingga aman dijalankan di beberapa worker/instance (otomasi, auditor, WA tidak dobel);
+CI GitHub Actions (tes offline, audit UI/tour/IA, build frontend) tiap push/PR.
+
 Kumpulan uji: 37 kasus (termasuk lampiran file & persona) — `python3 scripts/ai_eval.py ... [--save gagal.json]`.
 Uji penuh dengan Claude Opus di data demo (25 Nov 2026): putaran awal 33/37 lulus; 4 kegagalan ditelusuri — 1 bug produk (penjelasan yang ditulis sebelum memanggil alat hilang dari jawaban akhir → kini digabung ke jawaban, `agent/runtime.py`), 3 kasus uji terlalu sempit/ambigu (sumber data alternatif yang sah, akun admin tanpa data karyawan, "harga standar" yang tidak ada di master item; pencocokan path usulan yang sudah terisi). Setelah perbaikan: 37/37. Biaya total uji ±$8,8 (rata-rata ±$0,2 per pertanyaan).
 

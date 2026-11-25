@@ -175,6 +175,45 @@ def test_agent_keeps_interim_explanation(app_catalog, mockdb, monkeypatch):
     assert text.startswith(expl) and text.endswith("Buka kunci periode lewat Period Closing.")
 
 
+def test_stale_run_after_restart_unlocks_session(app_catalog, mockdb, monkeypatch):
+    """Server restart saat agen bekerja: run "running" tanpa detak ditandai interrupted (pesan di percakapan) dan
+    percakapan bisa dipakai lagi; run yang masih berdetak tetap mengunci; task hidup mengirim detak."""
+    from datetime import datetime, timedelta, timezone
+    from services.ai import client as ai
+    from services.ai.agent import runtime
+    old = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+
+    async def fake_create(**kw):
+        return types.SimpleNamespace(stop_reason="end_turn", model="claude-opus-5-5", usage=types.SimpleNamespace(
+            input_tokens=10, output_tokens=5), content=[types.SimpleNamespace(
+                model_dump=lambda **k: {"type": "text", "text": "Halo lagi."})])
+    monkeypatch.setattr(ai, "create", fake_create)
+
+    async def go():
+        s = await runtime.create_session(USER, channel="web", title="uji")
+        await mockdb.ai_runs.insert_one({"id": "r-dead", "session_id": s["id"], "user_id": "u1", "status": "running",
+                                         "events": [], "created_at": old, "heartbeat_at": old})
+        view = await runtime.session_view(s["id"], USER)
+        assert view["running_run_id"] is None and "server dimulai ulang" in view["display"][-1]["text"]
+        assert (await runtime.get_run("r-dead", USER))["status"] == "interrupted"
+        out = await runtime.start_run(USER, message="halo", session_id=s["id"])        # tidak terkunci lagi
+        while (await runtime.get_run(out["run_id"], USER))["status"] == "running":
+            await asyncio.sleep(0.01)
+        await mockdb.ai_runs.insert_one({"id": "r-live", "session_id": s["id"], "user_id": "u1", "status": "running",
+                                         "events": [], "created_at": old, "heartbeat_at": runtime._now()})
+        with pytest.raises(Exception, match="masih mengerjakan"):
+            await runtime.start_run(USER, message="lagi", session_id=s["id"])
+        assert (await runtime.get_run("r-live", USER))["status"] == "running"
+
+        monkeypatch.setattr(runtime, "HEARTBEAT_S", 0.02)                              # detak task yang hidup
+        await mockdb.ai_runs.insert_one({"id": "r-hb", "session_id": "x", "user_id": "u1", "status": "running",
+                                         "heartbeat_at": old})
+        task = asyncio.create_task(asyncio.sleep(0.15))
+        await runtime._heartbeat("r-hb", task)
+        assert (await mockdb.ai_runs.find_one({"id": "r-hb"}))["heartbeat_at"] > old
+    run(go())
+
+
 def test_query_data_scope_permissions_and_aggregation(mockdb):
     from services.ai.agent import datasets
     rows = [{"id": f"s{i}", "outlet_id": o, "brand_id": "b1", "sales_date": d, "status": st, "grand_total": gt,

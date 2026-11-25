@@ -4,6 +4,8 @@
   dibuat; konteks per giliran (halaman, brand/toko, waktu, hasil persetujuan) ditempel di pesan pengguna; blok yang
   tetap tak cocok dibuang server (`prefix_mismatch_behavior: drop_block`) alih-alih membuat request gagal.
 - Run berjalan sebagai asyncio task; event langkah disimpan di `ai_runs` sehingga UI (web/WA) bisa mem-poll.
+  Task mengirim detak (`heartbeat_at`) tiap 30 dtk; run "running" tanpa detak > 3 menit berarti prosesnya mati (server
+  dimulai ulang/deploy) → ditandai `interrupted` saat dibaca, sehingga percakapan tidak terkunci selamanya.
 - Aksi tulis hanya lewat `propose_actions` → persetujuan (actions.py). Setelah semua aksi satu batch diputuskan,
   agen dilanjutkan otomatis dengan ringkasan hasilnya.
 """
@@ -27,6 +29,10 @@ THINKING_BINDING_BETA = "thinking-binding-controls-2026-08-01"
 MAX_TOKENS = 16000
 WIB = timezone(timedelta(hours=7))
 _TASKS: dict[str, asyncio.Task] = {}
+HEARTBEAT_S = 30
+STALE_S = 180
+INTERRUPTED_TEXT = ("Permintaan ini terhenti karena server dimulai ulang sebelum selesai. "
+                    "Tidak ada aksi yang dijalankan tanpa persetujuan — silakan kirim ulang permintaannya.")
 
 
 def _now() -> str:
@@ -196,10 +202,12 @@ async def start_run(user: dict, *, message: str, session_id: Optional[str] = Non
     session = await get_session(session_id, user) if session_id else await create_session(
         user, channel=channel, title=(message or "Lampiran").strip()[:60] or "Percakapan baru")
     db = get_db()
-    if await db.ai_runs.find_one({"session_id": session["id"], "status": "running"}):
+    busy = await db.ai_runs.find_one({"session_id": session["id"], "status": "running"}, {"_id": 0})
+    if busy and (await reap_if_stale(busy))["status"] == "running":
         raise ValidationError("AI masih mengerjakan permintaan sebelumnya di percakapan ini")
     run = {"id": str(uuid.uuid4()), "session_id": session["id"], "user_id": user["id"], "status": "running",
-           "channel": channel, "events": [], "created_at": _now(), "finished_at": None, "error": None}
+           "channel": channel, "events": [], "created_at": _now(), "heartbeat_at": _now(), "finished_at": None,
+           "error": None}
     await db.ai_runs.insert_one(run)
     user_display = {"role": "user", "text": message, "attachments": attachments or [], "ts": _now(),
                     "auto": bool(outcome and not message)}
@@ -208,7 +216,58 @@ async def start_run(user: dict, *, message: str, session_id: Optional[str] = Non
     task = asyncio.create_task(_run(run["id"], session["id"], user, message, attachments or [], context, scope, outcome))
     _TASKS[run["id"]] = task
     task.add_done_callback(lambda t: _TASKS.pop(run["id"], None))
+    hb = asyncio.create_task(_heartbeat(run["id"], task))
+    _BG.add(hb)
+    hb.add_done_callback(_BG.discard)
     return {"session_id": session["id"], "run_id": run["id"]}
+
+
+_BG: set[asyncio.Task] = set()
+
+
+async def _heartbeat(run_id: str, task: asyncio.Task) -> None:
+    """Tanda hidup run selama task-nya berjalan (bisa lintas worker: run tanpa detak = prosesnya sudah mati)."""
+    while not task.done():
+        try:
+            await asyncio.wait_for(asyncio.shield(task), timeout=HEARTBEAT_S)
+        except asyncio.TimeoutError:
+            pass
+        except Exception:  # noqa: BLE001 — kegagalan run ditangani _run sendiri
+            return
+        if task.done():
+            return
+        try:
+            await get_db().ai_runs.update_one({"id": run_id, "status": "running"}, {"$set": {"heartbeat_at": _now()}})
+        except Exception:  # noqa: BLE001
+            logger.warning("heartbeat run %s gagal", run_id)
+
+
+def _age_s(ts: Optional[str]) -> float:
+    try:
+        return (datetime.now(timezone.utc) - datetime.fromisoformat(ts)).total_seconds()
+    except (TypeError, ValueError):
+        return float("inf")
+
+
+async def reap_if_stale(run: dict) -> dict:
+    """Run "running" yang task-nya sudah mati (tidak ada di proses ini & tanpa detak > STALE_S) → `interrupted`,
+    plus pesan di percakapan. Mengembalikan run terkini."""
+    if run.get("status") != "running" or run["id"] in _TASKS:
+        return run
+    if _age_s(run.get("heartbeat_at") or run.get("created_at")) <= STALE_S:
+        return run
+    db = get_db()
+    err = "Terhenti: server dimulai ulang sebelum permintaan selesai"
+    display = {"role": "assistant", "text": INTERRUPTED_TEXT, "ui": [], "steps": [], "ts": _now(),
+               "run_id": run["id"], "error": err}
+    res = await db.ai_runs.update_one({"id": run["id"], "status": "running"},
+                                      {"$set": {"status": "interrupted", "finished_at": _now(), "error": err,
+                                                "answer": display}})
+    if res.modified_count:
+        logger.warning("run %s ditandai interrupted (tanpa detak)", run["id"])
+        await db.ai_sessions.update_one({"id": run["session_id"]},
+                                        {"$push": {"display": display}, "$set": {"updated_at": _now()}})
+    return await db.ai_runs.find_one({"id": run["id"]}, {"_id": 0}) or run
 
 
 async def _event(run_id: str, ev: dict) -> None:
@@ -377,7 +436,7 @@ async def get_run(run_id: str, user: dict) -> dict:
     r = await get_db().ai_runs.find_one({"id": run_id}, {"_id": 0})
     if not r or r["user_id"] != user["id"]:
         raise NotFoundError("Run")
-    return r
+    return await reap_if_stale(r)
 
 
 async def continue_after_decisions(action: dict, user: dict) -> Optional[dict]:
@@ -407,7 +466,10 @@ async def session_view(session_id: str, user: dict) -> dict:
     s = await get_session(session_id, user)
     ids = [u["action_id"] for d in s.get("display", []) for u in (d.get("ui") or []) if u.get("type") == "action"]
     acts = {a["id"]: a async for a in get_db().ai_actions.find({"id": {"$in": ids}}, {"_id": 0})}
-    running = await get_db().ai_runs.find_one({"session_id": session_id, "status": "running"}, {"_id": 0, "id": 1})
+    running = await get_db().ai_runs.find_one({"session_id": session_id, "status": "running"}, {"_id": 0})
+    if running and (await reap_if_stale(running))["status"] != "running":
+        running = None
+        s = await get_session(session_id, user)
     return {"id": s["id"], "title": s["title"], "channel": s["channel"], "display": s.get("display", []),
             "actions": acts, "usage": s.get("usage"), "running_run_id": (running or {}).get("id"),
             "created_at": s["created_at"], "updated_at": s["updated_at"]}

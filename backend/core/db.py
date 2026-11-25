@@ -309,6 +309,8 @@ async def ensure_indexes() -> None:
     await db.log_entries.create_index("ts_dt", expireAfterSeconds=60 * 60 * 24 * 30)
     await db.scheduler_runs.create_index([("started_at", -1)])
     await db.scheduler_runs.create_index([("job_id", 1), ("started_at", -1)])
+    # Kunci per tick job terjadwal (multi worker/instance → sekali jalan); dibuang otomatis setelah 2 hari
+    await db.scheduler_locks.create_index("at", expireAfterSeconds=60 * 60 * 24 * 2)
 
     # Reservations — Booking Management
     await db.reservations.create_index("id", unique=True)

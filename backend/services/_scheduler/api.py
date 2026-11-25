@@ -25,7 +25,7 @@ async def start_scheduler() -> None:
         if not job.get("enabled", True):
             continue
         trigger = CronTrigger.from_crontab(job["cron"], timezone=_TZ)
-        _state._scheduler.add_job(_wrap_job(job_id, job["func"]), trigger, id=job_id, name=job["name"], replace_existing=True)
+        _state._scheduler.add_job(_wrap_job(job_id, job["func"], scheduled=True), trigger, id=job_id, name=job["name"], replace_existing=True)
     _state._scheduler.start()
     logger.info("Scheduler started with %d jobs", len(_state._JOB_REGISTRY))
 

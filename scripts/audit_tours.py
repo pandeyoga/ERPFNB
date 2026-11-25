@@ -169,4 +169,5 @@ print("=" * 70)
 print(f"  RESULT: {len(missing)} missing-target steps across {len(by_file)} tour files; "
       f"{len(route_missing)} route-drift entries")
 print("=" * 70)
-sys.exit(0)
+# --strict (dipakai CI): gagal bila ada langkah tour yang target/route-nya hilang
+sys.exit(1 if "--strict" in sys.argv and (missing or route_missing) else 0)

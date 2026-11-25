@@ -47,11 +47,13 @@ Jalankan lokal: `docs/LOCAL_SETUP.md`. Bahasa UI campur: istilah teknis EN, aksi
 
 ```bash
 python3 scripts/ux_audit.py --strict   # usability + aturan design system (ds.*) — harus 0 ERROR
-python3 scripts/audit_tours.py         # 0 missing target
+python3 scripts/audit_tours.py --strict  # 0 missing target
 python3 scripts/audit_ui_ia.py         # OK
 ```
 
 Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.md`.
+CI (`.github/workflows/ci.yml`) menjalankan audit di atas, tes backend offline (daftar di bagian AI + `test_scheduler_lock.py`)
+dan build frontend tiap push/PR. Tes baru yang tanpa jaringan/DB → tambahkan ke daftar CI.
 
 ## AI (Asisten AI — `docs/ai/AGENTIC_AI_PLAN_2026-11-25.md`)
 
@@ -83,7 +85,8 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
 - Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py
   tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py tests/test_ai_steward.py
   tests/test_ai_knowledge.py tests/test_ai_automations.py tests/test_ai_quality.py tests/test_ai_action_coverage.py
-  tests/test_ai_reconcile.py tests/test_ai_auditor_more.py tests/test_ai_domain.py tests/test_smart_import_records.py`
+  tests/test_ai_reconcile.py tests/test_ai_auditor_more.py tests/test_ai_domain.py tests/test_smart_import_records.py
+  tests/test_scheduler_lock.py`
   (tanpa jaringan).
 
 ## Backend
