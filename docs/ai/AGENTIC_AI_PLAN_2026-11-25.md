@@ -531,6 +531,22 @@ marketplace dibuat otomatis; jurnal manual dulu membuang dimensi toko/brand; ung
 Diuji: 41 tes AI tanpa jaringan + alur UI nyata (rekonsiliasi: 3 jurnal penyesuaian dibukukan & baris cocok; resep:
 simulasi HPP; tutup buku dengan ringkasan Claude).
 
+Layar tambahan R3: **Journals → Dari foto struk** (banyak struk sekaligus, pilih akun beban, bukukan), **Sourcing →
+Penawaran supplier → Analisis price list (AI)** (simpan baris terpilih sebagai penawaran), **Purchase Requests → Saran
+restock** (PR draft per toko), **AI Data Steward** `/ai/data-quality` (item/supplier ganda: nama mirip, NPWP/rekening/
+telepon sama, pemakaian per record, nonaktifkan duplikat yang belum dipakai; kelengkapan data).
+
+**R4 selesai**:
+
+| Tahap | Yang jadi | Lokasi |
+|---|---|---|
+| T8 | **Memori** (pribadi/perusahaan, alat remember/forget, disuntikkan sebagai delta), **basis pengetahuan** (SOP/kontrak/kebijakan PDF·DOCX·TXT·Excel, PDF scan dibaca Claude, pencarian BM25 + kutipan judul/bagian/halaman), **catatan riset** — `/ai/knowledge`. **Monitor & Otomasi** `/ai/automations`: kondisi tanpa biaya AI (templat: penjualan rendah, anomali baru, selisih opname, PO, kas kecil) & instruksi AI terjadwal (laporan / pemantauan "kirim hanya bila ada temuan"), dengan izin pembuat, ke notifikasi app/WhatsApp. **Dokumen AI** `/ai/documents`: pustaka laporan + kotak masuk email IMAP (opsional) → Proses dengan AI. Voice note WA via server STT (opsional). Dataset tambahan (opname, anomali, penawaran, menu), aturan agen domain Inventory/Outlet/HR & data master. | `services/ai/knowledge.py`, `automations.py`, `inbox.py`, `stt.py`, `routers/ai_knowledge.py`, `ai_automations.py` |
+| T9 | 👍/👎 per jawaban, **kartu Kualitas** (permintaan berhasil, usulan disetujui/diedit, kepuasan, biaya rata-rata, keluhan terbaru), **mode latihan** (per pengguna atau semua — usulan disimulasikan), **UU PDP**: samarkan data pribadi sebelum ke model, retensi data AI terjadwal, unduh/hapus data AI saya. **Kumpulan uji** 24 kasus lintas agen (`backend/tests/ai_evals`) + `scripts/ai_eval.py` (Claude sungguhan, opt-in). | `services/ai/privacy.py`, `routers/ai.py` (/quality), `routers/ai_agent.py` (/feedback, /prefs, /me) |
+
+Uji eval dengan Claude sungguhan (data demo): SOP → jawaban berkutipan, "ingat …" → memori perusahaan; biaya ±$0,09
+per kasus. Opsional yang butuh server pemilik: kotak masuk email (IMAP), voice note (server Whisper/STT), gateway
+WhatsApp (Evolution API).
+
 ## 14. Risiko & mitigasi
 
 | Risiko | Mitigasi |

@@ -10,9 +10,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import { PanelLeft, SquarePen, Search, Trash2, Maximize2, Minimize2, LayoutDashboard, ShieldCheck, Settings2, MessageSquare, FolderOpen, Workflow, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { confirmDialog } from "@/components/shared/confirmDialog";
-import api, { unwrap } from "@/lib/api";
+import api, { unwrap, unwrapError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useNavigation } from "@/contexts/NavigationContext";
 import { canOpenPath } from "@/lib/unifiedNav";
@@ -116,6 +118,20 @@ export default function AIChatPage() {
   const [mobileHistory, setMobileHistory] = useState(false);
   const [focus, setFocus] = useState(false);
   const { sidebarCollapsed, setSidebarCollapsed } = useNavigation();
+  const [practice, setPractice] = useState({ on: false, global: false });
+  useEffect(() => {
+    api.get("/ai/agent/prefs", { scope: false }).then((r) => {
+      const p = unwrap(r);
+      setPractice({ on: !!(p.practice || p.practice_global), global: !!p.practice_global });
+    }).catch(() => {});
+  }, []);
+  const togglePractice = async (v) => {
+    try {
+      const p = unwrap(await api.put("/ai/agent/prefs", { practice: v }));
+      setPractice({ on: !!(p.practice || p.practice_global), global: !!p.practice_global });
+      toast.success(v ? "Mode latihan aktif — usulan hanya disimulasikan" : "Mode latihan dimatikan");
+    } catch (e) { toast.error(unwrapError(e)); }
+  };
 
   // Satu sidebar lebar saja (riwayat percakapan, gaya Claude): sidebar aplikasi diciutkan sementara selama di /ai
   // (tidak disimpan ke preferensi) dan dikembalikan saat keluar.
@@ -190,6 +206,10 @@ export default function AIChatPage() {
           <h1 className="flex-1 min-w-0 truncate px-1 text-sm font-medium" data-testid="ai-chat-title">
             {chat.session?.title || "Asisten AI"}
           </h1>
+          <label className="hidden sm:flex items-center gap-2 px-2 text-xs text-muted-foreground" htmlFor="ai-practice" title="Usulan aksi yang disetujui hanya disimulasikan">
+            <Switch id="ai-practice" checked={practice.on} disabled={practice.global} onCheckedChange={togglePractice} data-testid="ai-practice-toggle" />
+            Mode latihan
+          </label>
           <Button size="icon-sm" variant="ghost" onClick={() => openSession(null)} disabled={chat.busy} aria-label="Percakapan baru" title="Percakapan baru">
             <SquarePen className="h-4 w-4" />
           </Button>
@@ -198,6 +218,11 @@ export default function AIChatPage() {
             {focus ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         </header>
+        {practice.on && (
+          <div className="shrink-0 border-b border-border bg-blue-500/10 px-4 py-1.5 text-xs text-blue-800 dark:text-blue-400" data-testid="ai-practice-banner">
+            Mode latihan aktif{practice.global ? " (diatur admin)" : ""} — usulan yang disetujui hanya disimulasikan, data tidak berubah.
+          </div>
+        )}
         <AgentChat chat={chat} variant="page" onNavigated={() => setFocus(false)} />
       </section>
     </div>

@@ -18,6 +18,7 @@ from services._scheduler.jobs import (
     job_ai_auditor,
     job_ai_automations,
     job_ai_inbox,
+    job_ai_retention,
 )
 
 
@@ -56,3 +57,5 @@ def _ensure_registered() -> None:
               description="Jalankan monitor kondisi & instruksi terjadwal Asisten AI yang sudah waktunya.")
     _register("ai_inbox", "Kotak Masuk Email AI", "*/10 * * * *", job_ai_inbox,
               description="Baca email dokumen (IMAP) → lampiran ke Kotak Masuk Asisten AI. Nonaktif bila INBOX_IMAP_HOST kosong.")
+    _register("ai_retention", "Retensi Data AI", "15 2 * * *", job_ai_retention,
+              description="Hapus percakapan/run/file AI & log WA lebih tua dari retention_days (kebijakan AI, UU PDP).")

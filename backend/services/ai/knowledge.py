@@ -156,13 +156,18 @@ def extract_text(data: bytes, filename: str, content_type: str = "") -> str:
 
 
 def chunk_text(text: str, size: int = CHUNK) -> list[dict]:
-    """Potong per paragraf (±size karakter), simpan judul bagian & halaman terakhir yang terlihat."""
-    chunks, buf, heading, page = [], [], "", None
-    cur_heading, cur_page = "", None
+    """Potong per paragraf (±size karakter). Judul '#' selalu memulai bagian baru; tiap potongan menyimpan judul
+    (judul › sub-judul bernomor) & halaman tempat ia dimulai — dipakai sebagai kutipan."""
+    chunks: list[dict] = []
+    buf: list[str] = []
+    page = None
+    top, sub = "", ""
+    cur = {"heading": "", "page": None}
 
     def flush():
         if buf:
-            chunks.append({"text": "\n".join(buf).strip(), "heading": cur_heading, "page": cur_page})
+            chunks.append({"text": "\n".join(buf).strip(), "heading": cur["heading"], "page": cur["page"]})
+
     for para in re.split(r"\n\s*\n|\n(?=#)", text or ""):
         para = para.strip()
         if not para:
@@ -173,22 +178,35 @@ def chunk_text(text: str, size: int = CHUNK) -> list[dict]:
             para = para[m.end():].strip()
             if not para:
                 continue
-        first = para.split("\n", 1)[0]
-        if first.startswith("#") or (len(first) < 80 and (first.isupper() or re.match(r"^(\d+(\.\d+)*|bab|pasal|bagian)\b", first, re.I))):
-            heading = first.lstrip("# ").strip()
-        if sum(len(b) for b in buf) + len(para) > size and buf:
+        first = para.split("\n", 1)[0].strip()
+        if first.startswith("#"):
+            flush()
+            buf = []
+            top, sub = first.lstrip("# ").strip(), ""
+        elif len(first) < 80 and (first.isupper() or re.match(r"^(\d+(\.\d+)*\.?|bab|pasal|bagian)\s", first, re.I)):
+            sub = first
+        if buf and sum(len(b) for b in buf) + len(para) > size:
             flush()
             buf = []
         if not buf:
-            cur_heading, cur_page = heading, page
+            cur = {"heading": " › ".join(x for x in (top, sub) if x), "page": page}
         while len(para) > size * 1.5:                 # paragraf sangat panjang → pecah
             buf.append(para[:size])
             flush()
             buf, para = [], para[size:]
-            cur_heading, cur_page = heading, page
+            cur = {"heading": " › ".join(x for x in (top, sub) if x), "page": page}
         buf.append(para)
     flush()
     return [c for c in chunks if c["text"]]
+
+
+def excerpt(text: str, terms: list[str], width: int = 280) -> str:
+    """Cuplikan di sekitar kata kunci pertama yang ditemukan (untuk tampilan)."""
+    low = text.lower()
+    pos = min((low.find(t) for t in terms if low.find(t) >= 0), default=0)
+    a = max(0, pos - width // 3)
+    out = text[a:a + width].strip()
+    return ("…" if a else "") + out + ("…" if a + width < len(text) else "")
 
 
 def _toks(s: str) -> list[str]:
@@ -332,10 +350,12 @@ async def search(query: str, *, k: int = 6) -> dict:
             d = docs[it["doc_id"]]
             where = ", ".join(x for x in [it.get("heading"), f"hal. {it['page']}" if it.get("page") else ""] if x)
             hasil.append({"jenis": "dokumen", "dokumen": d["title"], "kategori": d["category"], "doc_id": d["id"],
-                          "bagian": where or f"bagian {it['idx'] + 1}", "kutipan": it["text"][:1500], "skor": round(sc, 2)})
+                          "bagian": where or f"bagian {it['idx'] + 1}", "kutipan": it["text"][:1500],
+                          "cuplikan": excerpt(it["text"], q), "skor": round(sc, 2)})
         else:
             hasil.append({"jenis": "catatan_riset", "topik": it["topic"], "tanggal": it["created_at"][:10],
-                          "kutipan": it["summary"][:1500], "sumber": it.get("sources") or [], "skor": round(sc, 2)})
+                          "kutipan": it["summary"][:1500], "cuplikan": excerpt(it["summary"], q),
+                          "sumber": it.get("sources") or [], "skor": round(sc, 2)})
     return {"query": query, "hasil": hasil,
             "catatan": "Kutip sumbernya (judul dokumen + bagian/halaman, atau topik catatan riset + tanggal). "
                        "Bila tidak ada hasil relevan, katakan tidak ditemukan di basis pengetahuan."}

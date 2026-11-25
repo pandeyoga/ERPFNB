@@ -117,6 +117,13 @@ async def approve(action_id: str, user: dict, *, body: Any = None) -> dict:
                                                       return_document=True)
     if not claimed:  # keputusan lain sudah masuk duluan
         return serialize(await db.ai_actions.find_one({"id": action_id}))
+    if policy.get("practice_mode") or await practice_on(user["id"]):
+        final = {"status": "simulated", "finished_at": _now(), "error": None, "errors": None,
+                 "result": {"simulasi": True, "akan_dijalankan": f"{claimed['method']} {claimed['path']}"}}
+        await db.ai_actions.update_one({"id": action_id}, {"$set": final})
+        await audit_log(user_id=user["id"], entity_type="ai_action", entity_id=action_id, action="simulate",
+                        after={"body": claimed.get("body")})
+        return serialize(await db.ai_actions.find_one({"id": action_id}))
     op = catalog.get(claimed["op_id"])
     if not op:
         res = {"status": 410, "error": "Aksi sudah tidak tersedia di sistem"}
@@ -133,6 +140,11 @@ async def approve(action_id: str, user: dict, *, body: Any = None) -> dict:
                     action="execute" if ok else "execute_failed",
                     before={"body": claimed.get("original_body")}, after={"body": claimed.get("body"), **final})
     return serialize(await db.ai_actions.find_one({"id": action_id}))
+
+
+async def practice_on(user_id: str) -> bool:
+    p = await get_db().ai_user_prefs.find_one({"user_id": user_id}, {"_id": 0, "practice": 1})
+    return bool((p or {}).get("practice"))
 
 
 async def reject(action_id: str, user: dict, *, reason: str = "") -> dict:
@@ -166,7 +178,8 @@ def outcome_text(actions: list[dict]) -> str:
     """Ringkasan keputusan untuk diteruskan ke agen pada giliran berikutnya."""
     lines = []
     for a in actions:
-        st = {"done": "BERHASIL", "failed": "GAGAL", "rejected": "DITOLAK pengguna", "cancelled": "DIBATALKAN"}.get(
+        st = {"done": "BERHASIL", "failed": "GAGAL", "rejected": "DITOLAK pengguna", "cancelled": "DIBATALKAN",
+              "simulated": "SIMULASI (mode latihan — tidak dijalankan; jelaskan apa yang akan terjadi)"}.get(
             a["status"], a["status"])
         extra = ""
         if a["status"] == "done" and a.get("result"):

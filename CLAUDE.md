@@ -69,10 +69,15 @@ Audit ukuran runtime (opsional, butuh app berjalan): `scripts/ui_metrics/README.
   `services/ai_purchasing/` (price list, restock); AI Auditor `services/ai_audit/` → Anomaly Feed. Penerimaan penjualan
   per metode bayar → akun lewat `_journal/_common.resolve_receipt_target` (QRIS/kartu ≠ kas, marketplace → piutang marketplace).
 - Menu & Resep: `services/menu_recipe_service.py` (HPP dari GR/penawaran, konversi satuan `ai_purchasing/units.py`).
+- Memori & pengetahuan `services/ai/knowledge.py` (alat remember/forget/search_knowledge/save_research_note); Monitor &
+  Otomasi `services/ai/automations.py` (job `ai_automations` tiap menit, jalan dengan izin pembuat); privasi
+  `services/ai/privacy.py` (mask_pii, retensi, data saya); Data Steward `services/ai_steward/`. Kasus uji agen baru →
+  `backend/tests/ai_evals` (jalankan `scripts/ai_eval.py`, berbiaya).
 - WhatsApp: kirim lewat `services/whatsapp_service.py` (provider evolution/fonnte/twilio/meta); bot dua arah di
   `services/wa_bot/` (aksi tetap lewat usulan + PIN).
 - Tes: `cd backend && python -m pytest -q tests/test_ai_agent.py tests/test_ai_client.py tests/test_smart_import.py tests/test_wa_bot.py
-  tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py`
+  tests/test_ai_finance.py tests/test_ai_purchasing_audit.py tests/test_menu_recipe.py tests/test_ai_steward.py
+  tests/test_ai_knowledge.py tests/test_ai_automations.py tests/test_ai_quality.py`
   (tanpa jaringan).
 
 ## Backend

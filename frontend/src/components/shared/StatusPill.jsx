@@ -102,6 +102,7 @@ const STATUS = {
   done: ["Selesai", "success"],
   // Usulan aksi Asisten AI (status + tingkat risiko)
   executing: ["Sedang Dijalankan", "info"],
+  simulated: ["Simulasi", "info"],
   running: ["Sedang Berjalan", "info"],
   risk_rendah: ["Risiko Rendah", "neutral"],
   risk_sedang: ["Risiko Sedang", "info"],

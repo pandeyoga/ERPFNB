@@ -28,6 +28,7 @@ function ResultLine({ a }) {
     const ref = r.doc_no || r.je_number || r.code || r.name || r.title || r.id;
     return <p className="text-xs text-emerald-700 dark:text-emerald-400">Berhasil{ref ? ` · ${ref}` : ""}{r.status ? ` · status ${r.status}` : ""}</p>;
   }
+  if (a.status === "simulated") return <p className="text-xs text-blue-700 dark:text-blue-400">Mode latihan — disimulasikan, data tidak berubah</p>;
   if (a.status === "failed") return <p className="text-xs text-rose-700 dark:text-rose-400">Gagal: {a.error || "galat"}</p>;
   if (a.status === "rejected") return <p className="text-xs text-muted-foreground">Ditolak{a.reject_reason ? `: ${a.reject_reason}` : ""}</p>;
   return null;

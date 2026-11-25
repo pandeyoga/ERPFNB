@@ -186,7 +186,7 @@ async def start_run(user: dict, *, message: str, session_id: Optional[str] = Non
     if await db.ai_runs.find_one({"session_id": session["id"], "status": "running"}):
         raise ValidationError("AI masih mengerjakan permintaan sebelumnya di percakapan ini")
     run = {"id": str(uuid.uuid4()), "session_id": session["id"], "user_id": user["id"], "status": "running",
-           "events": [], "created_at": _now(), "finished_at": None, "error": None}
+           "channel": channel, "events": [], "created_at": _now(), "finished_at": None, "error": None}
     await db.ai_runs.insert_one(run)
     user_display = {"role": "user", "text": message, "attachments": attachments or [], "ts": _now(),
                     "auto": bool(outcome and not message)}
@@ -312,7 +312,7 @@ async def _run(run_id: str, session_id: str, user: dict, message: str, attachmen
         "$inc": {"usage.input_tokens": usage["input_tokens"], "usage.output_tokens": usage["output_tokens"],
                  "usage.cost_usd": round(usage["cost_usd"], 6)}})
     await db.ai_runs.update_one({"id": run_id}, {"$set": {"status": status, "finished_at": _now(), "error": err,
-                                                         "answer": display}})
+                                                         "answer": display, "usage": usage}})
 
 
 async def _call_model(ai_client, user: dict, session: dict, messages: list[dict], effort: str):

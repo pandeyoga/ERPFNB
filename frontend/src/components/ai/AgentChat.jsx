@@ -11,7 +11,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Bot, Paperclip, ArrowUp, X, ExternalLink, FileDown, Loader2, ListChecks, ChevronDown, ChevronRight,
-  CheckCheck, Pin, Copy, Check, FileText,
+  CheckCheck, Pin, Copy, Check, FileText, ThumbsUp, ThumbsDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -117,6 +117,38 @@ function CopyButton({ text }) {
   );
 }
 
+/** 👍/👎 per jawaban → /ai/agent/feedback (dipakai dashboard kualitas). 👎 bisa disertai catatan singkat. */
+function FeedbackButtons({ runId }) {
+  const [rating, setRating] = useState(null);
+  const [asking, setAsking] = useState(false);
+  const [comment, setComment] = useState("");
+  if (!runId) return null;
+  const send = async (r, c = "") => {
+    try {
+      await api.post("/ai/agent/feedback", { run_id: runId, rating: r, comment: c });
+      setRating(r); setAsking(false);
+      if (r === "down") toast.success("Terima kasih — masukan dicatat");
+    } catch (e) { toast.error(unwrapError(e)); }
+  };
+  return (
+    <>
+      <Button size="icon-sm" variant="ghost" onClick={() => send("up")} aria-label="Jawaban membantu" aria-pressed={rating === "up"} title="Membantu" data-testid="ai-feedback-up">
+        <ThumbsUp className={cn("h-4 w-4", rating === "up" && "fill-current")} />
+      </Button>
+      <Button size="icon-sm" variant="ghost" onClick={() => setAsking((v) => !v)} aria-label="Jawaban kurang tepat" aria-pressed={rating === "down"} title="Kurang tepat" data-testid="ai-feedback-down">
+        <ThumbsDown className={cn("h-4 w-4", rating === "down" && "fill-current")} />
+      </Button>
+      {asking && (
+        <div className="flex w-full items-center gap-2 pt-1">
+          <Textarea rows={1} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Apa yang kurang tepat? (opsional)"
+            className="min-h-[36px] text-sm" aria-label="Catatan umpan balik" />
+          <Button size="sm" variant="outline" onClick={() => send("down", comment)} data-testid="ai-feedback-send">Kirim</Button>
+        </div>
+      )}
+    </>
+  );
+}
+
 function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, busy, sessionId, page }) {
   const { startTour } = useTour();
   const ui = d.ui || [];
@@ -160,7 +192,7 @@ function AssistantMessage({ d, actions, onDecide, onDecideBatch, onNavigate, bus
             ))}
           </div>
         )}
-        {d.text && <div className="-ml-2"><CopyButton text={d.text} /></div>}
+        {d.text && <div className="-ml-2 flex flex-wrap items-center gap-0.5"><CopyButton text={d.text} /><FeedbackButtons runId={d.run_id} /></div>}
       </div>
     </div>
   );
@@ -292,7 +324,8 @@ export default function AgentChat({ chat, variant, compact = false, onNavigated 
           {page && (
             <p className="text-xs text-muted-foreground text-center max-w-xl mx-auto">
               Membaca data sesuai izin Anda di semua modul, mencari di web, membaca foto struk/PDF/Excel, membuat grafik &amp;
-              laporan Excel/PDF, dan menyiapkan aksi (buat/ubah/hapus) yang Anda setujui dulu.
+              laporan Excel/PDF, merujuk SOP perusahaan, mengingat preferensi Anda, menjalankan laporan &amp; pemantauan terjadwal,
+              dan menyiapkan aksi (buat/ubah/hapus) yang Anda setujui dulu.
             </p>
           )}
           {error && <p className="text-sm text-rose-700 dark:text-rose-400 text-center" role="alert">{error}</p>}

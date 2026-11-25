@@ -44,6 +44,9 @@ DEFAULT_POLICY: dict[str, Any] = {
     "alert_pct": 80,                # peringatan ke admin AI saat pemakaian ≥ x% anggaran
     "agent_effort": "high",         # effort Claude untuk agen (low|medium|high|xhigh|max)
     "agent_max_steps": 15,          # batas langkah alat per permintaan
+    "practice_mode": False,         # mode latihan untuk semua: usulan aksi disetujui → disimulasikan, tidak dijalankan
+    "mask_pii": False,              # samarkan data pribadi (telepon, email, NIK, NPWP, rekening, alamat) sebelum ke model
+    "retention_days": None,         # hapus percakapan/run/file AI & log WA lebih tua dari N hari (None = simpan)
 }
 
 
@@ -83,6 +86,12 @@ async def update_policy(patch: dict, *, user: dict) -> dict:
         out["alert_pct"] = min(100, max(1, int(patch["alert_pct"] or 80)))
     if patch.get("agent_effort") in ("low", "medium", "high", "xhigh", "max"):
         out["agent_effort"] = patch["agent_effort"]
+    for k in ("practice_mode", "mask_pii"):
+        if k in patch:
+            out[k] = bool(patch[k])
+    if "retention_days" in patch:
+        v = patch["retention_days"]
+        out["retention_days"] = None if v in (None, "", 0) else min(3650, max(30, int(v)))
     if "agent_max_steps" in patch:
         out["agent_max_steps"] = min(40, max(3, int(patch["agent_max_steps"] or 15)))
     await get_db().system_settings.update_one(

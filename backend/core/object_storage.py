@@ -115,6 +115,17 @@ async def put_object(path: str, data: bytes, content_type: str) -> dict:
     return await asyncio.to_thread(_local_put, await _local_root(), path, data)
 
 
+async def delete_object(path: str) -> None:
+    """Hapus objek (retensi data / hak hapus subjek data). Tidak galat bila sudah tidak ada."""
+    if await _backend() == "s3":
+        client, bucket = await _s3()
+        await asyncio.to_thread(client.delete_object, Bucket=bucket, Key=_safe_rel(path))
+        return
+    src = (await _local_root()) / _safe_rel(path)
+    if src.exists():
+        await asyncio.to_thread(src.unlink)
+
+
 async def get_object(path: str) -> tuple[bytes, str]:
     if await _backend() == "s3":
         client, bucket = await _s3()

@@ -23,7 +23,42 @@ import { fmtDate } from "@/lib/format";
 
 const KINDS = ["preferensi", "aturan", "target", "koreksi", "fakta"].map((k) => ({ value: k, label: k.charAt(0).toUpperCase() + k.slice(1) }));
 const CATS = ["SOP", "kontrak", "kebijakan", "resep", "lainnya"].map((k) => ({ value: k, label: k.charAt(0).toUpperCase() + k.slice(1) }));
-const TABS = [{ value: "memori", label: "Memori" }, { value: "dokumen", label: "Dokumen" }, { value: "riset", label: "Catatan riset" }];
+const TABS = [{ value: "memori", label: "Memori" }, { value: "dokumen", label: "Dokumen" }, { value: "riset", label: "Catatan riset" },
+  { value: "privasi", label: "Privasi" }];
+
+/** Hak subjek data (UU PDP): unduh & hapus data Asisten AI milik saya. */
+function PrivacyCard() {
+  const [busy, setBusy] = useState("");
+  const download = async () => {
+    setBusy("export");
+    try {
+      const res = await api.get("/ai/agent/me/export", { responseType: "blob", scope: false, timeout: 120000 });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = url; a.download = "data-asisten-ai-saya.json"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) { toast.error(unwrapError(e)); } finally { setBusy(""); }
+  };
+  const wipe = async () => {
+    if (!(await confirmDialog({ title: "Hapus semua data AI saya?", destructive: true, confirmText: "Hapus permanen",
+      description: "Percakapan, memori pribadi, file hasil AI, umpan balik & riwayat pesan WhatsApp Anda dihapus. Catatan audit usulan aksi tetap disimpan perusahaan." }))) return;
+    setBusy("delete");
+    try {
+      const r = unwrap(await api.delete("/ai/agent/me/data"));
+      toast.success(`Dihapus: ${r.percakapan} percakapan, ${r.memori} memori, ${r.file} file`);
+    } catch (e) { toast.error(unwrapError(e)); } finally { setBusy(""); }
+  };
+  return (
+    <Card className="p-4 space-y-3" data-testid="ai-privacy-card">
+      <p className="text-sm">Data yang disimpan Asisten AI tentang Anda: percakapan, memori pribadi, file laporan, umpan balik, otomasi, dan tautan WhatsApp.
+        Admin dapat mengatur masa simpan & penyamaran data pribadi di Pemakaian & Pengaturan.</p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" onClick={download} disabled={!!busy} data-testid="ai-privacy-export">{busy === "export" ? "Menyiapkan…" : "Unduh data saya (JSON)"}</Button>
+        <Button variant="destructive" onClick={wipe} disabled={!!busy} data-testid="ai-privacy-delete">{busy === "delete" ? "Menghapus…" : "Hapus data AI saya"}</Button>
+      </div>
+    </Card>
+  );
+}
 
 function MemoryDialog({ open, onOpenChange, initial, canCompany, onSaved }) {
   const [f, setF] = useState({ content: "", kind: "fakta", scope: "pribadi" });
@@ -162,7 +197,7 @@ export default function AIKnowledgePage() {
               {hits.map((h, i) => (
                 <li key={i} className="py-3 text-sm space-y-1">
                   <div className="font-medium">{h.dokumen || h.topik} <span className="text-xs text-muted-foreground">· {h.bagian || h.tanggal}</span></div>
-                  <p className="text-xs text-muted-foreground line-clamp-3 whitespace-pre-wrap">{h.kutipan}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3 whitespace-pre-wrap">{h.cuplikan || h.kutipan}</p>
                 </li>
               ))}
             </ul>
@@ -197,6 +232,7 @@ export default function AIKnowledgePage() {
             empty={<EmptyState icon={BookMarked} title="Belum ada catatan riset" description="Minta Asisten AI meriset harga pasar/regulasi lalu menyimpannya." />} />
         </Card>
       )}
+      {tab === "privasi" && <PrivacyCard />}
       <MemoryDialog open={memOpen} onOpenChange={setMemOpen} initial={editing} canCompany={canCompany} onSaved={load} />
       <DocDialog open={docOpen} onOpenChange={setDocOpen} onSaved={load} />
     </div>

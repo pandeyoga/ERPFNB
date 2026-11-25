@@ -98,6 +98,56 @@ async def decide_batch(payload: dict = Body(...), user: dict = Depends(require_p
     return ok_envelope({"actions": out, "followup": follow})
 
 
+# ---------------- preferensi, umpan balik, data saya ----------------
+
+@router.get("/prefs", summary="Preferensi Asisten AI saya (mode latihan)")
+async def get_prefs(user: dict = Depends(require_perm(USE))):
+    from services.ai import client as ai_client
+    p = await get_db().ai_user_prefs.find_one({"user_id": user["id"]}, {"_id": 0}) or {}
+    return ok_envelope({"practice": bool(p.get("practice")), "practice_global": bool((await ai_client.get_policy()).get("practice_mode"))})
+
+
+@router.put("/prefs", summary="Ubah preferensi Asisten AI saya")
+async def put_prefs(payload: dict = Body(...), user: dict = Depends(require_perm(USE))):
+    from datetime import datetime, timezone
+    await get_db().ai_user_prefs.update_one({"user_id": user["id"]}, {"$set": {
+        "user_id": user["id"], "practice": bool(payload.get("practice")), "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True)
+    return await get_prefs(user)
+
+
+@router.post("/feedback", summary="Umpan balik jawaban Asisten AI (👍/👎)")
+async def feedback(payload: dict = Body(...), user: dict = Depends(require_perm(USE))):
+    """{run_id, rating: up|down, comment?}"""
+    from datetime import datetime, timezone
+    db = get_db()
+    run = await db.ai_runs.find_one({"id": str(payload.get("run_id") or ""), "user_id": user["id"]}, {"_id": 0, "id": 1, "session_id": 1})
+    if not run:
+        raise NotFoundError("Jawaban")
+    rating = payload.get("rating")
+    if rating not in ("up", "down"):
+        raise ValidationError("rating harus up | down")
+    doc = {"user_id": user["id"], "run_id": run["id"], "session_id": run["session_id"], "rating": rating,
+           "comment": str(payload.get("comment") or "")[:1000], "updated_at": datetime.now(timezone.utc).isoformat()}
+    await db.ai_feedback.update_one({"user_id": user["id"], "run_id": run["id"]}, {"$set": doc}, upsert=True)
+    return ok_envelope(doc)
+
+
+@router.get("/me/export", summary="Unduh semua data Asisten AI milik saya (hak akses subjek data)")
+async def export_me(user: dict = Depends(require_perm(USE))):
+    import json
+    from services.ai import privacy
+    data = await privacy.export_my_data(user)
+    return Response(content=json.dumps(data, ensure_ascii=False, default=str, indent=1).encode("utf8"), media_type="application/json",
+                    headers={"Content-Disposition": 'attachment; filename="data-asisten-ai-saya.json"'})
+
+
+@router.delete("/me/data", summary="Hapus data Asisten AI milik saya (percakapan, memori pribadi, file, umpan balik)")
+async def delete_me(user: dict = Depends(require_perm(USE))):
+    from services.ai import privacy
+    return ok_envelope(await privacy.delete_my_data(user))
+
+
 @router.get("/files", summary="Pustaka laporan: file yang dibuat Asisten AI untuk saya")
 async def list_files(user: dict = Depends(require_perm("ai.agent.use"))):
     rows = await get_db().ai_files.find({"user_id": user["id"], "deleted_at": None},

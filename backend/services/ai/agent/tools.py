@@ -13,6 +13,8 @@ from typing import Any, Optional
 
 from core.db import get_db
 
+from services.ai import privacy
+
 from . import actions, catalog, datasets, executor, reports
 
 GUIDE_PATH = Path(__file__).with_name("app_guide.json")
@@ -379,11 +381,13 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
                 return "Ini aksi tulis — usulkan lewat propose_actions agar disetujui pengguna", True
             if not op.allowed_for(ctx.perms):
                 return f"Pengguna tidak punya izin: {', '.join(op.perms_all or op.perms_any)}", True
-            ctx.steps.append({"tool": name, "label": op.summary, "path": op.path})
+            ctx.steps.append({"tool": name, "label": op.summary, "path": op.path, "method": op.method})
             res = await executor.call(op, ctx.user, path_params=args.get("path_params") or {},
                                       query=args.get("query") or {}, body=args.get("body"), scope=ctx.scope)
             if "file" in res:
                 ctx.ui.append({"type": "file", **res["file"]})
+            if "data" in res and await _mask_on(ctx):
+                res = {**res, "data": privacy.mask(res["data"])}
             return executor.compact_for_model(res), "error" in res
         if name == "propose_actions":
             out = await actions.propose(user=ctx.user, session_id=ctx.session["id"], run_id=ctx.run_id,
@@ -417,7 +421,8 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
         if name == "query_data":
             spec = {k: v for k, v in args.items() if k not in ("export", "export_title")}
             d = datasets.DATASETS.get(str(spec.get("dataset")))
-            ctx.steps.append({"tool": name, "label": f"Menganalisis data: {d.label if d else spec.get('dataset')}"})
+            ctx.steps.append({"tool": name, "label": f"Menganalisis data: {d.label if d else spec.get('dataset')}",
+                              "dataset": spec.get("dataset")})
             fmt = args.get("export")
             res = await datasets.run(ctx.user, spec, for_export=bool(fmt))
             out = {k: v for k, v in res.items() if k != "rows"}
@@ -428,6 +433,8 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
                 out["file"] = {"filename": f["filename"], "baris": res["rows_shown"]}
                 out["catatan_file"] = "File siap diunduh pengguna (tombol muncul di jawaban)."
             out["rows"] = res["rows"][:datasets.ROWS_TO_MODEL]
+            if await _mask_on(ctx):
+                out["rows"] = privacy.mask(out["rows"])
             if res["truncated"]:
                 out["peringatan"] = (f"Hanya {len(out['rows'])} dari {res['total_rows']} baris ditampilkan — "
                                      "agregasikan/filter lebih spesifik, atau pakai export untuk data lengkap.")
@@ -452,6 +459,12 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
         return f"Alat tidak dikenal: {name}", True
     except Exception as e:  # noqa: BLE001 — galat alat dikembalikan ke model, bukan menghentikan run
         return f"Galat: {type(e).__name__}: {str(e)[:500]}", True
+
+
+async def _mask_on(ctx: ToolContext) -> bool:
+    if not hasattr(ctx, "_mask"):
+        ctx._mask = await privacy.enabled()
+    return ctx._mask
 
 
 async def _knowledge_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:

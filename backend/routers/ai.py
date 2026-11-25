@@ -411,3 +411,59 @@ async def ai_usage(month: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}$"),
     return ok_envelope({**summary, "budget_usd": policy.get("monthly_budget_usd"),
                         "by_feature": await group("feature"), "by_user": by_user,
                         "daily": [{"date": d["_id"], "cost_usd": round(d["cost_usd"], 4), "calls": d["calls"]} for d in daily]})
+
+
+@router.get("/quality", summary="Kualitas Asisten AI: keberhasilan run, persetujuan aksi, umpan balik, otomasi")
+async def ai_quality(days: int = Query(30, ge=1, le=365), user: dict = Depends(require_perm("ai.agent.admin"))):
+    from datetime import datetime, timedelta, timezone
+    from core.db import get_db
+    db = get_db()
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    runs = await db.ai_runs.find({"created_at": {"$gte": since}}, {"_id": 0, "status": 1, "created_at": 1, "finished_at": 1,
+                                                                    "usage": 1, "channel": 1}).to_list(50000)
+    durs, costs, by_channel = [], [], {}
+    for r in runs:
+        ch = r.get("channel") or "web"
+        by_channel[ch] = by_channel.get(ch, 0) + 1
+        if r.get("finished_at"):
+            try:
+                durs.append((datetime.fromisoformat(r["finished_at"]) - datetime.fromisoformat(r["created_at"])).total_seconds())
+            except ValueError:
+                pass
+        if (r.get("usage") or {}).get("cost_usd") is not None:
+            costs.append(float(r["usage"]["cost_usd"]))
+    done = sum(1 for r in runs if r["status"] == "done")
+    failed = sum(1 for r in runs if r["status"] == "failed")
+    acts = await db.ai_actions.find({"created_at": {"$gte": since}}, {"_id": 0, "status": 1, "body": 1, "original_body": 1,
+                                                                       "risk": 1}).to_list(50000)
+    st = {}
+    for a in acts:
+        st[a["status"]] = st.get(a["status"], 0) + 1
+    decided = sum(st.get(k, 0) for k in ("done", "failed", "rejected", "simulated"))
+    edited = sum(1 for a in acts if a["status"] in ("done", "failed", "simulated") and a.get("body") != a.get("original_body"))
+    fb = await db.ai_feedback.find({"updated_at": {"$gte": since}}, {"_id": 0}).sort("updated_at", -1).to_list(5000)
+    up = sum(1 for f in fb if f["rating"] == "up")
+    down = [f for f in fb if f["rating"] == "down"]
+    auto_runs = await db.ai_automation_runs.find({"started_at": {"$gte": since}}, {"_id": 0, "status": 1}).to_list(50000)
+    med = sorted(durs)[len(durs) // 2] if durs else None
+    return ok_envelope({
+        "hari": days,
+        "run": {"total": len(runs), "berhasil": done, "gagal": failed, "persen_berhasil": round(done / len(runs) * 100, 1) if runs else None,
+                "median_detik": round(med, 1) if med is not None else None,
+                "biaya_rata2_usd": round(sum(costs) / len(costs), 4) if costs else None, "per_saluran": by_channel},
+        "aksi": {"diusulkan": len(acts), "per_status": st,
+                 "persen_disetujui": round((st.get("done", 0) + st.get("failed", 0) + st.get("simulated", 0)) / decided * 100, 1) if decided else None,
+                 "persen_diedit": round(edited / max(1, decided - st.get("rejected", 0)) * 100, 1) if decided else None,
+                 "gagal_dijalankan": st.get("failed", 0)},
+        "umpan_balik": {"suka": up, "tidak_suka": len(down), "persen_puas": round(up / len(fb) * 100, 1) if fb else None,
+                        "keluhan_terbaru": [{"comment": f.get("comment"), "session_id": f["session_id"], "tanggal": f["updated_at"][:10]}
+                                            for f in down[:10]]},
+        "otomasi": {"jalan": len(auto_runs), "gagal": sum(1 for r in auto_runs if r["status"] == "error"),
+                    "aktif": await db.ai_automations.count_documents({"enabled": True, "deleted_at": None})},
+    })
+
+
+@router.post("/retention/run", summary="Jalankan retensi data AI sekarang (sesuai kebijakan retention_days)")
+async def ai_retention_run(user: dict = Depends(require_perm("ai.agent.admin"))):
+    from services.ai import privacy
+    return ok_envelope(await privacy.apply_retention())

@@ -44,6 +44,13 @@ async def job_ai_inbox() -> None:
         logger.info("ai_inbox: %d email baru", n)
 
 
+async def job_ai_retention() -> None:
+    from services.ai.privacy import apply_retention
+    res = await apply_retention()
+    if res.get("aktif"):
+        logger.info("ai_retention: %s", res)
+
+
 async def job_low_stock_digest() -> None:
     from services import inventory_matrix_service
     res = await inventory_matrix_service.low_stock()

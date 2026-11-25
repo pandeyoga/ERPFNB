@@ -110,6 +110,8 @@ def test_documents_search_with_citations_and_research(db):
         r = await kb.search("tempo pembayaran supplier sayur")
         assert r["hasil"][0]["dokumen"] == "Kontrak CV Sayur" and "14 hari" in r["hasil"][0]["kutipan"]
         assert "Kontrak Supplier Sayur" in r["hasil"][0]["bagian"]
+        r = await kb.search("kapan setoran tunai disetor ke bank")
+        assert r["hasil"][0]["bagian"].startswith("SOP Closing") and "H+1" in r["hasil"][0]["cuplikan"]
         r = await kb.search("diskon karyawan")
         assert r["hasil"][0]["kategori"] == "kebijakan" and "hal. 1" in r["hasil"][0]["bagian"]
         await kb.save_research(STAFF, topic="Harga cabai rawit Jakarta Nov 2026", summary="Rata-rata Rp 62.000/kg (PIHPS)",

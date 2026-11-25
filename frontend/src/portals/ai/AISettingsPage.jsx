@@ -50,7 +50,43 @@ function toForm(p) {
     alert_pct: p.alert_pct ?? 80,
     agent_effort: p.agent_effort || "high",
     agent_max_steps: p.agent_max_steps ?? 15,
+    practice_mode: !!p.practice_mode,
+    mask_pii: !!p.mask_pii,
+    retention_days: p.retention_days ?? "",
   };
+}
+
+/** Ringkasan kualitas: keberhasilan run, persetujuan usulan, umpan balik pengguna, otomasi (GET /ai/quality). */
+function QualityCard() {
+  const [days, setDays] = useState("30");
+  const [q, setQ] = useState(null);
+  useEffect(() => {
+    setQ(null);
+    api.get("/ai/quality", { params: { days }, scope: false }).then((r) => setQ(unwrap(r))).catch(() => setQ({}));
+  }, [days]);
+  const pct = (v) => (v == null ? "—" : `${v}%`);
+  return (
+    <Card className="p-4 space-y-3" data-testid="ai-quality-card">
+      <div className="flex items-center gap-2">
+        <CardTitle className="text-base flex-1">Kualitas</CardTitle>
+        <SimpleSelect value={days} onValueChange={setDays} ariaLabel="Rentang kualitas" className="w-36"
+          options={[{ value: "7", label: "7 hari" }, { value: "30", label: "30 hari" }, { value: "90", label: "90 hari" }]} />
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 nested-cards">
+        <CompactStatCard label="Permintaan berhasil" value={pct(q?.run?.persen_berhasil)} sub={q?.run ? `${fmtNumber(q.run.total)} permintaan · median ${q.run.median_detik ?? "—"} dtk` : "…"} />
+        <CompactStatCard label="Usulan disetujui" value={pct(q?.aksi?.persen_disetujui)} sub={q?.aksi ? `${fmtNumber(q.aksi.diusulkan)} usulan · ${pct(q.aksi.persen_diedit)} diedit` : "…"} />
+        <CompactStatCard label="Pengguna puas" value={pct(q?.umpan_balik?.persen_puas)} sub={q?.umpan_balik ? `👍 ${q.umpan_balik.suka} · 👎 ${q.umpan_balik.tidak_suka}` : "…"}
+          tone={q?.umpan_balik?.persen_puas != null && q.umpan_balik.persen_puas < 70 ? "warning" : "default"} />
+        <CompactStatCard label="Biaya rata-rata" value={q?.run?.biaya_rata2_usd != null ? usd(q.run.biaya_rata2_usd) : "—"} sub="per permintaan" />
+      </div>
+      <DataTable rows={q?.umpan_balik?.keluhan_terbaru || []} keyField="session_id" loading={!q} rowTestIdPrefix="ai-complaint"
+        columns={[
+          { key: "comment", label: "Keluhan terbaru (👎)", primary: true, render: (r) => r.comment || <span className="text-muted-foreground">tanpa catatan</span> },
+          { key: "tanggal", label: "Tanggal" },
+        ]}
+        empty={<EmptyState icon={Activity} title="Belum ada keluhan" description="Jawaban yang ditandai 👎 akan muncul di sini untuk ditinjau." />} />
+    </Card>
+  );
 }
 
 export default function AISettingsPage() {
@@ -75,6 +111,7 @@ export default function AISettingsPage() {
     setSaving(true);
     try {
       const payload = { ...form, monthly_budget_usd: form.monthly_budget_usd === "" ? null : Number(form.monthly_budget_usd),
+        retention_days: form.retention_days === "" ? null : Number(form.retention_days),
         alert_pct: Number(form.alert_pct), agent_max_steps: Number(form.agent_max_steps) };
       const p = unwrap(await api.put("/ai/policy", payload));
       setPolicy(p); setForm(toForm(p));
@@ -166,12 +203,33 @@ export default function AISettingsPage() {
               <Input id="ai-steps" type="number" min="3" max="40" value={form.agent_max_steps}
                 onChange={(e) => set("agent_max_steps")(e.target.value)} data-testid="ai-policy-steps" />
             </div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <Label htmlFor="ai-practice">Mode latihan untuk semua</Label>
+                <p className="text-xs text-muted-foreground">Usulan yang disetujui hanya disimulasikan — cocok untuk masa pelatihan.</p>
+              </div>
+              <Switch id="ai-practice" checked={form.practice_mode} onCheckedChange={set("practice_mode")} data-testid="ai-policy-practice" />
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <Label htmlFor="ai-mask">Samarkan data pribadi</Label>
+                <p className="text-xs text-muted-foreground">Telepon, email, NIK, NPWP, rekening & alamat disamarkan sebelum dikirim ke Claude (UU PDP).</p>
+              </div>
+              <Switch id="ai-mask" checked={form.mask_pii} onCheckedChange={set("mask_pii")} data-testid="ai-policy-mask" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="ai-retention">Simpan percakapan & file AI (hari)</Label>
+              <Input id="ai-retention" type="number" min="30" max="3650" value={form.retention_days} placeholder="Kosong = simpan selamanya"
+                onChange={(e) => set("retention_days")(e.target.value)} data-testid="ai-policy-retention" />
+            </div>
           </CardContent>
           {!form.enabled && (
             <p className="text-xs text-amber-800 dark:text-amber-400 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Semua fitur AI akan berhenti setelah disimpan.</p>
           )}
         </Card>
       )}
+
+      <QualityCard />
 
       <div className="grid gap-3 md:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Card className="p-4 space-y-3">
