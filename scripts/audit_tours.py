@@ -16,7 +16,7 @@ import re
 import sys
 from pathlib import Path
 
-SRC = Path("/app/frontend/src")
+SRC = Path(__file__).resolve().parents[1] / "frontend" / "src"
 TOURS_DIR = SRC / "contexts/tour/tours"
 
 # ---- 1. Gather all data-testid values that exist in the codebase ----
