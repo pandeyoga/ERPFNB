@@ -31,13 +31,14 @@ function Panel({ user }) {
   const [status, setStatus] = useState(null);
   const chat = useAgentChat(readSaved(user));
 
-  // Komponen lain bisa membuka panel; {detail: {prompt}} → percakapan baru langsung dengan pertanyaan itu
+  // Komponen lain bisa membuka panel; {detail: {prompt, attachmentIds?}} → percakapan baru langsung dengan pertanyaan itu
   useEffect(() => {
     const onOpen = (e) => {
       setOpen(true);
       const prompt = e?.detail?.prompt;
       if (prompt && !chat.busy) {
-        chat.send({ message: prompt, fresh: true, context: { path: window.location.pathname + window.location.search, title: document.title } });
+        chat.send({ message: prompt, fresh: true, attachmentIds: e.detail.attachmentIds || [],
+          context: { path: window.location.pathname + window.location.search, title: document.title } });
       }
     };
     window.addEventListener("aurora-open-ai", onOpen);

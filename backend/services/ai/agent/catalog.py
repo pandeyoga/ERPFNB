@@ -24,12 +24,14 @@ WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 EXCLUDED_PREFIXES = (
     "/api/auth", "/api/ai/agent", "/api/ai/policy", "/api/system-settings", "/api/public", "/api/telegram",
     "/api/health", "/api/uploads", "/api/files", "/api/loyalty/auth", "/api/loyalty/me", "/api/tour-analytics",
-    "/api/admin/menu/public", "/api/wa",
+    "/api/admin/menu/public", "/api/wa", "/api/ai/knowledge", "/api/ai/inbox",
     # D5: backup/impor/hapus massal seluruh data (khusus Super Admin, lewat layar Data Management)
     "/api/admin/data",
     # telemetri & endpoint akun pelanggan loyalty (bukan aksi staf)
     "/api/errors", "/api/admin/cms/analytics/track", "/api/loyalty/register", "/api/loyalty/login",
     "/api/loyalty/logout",
+    # modul lama yang sudah dipensiunkan (410) — pakai /api/finance/payments
+    "/api/finance/payment-requests",
 )
 EXCLUDED_PATHS = {"/api/", "/api"}
 # Dependensi yang menandai endpoint milik PELANGGAN (token pelanggan, bukan staf) → tidak masuk katalog
@@ -224,6 +226,10 @@ def _auto_hint(route: APIRoute) -> Optional[str]:
             except (OSError, TypeError):
                 pass
     if not keys:
+        methods = getattr(route, "methods", set()) or set()
+        if methods & {"PUT", "PATCH"}:
+            return ("Ubah sebagian: kirim hanya field yang diubah, dengan nama & format field yang sama seperti hasil GET "
+                    "record ini (baca dulu lewat aksi GET terkait).")
         return None
     return ("Field yang dikenali endpoint (otomatis dari kode; tidak semua wajib): " + ", ".join(keys[:40])
             + ". Bila ragu, baca contoh data sejenis lewat aksi GET terkait.")

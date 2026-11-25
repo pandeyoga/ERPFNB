@@ -30,6 +30,20 @@ async def job_ai_auditor() -> None:
     logger.info("ai_auditor: %s", result)
 
 
+async def job_ai_automations() -> None:
+    from services.ai.automations import tick
+    n = await tick()
+    if n:
+        logger.info("ai_automations: %d dijalankan", n)
+
+
+async def job_ai_inbox() -> None:
+    from services.ai.inbox import poll
+    n = await poll()
+    if n:
+        logger.info("ai_inbox: %d email baru", n)
+
+
 async def job_low_stock_digest() -> None:
     from services import inventory_matrix_service
     res = await inventory_matrix_service.low_stock()

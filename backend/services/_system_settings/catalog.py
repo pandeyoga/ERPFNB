@@ -32,6 +32,15 @@ KNOWN_SETTINGS: dict[str, dict] = {
     "TWILIO_WHATSAPP_FROM": {"label": "Twilio WhatsApp From Number", "description": "Nomor WhatsApp Twilio.", "is_secret": False, "category": "whatsapp", "placeholder": "whatsapp:+14155238886"},
     "META_WHATSAPP_TOKEN": {"label": "Meta WhatsApp Cloud API Token", "description": "Permanent token dari Meta.", "is_secret": True, "category": "whatsapp", "placeholder": "EAAGxxxxxxxxxxxxxxx"},
     "META_PHONE_NUMBER_ID": {"label": "Meta WhatsApp Phone Number ID", "description": "Phone Number ID dari WhatsApp Cloud API.", "is_secret": False, "category": "whatsapp", "placeholder": "1234567890123456"},
+    "STT_API_URL": {"label": "Speech-to-text URL (voice note WA)", "description": "Endpoint kompatibel OpenAI /v1/audio/transcriptions (mis. faster-whisper-server self-host). Kosong = voice note tidak didukung.", "is_secret": False, "category": "whatsapp", "placeholder": "https://stt.perusahaan.com/v1/audio/transcriptions"},
+    "STT_API_KEY": {"label": "Speech-to-text API Key", "description": "Opsional — Bearer token server STT.", "is_secret": True, "category": "whatsapp", "placeholder": ""},
+    "STT_MODEL": {"label": "Speech-to-text Model", "description": "Nama model di server STT (default whisper-1).", "is_secret": False, "category": "whatsapp", "placeholder": "Systran/faster-whisper-small"},
+    # Kotak masuk email Asisten AI (invoice/price list/ekspor dari supplier & platform)
+    "INBOX_IMAP_HOST": {"label": "IMAP Host (kotak masuk AI)", "description": "Server IMAP email khusus dokumen, mis. imap.gmail.com. Kosong = nonaktif.", "is_secret": False, "category": "ai", "placeholder": "imap.gmail.com"},
+    "INBOX_IMAP_USER": {"label": "IMAP User", "description": "Alamat email kotak masuk khusus (mis. dokumen@perusahaan.com).", "is_secret": False, "category": "ai", "placeholder": "dokumen@perusahaan.com"},
+    "INBOX_IMAP_PASSWORD": {"label": "IMAP Password", "description": "App password email (jangan password utama).", "is_secret": True, "category": "ai", "placeholder": ""},
+    "INBOX_IMAP_FOLDER": {"label": "IMAP Folder", "description": "Folder yang dibaca (default INBOX).", "is_secret": False, "category": "ai", "placeholder": "INBOX"},
+    "INBOX_OWNER_EMAIL": {"label": "Pemilik kotak masuk", "description": "Email akun ERP yang menerima & memproses dokumen dari kotak masuk (izinnya dipakai AI).", "is_secret": False, "category": "ai", "placeholder": "finance@perusahaan.com"},
     # Digest
     "DIGEST_DEFAULT_TIME": {"label": "Default Digest Time (WIB)", "description": "Jam pengiriman digest harian default. Format HH:MM (24h).", "is_secret": False, "category": "digest", "placeholder": "06:00"},
     # Tax

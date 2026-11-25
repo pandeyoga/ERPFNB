@@ -18,7 +18,7 @@ from . import actions, catalog, datasets, executor, reports
 GUIDE_PATH = Path(__file__).with_name("app_guide.json")
 _GUIDE: Optional[dict] = None
 
-TOOLS_VERSION = "2026-11-25.2"
+TOOLS_VERSION = "2026-11-25.3"
 
 TOOL_DEFS: list[dict] = [
     {
@@ -197,6 +197,43 @@ TOOL_DEFS: list[dict] = [
             }, "required": ["type", "x_key", "series", "data"]},
             }}},
         }, "required": ["title", "format", "sections"]},
+    },
+    {
+        "name": "remember",
+        "description": (
+            "Simpan memori jangka panjang: preferensi pengguna, aturan bisnis, target KPI, koreksi (mis. 'TRF GOTO = payout "
+            "GoFood', 'food cost target 32%'). Pakai bila pengguna meminta diingat atau mengoreksi Anda dengan fakta yang "
+            "berlaku ke depan. scope 'perusahaan' hanya bila pengguna berhak (ai.knowledge.manage) & memang berlaku untuk "
+            "semua; selain itu 'pribadi'. Jangan simpan data sensitif (password, gaji, rekening)."),
+        "input_schema": {"type": "object", "properties": {
+            "content": {"type": "string", "description": "Satu fakta ringkas (≤ 600 karakter)"},
+            "kind": {"type": "string", "enum": ["preferensi", "aturan", "target", "koreksi", "fakta"]},
+            "scope": {"type": "string", "enum": ["pribadi", "perusahaan"]}}, "required": ["content", "kind", "scope"]},
+    },
+    {
+        "name": "forget",
+        "description": "Hapus memori (id dari blok Memori, 8 karakter awal cukup) bila pengguna memintanya atau memori sudah salah.",
+        "input_schema": {"type": "object", "properties": {"memory_id": {"type": "string"}}, "required": ["memory_id"]},
+    },
+    {
+        "name": "search_knowledge",
+        "description": (
+            "Cari di basis pengetahuan perusahaan (SOP, kontrak supplier, kebijakan, resep standar) & catatan riset "
+            "tersimpan. Pakai untuk pertanyaan prosedur/kebijakan/kontrak. Jawab dengan kutipan: judul dokumen + bagian/hal."),
+        "input_schema": {"type": "object", "properties": {"query": {"type": "string"}, "k": {"type": "integer"}},
+                         "required": ["query"]},
+    },
+    {
+        "name": "save_research_note",
+        "description": (
+            "Simpan hasil riset sumber luar (harga pasar, regulasi, supplier, tren) sebagai Catatan Riset agar bisa dipakai "
+            "lagi: ringkasan berisi angka & kesimpulan, sources [{title, url, tanggal}]. Pakai setelah web_search yang "
+            "hasilnya berguna untuk keputusan."),
+        "input_schema": {"type": "object", "properties": {
+            "topic": {"type": "string"}, "summary": {"type": "string"},
+            "sources": {"type": "array", "items": {"type": "object", "properties": {
+                "title": {"type": "string"}, "url": {"type": "string"}, "tanggal": {"type": "string"}}}},
+            "tags": {"type": "array", "items": {"type": "string"}}}, "required": ["topic", "summary", "sources"]},
     },
 ]
 
@@ -410,9 +447,42 @@ async def run_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
             ctx.ui.append({"type": "file", **f})
             return json.dumps({"file": f["filename"], "ukuran_kb": round(len(data) / 1024, 1),
                                "catatan": "Tombol unduh muncul di jawaban; jangan tulis URL."}, ensure_ascii=False), False
+        if name in ("remember", "forget", "search_knowledge", "save_research_note"):
+            return await _knowledge_tool(name, args, ctx)
         return f"Alat tidak dikenal: {name}", True
     except Exception as e:  # noqa: BLE001 — galat alat dikembalikan ke model, bukan menghentikan run
         return f"Galat: {type(e).__name__}: {str(e)[:500]}", True
+
+
+async def _knowledge_tool(name: str, args: dict, ctx: ToolContext) -> tuple[Any, bool]:
+    from services.ai import knowledge as kb
+    if name == "remember":
+        scope = args.get("scope") if args.get("scope") in ("pribadi", "perusahaan") else "pribadi"
+        if scope == "perusahaan" and not kb.can_manage(ctx.user):
+            scope = "pribadi"
+        m = await kb.save_memory(ctx.user, content=str(args.get("content") or ""), kind=str(args.get("kind") or "fakta"),
+                                 scope=scope, source="chat", session_id=ctx.session["id"])
+        ctx.steps.append({"tool": name, "label": f"Mengingat ({m['scope']}): {m['content'][:60]}"})
+        ctx.ui.append({"type": "link", "path": "/ai/knowledge", "label": "Lihat memori"})
+        return json.dumps({"disimpan": {"id": m["id"], "scope": m["scope"]},
+                           "catatan": "Beri tahu pengguna apa yang diingat (bisa dihapus di Memori & Pengetahuan)."}, ensure_ascii=False), False
+    if name == "forget":
+        mid = str(args.get("memory_id") or "")
+        mems = await kb.list_memories(ctx.user)
+        hit = [m for m in mems if m["id"] == mid or (len(mid) >= 6 and m["id"].startswith(mid))]
+        if len(hit) != 1:
+            return "Memori tidak ditemukan / id ambigu", True
+        await kb.delete_memory(ctx.user, hit[0]["id"])
+        ctx.steps.append({"tool": name, "label": "Menghapus memori"})
+        return json.dumps({"dihapus": hit[0]["content"][:120]}, ensure_ascii=False), False
+    if name == "search_knowledge":
+        ctx.steps.append({"tool": name, "label": f"Mencari di basis pengetahuan: {args.get('query', '')}"})
+        return json.dumps(await kb.search(str(args.get("query") or ""), k=min(int(args.get("k") or 6), 12)),
+                          ensure_ascii=False)[:40_000], False
+    n = await kb.save_research(ctx.user, topic=str(args.get("topic") or ""), summary=str(args.get("summary") or ""),
+                               sources=args.get("sources"), tags=args.get("tags"), session_id=ctx.session["id"])
+    ctx.steps.append({"tool": name, "label": f"Menyimpan catatan riset: {n['topic'][:60]}"})
+    return json.dumps({"disimpan": n["id"]}, ensure_ascii=False), False
 
 
 # Format gambar yang bisa dibaca model; HEIC/HEIF (kamera iPhone) belum → minta JPG/PNG.

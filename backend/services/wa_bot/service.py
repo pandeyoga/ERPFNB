@@ -292,7 +292,18 @@ async def _process(link: Optional[dict], jid: str, phone: Optional[str], msg: di
         await _decide(link, user, jid, am.group(1) in ("setujui", "approve", "ya"), am.group(2), am.group(3) or "")
         return
     if media and media.get("kind") == "audioMessage":
-        await send_text(link, jid, "Pesan suara belum didukung — ketik pertanyaan Anda, ya.")
+        from services.ai import stt
+        if not await stt.configured():
+            await send_text(link, jid, "Pesan suara belum didukung — ketik pertanyaan Anda, ya.")
+            return
+        from services import whatsapp_service
+        got = await whatsapp_service.fetch_media(msg)
+        heard = await stt.transcribe(got[0], got[1]) if got else None
+        if not heard:
+            await send_text(link, jid, "Maaf, pesan suara tidak terdengar jelas. Coba ulangi atau ketik pesannya.")
+            return
+        await send_text(link, jid, f"🎙️ _{heard[:300]}_")
+        await _ask_agent(link, user, jid, msg, heard, None)
         return
     await _ask_agent(link, user, jid, msg, cmd, media)
 

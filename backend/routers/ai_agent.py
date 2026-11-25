@@ -98,6 +98,23 @@ async def decide_batch(payload: dict = Body(...), user: dict = Depends(require_p
     return ok_envelope({"actions": out, "followup": follow})
 
 
+@router.get("/files", summary="Pustaka laporan: file yang dibuat Asisten AI untuk saya")
+async def list_files(user: dict = Depends(require_perm("ai.agent.use"))):
+    rows = await get_db().ai_files.find({"user_id": user["id"], "deleted_at": None},
+                                        {"_id": 0, "storage_path": 0}).sort("created_at", -1).to_list(500)
+    return ok_envelope(rows)
+
+
+@router.delete("/files/{file_id}", summary="Hapus file dari pustaka laporan")
+async def delete_file(file_id: str, user: dict = Depends(require_perm("ai.agent.use"))):
+    from datetime import datetime, timezone
+    res = await get_db().ai_files.update_one({"id": file_id, "user_id": user["id"]},
+                                             {"$set": {"deleted_at": datetime.now(timezone.utc).isoformat()}})
+    if not res.matched_count:
+        raise NotFoundError("File")
+    return ok_envelope({"deleted": True})
+
+
 @router.get("/files/{file_id}")
 async def download_file(file_id: str, user: dict = Depends(require_perm(USE))):
     f = await get_db().ai_files.find_one({"id": file_id, "user_id": user["id"]})

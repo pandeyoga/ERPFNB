@@ -242,6 +242,32 @@ DATASETS: dict[str, Dataset] = {d.id: d for d in [
         "fdo_budget": F("fdo_budget", "num", "Budget FDO"), "bdo_budget": F("bdo_budget", "num", "Budget BDO"),
         "total_budget": F("total_budget", "num", "Total budget"),
     }, "", "period_start", "outlet_id", "brand_id"),
+    Dataset("opname_lines", "Hasil stock opname per item (selisih sistem vs hitung)", "opname_sessions", INV_PERMS, {
+        "opname_date": F("opname_date", "date", "Tanggal opname"), "doc_no": F("doc_no", label="No. opname"),
+        "outlet_id": _o(), "status": F("status"), "item_id": F("lines.item_id", "str", "Item", "items"),
+        "system_qty": F("lines.system_qty", "num", "Qty sistem"), "counted_qty": F("lines.counted_qty", "num", "Qty hitung"),
+        "variance": F("lines.variance", "num", "Selisih qty"), "variance_value": F("lines.variance_value", "num", "Nilai selisih"),
+    }, "Selisih negatif = barang kurang (susut/hilang). Selisih berulang pada item yang sama patut diselidiki.",
+        "opname_date", "outlet_id", unwind="lines"),
+    Dataset("anomalies", "Temuan anomali & AI Auditor", "anomaly_events",
+            ["anomaly.feed.read", "anomaly.scan.trigger", "finance.journal_entry.read"], {
+        "scan_date": F("scan_date", "date", "Tanggal temuan"), "type": F("type", label="Jenis"),
+        "severity": F("severity", label="Tingkat (mild/severe)"), "status": F("status", label="Status"),
+        "outlet_id": _o(), "title": F("title", label="Judul"), "amount": F("amount", "num", "Nominal"),
+        "source_type": F("source_type", label="Sumber"),
+    }, "Status: open/acknowledged/investigating/resolved/false_positive.", "scan_date", "outlet_id"),
+    Dataset("supplier_offers", "Penawaran harga supplier", "supplier_prices",
+            ["procurement.sourcing.read", "procurement.price_list.manage", "procurement.po.create"], {
+        "valid_from": F("valid_from", "date", "Berlaku dari"), "valid_to": F("valid_to", "date", "Berlaku sampai"),
+        "vendor_id": F("vendor_id", "str", "Supplier", "vendors"), "item_id": F("item_id", "str", "Item", "items"),
+        "price": F("price", "num", "Harga"), "unit": F("unit", label="Satuan"), "source": F("source", label="Sumber"),
+        "min_order_qty": F("min_order_qty", "num", "MOQ"), "lead_time_days": F("lead_time_days", "num", "Lead time (hari)"),
+    }, "Bandingkan harga hanya pada satuan yang sama.", "valid_from"),
+    Dataset("menu_items", "Master menu per brand (harga jual)", "menu_items", ["menu.item.read", "outlet.daily_sales.read"], {
+        "name": F("name", label="Menu"), "brand_id": _b(), "category": F("category", label="Kategori"),
+        "bucket": F("bucket", label="Food/Beverage"), "price": F("price", "num", "Harga jual"),
+        "needs_review": F("needs_review", label="Perlu ditinjau"),
+    }, "HPP & food cost per menu: GET /api/menu/costing.", None, None, "brand_id"),
 ]}
 
 # Kamus metrik: definisi resmi agar angka AI sama dengan laporan.

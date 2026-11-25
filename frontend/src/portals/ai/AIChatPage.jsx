@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { PanelLeft, SquarePen, Search, Trash2, Maximize2, Minimize2, LayoutDashboard, ShieldCheck, Settings2, MessageSquare } from "lucide-react";
+import { PanelLeft, SquarePen, Search, Trash2, Maximize2, Minimize2, LayoutDashboard, ShieldCheck, Settings2, MessageSquare, FolderOpen, Workflow, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -48,6 +48,9 @@ function History({ sessions, activeId, onOpen, onNew, onDelete, busy, query, set
   }, [sessions, query]);
   const links = [
     { path: "/ai/dashboard", label: "Dashboard AI", icon: LayoutDashboard },
+    { path: "/ai/documents", label: "Dokumen AI", icon: FolderOpen },
+    { path: "/ai/automations", label: "Monitor & Otomasi", icon: Workflow },
+    { path: "/ai/knowledge", label: "Memori & Pengetahuan", icon: BookMarked },
     { path: "/ai/approvals", label: "Persetujuan AI", icon: ShieldCheck },
     { path: "/ai/settings", label: "Pemakaian & Pengaturan", icon: Settings2 },
   ].filter((l) => canOpenPath(user, l.path));

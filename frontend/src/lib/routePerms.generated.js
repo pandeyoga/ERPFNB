@@ -72,6 +72,9 @@ export const ROUTE_PERMS = {
   "/ai/approvals": [
     "ai.agent.use"
   ],
+  "/ai/automations": [
+    "ai.agent.automate"
+  ],
   "/ai/dashboard": [
     "ai.agent.use"
   ],
@@ -80,8 +83,14 @@ export const ROUTE_PERMS = {
     "inventory.view",
     "procurement.vendor.read"
   ],
+  "/ai/documents": [
+    "ai.agent.use"
+  ],
   "/ai/import": [
     "import.smart.use"
+  ],
+  "/ai/knowledge": [
+    "ai.agent.use"
   ],
   "/ai/settings": [
     "ai.agent.admin"

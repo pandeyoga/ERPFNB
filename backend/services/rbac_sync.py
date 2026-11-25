@@ -12,11 +12,11 @@ logger = logging.getLogger("aurora.rbac")
 
 GRANTS: dict[str, list[str]] = {
     "EXECUTIVE": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read", "executive.view",
-                  "anomaly.scan.trigger", "procurement.sourcing.read", "ai.agent.use", "ai.agent.automate", "import.smart.use", "menu.item.read", "ai.wa.use"],
+                  "anomaly.scan.trigger", "procurement.sourcing.read", "ai.agent.use", "ai.agent.automate", "ai.knowledge.manage", "import.smart.use", "menu.item.read", "ai.wa.use"],
     "OWNER": ["admin.audit_log.read", "tax.efaktur.read", "tax.ebupot.read", "executive.view", "crm.view",
-              "procurement.sourcing.read", "ai.agent.use", "ai.agent.automate", "ai.agent.admin", "import.smart.use", "menu.item.read", "menu.item.manage", "ai.wa.use"],
+              "procurement.sourcing.read", "ai.agent.use", "ai.agent.automate", "ai.knowledge.manage", "ai.agent.admin", "import.smart.use", "menu.item.read", "menu.item.manage", "ai.wa.use"],
     "GM": ["executive.view", "reservations.reports", "procurement.sourcing.read", "ai.agent.use",
-           "ai.agent.automate", "import.smart.use", "menu.item.read", "menu.item.manage", "ai.wa.use"],
+           "ai.agent.automate", "ai.knowledge.manage", "import.smart.use", "menu.item.read", "menu.item.manage", "ai.wa.use"],
     "FINANCE_MANAGER": ["finance.asset.dispose", "finance.asset.revalue", "finance.asset.delete",
                         "tax.efaktur.read", "tax.efaktur.export", "tax.ebupot.read", "tax.ebupot.export",
                         "report_schedules.manage", "admin.audit_log.read", "outlet.daily_sales.validate",

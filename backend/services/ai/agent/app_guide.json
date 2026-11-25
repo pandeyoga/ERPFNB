@@ -151,13 +151,33 @@
    ]
   },
   {
+   "label": "Persetujuan AI",
+   "path": "/ai/approvals",
+   "perms": [
+    "ai.agent.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Percakapan",
+   "tours": []
+  },
+  {
    "label": "Dashboard AI",
    "path": "/ai/dashboard",
    "perms": [
     "ai.agent.use"
    ],
    "portal": "Asisten AI",
-   "section": "Dashboard AI",
+   "section": "Analisis & Laporan",
+   "tours": []
+  },
+  {
+   "label": "Dokumen AI",
+   "path": "/ai/documents",
+   "perms": [
+    "ai.agent.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Analisis & Laporan",
    "tours": []
   },
   {
@@ -167,17 +187,7 @@
     "import.smart.use"
    ],
    "portal": "Asisten AI",
-   "section": "Impor Cerdas",
-   "tours": []
-  },
-  {
-   "label": "WhatsApp",
-   "path": "/ai/whatsapp",
-   "perms": [
-    "ai.wa.use"
-   ],
-   "portal": "Asisten AI",
-   "section": "WhatsApp",
+   "section": "Data Masuk",
    "tours": []
   },
   {
@@ -189,17 +199,37 @@
     "procurement.vendor.read"
    ],
    "portal": "Asisten AI",
-   "section": "Kualitas Data",
+   "section": "Data Masuk",
    "tours": []
   },
   {
-   "label": "Persetujuan AI",
-   "path": "/ai/approvals",
+   "label": "Monitor & Otomasi",
+   "path": "/ai/automations",
+   "perms": [
+    "ai.agent.automate"
+   ],
+   "portal": "Asisten AI",
+   "section": "Otomasi",
+   "tours": []
+  },
+  {
+   "label": "WhatsApp",
+   "path": "/ai/whatsapp",
+   "perms": [
+    "ai.wa.use"
+   ],
+   "portal": "Asisten AI",
+   "section": "Otomasi",
+   "tours": []
+  },
+  {
+   "label": "Memori & Pengetahuan",
+   "path": "/ai/knowledge",
    "perms": [
     "ai.agent.use"
    ],
    "portal": "Asisten AI",
-   "section": "Persetujuan AI",
+   "section": "Memori & Pengetahuan",
    "tours": []
   },
   {
@@ -1003,6 +1033,9 @@
   "/ai/approvals": [
    "ai.agent.use"
   ],
+  "/ai/automations": [
+   "ai.agent.automate"
+  ],
   "/ai/dashboard": [
    "ai.agent.use"
   ],
@@ -1011,8 +1044,14 @@
    "inventory.view",
    "procurement.vendor.read"
   ],
+  "/ai/documents": [
+   "ai.agent.use"
+  ],
   "/ai/import": [
    "import.smart.use"
+  ],
+  "/ai/knowledge": [
+   "ai.agent.use"
   ],
   "/ai/settings": [
    "ai.agent.admin"

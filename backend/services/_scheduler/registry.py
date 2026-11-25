@@ -16,6 +16,8 @@ from services._scheduler.jobs import (
     job_report_schedules,
     job_cms_schedule_publish,
     job_ai_auditor,
+    job_ai_automations,
+    job_ai_inbox,
 )
 
 
@@ -50,3 +52,7 @@ def _ensure_registered() -> None:
     _register("ai_auditor", "AI Auditor", "30 3 * * *", job_ai_auditor,
                description="Pemeriksaan pengendalian internal (invoice/bukti ganda, pecah pembelian, pembuat=penyetuju, "
                            "jurnal tidak wajar, Benford, harga PO > acuan) → feed Anomali.")
+    _register("ai_automations", "Monitor & Otomasi AI", "* * * * *", job_ai_automations,
+              description="Jalankan monitor kondisi & instruksi terjadwal Asisten AI yang sudah waktunya.")
+    _register("ai_inbox", "Kotak Masuk Email AI", "*/10 * * * *", job_ai_inbox,
+              description="Baca email dokumen (IMAP) → lampiran ke Kotak Masuk Asisten AI. Nonaktif bila INBOX_IMAP_HOST kosong.")

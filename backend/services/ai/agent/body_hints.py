@@ -114,4 +114,13 @@ BODY_HINTS: dict[str, str] = {
     "POST /api/menu/recipe/simulate": '{"yield_qty": 1, "price": 45000, "lines": [{"item_id": "", "qty": 150, "unit": "g", "waste_pct": 5}]}',
     "PATCH /api/master/{entity}/{id_}": (
         'Kirim HANYA field yang diubah. Baca dokumen saat ini dulu (GET /api/master/{entity}) agar tahu nama field.'),
+    "POST /api/ai/automations": (
+        'Laporan/instruksi terjadwal: {"name": "Laporan sales mingguan", "kind": "agen", "schedule": {"freq": "weekly", '
+        '"weekday": 0, "time": "07:00"}, "channels": ["app", "whatsapp"], "instruction": "Buat ringkasan penjualan minggu lalu '
+        'per toko vs minggu sebelumnya + PDF", "monitor": false}. Pemantauan dengan AI (kirim hanya bila ada temuan): '
+        'kind agen + "monitor": true. Kondisi tanpa biaya AI: {"name": "Sales kemarin rendah", "kind": "kondisi", '
+        '"schedule": {"freq": "daily", "time": "08:00"}, "channels": ["app"], "condition": {"template": "sales_low", '
+        '"op": "<", "threshold": 5000000}} — templat: sales_low, anomaly_new, opname_loss, purchases_high, petty_high; atau '
+        '"spec": <spesifikasi query_data yang menghasilkan kolom "nilai"> dengan op & threshold. weekday 0 = Senin.'),
+    "POST /api/ai/steward/deactivate": '{"entity": "items", "id": "<id duplikat>", "keep_id": "<id yang dipertahankan>"}',
 }

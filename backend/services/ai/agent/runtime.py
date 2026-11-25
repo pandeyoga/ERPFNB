@@ -103,7 +103,22 @@ pengguna yang sedang login dan HANYA dengan hak aksesnya.
    food cost (GET /api/menu/costing). Riset resep: cari referensi resep/porsi standar di web, susun bahan dengan item
    master (satuan g/ml), hitung variasi dengan POST /api/menu/recipe/simulate (target food cost ≤ 35%), sarankan harga
    jual; simpan hanya lewat usulan yang disetujui.
-12. Bila pengguna tidak punya izin, katakan izin apa yang dibutuhkan (layar Peran) — jangan mencari jalan pintas.
+12. Inventory: stok & par level (aksi inventory balance), restock (GET /api/ai/purchasing/restock), transfer antar toko,
+   opname (dataset opname_lines — selisih berulang pada item yang sama = tanda susut/kebocoran), waste (dataset
+   inventory_movements jenis wastage). Outlet: Daily Sales, kas kecil, closing harian, KDO/BDO, food cost per menu.
+   HR: cuti, kasbon, payroll hanya bila pengguna berhak — jangan tampilkan gaji orang lain tanpa izin.
+13. Data master (item, supplier, menu): sebelum mengusulkan item/supplier baru, cek GET /api/ai/steward/similar
+   {{entity, name}}; bila ada yang mirip, tawarkan memakai yang ada. Duplikat lama → GET /api/ai/steward/duplicates.
+   Dari dokumen (kartu nama, NPWP, katalog) → isi field selengkap mungkin lalu usulkan.
+14. Memori: blok "Memori" di pesan pengguna berisi preferensi/aturan/koreksi yang disimpan — ikuti bila relevan,
+   tetapi data terbaru dari alat tetap lebih utama. Bila pengguna berkata "ingat…", mengoreksi fakta yang berlaku ke
+   depan, atau menetapkan target → `remember`. Hapus dengan `forget` bila diminta.
+15. Prosedur, kebijakan, kontrak, SOP, resep standar perusahaan → `search_knowledge` dulu; jawab dengan kutipan
+   (judul dokumen + bagian/halaman). Hasil riset web yang berguna → `save_research_note` (dengan sumber & tanggal).
+16. Monitor & otomasi ("tiap Senin kirim laporan…", "kabari bila stok < min / harga naik / sales turun"): usulkan
+   POST /api/ai/automations lewat propose_actions (instruksi jelas, jadwal, saluran app/WhatsApp). Otomasi berjalan
+   dengan izin pembuatnya; aksi tulis dari otomasi tetap menunggu persetujuan.
+17. Bila pengguna tidak punya izin, katakan izin apa yang dibutuhkan (layar Peran) — jangan mencari jalan pintas.
 
 # Gaya jawaban
 - Bahasa Indonesia, ringkas, langsung ke inti. Istilah teknis ERP boleh Inggris (PO, GR, COA, Posted).
@@ -191,6 +206,22 @@ def _dump(block: Any) -> dict:
     return block.model_dump(mode="json", exclude_none=True) if hasattr(block, "model_dump") else dict(block)
 
 
+async def _memory_delta(session: dict) -> str:
+    """Memori yang belum pernah dilihat sesi ini (semua pada giliran pertama, lalu hanya yang baru/diubah)."""
+    from services.ai import knowledge as kb
+    try:
+        user = {"id": session["user_id"], "permissions": []}
+        seen = session.get("memory_seen_at")
+        mems = await kb.list_memories(user, since=seen)
+        if not mems:
+            return ""
+        await get_db().ai_sessions.update_one({"id": session["id"]}, {"$set": {"memory_seen_at": max(m["updated_at"] for m in mems)}})
+        return kb.memory_block(mems, delta=bool(seen))
+    except Exception:  # noqa: BLE001 — memori opsional, jangan gagalkan run
+        logger.warning("memori gagal dimuat", exc_info=True)
+        return ""
+
+
 async def _build_user_content(user: dict, message: str, attachments: list[str], context, scope, outcome) -> list[dict]:
     from services import upload_service
     content: list[dict] = [{"type": "text", "text": _context_block(context, scope, outcome)}]
@@ -230,8 +261,11 @@ async def _run(run_id: str, session_id: str, user: dict, message: str, attachmen
     final_text, status, err = "", "done", None
     usage = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
     try:
-        messages.append({"role": "user", "content": await _build_user_content(
-            user, message, attachments, context, scope, outcome)})
+        content = await _build_user_content(user, message, attachments, context, scope, outcome)
+        mem = await _memory_delta(session)
+        if mem:
+            content.insert(1, {"type": "text", "text": mem})
+        messages.append({"role": "user", "content": content})
         for step in range(max_steps):
             resp = await _call_model(ai_client, user, session, messages, effort)
             u = resp.usage
