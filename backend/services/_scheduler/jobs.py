@@ -24,6 +24,12 @@ async def job_anomaly_scan() -> None:
     logger.info("anomaly_scan: %s", result)
 
 
+async def job_ai_auditor() -> None:
+    from services.ai_audit.auditor import run
+    result = await run(days=60)
+    logger.info("ai_auditor: %s", result)
+
+
 async def job_low_stock_digest() -> None:
     from services import inventory_matrix_service
     res = await inventory_matrix_service.low_stock()

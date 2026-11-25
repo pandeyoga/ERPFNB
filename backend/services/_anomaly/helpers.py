@@ -16,6 +16,9 @@ ANOMALY_TYPES: list[str] = [
     "vendor_price_spike",
     "vendor_leadtime",
     "ap_cash_spike",
+    # AI Auditor (services/ai_audit/auditor.py)
+    "duplicate_invoice", "duplicate_evidence", "split_purchase", "maker_checker", "journal_off_hours", "round_journal",
+    "reversal_near_close", "benford_deviation", "amount_outlier", "po_above_benchmark",
 ]
 
 ANOMALY_TYPE_LABELS: dict[str, str] = {
@@ -23,6 +26,11 @@ ANOMALY_TYPE_LABELS: dict[str, str] = {
     "vendor_price_spike": "Lonjakan Harga Vendor",
     "vendor_leadtime": "Lead Time Vendor Memburuk",
     "ap_cash_spike": "Lonjakan Pengeluaran Kas/AP",
+    "duplicate_invoice": "Invoice Ganda", "duplicate_evidence": "Bukti Dipakai Dua Kali",
+    "split_purchase": "Pecah Pembelian", "maker_checker": "Pembuat = Penyetuju",
+    "journal_off_hours": "Jurnal di Luar Jam Kerja", "round_journal": "Jurnal Angka Bulat Tanpa Bukti",
+    "reversal_near_close": "Reversal Menjelang Tutup Buku", "benford_deviation": "Pola Angka Tidak Wajar (Benford)",
+    "amount_outlier": "Nominal Menyimpang", "po_above_benchmark": "Harga PO di Atas Acuan",
 }
 
 VALID_STATUSES = ("open", "acknowledged", "investigating", "resolved", "false_positive")

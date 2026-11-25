@@ -15,6 +15,7 @@ from services._scheduler.jobs import (
     job_owner_digest,
     job_report_schedules,
     job_cms_schedule_publish,
+    job_ai_auditor,
 )
 
 
@@ -46,3 +47,6 @@ def _ensure_registered() -> None:
                description="Jalankan laporan terjadwal yang jatuh tempo (cek tiap menit, WIB).")
     _register("cms_schedule_publish", "CMS Scheduled Publish", "*/15 * * * *", job_cms_schedule_publish,
                description="Publish/unpublish konten CMS terjadwal (publish_at / unpublish_at).")
+    _register("ai_auditor", "AI Auditor", "30 3 * * *", job_ai_auditor,
+               description="Pemeriksaan pengendalian internal (invoice/bukti ganda, pecah pembelian, pembuat=penyetuju, "
+                           "jurnal tidak wajar, Benford, harga PO > acuan) → feed Anomali.")

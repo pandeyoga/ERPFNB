@@ -96,9 +96,11 @@ async def checklist(period: str, user: dict, *, use_ai: bool = False) -> dict:
     coa = {c["id"]: c async for c in db.chart_of_accounts.find({}, {"_id": 0, "id": 1, "code": 1, "name": 1, "type": 1})}
     flux = []
     for cid in set(cur) | set(prev):
-        c, p = cur.get(cid, 0.0), prev.get(cid, 0.0)
-        if (coa.get(cid) or {}).get("type") not in ("revenue", "expense", "cogs"):
+        typ = (coa.get(cid) or {}).get("type")
+        if typ not in ("revenue", "expense", "cogs"):
             continue
+        sign = -1 if typ == "revenue" else 1          # pendapatan bersaldo kredit → tampilkan positif
+        c, p = sign * cur.get(cid, 0.0), sign * prev.get(cid, 0.0)
         diff = c - p
         if abs(diff) >= 1_000_000 and (p == 0 or abs(diff) / abs(p) >= 0.2):
             flux.append({"akun": f"{coa[cid]['code']} {coa[cid]['name']}", "periode_ini": round(c, 2), "periode_lalu": round(p, 2),

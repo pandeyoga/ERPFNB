@@ -209,11 +209,19 @@ async def manual_scan(
         period=payload.get("period"),
         user_id=user["id"],
     )
+    # Tombol "Scan" juga menjalankan AI Auditor (pemeriksaan pengendalian internal) — temuan masuk feed yang sama
+    audit = None
+    try:
+        from services.ai_audit.auditor import run as run_auditor
+        audit = await run_auditor(days=max(30, int(payload.get("days", 7))), user_id=user["id"])
+    except Exception:  # noqa: BLE001 — auditor gagal tidak menggagalkan scan anomali
+        audit = {"error": "AI Auditor gagal dijalankan"}
     # Don't dump all events in response (could be huge) — only return counts + scan meta
     return ok_envelope({
         "as_of_date": res["as_of_date"],
         "period": res["period"],
         "counts": res["counts"],
+        "auditor": audit,
     })
 
 
